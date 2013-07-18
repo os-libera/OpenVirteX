@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-import net.onrc.openvirtex.packet.Ethernet;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.util.U16;
@@ -230,7 +229,6 @@ public class OFMessage {
     
     public static String getDataAsString(OFMessage msg) {
 
-        Ethernet eth;
         StringBuffer sb =  new StringBuffer("");
 
         DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");

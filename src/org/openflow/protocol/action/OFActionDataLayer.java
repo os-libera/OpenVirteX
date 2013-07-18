@@ -22,7 +22,6 @@ package org.openflow.protocol.action;
 
 import java.util.Arrays;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.protocol.OFPhysicalPort;
 
