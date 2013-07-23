@@ -4,18 +4,18 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.elements.port.OVXPort;
 
 /**
  * @author gerola
  * 
  */
-public class PhysicalSwitch extends Switch<PhysicalPort> {
+public class OVXSingleSwitch extends OVXSwitch {
 
     /**
      * 
      */
-    public PhysicalSwitch() {
+    public OVXSingleSwitch() {
 	super();
     }
 
@@ -23,19 +23,21 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      * @param switchName
      * @param switchId
      * @param map
+     * @param tenantId
+     * @param pktLenght
      */
-    public PhysicalSwitch(final String switchName, final long switchId,
-	    final OVXMap map) {
-	super(switchName, switchId, map);
+    public OVXSingleSwitch(final String switchName, final long switchId,
+	    final OVXMap map, final int tenantId, final short pktLenght) {
+	super(switchName, switchId, map, tenantId, pktLenght);
     }
 
     @Override
-    public PhysicalPort getPort(final short portNumber) {
+    public OVXPort getPort(final short portNumber) {
 	return this.portMap.get(portNumber).getCopy();
     }
 
     @Override
-    public boolean addPort(final PhysicalPort port) {
+    public boolean addPort(final OVXPort port) {
 	if (this.portMap.containsKey(port.getPortNumber())) {
 	    return false;
 	} else {
@@ -45,7 +47,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     }
 
     @Override
-    public boolean updatePort(final PhysicalPort port) {
+    public boolean updatePort(final OVXPort port) {
 	if (!this.portMap.containsKey(port.getPortNumber())) {
 	    return false;
 	} else {

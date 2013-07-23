@@ -3,8 +3,8 @@
  */
 package net.onrc.openvirtex.elements.network;
 
+import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.util.IPAddress;
 import net.onrc.openvirtex.util.MACAddress;
 
 /**

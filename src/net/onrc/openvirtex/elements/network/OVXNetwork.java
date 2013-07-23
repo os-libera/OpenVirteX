@@ -5,10 +5,10 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.HashMap;
 
+import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.util.IPAddress;
 import net.onrc.openvirtex.util.MACAddress;
 
 /**
