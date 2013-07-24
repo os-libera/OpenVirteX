@@ -739,23 +739,23 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	    throws Exception {
 	if (e.getCause() instanceof ReadTimeoutException) {
 	    // switch timeout
-	    System.err.println("Disconnecting switch {} due to read timeout " +
+	    System.err.println("Disconnecting switch due to read timeout " +
 		    getSwitchInfoString());
 
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof HandshakeTimeoutException) {
-	    System.err.println("Disconnecting switch {}: failed to complete handshake " +
+	    System.err.println("Disconnecting switch: failed to complete handshake " +
 		    getSwitchInfoString());
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof ClosedChannelException) {
 	    System.err.println("Channel for sw already closed " + getSwitchInfoString());
 	} else if (e.getCause() instanceof IOException) {
-	    System.err.println("Disconnecting switch {} due to IO Error: " +
+	    System.err.println("Disconnecting switch  due to IO Error: " +
 		    getSwitchInfoString());
 
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof SwitchStateException) {
-	    System.err.println("Disconnecting switch {} due to switch state error: " +
+	    System.err.println("Disconnecting switch due to switch state error: " +
 		    getSwitchInfoString());
 
 	    ctx.getChannel().close();
