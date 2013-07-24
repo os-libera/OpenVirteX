@@ -22,6 +22,8 @@ package org.openflow.protocol.action;
 
 import java.util.Arrays;
 
+import net.onrc.openvirtex.util.MACAddress;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.protocol.OFPhysicalPort;
 
@@ -90,5 +92,15 @@ public abstract class OFActionDataLayer extends OFAction {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(type);
+        builder.append("[");
+        builder.append(MACAddress.valueOf(dataLayerAddress).toString());
+        builder.append("]");
+        return builder.toString();
     }
 }
