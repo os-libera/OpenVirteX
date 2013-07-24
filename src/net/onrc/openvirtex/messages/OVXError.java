@@ -22,9 +22,23 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFError;
 
-public class OVXError extends OFError {
+public class OVXError extends OFError implements Virtualizable, Devirtualizable {
+
+    @Override
+    public void devirtualize(Switch sw) {
+	// TODO Auto-generated method stub
+	
+    }
+
+    @Override
+    public void virtualize(Switch sw) {
+	// TODO Auto-generated method stub
+	
+    }
 
     
 

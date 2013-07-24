@@ -22,8 +22,24 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFEchoRequest;
 
-public class OVXEchoRequest extends OFEchoRequest {
+public class OVXEchoRequest extends OFEchoRequest implements Virtualizable, Devirtualizable {
+
+    @Override
+    public void devirtualize(Switch sw) {
+	//TODO: Log error, we should never receive this message here
+	return;
+	
+    }
+
+    @Override
+    public void virtualize(Switch sw) {
+	//TODO: Log error, we should never receive this message here
+	return;
+	
+    }
 
 }

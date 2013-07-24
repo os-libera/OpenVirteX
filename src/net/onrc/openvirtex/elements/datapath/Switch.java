@@ -23,6 +23,7 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import net.onrc.openvirtex.core.io.OVXEventHandler;
+import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
 import org.jboss.netty.channel.Channel;
@@ -31,7 +32,7 @@ import org.openflow.protocol.OFMessage;
 
 
 
-public abstract class Switch implements OVXEventHandler {    
+public abstract class Switch implements OVXEventHandler, OVXSendMsg {    
     
     protected boolean isConnected = false;
     

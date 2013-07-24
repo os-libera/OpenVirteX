@@ -22,8 +22,34 @@
 
 package net.onrc.openvirtex.messages;
 
-import org.openflow.protocol.OFPacketIn;
+import java.util.LinkedList;
+import java.util.List;
 
-public class OVXPacketIn extends OFPacketIn {
+import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.messages.actions.OVXActionOutput;
+
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPort;
+import org.openflow.protocol.action.OFAction;
+
+public class OVXPacketIn extends OFPacketIn implements Virtualizable {
+
+    @Override
+    public void virtualize(Switch sw) {
+	OVXFlowMod fm = new OVXFlowMod();
+	OFMatch match = new OFMatch();
+	match.loadFromPacket(this.getPacketData(), this.getInPort());
+	fm.setMatch(match);
+	List<OFAction> actions = new LinkedList<OFAction>();
+	OVXActionOutput out = new OVXActionOutput();
+	out.setPort(OFPort.OFPP_FLOOD.getValue());
+	actions.add(out);
+	fm.setActions(actions);
+	fm.setLengthU(fm.getLengthU() + out.getLengthU());
+	
+	sw.sendMsg(fm, sw);
+
+    }
 
 }

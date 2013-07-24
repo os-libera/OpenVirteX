@@ -37,9 +37,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 public class OpenVirteXController implements Runnable {
 
-    private static final int SEND_BUFFER_SIZE = 128 * 1024;
-    
-    
+    private static final int SEND_BUFFER_SIZE = 1024 * 1024;
     
     private String configFile = null;
     private String ofHost = null;

@@ -22,8 +22,16 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFFlowMod;
 
-public class OVXFlowMod extends OFFlowMod {
+public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
+
+    @Override
+    public void devirtualize(Switch sw) {
+	// TODO Auto-generated method stub
+	
+    }
 
 }

@@ -24,6 +24,7 @@ package net.onrc.openvirtex.messages;
 
 import net.onrc.openvirtex.messages.actions.OVXActionDataLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionDataLayerSource;
+import net.onrc.openvirtex.messages.actions.OVXActionEnqueue;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkTypeOfService;

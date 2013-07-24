@@ -22,8 +22,17 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFFeaturesRequest;
 
-public class OVXFeaturesRequest extends OFFeaturesRequest {
+public class OVXFeaturesRequest extends OFFeaturesRequest implements Devirtualizable {
+
+    @Override
+    public void devirtualize(Switch sw) {
+	//TODO: Log error, we should never receive this message here
+	return;
+	
+    }
 
 }

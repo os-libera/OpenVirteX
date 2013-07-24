@@ -22,8 +22,16 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFQueueGetConfigRequest;
 
-public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest {
+public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest implements Devirtualizable {
+
+    @Override
+    public void devirtualize(Switch sw) {
+	// TODO Auto-generated method stub
+	
+    }
 
 }

@@ -23,37 +23,21 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
-import net.onrc.openvirtex.messages.OVXFlowMod;
-import net.onrc.openvirtex.messages.OVXPacketIn;
-import net.onrc.openvirtex.messages.actions.OVXActionOutput;
+import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.messages.Virtualizable;
 
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
-import org.openflow.protocol.OFPort;
-import org.openflow.protocol.OFType;
-import org.openflow.protocol.action.OFAction;
 
 
 public class PhysicalSwitch extends Switch {
 
     @Override
-    public void handleIO(OFMessage msgs) {
-	if (msgs.getType() == OFType.PACKET_IN) {
-	    OVXPacketIn pktIn = (OVXPacketIn) msgs;
-	    OVXFlowMod fm = new OVXFlowMod();
-	    OFMatch match = new OFMatch();
-	    match.loadFromPacket(pktIn.getPacketData(), pktIn.getInPort());
-	    fm.setMatch(match);
-	    List<OFAction> actions = new LinkedList<OFAction>();
-	    OVXActionOutput out = new OVXActionOutput();
-	    out.setPort(OFPort.OFPP_FLOOD.getValue());
-	    actions.add(out);
-	    fm.setActions(actions);
-	    fm.setLengthU(fm.getLengthU() + out.getLengthU());
-	    channel.write(Collections.singletonList(fm));
+    public synchronized void handleIO(OFMessage msgs) {
+	try {
+	    ((Virtualizable) msgs).virtualize(this);
+	} catch (ClassCastException e) {
+	    System.err.println("Received illegal message : " + msgs);
 	}
 	
     }
@@ -68,6 +52,16 @@ public class PhysicalSwitch extends Switch {
     public void init() {
 	System.out.println("Switch connected -> " + this.featuresReply.getDatapathId() + " : " + this.desc.getHardwareDescription());
 	
+    }
+
+    
+    /*
+     * Temporary implementation(non-Javadoc)
+     * @see net.onrc.openvirtex.core.io.OVXSendMsg#sendMsg(org.openflow.protocol.OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
+     */
+    @Override
+    public void sendMsg(OFMessage msg, OVXSendMsg from) {
+	channel.write(Collections.singletonList(msg));
     }
 
 }

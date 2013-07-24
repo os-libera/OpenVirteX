@@ -22,8 +22,17 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFFeaturesReply;
 
-public class OVXFeaturesReply extends OFFeaturesReply {
+public class OVXFeaturesReply extends OFFeaturesReply implements Virtualizable {
+
+    @Override
+    public void virtualize(Switch sw) {
+	//TODO: Log error, we should never receive this message here
+	return;
+	
+    }
 
 }

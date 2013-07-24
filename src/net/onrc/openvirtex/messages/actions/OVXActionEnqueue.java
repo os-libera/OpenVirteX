@@ -20,7 +20,7 @@
  * 
  */
 
-package net.onrc.openvirtex.messages;
+package net.onrc.openvirtex.messages.actions;
 
 import org.openflow.protocol.action.OFActionEnqueue;
 

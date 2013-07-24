@@ -22,8 +22,16 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFPortStatus;
 
-public class OVXPortStatus extends OFPortStatus {
+public class OVXPortStatus extends OFPortStatus implements Virtualizable {
+
+    @Override
+    public void virtualize(Switch sw) {
+	// TODO Auto-generated method stub
+	
+    }
 
 }

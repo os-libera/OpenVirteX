@@ -22,9 +22,23 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
+
 import org.openflow.protocol.OFVendor;
 
-public class OVXVendor extends OFVendor {
+public class OVXVendor extends OFVendor implements Virtualizable, Devirtualizable {
+
+    @Override
+    public void devirtualize(Switch sw) {
+	// TODO Auto-generated method stub
+	
+    }
+
+    @Override
+    public void virtualize(Switch sw) {
+	// TODO Auto-generated method stub
+	
+    }
 
    
 }
