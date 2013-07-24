@@ -30,7 +30,6 @@ import java.util.concurrent.Executors;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
@@ -42,7 +41,11 @@ public class OpenVirteXController implements Runnable {
     private String configFile = null;
     private String ofHost = null;
     private Integer ofPort = null;
-
+    
+    
+    private final ChannelGroup cg = new DefaultChannelGroup();
+    private SwitchChannelPipeline pfact = null;
+    
     public OpenVirteXController(String configFile, String ofHost, Integer ofPort) {
 	this.configFile = configFile;
 	this.ofHost = ofHost;
@@ -51,21 +54,21 @@ public class OpenVirteXController implements Runnable {
 
     @Override
     public void run(){
+	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
 	try {
 	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
 	    
 	    setServerBootStrapParams(switchServerBootStrap);
 	    
-	    ChannelPipelineFactory pfact =
-                    new SwitchChannelPipeline(this, null);
+	    pfact = new SwitchChannelPipeline(this, null);
 	    switchServerBootStrap.setPipelineFactory(pfact);
             InetSocketAddress sa =
             		(ofHost == null)
             		? new InetSocketAddress(ofPort)
             		: new InetSocketAddress(ofHost, ofPort);
-            final ChannelGroup cg = new DefaultChannelGroup();
+            
             cg.add(switchServerBootStrap.bind(sa));
-	    
+	   
 	} catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -78,6 +81,7 @@ public class OpenVirteXController implements Runnable {
         bootstrap.setOption("child.tcpNoDelay", true);
         bootstrap.setOption("child.sendBufferSize", OpenVirteXController.SEND_BUFFER_SIZE);
         
+        
     }
 
     private ServerBootstrap createServerBootStrap() {
@@ -89,7 +93,17 @@ public class OpenVirteXController implements Runnable {
 
     public void terminate() {
 	//TODO: Cleanup!
-	System.exit(1);
+	
+	
+	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
+	    System.out.println("Shut down all connections. Quitting...");
+	} else {
+	    System.out.println("Error shutting down all connections. Quitting anyway.");
+	}
+	if (pfact != null)
+	    	pfact.releaseExternalResources();
+	System.out.flush();
+	//System.exit(1);
     }
 
 }

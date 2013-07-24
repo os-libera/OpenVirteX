@@ -63,5 +63,11 @@ public class PhysicalSwitch extends Switch {
     public void sendMsg(OFMessage msg, OVXSendMsg from) {
 	channel.write(Collections.singletonList(msg));
     }
+    
+    @Override
+    public String toString() {
+	return "DPID -> " + this.featuresReply.getDatapathId() + 
+		" remoteAddr -> " + this.channel.getRemoteAddress().toString();
+    }
 
 }

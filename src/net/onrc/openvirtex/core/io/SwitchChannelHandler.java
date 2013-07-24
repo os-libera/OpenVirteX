@@ -752,12 +752,10 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	} else if (e.getCause() instanceof IOException) {
 	    System.err.println("Disconnecting switch  due to IO Error: " +
 		    getSwitchInfoString());
-
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof SwitchStateException) {
 	    System.err.println("Disconnecting switch due to switch state error: " +
 		    getSwitchInfoString());
-
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof MessageParseException) {
 	    System.err.println("Disconnecting switch "

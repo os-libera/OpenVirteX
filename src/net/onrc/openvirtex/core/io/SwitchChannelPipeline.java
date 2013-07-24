@@ -27,14 +27,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 import net.onrc.openvirtex.core.OpenVirteXController;
 
 import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 
-public class SwitchChannelPipeline extends OpenflowChannelPipeline implements ChannelPipelineFactory {
+public class SwitchChannelPipeline extends OpenflowChannelPipeline  {
 
     public SwitchChannelPipeline(OpenVirteXController openVirteXController,
             ThreadPoolExecutor pipelineExecutor) {
@@ -63,5 +62,6 @@ public class SwitchChannelPipeline extends OpenflowChannelPipeline implements Ch
         pipeline.addLast("handler", handler);
         return pipeline;
     }
-
+    
+   
 }
