@@ -25,32 +25,37 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+
 import net.onrc.openvirtex.messages.Virtualizable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
 
 public class PhysicalSwitch extends Switch {
-
+    
+    Logger log =  LogManager.getLogger(PhysicalSwitch.class.getName());
+    
     @Override
     public synchronized void handleIO(OFMessage msgs) {
 	try {
 	    ((Virtualizable) msgs).virtualize(this);
 	} catch (ClassCastException e) {
-	    System.err.println("Received illegal message : " + msgs);
+	    log.error("Received illegal message : " + msgs);
 	}
 	
     }
 
     @Override
     public void tearDown() {
-	System.out.println("Switch disconnected -> " + this.featuresReply.getDatapathId());
+	log.info("Switch disconnected {} ", this.featuresReply.getDatapathId());
 		
     }
 
     @Override
     public void init() {
-	System.out.println("Switch connected -> " + this.featuresReply.getDatapathId() + " : " + this.desc.getHardwareDescription());
+	log.info("Switch connected {} : {}", this.featuresReply.getDatapathId(), this.desc.getHardwareDescription());
 	
     }
 
@@ -66,8 +71,8 @@ public class PhysicalSwitch extends Switch {
     
     @Override
     public String toString() {
-	return "DPID -> " + this.featuresReply.getDatapathId() + 
-		" remoteAddr -> " + this.channel.getRemoteAddress().toString();
+	return "DPID : " + this.featuresReply.getDatapathId() + 
+		", remoteAddr : " + this.channel.getRemoteAddress().toString();
     }
 
 }
