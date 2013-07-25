@@ -59,6 +59,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware, Clonea
 
     public OFFlowMod() {
         super();
+        this.outPort = OFPort.OFPP_NONE.getValue();
         this.type = OFType.FLOW_MOD;
         this.length = U16.t(MINIMUM_LENGTH);
     }
@@ -367,7 +368,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware, Clonea
         flowMod.setMatch(neoMatch);
         List<OFAction> neoActions = new LinkedList<OFAction>();
         for(OFAction action: this.actions)
-            neoActions.add((OFAction) action.clone());
+            neoActions.add(action.clone());
         flowMod.setActions(neoActions);
         return flowMod;
     }
@@ -379,7 +380,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware, Clonea
     public String toString() {
         return "OFFlowMod [actionFactory=" + actionFactory + ", actions="
                 + actions + ", bufferId=" + bufferId + ", command=" + command
-                + ", cookie=" + cookie + ", flags=" + flags + ", hardTimeout="
+                + ", cookie=" + Long.toHexString(cookie) + ", flags=" + flags + ", hardTimeout="
                 + hardTimeout + ", idleTimeout=" + idleTimeout + ", match="
                 + match + ", outPort=" + outPort + ", priority=" + priority
                 + ", length=" + length + ", type=" + type + ", version="

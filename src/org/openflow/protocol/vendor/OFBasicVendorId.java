@@ -114,7 +114,8 @@ public class OFBasicVendorId extends OFVendorId {
      * @return the OFVendorDataType that can be used to instantiate the
      *         appropriate subclass of OFVendorData.
      */
-    public OFVendorDataType parseVendorDataType(ChannelBuffer data, int length) {
+    @Override
+	public OFVendorDataType parseVendorDataType(ChannelBuffer data, int length) {
         OFVendorDataType vendorDataType = null;
         
         // Parse out the type code from the vendor data.

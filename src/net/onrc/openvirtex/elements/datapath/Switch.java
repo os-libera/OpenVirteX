@@ -1,6 +1,25 @@
 /**
+ *  Copyright (c) 2013 Open Networking Laboratory
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
  * 
  */
+
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.HashMap;
@@ -8,6 +27,12 @@ import java.util.HashMap;
 import net.onrc.openvirtex.elements.OVXMap;
 
 import org.openflow.protocol.OFFeaturesReply;
+import net.onrc.openvirtex.core.io.OVXEventHandler;
+import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
+
+import org.jboss.netty.channel.Channel;
+import org.openflow.protocol.OFMessage;
 
 /**
  * The Class Switch.
@@ -16,7 +41,13 @@ import org.openflow.protocol.OFFeaturesReply;
  *            the generic type
  * @author gerola
  */
-public abstract class Switch<T1> {
+public abstract class Switch<T1> implements OVXEventHandler, OVXSendMsg {    
+    
+    protected boolean isConnected = false;
+
+    protected Channel channel = null;
+
+    protected OVXDescriptionStatistics desc;
 
     /** The switch name. */
     private String                     switchName;
@@ -25,7 +56,7 @@ public abstract class Switch<T1> {
     protected final HashMap<Short, T1> portMap;
 
     /** The switch info. */
-    private OFFeaturesReply            switchInfo;
+    protected OFFeaturesReply            featuresReply;
 
     /** The switch id. */
     private long                       switchId;
@@ -42,7 +73,7 @@ public abstract class Switch<T1> {
 	this.switchId = 0;
 	this.map = null;
 	this.portMap = new HashMap<Short, T1>();
-	this.switchInfo = null;
+	this.featuresReply = null;
     }
 
     /**
@@ -62,7 +93,7 @@ public abstract class Switch<T1> {
 	this.switchId = switchId;
 	this.map = map;
 	this.portMap = new HashMap<Short, T1>();
-	this.switchInfo = null;
+	this.featuresReply = null;
     }
 
     /**
@@ -91,22 +122,14 @@ public abstract class Switch<T1> {
      * 
      * @return the switch info
      */
-    public OFFeaturesReply getSwitchInfo() {
-	return this.switchInfo;
+    public OFFeaturesReply getFeaturesReply() {
+	return this.featuresReply;
     }
 
-    /**
-     * Sets the switch info.
-     * 
-     * @param switchInfo
-     *            the switch info
-     * @return true, if successful
-     */
-    public boolean setSwitchInfo(final OFFeaturesReply switchInfo) {
-	this.switchInfo = switchInfo;
-	return true;
+    public void setFeaturesReply(OFFeaturesReply m) {
+	this.featuresReply = m;
     }
-
+    
     /**
      * Gets the switch id.
      * 
@@ -180,10 +203,24 @@ public abstract class Switch<T1> {
      */
     public abstract boolean initialize();
 
-    /**
-     * Send msg.
-     * 
-     * @return true, if successful
-     */
-    public abstract boolean sendMsg();
+    @Override
+	public abstract void handleIO(OFMessage msgs);
+
+    public void setConnected(boolean isConnected) {
+	this.isConnected = isConnected;
+    }
+
+    public void setChannel(Channel channel) {
+	this.channel  = channel;
+	
+    }
+
+    public abstract void tearDown();
+
+    public abstract void init();
+
+    public void setDescriptionStats(OVXDescriptionStatistics description) {
+	this.desc = description;
+	
+    }
 }

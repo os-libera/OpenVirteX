@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.util.U16;
 import org.openflow.util.U32;
@@ -177,7 +176,8 @@ public class OFMessage {
      * Returns a summary of the message
      * @return "ofmsg=v=$version;t=$type:l=$len:xid=$xid"
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return "ofmsg" +
             ":v=" + U8.f(this.getVersion()) +
             ";t=" + this.getType() +

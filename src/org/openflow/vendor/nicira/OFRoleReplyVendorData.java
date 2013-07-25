@@ -30,7 +30,8 @@ public class OFRoleReplyVendorData extends OFRoleVendorData {
 
     protected static Instantiable<OFVendorData> instantiable =
             new Instantiable<OFVendorData>() {
-                public OFVendorData instantiate() {
+                @Override
+				public OFVendorData instantiate() {
                     return new OFRoleReplyVendorData();
                 }
             };
