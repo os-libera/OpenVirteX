@@ -36,13 +36,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 
-
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -81,6 +82,7 @@ import org.openflow.util.HexString;
 
 public class SwitchChannelHandler extends OFChannelHandler {
 
+    Logger log = LogManager.getLogger(SwitchChannelHandler.class.getName());
     protected ArrayList<OFPortStatus> pendingPortStatusMsg = null;
 
     /*
@@ -739,38 +741,36 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	    throws Exception {
 	if (e.getCause() instanceof ReadTimeoutException) {
 	    // switch timeout
-	    System.err.println("Disconnecting switch due to read timeout " +
-		    getSwitchInfoString());
-
+	    log.error("Disconnecting switch {} due to read timeout ",
+		    getSwitchInfoString(), e.getCause());
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof HandshakeTimeoutException) {
-	    System.err.println("Disconnecting switch: failed to complete handshake " +
-		    getSwitchInfoString());
+	    log.error("Disconnecting switch {} failed to complete handshake ",
+		    getSwitchInfoString(), e.getCause());
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof ClosedChannelException) {
-	    System.err.println("Channel for sw already closed " + getSwitchInfoString());
+	    log.error("Channel for sw {} already closed", getSwitchInfoString(), 
+		    e.getCause());
 	} else if (e.getCause() instanceof IOException) {
-	    System.err.println("Disconnecting switch  due to IO Error: " +
-		    getSwitchInfoString());
+	    log.error("Disconnecting switch {} due to IO Error.",
+		    getSwitchInfoString(), e.getCause());
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof SwitchStateException) {
-	    System.err.println("Disconnecting switch due to switch state error: " +
-		    getSwitchInfoString());
+	    log.error("Disconnecting switch {} due to switch state error",
+		    getSwitchInfoString(), e.getCause());
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof MessageParseException) {
-	    System.err.println("Disconnecting switch "
-		    + getSwitchInfoString() +
-		    " due to message parse failure");
+	    log.error("Disconnecting switch {} due to message parse failure",
+		   getSwitchInfoString(), e.getCause());
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof RejectedExecutionException) {
-	    System.err.println("Could not process message: queue full");
+	    log.error("Could not process message: queue full", e.getCause());
 
 	} else {
 
-	    System.err.println("Error while processing message from switch "
-		    + getSwitchInfoString()
-		    + "state " + this.state);
-
+	    log.error("Error while processing message from switch {} state {}",
+		    getSwitchInfoString(), this.state, e.getCause());
+		    
 	    ctx.getChannel().close();
 	    throw new RuntimeException(e.getCause());
 	}

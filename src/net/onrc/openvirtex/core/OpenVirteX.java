@@ -27,13 +27,13 @@ import net.onrc.openvirtex.exceptions.OpenVirteXException;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * @author alshabib
- *
- */
+
 public class OpenVirteX {
 
+    static Logger log = LogManager.getLogger(OpenVirteX.class.getName());
 	/**
 	 * @param args
 	 */
@@ -48,7 +48,7 @@ public class OpenVirteX {
 	}
 	
 	OpenVirteXController ctrl = new OpenVirteXController(settings.getConfigFile(), settings.getOFHost(), settings.getOFPort());
-	System.out.println("Starting OpenVirtex.");
+	log.info("Starting OpenVirtex...");
 	ctrl.run();
     }
 
