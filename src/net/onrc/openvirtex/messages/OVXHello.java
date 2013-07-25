@@ -22,7 +22,8 @@
 
 package net.onrc.openvirtex.messages;
 
-import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 import org.openflow.protocol.OFHello;
 
@@ -30,14 +31,14 @@ import org.openflow.protocol.OFHello;
 public class OVXHello extends OFHello implements Virtualizable, Devirtualizable {
 
     @Override
-    public void devirtualize(Switch sw) {
+    public void devirtualize(OVXSwitch sw) {
 	//TODO: Log error, we should never receive this message here
 		return;
 	
     }
 
     @Override
-    public void virtualize(Switch sw) {
+    public void virtualize(PhysicalSwitch sw) {
 	//TODO: Log error, we should never receive this message here
 		return;
 	

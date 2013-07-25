@@ -1,6 +1,4 @@
 /**
- * Originally created by David Erickson, Stanford University
- *  
  *  Copyright (c) 2013 Open Networking Laboratory
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -28,18 +26,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LRUHashMap<K, V> extends LinkedHashMap<K, V> {
-    
+
     private static final long serialVersionUID = 1L;
-    
-    private final int capacity;
-    public LRUHashMap(int capacity)
-    {
-        super(capacity+1, 0.75f, true);
-        this.capacity = capacity;
+
+    private final int         capacity;
+
+    public LRUHashMap(final int capacity) {
+	super(capacity + 1, 0.75f, true);
+	this.capacity = capacity;
     }
-    
-    protected boolean removeEldestEntry(Map.Entry<K,V> eldest) {
-       return size() > capacity;
+
+    @Override
+    protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
+	return this.size() > this.capacity;
     }
 
 }

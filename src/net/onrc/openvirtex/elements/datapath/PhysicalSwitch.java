@@ -22,6 +22,8 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
+import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -32,11 +34,34 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
-
-public class PhysicalSwitch extends Switch {
+  
+public class PhysicalSwitch extends Switch<PhysicalPort> {
     
     Logger log =  LogManager.getLogger(PhysicalSwitch.class.getName());
     
+    /**
+     * 
+     */
+    public PhysicalSwitch() {
+	super();
+    }
+
+    /**
+     * @param switchName
+     * @param switchId
+     * @param map
+     */
+    public PhysicalSwitch(final String switchName, final long switchId,
+	    final OVXMap map) {
+	super(switchName, switchId, map);
+    }
+
+    @Override
+    public boolean initialize() {
+	//TODO: Take featuresReply and add ports to the maps
+	return false;
+    }
+
     @Override
     public synchronized void handleIO(OFMessage msgs) {
 	try {
@@ -73,6 +98,11 @@ public class PhysicalSwitch extends Switch {
     public String toString() {
 	return "DPID : " + this.featuresReply.getDatapathId() + 
 		", remoteAddr : " + this.channel.getRemoteAddress().toString();
+    }
+
+    @Override
+    public boolean setSwitchId(long switchId) {
+	return false;
     }
 
 }

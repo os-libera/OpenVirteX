@@ -136,7 +136,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	}, 
 	WAIT_FEATURES_REPLY(false) {
 
-	    void processOFFeaturesReply(SwitchChannelHandler h, OFFeaturesReply  m)
+	    @Override
+		void processOFFeaturesReply(SwitchChannelHandler h, OFFeaturesReply  m)
 		    throws IOException {
 		h.featuresReply = m;
 		h.sendHandshakeSetConfig();
@@ -157,7 +158,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	    }
 	}, WAIT_CONFIG_REPLY(false) {
 
-	    void processOFGetConfigReply(SwitchChannelHandler h, OFGetConfigReply m)
+	    @Override
+		void processOFGetConfigReply(SwitchChannelHandler h, OFGetConfigReply m)
 		    throws IOException {
 		if (m.getMissSendLength() != (short)0xffff) {
 		    //TODO: log miss send len mismatch and move on  
@@ -577,7 +579,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
      * information (DPID and/or remote socket)
      * @return
      */
-    protected String getSwitchInfoString() {
+    @Override
+	protected String getSwitchInfoString() {
 	if (sw != null)
 	    return sw.toString();
 	String channelString;
@@ -737,7 +740,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
     }
 
 
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+    @Override
+	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 	    throws Exception {
 	if (e.getCause() instanceof ReadTimeoutException) {
 	    // switch timeout

@@ -25,7 +25,7 @@ package net.onrc.openvirtex.messages;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
 
 import org.openflow.protocol.OFMatch;
@@ -36,7 +36,7 @@ import org.openflow.protocol.action.OFAction;
 public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
     @Override
-    public void virtualize(Switch sw) {
+    public void virtualize(PhysicalSwitch sw) {
 	OVXFlowMod fm = new OVXFlowMod();
 	OFMatch match = new OFMatch();
 	match.loadFromPacket(this.getPacketData(), this.getInPort());
