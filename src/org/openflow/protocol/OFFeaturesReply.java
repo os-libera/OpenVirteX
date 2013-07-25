@@ -1,7 +1,7 @@
 /**
 *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
 *    University
-* 
+*
 *    Licensed under the Apache License, Version 2.0 (the "License"); you may
 *    not use this file except in compliance with the License. You may obtain
 *    a copy of the License at
@@ -20,10 +20,7 @@ package org.openflow.protocol;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.openflow.protocol.serializers.OFFeaturesReplyJSONSerializer;
 import org.openflow.util.U16;
 
 
@@ -32,7 +29,7 @@ import org.openflow.util.U16;
  * @author David Erickson (daviderickson@cs.stanford.edu)
  *
  */
-@JsonSerialize(using=OFFeaturesReplyJSONSerializer.class)
+
 public class OFFeaturesReply extends OFMessage {
     public static int MINIMUM_LENGTH = 32;
 
@@ -86,6 +83,7 @@ public class OFFeaturesReply extends OFMessage {
     /**
      * @param datapathId the datapathId to set
      */
+    
     public void setDatapathId(long datapathId) {
         this.datapathId = datapathId;
     }

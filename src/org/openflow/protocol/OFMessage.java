@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.util.U16;
 import org.openflow.util.U32;
