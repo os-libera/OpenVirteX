@@ -45,11 +45,12 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
  * @author Karthik Jagadeesh
  *
  */
-public class OVXMap {
+public class OVXMap implements Mappable{
 
     ConcurrentHashMap<OVXSwitch, PhysicalSwitch> virtualSwitchMap;
     ConcurrentHashMap<PhysicalSwitch, OVXSwitch> physicalSwitchMap;
-    ConcurrentHashMap<PhysicalSwitch, OVXSwitch> portMap;
+    ConcurrentHashMap<OVXPort, PhysicalPort> virtualPortMap;
+    ConcurrentHashMap<PhysicalPort, OVXPort> physicalPortMap;
     ConcurrentHashMap<Integer, OVXNetwork> networkMap; 
     RadixTree<String> ipAddressMap;
     
@@ -59,7 +60,8 @@ public class OVXMap {
 	 */
 	physicalSwitchMap = new ConcurrentHashMap<PhysicalSwitch, OVXSwitch>();
 	virtualSwitchMap = new ConcurrentHashMap<OVXSwitch, PhysicalSwitch>();
-	portMap = new ConcurrentHashMap<PhysicalSwitch, OVXSwitch>();
+	physicalPortMap = new ConcurrentHashMap<PhysicalPort, OVXPort>();
+	virtualPortMap = new ConcurrentHashMap<OVXPort, PhysicalPort>();
 	networkMap = new ConcurrentHashMap<Integer, OVXNetwork>();
 	ipAddressMap = new ConcurrentRadixTree<String>(new DefaultCharArrayNodeFactory());
     }
@@ -90,7 +92,7 @@ public class OVXMap {
 	return true;
     }
     
-    public synchronized boolean addVirtualSwitchMapping() {
+    public synchronized boolean addVirtualSwitchMapping(OVXSwitch virtualSwitch, PhysicalSwitch physicalSwitch) {
 	/*
 	 * sets up the mapping from the virtualSwitch to the physicalSwitch
 	 * which has been specified
