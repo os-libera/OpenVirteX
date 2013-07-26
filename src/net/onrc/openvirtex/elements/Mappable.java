@@ -14,46 +14,95 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 
-/**
- * @author Karthik Jagadeesh
- * 
- */
 public interface Mappable {
-	// ADD objects to dictionary
+    // ADD objects to dictionary
+    /*
+     * sets up the mapping from the physicalSwitch to the virtualSwitch
+     * which has been specified
+     */
+    boolean addPhysicalSwitchMapping(PhysicalSwitch physicalSwitch,
+	    OVXSwitch virtualSwitch);
 
-	boolean addPhysicalSwitchMapping(PhysicalSwitch physicalSwitch,
-			OVXSwitch virtualSwitch);
+    /*
+     * keep track of each physical port and all the virtual ports that
+     * use the physical port mentioned
+     */
+    boolean addPhysicalPortMapping(PhysicalPort physicalPort,
+	    OVXPort virtualPort);
 
-	boolean addPhysicalPortMapping(PhysicalPort physicalPort,
-			OVXPort virtualPort);
+    /*
+     * in order to get the list of virtual links that all have
+     * used a specific physical link
+     */
+    boolean addPhysicalLinkMapping(PhysicalLink physicalLink,
+	    OVXLink virtualLink);
 
-	boolean addPhysicalLinkMapping(PhysicalLink physicalLink,
-			OVXLink virtualLink);
+    /*
+     * sets up the mapping from the virtualSwitch to the physicalSwitch
+     * which has been specified
+     */
+    boolean addVirtualSwitchMapping(OVXSwitch virtualSwitch,
+	    PhysicalSwitch physicalSwitch);
 
-	boolean addVirtualSwitchMapping(OVXSwitch virtualSwitch,
-			PhysicalSwitch physicalSwitch);
+    /*
+     * maps the OVXPort object to the physical Port that it refers to
+     */
+    boolean addVirtualPortMapping(OVXPort virtualPort, PhysicalPort physicalPort);
 
-	boolean addVirtualPortMapping(OVXPort virtualPort, PhysicalPort physicalPort);
+    /*
+     * maps the virtual source and destination port to the list of
+     * physical source and destination ports
+     */
+    boolean addVirtualLinkMapping(OVXLink virtualLink,
+	    List<PhysicalLink> physicalLinks);
 
-	boolean addVirtualLinkMapping(OVXLink virtualLink,
-			List<PhysicalLink> physicalLinks);
+    /*
+     * Maintain a list of all the virtualNetworks in the system
+     * indexed by the tenant id mapping to VirtualNetwork
+     */
+    boolean addVirtualNetworkMapping(OVXNetwork virtualNetwork);
 
-	boolean addVirtualNetworkMapping(OVXNetwork virtualNetwork);
+    // Access objects from dictionary given the key
 
-	// Access objects from dictionary given the key
+    /*
+     * sets up the mapping from the physicalSwitch to the virtualSwitch
+     * which has been specified
+     */
+    ArrayList<OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch);
 
-	ArrayList<OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch);
+    /*
+     * keep track of each physical port and all the virtual ports that
+     * use the physical port mentioned
+     */
+    ArrayList<OVXPort> getVirtualPorts(PhysicalPort physicalPort);
 
-	ArrayList<OVXPort> getVirtualPorts(PhysicalPort physicalPort);
+    /*
+     * in order to get the list of physical links that all have
+     * used a specific physical link
+     */
+    ArrayList<PhysicalLink> getPhysicalLinks(OVXMap virtualLink);
 
-	ArrayList<PhysicalLink> getPhysicalLinks(OVXMap virtualLink);
+    /*
+     * sets up the mapping from the virtualSwitch to the physicalSwitch
+     * which has been specified
+     */
+    ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
 
-	ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
+    /*
+     * maps the OVXPort object to the physical Port that it refers to
+     */
+    ArrayList<PhysicalPort> getPhysicalPorts(OVXPort virtualPort);
 
-	ArrayList<PhysicalPort> getPhysicalPorts(OVXPort virtualPort);
+    /*
+     * maps the virtual source and destination port to the list of
+     * physical source and destination ports
+     */
+    ArrayList<OVXLink> getVirtualLinks(PhysicalLink physicalLink);
 
-	ArrayList<OVXLink> getVirtualLinks(PhysicalLink physicalLink);
-
-	OVXNetwork getVirtualNetwork(int tenantId);
+    /*
+     * Maintain a list of all the virtualNetworks in the system
+     * indexed by the tenant id mapping to VirtualNetwork
+     */
+    OVXNetwork getVirtualNetwork(int tenantId);
 
 }
