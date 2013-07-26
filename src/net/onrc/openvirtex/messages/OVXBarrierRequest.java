@@ -26,12 +26,13 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 import org.openflow.protocol.OFBarrierRequest;
 
-public class OVXBarrierRequest extends OFBarrierRequest implements Devirtualizable {
+public class OVXBarrierRequest extends OFBarrierRequest implements
+		Devirtualizable {
 
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

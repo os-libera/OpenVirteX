@@ -24,10 +24,10 @@ package net.onrc.openvirtex.exceptions;
 
 public class OpenVirteXException extends Exception {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public OpenVirteXException(Exception e) {
-	super(e);
-    }
+	public OpenVirteXException(Exception e) {
+		super(e);
+	}
 
 }

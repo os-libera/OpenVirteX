@@ -27,20 +27,21 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 import org.openflow.protocol.OFEchoReply;
 
-public class OVXEchoReply extends OFEchoReply implements Virtualizable, Devirtualizable {
+public class OVXEchoReply extends OFEchoReply implements Virtualizable,
+		Devirtualizable {
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	//TODO: Log error, we should never receive this message here
-	return;
-	
-    }
-
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	//TODO: Log error, we should never receive this message here
+	@Override
+	public void virtualize(PhysicalSwitch sw) {
+		// TODO: Log error, we should never receive this message here
 		return;
-	
-    }
+
+	}
+
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO: Log error, we should never receive this message here
+		return;
+
+	}
 
 }

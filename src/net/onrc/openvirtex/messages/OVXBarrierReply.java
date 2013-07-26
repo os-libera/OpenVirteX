@@ -24,15 +24,14 @@ package net.onrc.openvirtex.messages;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
-
 import org.openflow.protocol.OFBarrierReply;
 
 public class OVXBarrierReply extends OFBarrierReply implements Virtualizable {
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	// TODO Auto-generated method stubP
-	
-    }
+	@Override
+	public void virtualize(PhysicalSwitch sw) {
+		// TODO Auto-generated method stubP
+
+	}
 
 }

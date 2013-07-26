@@ -27,19 +27,19 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 import org.openflow.protocol.OFVendor;
 
-public class OVXVendor extends OFVendor implements Virtualizable, Devirtualizable {
+public class OVXVendor extends OFVendor implements Virtualizable,
+		Devirtualizable {
 
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO Auto-generated method stub
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	}
 
-   
+	@Override
+	public void virtualize(PhysicalSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

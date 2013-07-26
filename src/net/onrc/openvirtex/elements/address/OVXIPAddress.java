@@ -8,14 +8,14 @@ package net.onrc.openvirtex.elements.address;
  * 
  */
 public class OVXIPAddress extends IPAddress {
-    private int tenantId;
+	private int tenantId;
 
-    public int getTenantId() {
-	return this.tenantId;
-    }
+	public int getTenantId() {
+		return this.tenantId;
+	}
 
-    public void setTenantId(final int tenantId) {
-	this.tenantId = tenantId;
-    }
+	public void setTenantId(final int tenantId) {
+		this.tenantId = tenantId;
+	}
 
 }

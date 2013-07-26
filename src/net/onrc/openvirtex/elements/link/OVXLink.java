@@ -29,45 +29,45 @@ import net.onrc.openvirtex.elements.port.OVXPort;
  * 
  */
 public class OVXLink extends Link<OVXPort> {
-    private int linkId;
-    private int tenantId;
+	private int linkId;
+	private int tenantId;
 
-    /**
+	/**
      * 
      */
-    public OVXLink() {
-	super();
-	this.linkId = 0;
-	this.tenantId = 0;
-    }
+	public OVXLink() {
+		super();
+		this.linkId = 0;
+		this.tenantId = 0;
+	}
 
-    /**
-     * @param srcPort
-     * @param dstPort
-     * @param tenantId
-     * @param linkId
-     */
-    public OVXLink(final OVXPort srcPort, final OVXPort dstPort,
-	    final int tenantId, final int linkId) {
-	super(srcPort, dstPort);
-	this.linkId = linkId;
-	this.tenantId = tenantId;
-    }
+	/**
+	 * @param srcPort
+	 * @param dstPort
+	 * @param tenantId
+	 * @param linkId
+	 */
+	public OVXLink(final OVXPort srcPort, final OVXPort dstPort,
+			final int tenantId, final int linkId) {
+		super(srcPort, dstPort);
+		this.linkId = linkId;
+		this.tenantId = tenantId;
+	}
 
-    public int getLinkId() {
-	return this.linkId;
-    }
+	public int getLinkId() {
+		return this.linkId;
+	}
 
-    public void setLinkId(final int linkId) {
-	this.linkId = linkId;
-    }
+	public void setLinkId(final int linkId) {
+		this.linkId = linkId;
+	}
 
-    public int getTenantId() {
-	return this.tenantId;
-    }
+	public int getTenantId() {
+		return this.tenantId;
+	}
 
-    public void setTenantId(final int tenantId) {
-	this.tenantId = tenantId;
-    }
+	public void setTenantId(final int tenantId) {
+		this.tenantId = tenantId;
+	}
 
 }

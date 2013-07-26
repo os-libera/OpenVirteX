@@ -32,76 +32,75 @@ import net.onrc.openvirtex.util.MACAddress;
  * 
  */
 public class PhysicalPort extends Port {
-    private final HashMap<Integer, OVXPort> ovxPortMap;
-    private PhysicalSwitch                  parentSwitch;
+	private final HashMap<Integer, OVXPort> ovxPortMap;
+	private PhysicalSwitch parentSwitch;
 
-    /**
+	/**
      * 
      */
-    public PhysicalPort() {
-	super();
-	this.ovxPortMap = new HashMap<Integer, OVXPort>();
-	this.parentSwitch = null;
-    }
-
-    /**
-     * @param portNumber
-     * @param hardwareAddress
-     * @param config
-     * @param mask
-     * @param advertise
-     * @param isEdge
-     * @param parentSwitch
-     */
-    public PhysicalPort(final short portNumber,
-	    final MACAddress hardwareAddress, final int config, final int mask,
-	    final int advertise, final Boolean isEdge,
-	    final PhysicalSwitch parentSwitch) {
-	super(portNumber, hardwareAddress, config, mask, advertise, isEdge);
-	this.ovxPortMap = new HashMap<Integer, OVXPort>();
-	this.parentSwitch = parentSwitch;
-    }
-
-    public PhysicalPort(PhysicalPort pp) {
-	this(pp.portNumber, pp.hardwareAddress,
-	        pp.config, pp.mask, pp.advertise, pp.isEdge,
-	        pp.parentSwitch);
-    }
-
-    public OVXPort getOVXPort(final int tenantId) {
-	return this.ovxPortMap.get(tenantId);
-    }
-
-    public boolean setOVXPort(final int tenantId, final OVXPort ovxPort) {
-	if (this.ovxPortMap.containsKey(tenantId)) {
-	    return false;
-	} else {
-	    this.ovxPortMap.put(tenantId, ovxPort);
+	public PhysicalPort() {
+		super();
+		this.ovxPortMap = new HashMap<Integer, OVXPort>();
+		this.parentSwitch = null;
 	}
-	return true;
-    }
 
-    public boolean updateOVXPort(final int tenantId, final OVXPort ovxPort) {
-	if (!this.ovxPortMap.containsKey(tenantId)) {
-	    return false;
-	} else {
-	    this.ovxPortMap.put(tenantId, ovxPort);
+	/**
+	 * @param portNumber
+	 * @param hardwareAddress
+	 * @param config
+	 * @param mask
+	 * @param advertise
+	 * @param isEdge
+	 * @param parentSwitch
+	 */
+	public PhysicalPort(final short portNumber,
+			final MACAddress hardwareAddress, final int config, final int mask,
+			final int advertise, final Boolean isEdge,
+			final PhysicalSwitch parentSwitch) {
+		super(portNumber, hardwareAddress, config, mask, advertise, isEdge);
+		this.ovxPortMap = new HashMap<Integer, OVXPort>();
+		this.parentSwitch = parentSwitch;
 	}
-	return true;
-    }
 
-    public PhysicalSwitch getParentSwitch() {
-	return this.parentSwitch;
-    }
+	public PhysicalPort(PhysicalPort pp) {
+		this(pp.portNumber, pp.hardwareAddress, pp.config, pp.mask,
+				pp.advertise, pp.isEdge, pp.parentSwitch);
+	}
 
-    public boolean setParentSwitch(final PhysicalSwitch parentSwitch) {
-	this.parentSwitch = parentSwitch;
-	return true;
-    }
-    
-    @Override
-    public PhysicalPort clone() {
-	return new PhysicalPort(this);
-    }
+	public OVXPort getOVXPort(final int tenantId) {
+		return this.ovxPortMap.get(tenantId);
+	}
+
+	public boolean setOVXPort(final int tenantId, final OVXPort ovxPort) {
+		if (this.ovxPortMap.containsKey(tenantId)) {
+			return false;
+		} else {
+			this.ovxPortMap.put(tenantId, ovxPort);
+		}
+		return true;
+	}
+
+	public boolean updateOVXPort(final int tenantId, final OVXPort ovxPort) {
+		if (!this.ovxPortMap.containsKey(tenantId)) {
+			return false;
+		} else {
+			this.ovxPortMap.put(tenantId, ovxPort);
+		}
+		return true;
+	}
+
+	public PhysicalSwitch getParentSwitch() {
+		return this.parentSwitch;
+	}
+
+	public boolean setParentSwitch(final PhysicalSwitch parentSwitch) {
+		this.parentSwitch = parentSwitch;
+		return true;
+	}
+
+	@Override
+	public PhysicalPort clone() {
+		return new PhysicalPort(this);
+	}
 
 }

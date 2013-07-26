@@ -39,64 +39,61 @@ import org.jboss.netty.util.TimerTask;
  * 
  * Timeout values set in switch pipeline class.
  */
-public class HandshakeTimeoutHandler 
-    extends SimpleChannelUpstreamHandler {
-    static final HandshakeTimeoutException EXCEPTION = 
-            new HandshakeTimeoutException();
-    
-    final OFChannelHandler channelHandler;
-    final Timer timer;
-    final long timeoutNanos;
-    volatile Timeout timeout;
-    
-    public HandshakeTimeoutHandler(OFChannelHandler channelHandler,
-                                   Timer timer,
-                                   long timeoutSeconds) {
-        super();
-        this.channelHandler = channelHandler;
-        this.timer = timer;
-        this.timeoutNanos = TimeUnit.SECONDS.toNanos(timeoutSeconds);
+public class HandshakeTimeoutHandler extends SimpleChannelUpstreamHandler {
+	static final HandshakeTimeoutException EXCEPTION = new HandshakeTimeoutException();
 
-    }
-    
-    @Override
-    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
-            throws Exception {
-        if (timeoutNanos > 0) {
-            timeout = timer.newTimeout(new HandshakeTimeoutTask(ctx), 
-                                       timeoutNanos, TimeUnit.NANOSECONDS);
-        }
-        ctx.sendUpstream(e);
-    }
-    
-    @Override
-    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
-            throws Exception {
-        if (timeout != null) {
-            timeout.cancel();
-            timeout = null;
-        }
-    }
-    
-    private final class HandshakeTimeoutTask implements TimerTask {
+	final OFChannelHandler channelHandler;
+	final Timer timer;
+	final long timeoutNanos;
+	volatile Timeout timeout;
 
-        private final ChannelHandlerContext ctx;
+	public HandshakeTimeoutHandler(OFChannelHandler channelHandler,
+			Timer timer, long timeoutSeconds) {
+		super();
+		this.channelHandler = channelHandler;
+		this.timer = timer;
+		this.timeoutNanos = TimeUnit.SECONDS.toNanos(timeoutSeconds);
 
-        HandshakeTimeoutTask(ChannelHandlerContext ctx) {
-            this.ctx = ctx;
-        }
+	}
 
-        @Override
-        public void run(Timeout timeout) throws Exception {
-            if (timeout.isCancelled()) {
-                return;
-            }
+	@Override
+	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
+			throws Exception {
+		if (timeoutNanos > 0) {
+			timeout = timer.newTimeout(new HandshakeTimeoutTask(ctx),
+					timeoutNanos, TimeUnit.NANOSECONDS);
+		}
+		ctx.sendUpstream(e);
+	}
 
-            if (!ctx.getChannel().isOpen()) {
-                return;
-            }
-            if (!channelHandler.isHandShakeComplete())
-                Channels.fireExceptionCaught(ctx, EXCEPTION);
-        }
-    }
+	@Override
+	public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
+			throws Exception {
+		if (timeout != null) {
+			timeout.cancel();
+			timeout = null;
+		}
+	}
+
+	private final class HandshakeTimeoutTask implements TimerTask {
+
+		private final ChannelHandlerContext ctx;
+
+		HandshakeTimeoutTask(ChannelHandlerContext ctx) {
+			this.ctx = ctx;
+		}
+
+		@Override
+		public void run(Timeout timeout) throws Exception {
+			if (timeout.isCancelled()) {
+				return;
+			}
+
+			if (!ctx.getChannel().isOpen()) {
+				return;
+			}
+			if (!channelHandler.isHandShakeComplete())
+				Channels.fireExceptionCaught(ctx, EXCEPTION);
+		}
+	}
 }

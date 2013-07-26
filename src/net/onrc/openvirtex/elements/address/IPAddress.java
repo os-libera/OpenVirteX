@@ -8,14 +8,14 @@ package net.onrc.openvirtex.elements.address;
  * 
  */
 public abstract class IPAddress {
-    private int ip;
+	private int ip;
 
-    public int getIp() {
-	return this.ip;
-    }
+	public int getIp() {
+		return this.ip;
+	}
 
-    public void setIp(final int ip) {
-	this.ip = ip;
-    }
+	public void setIp(final int ip) {
+		this.ip = ip;
+	}
 
 }

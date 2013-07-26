@@ -29,18 +29,16 @@ import org.openflow.protocol.OFError;
 
 public class OVXError extends OFError implements Virtualizable, Devirtualizable {
 
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO Auto-generated method stub
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	}
 
-    
+	@Override
+	public void virtualize(PhysicalSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

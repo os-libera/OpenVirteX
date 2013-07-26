@@ -26,46 +26,46 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
 public abstract class OVXSwitch extends Switch<OVXPort> {
-    private int   tenantId;
-    private short pktLenght;
+	private int tenantId;
+	private short pktLength;
 
-    /**
+	/**
      * 
      */
-    public OVXSwitch() {
-	super();
-	this.tenantId = 0;
-	this.pktLenght = 0;
-    }
+	public OVXSwitch() {
+		super();
+		this.tenantId = 0;
+		this.pktLength = 0;
+	}
 
-    /**
-     * @param switchName
-     * @param switchId
-     * @param map
-     */
-    public OVXSwitch(final String switchName, final long switchId,
-	    final OVXMap map, final int tenantId, final short pktLenght) {
-	super(switchName, switchId, map);
-	this.tenantId = tenantId;
-	this.pktLenght = pktLenght;
-    }
+	/**
+	 * @param switchName
+	 * @param switchId
+	 * @param map
+	 */
+	public OVXSwitch(final String switchName, final long switchId,
+			final OVXMap map, final int tenantId, final short pktLenght) {
+		super(switchName, switchId, map);
+		this.tenantId = tenantId;
+		this.pktLength = pktLenght;
+	}
 
-    public int getTenantId() {
-	return this.tenantId;
-    }
+	public int getTenantId() {
+		return this.tenantId;
+	}
 
-    public boolean setTenantId(final int tenantId) {
-	this.tenantId = tenantId;
-	return true;
-    }
+	public boolean setTenantId(final int tenantId) {
+		this.tenantId = tenantId;
+		return true;
+	}
 
-    public short getPktLenght() {
-	return this.pktLenght;
-    }
+	public short getPktLength() {
+		return this.pktLength;
+	}
 
-    public boolean setPktLenght(final short pktLenght) {
-	this.pktLenght = pktLenght;
-	return true;
-    }
+	public boolean setPktLength(final short pktLenght) {
+		this.pktLength = pktLenght;
+		return true;
+	}
 
 }
