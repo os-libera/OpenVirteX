@@ -27,7 +27,7 @@ import net.onrc.openvirtex.elements.port.OVXPort;
 
 public abstract class OVXSwitch extends Switch<OVXPort> {
 	private int tenantId;
-	private short pktLenght;
+	private short pktLength;
 
 	/**
      * 
@@ -35,7 +35,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	public OVXSwitch() {
 		super();
 		this.tenantId = 0;
-		this.pktLenght = 0;
+		this.pktLength = 0;
 	}
 
 	/**
@@ -47,7 +47,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 			final OVXMap map, final int tenantId, final short pktLenght) {
 		super(switchName, switchId, map);
 		this.tenantId = tenantId;
-		this.pktLenght = pktLenght;
+		this.pktLength = pktLenght;
 	}
 
 	public int getTenantId() {
@@ -59,12 +59,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		return true;
 	}
 
-	public short getPktLenght() {
-		return this.pktLenght;
+	public short getPktLength() {
+		return this.pktLength;
 	}
 
-	public boolean setPktLenght(final short pktLenght) {
-		this.pktLenght = pktLenght;
+	public boolean setPktLength(final short pktLenght) {
+		this.pktLength = pktLenght;
 		return true;
 	}
 
