@@ -29,6 +29,8 @@ import java.util.concurrent.Executors;
 
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
@@ -36,6 +38,8 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 public class OpenVirteXController implements Runnable {
 
+    Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
+    
     private static final int SEND_BUFFER_SIZE = 1024 * 1024;
     
     private String configFile = null;
@@ -92,18 +96,13 @@ public class OpenVirteXController implements Runnable {
     }
 
     public void terminate() {
-	//TODO: Cleanup!
-	
-	
 	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
-	    System.out.println("Shut down all connections. Quitting...");
+	    log.info("Shut down all connections. Quitting...");
 	} else {
-	    System.out.println("Error shutting down all connections. Quitting anyway.");
+	    log.error("Error shutting down all connections. Quitting anyway.");
 	}
 	if (pfact != null)
 	    	pfact.releaseExternalResources();
-	System.out.flush();
-	//System.exit(1);
     }
 
 }
