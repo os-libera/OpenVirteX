@@ -30,34 +30,34 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
-
-
 import org.openflow.protocol.OFMessage;
 
 /**
  * encode an openflow message into a netty Channel.
+ * 
  * @author alshabib
  */
 public class OVXMessageEncoder extends OneToOneEncoder {
 
-    @Override
-    protected Object encode(ChannelHandlerContext ctx, Channel channel,
-                            Object msg) throws Exception {
-        if (!(msg instanceof List))
-            return msg;
+	@Override
+	protected Object encode(ChannelHandlerContext ctx, Channel channel,
+			Object msg) throws Exception {
+		if (!(msg instanceof List))
+			return msg;
 
-        @SuppressWarnings("unchecked")
-        List<OFMessage> msglist = (List<OFMessage>)msg;
-        int size = 0;
-        for (OFMessage ofm :  msglist) {
-                size += ofm.getLengthU();
-        }
+		@SuppressWarnings("unchecked")
+		List<OFMessage> msglist = (List<OFMessage>) msg;
+		int size = 0;
+		for (OFMessage ofm : msglist) {
+			size += ofm.getLengthU();
+		}
 
-        ChannelBuffer buf = ChannelBuffers.buffer(size);;
-        for (OFMessage ofm :  msglist) {
-            ofm.writeTo(buf);
-        }
-        return buf;
-    }
+		ChannelBuffer buf = ChannelBuffers.buffer(size);
+		;
+		for (OFMessage ofm : msglist) {
+			ofm.writeTo(buf);
+		}
+		return buf;
+	}
 
 }

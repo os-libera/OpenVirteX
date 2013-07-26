@@ -24,18 +24,18 @@ package net.onrc.openvirtex.exceptions;
 
 public class SwitchStateException extends IllegalArgumentException {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public SwitchStateException() {
-        super();
-    }
+	public SwitchStateException() {
+		super();
+	}
 
-    public SwitchStateException(String msg) {
-        super(msg);
-    }
+	public SwitchStateException(String msg) {
+		super(msg);
+	}
 
-    public SwitchStateException(Throwable msg) {
-        super(msg);
-    }
+	public SwitchStateException(Throwable msg) {
+		super(msg);
+	}
 
 }

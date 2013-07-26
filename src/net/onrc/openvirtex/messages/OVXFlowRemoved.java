@@ -28,10 +28,10 @@ import org.openflow.protocol.OFFlowRemoved;
 
 public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void virtualize(PhysicalSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

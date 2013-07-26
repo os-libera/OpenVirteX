@@ -26,12 +26,13 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 import org.openflow.protocol.OFQueueGetConfigRequest;
 
-public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest implements Devirtualizable {
+public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest implements
+		Devirtualizable {
 
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

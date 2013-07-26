@@ -33,35 +33,34 @@ import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 
-public class SwitchChannelPipeline extends OpenflowChannelPipeline  {
+public class SwitchChannelPipeline extends OpenflowChannelPipeline {
 
-    public SwitchChannelPipeline(OpenVirteXController openVirteXController,
-            ThreadPoolExecutor pipelineExecutor) {
-	super();
-	this.ctrl = openVirteXController;
-        this.pipelineExecutor = pipelineExecutor;
-        this.timer = new HashedWheelTimer();
-        this.idleHandler = new IdleStateHandler(timer, 20, 25, 0);
-        this.readTimeoutHandler = new ReadTimeoutHandler(timer, 30);
-    }
+	public SwitchChannelPipeline(OpenVirteXController openVirteXController,
+			ThreadPoolExecutor pipelineExecutor) {
+		super();
+		this.ctrl = openVirteXController;
+		this.pipelineExecutor = pipelineExecutor;
+		this.timer = new HashedWheelTimer();
+		this.idleHandler = new IdleStateHandler(timer, 20, 25, 0);
+		this.readTimeoutHandler = new ReadTimeoutHandler(timer, 30);
+	}
 
-    @Override
-    public ChannelPipeline getPipeline() throws Exception {
-	SwitchChannelHandler handler = new SwitchChannelHandler(ctrl);
-        
-        ChannelPipeline pipeline = Channels.pipeline();
-        pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
-        pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
-        pipeline.addLast("idle", idleHandler);
-        pipeline.addLast("timeout", readTimeoutHandler);
-        pipeline.addLast("handshaketimeout",
-                         new HandshakeTimeoutHandler(handler, timer, 15));
-        if (pipelineExecutor != null)
-            pipeline.addLast("pipelineExecutor",
-                             new ExecutionHandler(pipelineExecutor));
-        pipeline.addLast("handler", handler);
-        return pipeline;
-    }
-    
-   
+	@Override
+	public ChannelPipeline getPipeline() throws Exception {
+		SwitchChannelHandler handler = new SwitchChannelHandler(ctrl);
+
+		ChannelPipeline pipeline = Channels.pipeline();
+		pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
+		pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
+		pipeline.addLast("idle", idleHandler);
+		pipeline.addLast("timeout", readTimeoutHandler);
+		pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
+				handler, timer, 15));
+		if (pipelineExecutor != null)
+			pipeline.addLast("pipelineExecutor", new ExecutionHandler(
+					pipelineExecutor));
+		pipeline.addLast("handler", handler);
+		return pipeline;
+	}
+
 }

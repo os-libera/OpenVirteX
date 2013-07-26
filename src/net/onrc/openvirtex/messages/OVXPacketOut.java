@@ -28,10 +28,10 @@ import org.openflow.protocol.OFPacketOut;
 
 public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

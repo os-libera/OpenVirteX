@@ -24,9 +24,8 @@ package net.onrc.openvirtex.core.io;
 
 import org.openflow.protocol.OFMessage;
 
-
 public interface OVXEventHandler {
-    
-    public void handleIO(OFMessage msgs);
+
+	public void handleIO(OFMessage msgs);
 
 }

@@ -59,18 +59,17 @@ import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
 /**
-* @author alshabib
-*
-*/
+ * @author alshabib
+ * 
+ */
 public class OVXMessageFactory extends BasicFactory {
 
-    
-    	private static OVXMessageFactory instance = null;
-    	
+	private static OVXMessageFactory instance = null;
+
 	// not sure how to deal with this...
 	// HACK to convert OFMessage* to OVXMessage*
 	@SuppressWarnings("rawtypes")
-	static final Class convertMap[] = {OVXHello.class, OVXError.class,
+	static final Class convertMap[] = { OVXHello.class, OVXError.class,
 			OVXEchoRequest.class, OVXEchoReply.class, OVXVendor.class,
 			OVXFeaturesRequest.class, OVXFeaturesReply.class,
 			OVXGetConfigRequest.class, OVXGetConfigReply.class,
@@ -78,7 +77,8 @@ public class OVXMessageFactory extends BasicFactory {
 			OVXPortStatus.class, OVXPacketOut.class, OVXFlowMod.class,
 			OVXPortMod.class, OVXStatisticsRequest.class,
 			OVXStatisticsReply.class, OVXBarrierRequest.class,
-			OVXBarrierReply.class, OVXQueueGetConfigRequest.class, OVXQueueGetConfigReply.class };
+			OVXBarrierReply.class, OVXQueueGetConfigRequest.class,
+			OVXQueueGetConfigReply.class };
 
 	@SuppressWarnings({ "rawtypes" })
 	static final Class convertActionsMap[] = { OVXActionOutput.class,
@@ -107,16 +107,16 @@ public class OVXMessageFactory extends BasicFactory {
 			OVXPortStatisticsReply.class, OVXQueueStatisticsReply.class,
 			OVXVendorStatistics.class };
 
-	protected OVXMessageFactory() { 
-	    super();
+	protected OVXMessageFactory() {
+		super();
 	}
-	
+
 	public static OVXMessageFactory getInstance() {
 		if (instance == null)
-		    instance = new OVXMessageFactory();
-	        return instance;
-	    }
-	
+			instance = new OVXMessageFactory();
+		return instance;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public OFMessage getMessage(OFType t) {
@@ -179,4 +179,3 @@ public class OVXMessageFactory extends BasicFactory {
 	}
 
 }
-
