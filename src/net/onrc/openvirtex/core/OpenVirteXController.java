@@ -20,8 +20,6 @@
  * 
  */
 
-
-
 package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
@@ -38,71 +36,67 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 public class OpenVirteXController implements Runnable {
 
-    Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
-    
-    private static final int SEND_BUFFER_SIZE = 1024 * 1024;
-    
-    private String configFile = null;
-    private String ofHost = null;
-    private Integer ofPort = null;
-    
-    
-    private final ChannelGroup cg = new DefaultChannelGroup();
-    private SwitchChannelPipeline pfact = null;
-    
-    public OpenVirteXController(String configFile, String ofHost, Integer ofPort) {
-	this.configFile = configFile;
-	this.ofHost = ofHost;
-	this.ofPort = ofPort;
-    }
+	Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
 
-    @Override
-    public void run(){
-	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
-	try {
-	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
-	    
-	    setServerBootStrapParams(switchServerBootStrap);
-	    
-	    pfact = new SwitchChannelPipeline(this, null);
-	    switchServerBootStrap.setPipelineFactory(pfact);
-            InetSocketAddress sa =
-            		(ofHost == null)
-            		? new InetSocketAddress(ofPort)
-            		: new InetSocketAddress(ofHost, ofPort);
-            
-            cg.add(switchServerBootStrap.bind(sa));
-	   
-	} catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-	
-    }
+	private static final int SEND_BUFFER_SIZE = 1024 * 1024;
 
-    private void setServerBootStrapParams(ServerBootstrap bootstrap) {
-	bootstrap.setOption("reuseAddr", true);
-        bootstrap.setOption("child.keepAlive", true);
-        bootstrap.setOption("child.tcpNoDelay", true);
-        bootstrap.setOption("child.sendBufferSize", OpenVirteXController.SEND_BUFFER_SIZE);
-        
-        
-    }
+	private String configFile = null;
+	private String ofHost = null;
+	private Integer ofPort = null;
 
-    private ServerBootstrap createServerBootStrap() {
-	return new ServerBootstrap(
-                new NioServerSocketChannelFactory(
-                        Executors.newCachedThreadPool(),
-                        Executors.newCachedThreadPool()));
-    }
+	private final ChannelGroup cg = new DefaultChannelGroup();
+	private SwitchChannelPipeline pfact = null;
 
-    public void terminate() {
-	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
-	    log.info("Shut down all connections. Quitting...");
-	} else {
-	    log.error("Error shutting down all connections. Quitting anyway.");
+	public OpenVirteXController(String configFile, String ofHost, Integer ofPort) {
+		this.configFile = configFile;
+		this.ofHost = ofHost;
+		this.ofPort = ofPort;
 	}
-	if (pfact != null)
-	    	pfact.releaseExternalResources();
-    }
+
+	@Override
+	public void run() {
+		Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
+		try {
+			final ServerBootstrap switchServerBootStrap = createServerBootStrap();
+
+			setServerBootStrapParams(switchServerBootStrap);
+
+			pfact = new SwitchChannelPipeline(this, null);
+			switchServerBootStrap.setPipelineFactory(pfact);
+			InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
+					ofPort) : new InetSocketAddress(ofHost, ofPort);
+
+			cg.add(switchServerBootStrap.bind(sa));
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	private void setServerBootStrapParams(ServerBootstrap bootstrap) {
+		bootstrap.setOption("reuseAddr", true);
+		bootstrap.setOption("child.keepAlive", true);
+		bootstrap.setOption("child.tcpNoDelay", true);
+		bootstrap.setOption("child.sendBufferSize",
+				OpenVirteXController.SEND_BUFFER_SIZE);
+
+	}
+
+	private ServerBootstrap createServerBootStrap() {
+		return new ServerBootstrap(new NioServerSocketChannelFactory(
+				Executors.newCachedThreadPool(),
+				Executors.newCachedThreadPool()));
+	}
+
+	public void terminate() {
+		if (cg != null && cg.close().awaitUninterruptibly(1000)) {
+			log.info("Shut down all connections. Quitting...");
+		} else {
+			log.error("Error shutting down all connections. Quitting anyway.");
+		}
+		if (pfact != null)
+			pfact.releaseExternalResources();
+	}
 
 }

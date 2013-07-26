@@ -30,26 +30,28 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 public class OpenVirteX {
 
-    static Logger log = LogManager.getLogger(OpenVirteX.class.getName());
+	static Logger log = LogManager.getLogger(OpenVirteX.class.getName());
+
 	/**
 	 * @param args
 	 */
-    public static void main(String[] args) throws OpenVirteXException {
-	CmdLineSettings settings = new CmdLineSettings();
-	CmdLineParser parser = new CmdLineParser(settings);
-	try {
-	    parser.parseArgument(args);
-	} catch (CmdLineException e) {
-	    parser.printUsage(System.out);
-	    System.exit(1);
+	public static void main(String[] args) throws OpenVirteXException {
+		CmdLineSettings settings = new CmdLineSettings();
+		CmdLineParser parser = new CmdLineParser(settings);
+		try {
+			parser.parseArgument(args);
+		} catch (CmdLineException e) {
+			parser.printUsage(System.out);
+			System.exit(1);
+		}
+
+		OpenVirteXController ctrl = new OpenVirteXController(
+				settings.getConfigFile(), settings.getOFHost(),
+				settings.getOFPort());
+		log.info("Starting OpenVirtex...");
+		ctrl.run();
 	}
-	
-	OpenVirteXController ctrl = new OpenVirteXController(settings.getConfigFile(), settings.getOFHost(), settings.getOFPort());
-	log.info("Starting OpenVirtex...");
-	ctrl.run();
-    }
 
 }

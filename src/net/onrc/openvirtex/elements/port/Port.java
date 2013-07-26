@@ -29,95 +29,96 @@ import net.onrc.openvirtex.util.MACAddress;
  * 
  */
 public class Port implements Cloneable {
-    protected short      portNumber;
-    protected MACAddress hardwareAddress;
-    protected int        config;
-    protected int        mask;
-    protected int        advertise;
+	protected short portNumber;
+	protected MACAddress hardwareAddress;
+	protected int config;
+	protected int mask;
+	protected int advertise;
 
-    // dovremmo mettere duplixing/speed anche
-    // vedere come averli
+	// dovremmo mettere duplixing/speed anche
+	// vedere come averli
 
-    protected Boolean    isEdge;
+	protected Boolean isEdge;
 
-    /**
+	/**
      * 
      */
-    protected Port() {}
+	protected Port() {
+	}
 
-    /**
-     * @param portNumber
-     * @param hardwareAddress
-     * @param config
-     * @param mask
-     * @param advertise
-     * @param isEdge
-     */
-    protected Port(final short portNumber, final MACAddress hardwareAddress,
-	    final int config, final int mask, final int advertise,
-	    final Boolean isEdge) {
-	super();
-	this.portNumber = portNumber;
-	this.hardwareAddress = hardwareAddress;
-	this.config = config;
-	this.mask = mask;
-	this.advertise = advertise;
-	this.isEdge = isEdge;
-    }
+	/**
+	 * @param portNumber
+	 * @param hardwareAddress
+	 * @param config
+	 * @param mask
+	 * @param advertise
+	 * @param isEdge
+	 */
+	protected Port(final short portNumber, final MACAddress hardwareAddress,
+			final int config, final int mask, final int advertise,
+			final Boolean isEdge) {
+		super();
+		this.portNumber = portNumber;
+		this.hardwareAddress = hardwareAddress;
+		this.config = config;
+		this.mask = mask;
+		this.advertise = advertise;
+		this.isEdge = isEdge;
+	}
 
-    public short getPortNumber() {
-	return this.portNumber;
-    }
+	public short getPortNumber() {
+		return this.portNumber;
+	}
 
-    public void setPortNumber(final short portNumber) {
-	this.portNumber = portNumber;
-    }
+	public void setPortNumber(final short portNumber) {
+		this.portNumber = portNumber;
+	}
 
-    public MACAddress getHardwareAddress() {
-	return this.hardwareAddress;
-    }
+	public MACAddress getHardwareAddress() {
+		return this.hardwareAddress;
+	}
 
-    public void setHardwareAddress(final MACAddress hardwareAddress) {
-	this.hardwareAddress = hardwareAddress;
-    }
+	public void setHardwareAddress(final MACAddress hardwareAddress) {
+		this.hardwareAddress = hardwareAddress;
+	}
 
-    public int getConfig() {
-	return this.config;
-    }
+	public int getConfig() {
+		return this.config;
+	}
 
-    public void setConfig(final int config) {
-	this.config = config;
-    }
+	public void setConfig(final int config) {
+		this.config = config;
+	}
 
-    public int getMask() {
-	return this.mask;
-    }
+	public int getMask() {
+		return this.mask;
+	}
 
-    public void setMask(final int mask) {
-	this.mask = mask;
-    }
+	public void setMask(final int mask) {
+		this.mask = mask;
+	}
 
-    public int getAdvertise() {
-	return this.advertise;
-    }
+	public int getAdvertise() {
+		return this.advertise;
+	}
 
-    public void setAdvertise(final int advertise) {
-	this.advertise = advertise;
-    }
+	public void setAdvertise(final int advertise) {
+		this.advertise = advertise;
+	}
 
-    public Boolean getIsEdge() {
-	return this.isEdge;
-    }
+	public Boolean getIsEdge() {
+		return this.isEdge;
+	}
 
-    public void setIsEdge(final Boolean isEdge) {
-	this.isEdge = isEdge;
-    }
-    
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-	//Log error throw exception
-	throw new CloneNotSupportedException("The base class should never be cloned.");
-    }
-    
+	public void setIsEdge(final Boolean isEdge) {
+		this.isEdge = isEdge;
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		// Log error throw exception
+		throw new CloneNotSupportedException(
+				"The base class should never be cloned.");
+	}
 
 }

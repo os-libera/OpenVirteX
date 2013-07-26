@@ -28,10 +28,10 @@ import org.openflow.protocol.OFPortStatus;
 
 public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void virtualize(PhysicalSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

@@ -24,7 +24,6 @@ package net.onrc.openvirtex.messages.actions;
 
 import org.openflow.protocol.action.OFActionStripVirtualLan;
 
-
 public class OVXActionStripVirtualLan extends OFActionStripVirtualLan {
 
 }

@@ -28,10 +28,10 @@ import org.openflow.protocol.OFPortMod;
 
 public class OVXPortMod extends OFPortMod implements Devirtualizable {
 
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

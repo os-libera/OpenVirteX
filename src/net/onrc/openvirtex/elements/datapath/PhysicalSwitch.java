@@ -34,75 +34,79 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
-  
 public class PhysicalSwitch extends Switch<PhysicalPort> {
-    
-    Logger log =  LogManager.getLogger(PhysicalSwitch.class.getName());
-    
-    /**
+
+	Logger log = LogManager.getLogger(PhysicalSwitch.class.getName());
+
+	/**
      * 
      */
-    public PhysicalSwitch() {
-	super();
-    }
-
-    /**
-     * @param switchName
-     * @param switchId
-     * @param map
-     */
-    public PhysicalSwitch(final String switchName, final long switchId,
-	    final OVXMap map) {
-	super(switchName, switchId, map);
-    }
-
-    @Override
-    public boolean initialize() {
-	//TODO: Take featuresReply and add ports to the maps
-	return false;
-    }
-
-    @Override
-    public synchronized void handleIO(OFMessage msgs) {
-	try {
-	    ((Virtualizable) msgs).virtualize(this);
-	} catch (ClassCastException e) {
-	    log.error("Received illegal message : " + msgs);
+	public PhysicalSwitch() {
+		super();
 	}
-	
-    }
 
-    @Override
-    public void tearDown() {
-	log.info("Switch disconnected {} ", this.featuresReply.getDatapathId());
-		
-    }
+	/**
+	 * @param switchName
+	 * @param switchId
+	 * @param map
+	 */
+	public PhysicalSwitch(final String switchName, final long switchId,
+			final OVXMap map) {
+		super(switchName, switchId, map);
+	}
 
-    @Override
-    public void init() {
-	log.info("Switch connected {} : {}", this.featuresReply.getDatapathId(), this.desc.getHardwareDescription());
-	
-    }
+	@Override
+	public boolean initialize() {
+		// TODO: Take featuresReply and add ports to the maps
+		return false;
+	}
 
-    
-    /*
-     * Temporary implementation(non-Javadoc)
-     * @see net.onrc.openvirtex.core.io.OVXSendMsg#sendMsg(org.openflow.protocol.OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
-     */
-    @Override
-    public void sendMsg(OFMessage msg, OVXSendMsg from) {
-	channel.write(Collections.singletonList(msg));
-    }
-    
-    @Override
-    public String toString() {
-	return "DPID : " + this.featuresReply.getDatapathId() + 
-		", remoteAddr : " + this.channel.getRemoteAddress().toString();
-    }
+	@Override
+	public synchronized void handleIO(OFMessage msgs) {
+		try {
+			((Virtualizable) msgs).virtualize(this);
+		} catch (ClassCastException e) {
+			log.error("Received illegal message : " + msgs);
+		}
 
-    @Override
-    public boolean setSwitchId(long switchId) {
-	return false;
-    }
+	}
+
+	@Override
+	public void tearDown() {
+		log.info("Switch disconnected {} ", this.featuresReply.getDatapathId());
+
+	}
+
+	@Override
+	public void init() {
+		log.info("Switch connected {} : {}",
+				this.featuresReply.getDatapathId(),
+				this.desc.getHardwareDescription());
+
+	}
+
+	/*
+	 * Temporary implementation(non-Javadoc)
+	 * 
+	 * @see
+	 * net.onrc.openvirtex.core.io.OVXSendMsg#sendMsg(org.openflow.protocol.
+	 * OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
+	 */
+	@Override
+	public void sendMsg(OFMessage msg, OVXSendMsg from) {
+		channel.write(Collections.singletonList(msg));
+	}
+
+	@Override
+	public String toString() {
+		return "DPID : " + this.featuresReply.getDatapathId()
+				+ ", remoteAddr : "
+				+ this.channel.getRemoteAddress().toString();
+	}
+
+	@Override
+	public boolean setSwitchId(long switchId) {
+		return false;
+	}
 
 }

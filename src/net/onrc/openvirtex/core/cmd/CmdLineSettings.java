@@ -25,29 +25,29 @@ package net.onrc.openvirtex.core.cmd;
 import org.kohsuke.args4j.Option;
 
 public class CmdLineSettings {
-    public static final String DEFAULT_CONFIG_FILE = "config/config.json";
-    public static final String DEFAULT_OF_HOST = "0.0.0.0";
-    public static final Integer DEFAULT_OF_PORT = 6633;
-    
-    @Option(name="-cf", aliases="--configFile", metaVar="FILE", usage="OpenVirteX configuration file")
-    private String configFile = DEFAULT_CONFIG_FILE;
-    
-    @Option(name="-p", aliases="--ofPort", metaVar="INT", usage="OpenVirteX openflow listen port")
-    private Integer ofPort = DEFAULT_OF_PORT;
-    
-    @Option(name="-h", aliases="--ofHost", metaVar="String", usage="OpenVirteX Host")
-    private String ofHost = DEFAULT_OF_HOST;
-    
-    public String getConfigFile() {
-    	return configFile;
-    }
-    
-    public String getOFHost() {
-	return ofHost;
-    }
+	public static final String DEFAULT_CONFIG_FILE = "config/config.json";
+	public static final String DEFAULT_OF_HOST = "0.0.0.0";
+	public static final Integer DEFAULT_OF_PORT = 6633;
 
-    public Integer getOFPort() {
-	return ofPort;
-    }
-    
+	@Option(name = "-cf", aliases = "--configFile", metaVar = "FILE", usage = "OpenVirteX configuration file")
+	private String configFile = DEFAULT_CONFIG_FILE;
+
+	@Option(name = "-p", aliases = "--ofPort", metaVar = "INT", usage = "OpenVirteX openflow listen port")
+	private Integer ofPort = DEFAULT_OF_PORT;
+
+	@Option(name = "-h", aliases = "--ofHost", metaVar = "String", usage = "OpenVirteX Host")
+	private String ofHost = DEFAULT_OF_HOST;
+
+	public String getConfigFile() {
+		return configFile;
+	}
+
+	public String getOFHost() {
+		return ofHost;
+	}
+
+	public Integer getOFPort() {
+		return ofPort;
+	}
+
 }

@@ -28,10 +28,10 @@ import org.openflow.protocol.OFSetConfig;
 
 public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 
-    @Override
-    public void devirtualize(OVXSwitch sw) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualize(OVXSwitch sw) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

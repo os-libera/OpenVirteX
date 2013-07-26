@@ -35,21 +35,21 @@ import org.openflow.protocol.action.OFAction;
 
 public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	OVXFlowMod fm = new OVXFlowMod();
-	OFMatch match = new OFMatch();
-	match.loadFromPacket(this.getPacketData(), this.getInPort());
-	fm.setMatch(match);
-	List<OFAction> actions = new LinkedList<OFAction>();
-	OVXActionOutput out = new OVXActionOutput();
-	out.setPort(OFPort.OFPP_FLOOD.getValue());
-	actions.add(out);
-	fm.setActions(actions);
-	fm.setLengthU(fm.getLengthU() + out.getLengthU());
-	
-	sw.sendMsg(fm, sw);
+	@Override
+	public void virtualize(PhysicalSwitch sw) {
+		OVXFlowMod fm = new OVXFlowMod();
+		OFMatch match = new OFMatch();
+		match.loadFromPacket(this.getPacketData(), this.getInPort());
+		fm.setMatch(match);
+		List<OFAction> actions = new LinkedList<OFAction>();
+		OVXActionOutput out = new OVXActionOutput();
+		out.setPort(OFPort.OFPP_FLOOD.getValue());
+		actions.add(out);
+		fm.setActions(actions);
+		fm.setLengthU(fm.getLengthU() + out.getLengthU());
 
-    }
+		sw.sendMsg(fm, sw);
+
+	}
 
 }

@@ -34,24 +34,23 @@ import org.openflow.protocol.OFMessage;
 
 /**
  * Decode an openflow message from a netty Channel.
+ * 
  * @author alshabib
  */
 public class OVXMessageDecoder extends FrameDecoder {
 
-    OVXMessageFactory factory = OVXMessageFactory.getInstance();
-    
-    @Override
-    protected Object decode(ChannelHandlerContext ctx, Channel channel,
-                            ChannelBuffer buffer) throws Exception {
-        if (!channel.isConnected()) {
-           // if the channel is closed, there will be nothing to read.
-            return null;
-        }
+	OVXMessageFactory factory = OVXMessageFactory.getInstance();
 
-        List<OFMessage> message = factory.parseMessage(buffer);
-        return message;
-    }
+	@Override
+	protected Object decode(ChannelHandlerContext ctx, Channel channel,
+			ChannelBuffer buffer) throws Exception {
+		if (!channel.isConnected()) {
+			// if the channel is closed, there will be nothing to read.
+			return null;
+		}
 
-    
+		List<OFMessage> message = factory.parseMessage(buffer);
+		return message;
+	}
 
 }

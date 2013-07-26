@@ -25,6 +25,6 @@ package net.onrc.openvirtex.messages.actions;
 import org.openflow.protocol.action.OFActionTransportLayerDestination;
 
 public class OVXActionTransportLayerDestination extends
-        OFActionTransportLayerDestination {
+		OFActionTransportLayerDestination {
 
 }

@@ -25,6 +25,6 @@ package net.onrc.openvirtex.messages.actions;
 import org.openflow.protocol.action.OFActionVirtualLanPriorityCodePoint;
 
 public class OVXActionVirtualLanPriorityCodePoint extends
-        OFActionVirtualLanPriorityCodePoint {
+		OFActionVirtualLanPriorityCodePoint {
 
 }
