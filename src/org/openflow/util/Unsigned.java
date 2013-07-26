@@ -123,7 +123,7 @@ public class Unsigned {
      * @return an unsigned int contained in a long
      */
     public static long getUnsignedInt(ByteBuffer bb) {
-        return ((long) bb.getInt() & 0xffffffffL);
+        return (bb.getInt() & 0xffffffffL);
     }
 
     /**
@@ -134,7 +134,7 @@ public class Unsigned {
      * @return an unsigned int contained in a long
      */
     public static long getUnsignedInt(ByteBuffer bb, int offset) {
-        return ((long) bb.getInt(offset) & 0xffffffffL);
+        return (bb.getInt(offset) & 0xffffffffL);
     }
 
     /**

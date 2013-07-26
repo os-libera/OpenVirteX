@@ -7,5 +7,7 @@
 	<classpathentry kind="lib" path="lib/jackson-mapper-asl-1.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/args4j-2.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/guava-14.0.1.jar"/>
+	<classpathentry kind="lib" path="/Users/ash/work/OpenVirteX/lib/log4j-api-2.0-beta8.jar"/>
+	<classpathentry kind="lib" path="/Users/ash/work/OpenVirteX/lib/log4j-core-2.0-beta8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

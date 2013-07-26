@@ -97,7 +97,8 @@ public class OFRoleVendorData extends OFNiciraVendorData {
      * @param data the channel buffer from which we're deserializing
      * @param length the length to the end of the enclosing message
      */
-    public void readFrom(ChannelBuffer data, int length) {
+    @Override
+	public void readFrom(ChannelBuffer data, int length) {
         super.readFrom(data, length);
         role = data.readInt();
     }
@@ -106,7 +107,8 @@ public class OFRoleVendorData extends OFNiciraVendorData {
      * Write the role vendor data to the ChannelBuffer
      * @param data the channel buffer to which we're serializing
      */
-    public void writeTo(ChannelBuffer data) {
+    @Override
+	public void writeTo(ChannelBuffer data) {
         super.writeTo(data);
         data.writeInt(role);
     }
