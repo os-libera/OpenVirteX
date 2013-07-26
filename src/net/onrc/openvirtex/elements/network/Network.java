@@ -25,14 +25,13 @@ package net.onrc.openvirtex.elements.network;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 
 /**
  * @author gerola
  * 
  */
-public abstract class Network<T1, T2, T3> implements Mappable {
+public abstract class Network<T1, T2, T3> {
 
     private HashSet<T1>             switchSet;
     private HashSet<T3>             linkSet;
