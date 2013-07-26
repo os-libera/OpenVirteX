@@ -9,7 +9,8 @@ public class OpenVirtexShutdownHook extends Thread {
 	this.ctrl = ctrl;
     }
     
-    public void run() {
+    @Override
+	public void run() {
 	this.ctrl.terminate();
     }
 }

@@ -22,14 +22,14 @@
 
 package net.onrc.openvirtex.messages;
 
-import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 import org.openflow.protocol.OFPortMod;
 
 public class OVXPortMod extends OFPortMod implements Devirtualizable {
 
     @Override
-    public void devirtualize(Switch sw) {
+    public void devirtualize(OVXSwitch sw) {
 	// TODO Auto-generated method stub
 	
     }

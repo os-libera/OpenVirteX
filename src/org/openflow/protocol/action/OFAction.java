@@ -91,7 +91,8 @@ public class OFAction implements Cloneable {
      * Returns a summary of the message
      * @return "ofmsg=v=$version;t=$type:l=$len:xid=$xid"
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return "ofaction" +
             ";t=" + this.getType() +
             ";l=" + this.getLength();
