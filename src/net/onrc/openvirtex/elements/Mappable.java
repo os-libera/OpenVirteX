@@ -115,7 +115,7 @@ public interface Mappable {
      * 
      * @return virtualSwitches
      */
-    ConcurrentHashMap<Integer, OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch);
+    ConcurrentHashMap<Integer, OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch, Integer tenantId);
 
     /**
      * keep track of each physical port and all the virtual ports that
@@ -125,7 +125,7 @@ public interface Mappable {
      * 
      * @return virtualPorts
      */
-    ConcurrentHashMap<Integer, OVXPort> getVirtualPorts(PhysicalPort physicalPort);
+    ConcurrentHashMap<Integer, OVXPort> getVirtualPorts(PhysicalPort physicalPort, Integer tenantId);
     
     /**
      * maps the virtual source and destination port to the list of
@@ -135,7 +135,7 @@ public interface Mappable {
      * 
      * @return virtualLinks
      */
-    ConcurrentHashMap<Integer, OVXLink> getVirtualLinks(PhysicalLink physicalLink);
+    ConcurrentHashMap<Integer, OVXLink> getVirtualLinks(PhysicalLink physicalLink, Integer tenantId);
 
     /**
      * in order to get the list of physical links that all have
