@@ -181,7 +181,7 @@ public class OVXMap implements Mappable{
      * 
      * @return virtualSwitches
      */
-    public ArrayList<OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch) {
+    public ConcurrentHashMap<Integer, OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch) {
 
 	return null;
     }
@@ -193,7 +193,20 @@ public class OVXMap implements Mappable{
      * 
      * @return virtualPorts
      */
-    public ArrayList<OVXPort> getVirtualPorts(PhysicalPort physicalPort) {
+    public ConcurrentHashMap<Integer, OVXPort> getVirtualPorts(PhysicalPort physicalPort) {
+
+	return null;
+    }
+    
+    /**
+     * get the virtual source and destination port corresponding to the 
+     * physicalLink which is specified
+     * 
+     * @param physicalLink
+     * 
+     * @return virtualLinks
+     */
+    public ConcurrentHashMap<Integer, OVXLink> getVirtualLinks(PhysicalLink physicalLink) {
 
 	return null;
     }
@@ -233,19 +246,6 @@ public class OVXMap implements Mappable{
      * @return physicalPorts
      */
     public ArrayList<PhysicalPort> getPhysicalPorts(OVXPort virtualPort) {
-
-	return null;
-    }
-    
-    /**
-     * get the virtual source and destination port corresponding to the 
-     * physicalLink which is specified
-     * 
-     * @param physicalLink
-     * 
-     * @return virtualLinks
-     */
-    public ArrayList<OVXLink> getVirtualLinks(PhysicalLink physicalLink) {
 
 	return null;
     }

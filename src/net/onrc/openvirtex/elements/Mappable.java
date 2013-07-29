@@ -5,6 +5,7 @@ package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -114,7 +115,7 @@ public interface Mappable {
      * 
      * @return virtualSwitches
      */
-    ArrayList<OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch);
+    ConcurrentHashMap<Integer, OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch);
 
     /**
      * keep track of each physical port and all the virtual ports that
@@ -124,7 +125,7 @@ public interface Mappable {
      * 
      * @return virtualPorts
      */
-    ArrayList<OVXPort> getVirtualPorts(PhysicalPort physicalPort);
+    ConcurrentHashMap<Integer, OVXPort> getVirtualPorts(PhysicalPort physicalPort);
     
     /**
      * maps the virtual source and destination port to the list of
@@ -134,7 +135,7 @@ public interface Mappable {
      * 
      * @return virtualLinks
      */
-    ArrayList<OVXLink> getVirtualLinks(PhysicalLink physicalLink);
+    ConcurrentHashMap<Integer, OVXLink> getVirtualLinks(PhysicalLink physicalLink);
 
     /**
      * in order to get the list of physical links that all have
