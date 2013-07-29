@@ -50,10 +50,12 @@ public class OVXMap implements Mappable{
     ConcurrentHashMap<Integer, OVXNetwork> networkMap; 
     RadixTree<String> ipAddressMap;
     
-    public OVXMap() {
-	/*
-	 * constructor for OVXMap will initialize all the dictionaries
-	 */
+    private static OVXMap mapInstance = null;
+    
+    /*
+     * constructor for OVXMap will initialize all the dictionaries
+     */
+    private OVXMap() {
 	physicalSwitchMap = new ConcurrentHashMap<PhysicalSwitch, OVXSwitch>();
 	virtualSwitchMap = new ConcurrentHashMap<OVXSwitch, PhysicalSwitch>();
 	physicalPortMap = new ConcurrentHashMap<PhysicalPort, OVXPort>();
@@ -62,63 +64,107 @@ public class OVXMap implements Mappable{
 	ipAddressMap = new ConcurrentRadixTree<String>(new DefaultCharArrayNodeFactory());
     }
     
+    /**
+     * OVXMap is a singleton class. If object has already been created
+     * this should return the existing object rather than creating a new object.
+     * 
+     * @return ovxMap
+     */
+    public OVXMap getInstance() {
+	if (mapInstance == null) {
+	    mapInstance = new OVXMap();
+	}
+	return mapInstance;
+    }
+    
     // ADD objects to dictionary
-    /*
-     * sets up the mapping from the physicalSwitch to the virtualSwitch 
+    /**
+     * adds the mapping from the physicalSwitch to the virtualSwitch 
      * which has been specified
+     * 
+     * @param physicalSwitch
+     * @param virtualSwitch
+     * 
+     * @return success 
      */
     public boolean addPhysicalSwitchMapping(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch) {
 
 	return true;
     }
     
-    /*
-     * keep track of each physical port and all the virtual ports that 
+    /**
+     * add each physical port and all the virtual ports that 
      * use the physical port mentioned
+     * 
+     * @param physicalPort
+     * @param virtualPort
+     * 
+     * @return success
      */
     public boolean addPhysicalPortMapping(PhysicalPort physicalPort, OVXPort virtualPort) {
 
 	return true;
     }
     
-    /*
-     * in order to get the list of virtual links that all have
-     * used a specific physical link
+    /**
+     * add virtual links that all have used a specific physical link
+     * 
+     * @param physicalLink
+     * @param virtualLink
+     * 
+     * @return success
      */
     public boolean addPhysicalLinkMapping(PhysicalLink physicalLink, OVXLink virtualLink) {
 
 	return true;
     }
  
-    /*
-     * sets up the mapping from the virtualSwitch to the physicalSwitch
+    /**
+     * add the mapping from the virtualSwitch to the physicalSwitch
      * which has been specified
+     * 
+     * @param virtualSwitch
+     * @param physicalSwitch
      */
     public boolean addVirtualSwitchMapping(OVXSwitch virtualSwitch, PhysicalSwitch physicalSwitch) {
 
 	return true;
     }
     
-    /*
+    /**
      * maps the OVXPort object to the physical Port that it refers to
+     * 
+     * @param virtualPort
+     * @param physicalPort
+     * 
+     * @return success
      */
     public boolean addVirtualPortMapping(OVXPort virtualPort, PhysicalPort physicalPort) {
 
 	return true;
     }
 
-    /*
+    /**
      * maps the virtual source and destination port to the list of
-     * physical source and destination ports 
+     * physical source and destination ports
+     * 
+     * @param virtualLink
+     * @param physicalLink
+     * 
+     * @return success
      */
     public boolean addVirtualLinkMapping(OVXLink virtualLink, List <PhysicalLink> physicalLinks) {
 
 	return true;
     }
     
-    /*
+    /**
      * Maintain a list of all the virtualNetworks in the system
      * indexed by the tenant id mapping to VirtualNetwork
+     * 
+     * @param virtualNetwork
+     * 
+     * @return success
      */
     public boolean addVirtualNetworkMapping(OVXNetwork virtualNetwork) {
 	
@@ -127,62 +173,90 @@ public class OVXMap implements Mappable{
     
     //Access objects from dictionary given the key
     
-    /*
-     * sets up the mapping from the physicalSwitch to the virtualSwitch 
+    /**
+     * get the physicalSwitchs that are associated with a virtualSwitch 
      * which has been specified
+     * 
+     * @param physicalSwitch
+     * 
+     * @return virtualSwitches
      */
     public ArrayList<OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch) {
 
 	return null;
     }
 
-    /*
-     * keep track of each physical port and all the virtual ports that 
-     * use the physical port mentioned
+    /**
+     * get all the virtual ports that use the physical port mentioned
+     * 
+     * @param physicalPort
+     * 
+     * @return virtualPorts
      */
     public ArrayList<OVXPort> getVirtualPorts(PhysicalPort physicalPort) {
 
 	return null;
     }
 
-    /*
-     * in order to get the list of virtual links that all have
-     * used a specific physical link
+    /**
+     * get the list of virtual links that all have used a specific 
+     * physical link
+     * 
+     * @param virtualLink
+     * 
+     * @return physicalLinks
      */
     public ArrayList<PhysicalLink> getPhysicalLinks(OVXMap virtualLink) {
 
 	return null;
     }
     
-    /*
-     * sets up the mapping from the virtualSwitch to the physicalSwitch
-     * which has been specified
+    /**
+     * get the physicalSwitches that are associated with the given
+     * virtualSwitch
+     * 
+     * @param virtualSwitch
+     * 
+     * @return physicalSwitches
      */
     public ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch) {
 
 	return null;
     }
 
-    /*
-     * maps the OVXPort object to the physical Port that it refers to
+    /**
+     * get the physicalPort that the OVXPort object
+     * refers to
+     * 
+     * @param virtualPort
+     * 
+     * @return physicalPorts
      */
     public ArrayList<PhysicalPort> getPhysicalPorts(OVXPort virtualPort) {
 
 	return null;
     }
     
-    /*
-     * maps the virtual source and destination port to the list of
-     * physical source and destination ports 
+    /**
+     * get the virtual source and destination port corresponding to the 
+     * physicalLink which is specified
+     * 
+     * @param physicalLink
+     * 
+     * @return virtualLinks
      */
     public ArrayList<OVXLink> getVirtualLinks(PhysicalLink physicalLink) {
 
 	return null;
     }
     
-    /*
-     * Maintain a list of all the virtualNetworks in the system
-     * indexed by the tenant id mapping to VirtualNetwork
+    /**
+     * get the virtualNetwork based on the tenantId. Stores each virtual network 
+     * in a map indexed by the tenant id
+     * 
+     * @param tenantId
+     * 
+     * @return virtualNetwork
      */
     public OVXNetwork getVirtualNetwork(int tenantId) {
 	
