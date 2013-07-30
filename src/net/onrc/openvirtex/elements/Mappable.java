@@ -4,16 +4,12 @@
 package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
-import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
 
 public interface Mappable {
     // ADD objects to dictionary
@@ -37,18 +33,6 @@ public interface Mappable {
      */
     boolean addPhysicalSwitchMapping(PhysicalSwitch physicalSwitch,
 	    OVXSwitch virtualSwitch);
-
-    /**
-     * keep track of each physical port and all the virtual ports that
-     * use the physical port mentioned
-     * 
-     * @param physicalPort
-     * @param virtualPort
-     * 
-     * @return virtualPort
-     */
-    boolean addPhysicalPortMapping(PhysicalPort physicalPort,
-	    OVXPort virtualPort);
 
     /**
      * in order to get the list of virtual links that all have
@@ -75,16 +59,6 @@ public interface Mappable {
 	    PhysicalSwitch physicalSwitch);
 
     /**
-     * maps the OVXPort object to the physical Port that it refers to
-     * 
-     * @param virtualPort
-     * @param physicalPort
-     * 
-     * @return success
-     */
-    boolean addVirtualPortMapping(OVXPort virtualPort, PhysicalPort physicalPort);
-
-    /**
      * maps the virtual source and destination port to the list of
      * physical source and destination ports
      * 
@@ -92,8 +66,7 @@ public interface Mappable {
      * @param physicalLinks
      * @return success
      */
-    boolean addVirtualLinkMapping(OVXLink virtualLink,
-	    List<PhysicalLink> physicalLinks);
+    boolean addVirtualLinkMapping(OVXLink virtualLink, PhysicalLink physicalLink);
 
     /**
      * Maintain a list of all the virtualNetworks in the system
@@ -115,17 +88,7 @@ public interface Mappable {
      * 
      * @return virtualSwitches
      */
-    ConcurrentHashMap<Integer, OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch, Integer tenantId);
-
-    /**
-     * keep track of each physical port and all the virtual ports that
-     * use the physical port mentioned
-     * 
-     * @param physicalPort
-     * 
-     * @return virtualPorts
-     */
-    ConcurrentHashMap<Integer, OVXPort> getVirtualPorts(PhysicalPort physicalPort, Integer tenantId);
+    OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch, Integer tenantId);
     
     /**
      * maps the virtual source and destination port to the list of
@@ -135,7 +98,7 @@ public interface Mappable {
      * 
      * @return virtualLinks
      */
-    ConcurrentHashMap<Integer, OVXLink> getVirtualLinks(PhysicalLink physicalLink, Integer tenantId);
+    OVXLink getVirtualLink(PhysicalLink physicalLink, Integer tenantId);
 
     /**
      * in order to get the list of physical links that all have
@@ -156,15 +119,6 @@ public interface Mappable {
      * @return physicalSwitches
      */
     ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
-
-    /**
-     * maps the OVXPort object to the physical Port that it refers to
-     * 
-     * @param virtualPort
-     * 
-     * @return physicalPorts
-     */
-    ArrayList<PhysicalPort> getPhysicalPorts(OVXPort virtualPort);
 
     /**
      * Maintain a list of all the virtualNetworks in the system

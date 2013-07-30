@@ -26,7 +26,6 @@
 package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
@@ -38,15 +37,13 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
-import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
 
 public class OVXMap implements Mappable{
 
-    ConcurrentHashMap<OVXSwitch, PhysicalSwitch> virtualSwitchMap;
-    ConcurrentHashMap<PhysicalSwitch, OVXSwitch> physicalSwitchMap;
-    ConcurrentHashMap<OVXPort, PhysicalPort> virtualPortMap;
-    ConcurrentHashMap<PhysicalPort, OVXPort> physicalPortMap;
+    ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>> virtualSwitchMap;
+    ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
+    ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>> virtualLinkMap;
+    ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>> physicalLinkMap;
     ConcurrentHashMap<Integer, OVXNetwork> networkMap; 
     RadixTree<String> ipAddressMap;
     
@@ -56,10 +53,10 @@ public class OVXMap implements Mappable{
      * constructor for OVXMap will initialize all the dictionaries
      */
     private OVXMap() {
-	physicalSwitchMap = new ConcurrentHashMap<PhysicalSwitch, OVXSwitch>();
-	virtualSwitchMap = new ConcurrentHashMap<OVXSwitch, PhysicalSwitch>();
-	physicalPortMap = new ConcurrentHashMap<PhysicalPort, OVXPort>();
-	virtualPortMap = new ConcurrentHashMap<OVXPort, PhysicalPort>();
+	physicalSwitchMap = new ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>>();
+	virtualSwitchMap = new ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>();
+	physicalLinkMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>>();
+	virtualLinkMap = new ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>();
 	networkMap = new ConcurrentHashMap<Integer, OVXNetwork>();
 	ipAddressMap = new ConcurrentRadixTree<String>(new DefaultCharArrayNodeFactory());
     }
@@ -88,26 +85,13 @@ public class OVXMap implements Mappable{
      * @return success 
      */
     public boolean addPhysicalSwitchMapping(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch) {
-
+	int tenantId = 0;
+	this.physicalSwitchMap.get(physicalSwitch).put(tenantId, virtualSwitch);
 	return true;
     }
     
     /**
-     * add each physical port and all the virtual ports that 
-     * use the physical port mentioned
-     * 
-     * @param physicalPort
-     * @param virtualPort
-     * 
-     * @return success
-     */
-    public boolean addPhysicalPortMapping(PhysicalPort physicalPort, OVXPort virtualPort) {
-
-	return true;
-    }
-    
-    /**
-     * add virtual links that all have used a specific physical link
+     * key value pairs from the physicalLink to the virtualLinks which contain it
      * 
      * @param physicalLink
      * @param virtualLink
@@ -115,7 +99,8 @@ public class OVXMap implements Mappable{
      * @return success
      */
     public boolean addPhysicalLinkMapping(PhysicalLink physicalLink, OVXLink virtualLink) {
-
+	int tenantId = 0;
+	this.physicalLinkMap.get(physicalLink).put(tenantId, virtualLink);
 	return true;
     }
  
@@ -127,20 +112,7 @@ public class OVXMap implements Mappable{
      * @param physicalSwitch
      */
     public boolean addVirtualSwitchMapping(OVXSwitch virtualSwitch, PhysicalSwitch physicalSwitch) {
-
-	return true;
-    }
-    
-    /**
-     * maps the OVXPort object to the physical Port that it refers to
-     * 
-     * @param virtualPort
-     * @param physicalPort
-     * 
-     * @return success
-     */
-    public boolean addVirtualPortMapping(OVXPort virtualPort, PhysicalPort physicalPort) {
-
+	this.virtualSwitchMap.get(virtualSwitch).add(physicalSwitch);
 	return true;
     }
 
@@ -153,8 +125,8 @@ public class OVXMap implements Mappable{
      * 
      * @return success
      */
-    public boolean addVirtualLinkMapping(OVXLink virtualLink, List <PhysicalLink> physicalLinks) {
-
+    public boolean addVirtualLinkMapping(OVXLink virtualLink, PhysicalLink physicalLink) {
+	this.virtualLinkMap.get(virtualLink).add(physicalLink);
 	return true;
     }
     
@@ -167,35 +139,24 @@ public class OVXMap implements Mappable{
      * @return success
      */
     public boolean addVirtualNetworkMapping(OVXNetwork virtualNetwork) {
-	
+	int tenantId = 0;
+	this.networkMap.put(tenantId, virtualNetwork);
 	return true;
     }
     
     //Access objects from dictionary given the key
     
     /**
-     * get the physicalSwitchs that are associated with a virtualSwitch 
+     * get the virtualSwitch that are associated with a physicalSwitch
      * which has been specified
      * 
      * @param physicalSwitch
      * 
      * @return virtualSwitches
      */
-    public ConcurrentHashMap<Integer, OVXSwitch> getVirtualSwitches(PhysicalSwitch physicalSwitch, Integer tenantId) {
+    public OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch, Integer tenantId) {
 
-	return null;
-    }
-
-    /**
-     * get all the virtual ports that use the physical port mentioned
-     * 
-     * @param physicalPort
-     * 
-     * @return virtualPorts
-     */
-    public ConcurrentHashMap<Integer, OVXPort> getVirtualPorts(PhysicalPort physicalPort, Integer tenantId) {
-
-	return null;
+	return this.physicalSwitchMap.get(physicalSwitch).get(tenantId);
     }
     
     /**
@@ -206,9 +167,9 @@ public class OVXMap implements Mappable{
      * 
      * @return virtualLinks
      */
-    public ConcurrentHashMap<Integer, OVXLink> getVirtualLinks(PhysicalLink physicalLink, Integer tenantId) {
+    public OVXLink getVirtualLink(PhysicalLink physicalLink, Integer tenantId) {
 
-	return null;
+	return this.physicalLinkMap.get(physicalLink).get(tenantId);
     }
 
     /**
@@ -221,7 +182,7 @@ public class OVXMap implements Mappable{
      */
     public ArrayList<PhysicalLink> getPhysicalLinks(OVXMap virtualLink) {
 
-	return null;
+	return this.virtualLinkMap.get(virtualLink);
     }
     
     /**
@@ -234,20 +195,7 @@ public class OVXMap implements Mappable{
      */
     public ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch) {
 
-	return null;
-    }
-
-    /**
-     * get the physicalPort that the OVXPort object
-     * refers to
-     * 
-     * @param virtualPort
-     * 
-     * @return physicalPorts
-     */
-    public ArrayList<PhysicalPort> getPhysicalPorts(OVXPort virtualPort) {
-
-	return null;
+	return this.virtualSwitchMap.get(virtualSwitch);
     }
     
     /**
@@ -260,7 +208,7 @@ public class OVXMap implements Mappable{
      */
     public OVXNetwork getVirtualNetwork(int tenantId) {
 	
-	return null;
+	return this.networkMap.get(tenantId);
     }
     
     // Remove objects from dictionary
