@@ -91,7 +91,7 @@ public interface Mappable {
 
     /**
      * get the physicalSwitches that are contained in the virtualSwitch. for
-     * a bigswitch this will be multiple physicalSwitches
+     * a big switch this will be multiple physicalSwitches
      * 
      * @param virtualSwitch
      * 
@@ -100,8 +100,7 @@ public interface Mappable {
     ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
 
     /**
-     * using the tenantId return the OVXNetwork object which is reffered to by
-     * the specified tenantId.
+     * use the tenantId to return the OVXNetwork object.
      * 
      * @param tenantId
      * 

@@ -39,27 +39,20 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 
 public class OVXMap implements Mappable{
+    
+    private static final OVXMap mapInstance = new OVXMap();
+    
+    ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>> virtualSwitchMap = new ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>();
+    ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap =  new ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>>();
+    ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>> virtualLinkMap = new ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>();
+    ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>> physicalLinkMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>>();
+    ConcurrentHashMap<Integer, OVXNetwork> networkMap = new ConcurrentHashMap<Integer, OVXNetwork>(); 
+    RadixTree<String> ipAddressMap = new ConcurrentRadixTree<String>(new DefaultCharArrayNodeFactory());
 
-    ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>> virtualSwitchMap;
-    ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
-    ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>> virtualLinkMap;
-    ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>> physicalLinkMap;
-    ConcurrentHashMap<Integer, OVXNetwork> networkMap; 
-    RadixTree<String> ipAddressMap;
-    
-    private static OVXMap mapInstance = null;
-    
     /**
-     * constructor for OVXMap will initialize all the dictionaries
+     * constructor for OVXMap will be an empty constructor
      */
-    private OVXMap() {
-	physicalSwitchMap = new ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>>();
-	virtualSwitchMap = new ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>();
-	physicalLinkMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>>();
-	virtualLinkMap = new ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>();
-	networkMap = new ConcurrentHashMap<Integer, OVXNetwork>();
-	ipAddressMap = new ConcurrentRadixTree<String>(new DefaultCharArrayNodeFactory());
-    }
+    private OVXMap() {}
     
     /**
      * getInstance will get the instance of the class and if this already exists
@@ -68,10 +61,7 @@ public class OVXMap implements Mappable{
      * @return OVXMap
      */
     public OVXMap getInstance() {
-	if (mapInstance == null) {
-	    mapInstance = new OVXMap();
-	}
-	return mapInstance;
+	return OVXMap.mapInstance;
     }
     
     // ADD objects to dictionary
@@ -185,7 +175,6 @@ public class OVXMap implements Mappable{
      * @return virtualSwitches
      */
     public OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch, Integer tenantId) {
-
 	return this.physicalSwitchMap.get(physicalSwitch).get(tenantId);
     }
     
