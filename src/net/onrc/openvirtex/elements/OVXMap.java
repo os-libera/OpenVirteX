@@ -49,7 +49,7 @@ public class OVXMap implements Mappable{
     
     private static OVXMap mapInstance = null;
     
-    /*
+    /**
      * constructor for OVXMap will initialize all the dictionaries
      */
     private OVXMap() {
@@ -62,10 +62,10 @@ public class OVXMap implements Mappable{
     }
     
     /**
-     * OVXMap is a singleton class. If object has already been created
-     * this should return the existing object rather than creating a new object.
+     * getInstance will get the instance of the class and if this already exists
+     * then the existing object will be returned. This is a singleton class.
      * 
-     * @return ovxMap
+     * @return OVXMap
      */
     public OVXMap getInstance() {
 	if (mapInstance == null) {
@@ -76,22 +76,22 @@ public class OVXMap implements Mappable{
     
     // ADD objects to dictionary
     /**
-     * adds the mapping from the physicalSwitch to the virtualSwitch 
+     * sets up the mapping from the physicalSwitch to the virtualSwitch
      * which has been specified
      * 
      * @param physicalSwitch
      * @param virtualSwitch
      * 
-     * @return success 
+     * @return success
      */
     public boolean addPhysicalSwitchMapping(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch) {
-	int tenantId = 0;
-	this.physicalSwitchMap.get(physicalSwitch).put(tenantId, virtualSwitch);
+	this.physicalSwitchMap.get(physicalSwitch).put(virtualSwitch.getTenantId(), virtualSwitch);
 	return true;
     }
     
     /**
-     * key value pairs from the physicalLink to the virtualLinks which contain it
+     * sets up the mapping from the physical link to the virtualLinks which
+     * contain the given physical link
      * 
      * @param physicalLink
      * @param virtualLink
@@ -99,17 +99,18 @@ public class OVXMap implements Mappable{
      * @return success
      */
     public boolean addPhysicalLinkMapping(PhysicalLink physicalLink, OVXLink virtualLink) {
-	int tenantId = 0;
-	this.physicalLinkMap.get(physicalLink).put(tenantId, virtualLink);
+	this.physicalLinkMap.get(physicalLink).put(virtualLink.getTenantId(), virtualLink);
 	return true;
     }
  
     /**
-     * add the mapping from the virtualSwitch to the physicalSwitch
+     * sets up the mapping from the virtualSwitch to the physicalSwitch
      * which has been specified
      * 
      * @param virtualSwitch
      * @param physicalSwitch
+     * 
+     * @return success
      */
     public boolean addVirtualSwitchMapping(OVXSwitch virtualSwitch, PhysicalSwitch physicalSwitch) {
 	this.virtualSwitchMap.get(virtualSwitch).add(physicalSwitch);
@@ -117,12 +118,10 @@ public class OVXMap implements Mappable{
     }
 
     /**
-     * maps the virtual source and destination port to the list of
-     * physical source and destination ports
+     * maps the virtual link to the physical links that it contains
      * 
      * @param virtualLink
-     * @param physicalLink
-     * 
+     * @param physicalLinks
      * @return success
      */
     public boolean addVirtualLinkMapping(OVXLink virtualLink, PhysicalLink physicalLink) {
@@ -132,23 +131,22 @@ public class OVXMap implements Mappable{
     
     /**
      * Maintain a list of all the virtualNetworks in the system
-     * indexed by the tenant id mapping to VirtualNetwork
+     * indexed by the tenant id mapping to VirtualNetworks
      * 
      * @param virtualNetwork
      * 
      * @return success
      */
     public boolean addVirtualNetworkMapping(OVXNetwork virtualNetwork) {
-	int tenantId = 0;
-	this.networkMap.put(tenantId, virtualNetwork);
+	this.networkMap.put(virtualNetwork.getTenantId(), virtualNetwork);
 	return true;
     }
     
     //Access objects from dictionary given the key
     
     /**
-     * get the virtualSwitch that are associated with a physicalSwitch
-     * which has been specified
+     * get the virtualSwitch which has been specified by the physicalSwitch
+     * and tenantId
      * 
      * @param physicalSwitch
      * 
@@ -160,12 +158,13 @@ public class OVXMap implements Mappable{
     }
     
     /**
-     * get the virtual source and destination port corresponding to the 
-     * physicalLink which is specified
+     * get the virtualLink which has been specified by the physicalLink and
+     * the tenantId. This function will return a list of virtualLinks all of
+     * which contain the specified physicalLink in the tenantId.
      * 
      * @param physicalLink
      * 
-     * @return virtualLinks
+     * @return virtualLink
      */
     public OVXLink getVirtualLink(PhysicalLink physicalLink, Integer tenantId) {
 
@@ -173,21 +172,21 @@ public class OVXMap implements Mappable{
     }
 
     /**
-     * get the list of virtual links that all have used a specific 
-     * physical link
+     * get the physicalLinks that all make up a specified virtualLink.
+     * Return a list of all the physicalLinks that make up the virtualLink
      * 
      * @param virtualLink
      * 
      * @return physicalLinks
      */
-    public ArrayList<PhysicalLink> getPhysicalLinks(OVXMap virtualLink) {
+    public ArrayList<PhysicalLink> getPhysicalLinks(OVXLink virtualLink) {
 
 	return this.virtualLinkMap.get(virtualLink);
     }
     
     /**
-     * get the physicalSwitches that are associated with the given
-     * virtualSwitch
+     * get the physicalSwitches that are contained in the virtualSwitch. for
+     * a bigswitch this will be multiple physicalSwitches
      * 
      * @param virtualSwitch
      * 
@@ -199,14 +198,14 @@ public class OVXMap implements Mappable{
     }
     
     /**
-     * get the virtualNetwork based on the tenantId. Stores each virtual network 
-     * in a map indexed by the tenant id
+     * using the tenantId return the OVXNetwork object which is reffered to by
+     * the specified tenantId.
      * 
      * @param tenantId
      * 
      * @return virtualNetwork
      */
-    public OVXNetwork getVirtualNetwork(int tenantId) {
+    public OVXNetwork getVirtualNetwork(Integer tenantId) {
 	
 	return this.networkMap.get(tenantId);
     }

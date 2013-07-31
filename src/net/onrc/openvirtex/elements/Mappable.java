@@ -35,8 +35,8 @@ public interface Mappable {
 	    OVXSwitch virtualSwitch);
 
     /**
-     * in order to get the list of virtual links that all have
-     * used a specific physical link
+     * sets up the mapping from the physical link to the virtualLinks which
+     * contain the given physical link
      * 
      * @param physicalLink
      * @param virtualLink
@@ -59,8 +59,7 @@ public interface Mappable {
 	    PhysicalSwitch physicalSwitch);
 
     /**
-     * maps the virtual source and destination port to the list of
-     * physical source and destination ports
+     * maps the virtual link to the physical links that it contains
      * 
      * @param virtualLink
      * @param physicalLinks
@@ -70,7 +69,7 @@ public interface Mappable {
 
     /**
      * Maintain a list of all the virtualNetworks in the system
-     * indexed by the tenant id mapping to VirtualNetwork
+     * indexed by the tenant id mapping to VirtualNetworks
      * 
      * @param virtualNetwork
      * 
@@ -81,8 +80,8 @@ public interface Mappable {
     // Access objects from dictionary given the key
 
     /**
-     * sets up the mapping from the physicalSwitch to the virtualSwitch
-     * which has been specified
+     * get the virtualSwitch which has been specified by the physicalSwitch
+     * and tenantId
      * 
      * @param physicalSwitch
      * 
@@ -91,28 +90,29 @@ public interface Mappable {
     OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch, Integer tenantId);
     
     /**
-     * maps the virtual source and destination port to the list of
-     * physical source and destination ports
+     * get the virtualLink which has been specified by the physicalLink and
+     * the tenantId. This function will return a list of virtualLinks all of
+     * which contain the specified physicalLink in the tenantId.
      * 
      * @param physicalLink
      * 
-     * @return virtualLinks
+     * @return virtualLink
      */
     OVXLink getVirtualLink(PhysicalLink physicalLink, Integer tenantId);
 
     /**
-     * in order to get the list of physical links that all have
-     * used a specific physical link
+     * get the physicalLinks that all make up a specified virtualLink.
+     * Return a list of all the physicalLinks that make up the virtualLink
      * 
      * @param virtualLink
      * 
      * @return physicalLinks
      */
-    ArrayList<PhysicalLink> getPhysicalLinks(OVXMap virtualLink);
+    ArrayList<PhysicalLink> getPhysicalLinks(OVXLink virtualLink);
 
     /**
-     * sets up the mapping from the virtualSwitch to the physicalSwitch
-     * which has been specified
+     * get the physicalSwitches that are contained in the virtualSwitch. for
+     * a bigswitch this will be multiple physicalSwitches
      * 
      * @param virtualSwitch
      * 
@@ -121,13 +121,13 @@ public interface Mappable {
     ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
 
     /**
-     * Maintain a list of all the virtualNetworks in the system
-     * indexed by the tenant id mapping to VirtualNetwork
+     * using the tenantId return the OVXNetwork object which is reffered to by
+     * the specified tenantId.
      * 
      * @param tenantId
      * 
      * @return virtualNetwork
      */
-    OVXNetwork getVirtualNetwork(int tenantId);
+    OVXNetwork getVirtualNetwork(Integer tenantId);
 
 }
