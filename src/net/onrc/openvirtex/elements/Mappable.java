@@ -23,49 +23,28 @@ public interface Mappable {
     Mappable getInstance();
     
     /**
-     * sets up the mapping from the physicalSwitch to the virtualSwitch
-     * which has been specified
+     * create the mapping between virtual switch to physical switch and from 
+     * physical switch to virtual switch
      * 
      * @param physicalSwitch
      * @param virtualSwitch
      * 
      * @return success
      */
-    boolean addPhysicalSwitchMapping(PhysicalSwitch physicalSwitch,
+    boolean addSwitchMapping(PhysicalSwitch physicalSwitch,
 	    OVXSwitch virtualSwitch);
 
     /**
-     * sets up the mapping from the physical link to the virtualLinks which
-     * contain the given physical link
+     * create the mapping between the virtual link to physical link and physical
+     * link to virtual link
      * 
      * @param physicalLink
      * @param virtualLink
      * 
      * @return success
      */
-    boolean addPhysicalLinkMapping(PhysicalLink physicalLink,
+    boolean addLinkMapping(PhysicalLink physicalLink,
 	    OVXLink virtualLink);
-
-    /**
-     * sets up the mapping from the virtualSwitch to the physicalSwitch
-     * which has been specified
-     * 
-     * @param virtualSwitch
-     * @param physicalSwitch
-     * 
-     * @return success
-     */
-    boolean addVirtualSwitchMapping(OVXSwitch virtualSwitch,
-	    PhysicalSwitch physicalSwitch);
-
-    /**
-     * maps the virtual link to the physical links that it contains
-     * 
-     * @param virtualLink
-     * @param physicalLinks
-     * @return success
-     */
-    boolean addVirtualLinkMapping(OVXLink virtualLink, PhysicalLink physicalLink);
 
     /**
      * Maintain a list of all the virtualNetworks in the system
@@ -75,7 +54,7 @@ public interface Mappable {
      * 
      * @return success
      */
-    boolean addVirtualNetworkMapping(OVXNetwork virtualNetwork);
+    boolean addNetworkMapping(OVXNetwork virtualNetwork);
 
     // Access objects from dictionary given the key
 

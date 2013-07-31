@@ -75,6 +75,38 @@ public class OVXMap implements Mappable{
     }
     
     // ADD objects to dictionary
+    
+    /**
+     * create the mapping between virtual switch to physical switch and from 
+     * physical switch to virtual switch
+     * 
+     * @param physicalSwitch
+     * @param virtualSwitch
+     * 
+     * @return success
+     */
+    public boolean addSwitchMapping(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch) {
+	this.addPhysicalSwitchMapping(physicalSwitch, virtualSwitch);
+	this.addVirtualSwitchMapping(virtualSwitch, physicalSwitch);
+	return true;
+	
+    }
+    
+    /**
+     * create the mapping between the virtual link to phsyical link and physical
+     * link to virtual link
+     * 
+     * @param physicalLink
+     * @param virtualLink
+     * 
+     * @return success
+     */
+    public boolean addLinkMapping(PhysicalLink physicalLink, OVXLink virtualLink) {
+	this.addPhysicalLinkMapping(physicalLink, virtualLink);
+	this.addVirtualLinkMapping(virtualLink, physicalLink);
+	return true;
+    }
+    
     /**
      * sets up the mapping from the physicalSwitch to the virtualSwitch
      * which has been specified
@@ -137,7 +169,7 @@ public class OVXMap implements Mappable{
      * 
      * @return success
      */
-    public boolean addVirtualNetworkMapping(OVXNetwork virtualNetwork) {
+    public boolean addNetworkMapping(OVXNetwork virtualNetwork) {
 	this.networkMap.put(virtualNetwork.getTenantId(), virtualNetwork);
 	return true;
     }
