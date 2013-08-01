@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.onrc.openvirtex.elements.address.OVXIPAddress;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
@@ -55,8 +57,8 @@ public class OVXMap implements Mappable {
     ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>                      virtualLinkMap;
     ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>>     physicalLinkMap;
     ConcurrentHashMap<Integer, OVXNetwork>                                   networkMap;
-    RadixTree<String>                                                        ipAddressMap;
-
+    RadixTree<OVXIPAddress>                                                        physicalIPMap;
+    RadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>> virtualIPMap;
     /**
      * constructor for OVXMap will be an empty constructor
      */
@@ -66,8 +68,9 @@ public class OVXMap implements Mappable {
 	this.virtualLinkMap = new ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>();
 	this.physicalLinkMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, OVXLink>>();
 	this.networkMap = new ConcurrentHashMap<Integer, OVXNetwork>();
-	this.ipAddressMap = new ConcurrentRadixTree<String>(
+	this.physicalIPMap = new ConcurrentRadixTree<OVXIPAddress>(
 	        new DefaultCharArrayNodeFactory());
+	this.virtualIPMap = new ConcurrentRadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>(new DefaultCharArrayNodeFactory());
     }
 
     /**
@@ -92,7 +95,6 @@ public class OVXMap implements Mappable {
      * @param physicalSwitch
      * @param virtualSwitch
      * 
-     * @return success
      */
     @Override
     public void addSwitchMapping(final PhysicalSwitch physicalSwitch,
@@ -108,7 +110,6 @@ public class OVXMap implements Mappable {
      * @param physicalLink
      * @param virtualLink
      * 
-     * @return success
      */
     @Override
     public void addLinkMapping(final PhysicalLink physicalLink,
@@ -118,13 +119,50 @@ public class OVXMap implements Mappable {
     }
 
     /**
+     * This is the generic function which takes as arguments the PhysicalIPAddress
+     * and the OVXIPAddress. This will add the value into both the physical
+     * to virtual map and in the other direction.
+     * 
+     * @param physicalIP
+     * @param virtualIP
+     */
+    public void addIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
+	this.addPhysicalIPMapping(physicalIP, virtualIP);
+	this.addOVXIPMapping(virtualIP, physicalIP);
+    }
+    
+    /**
+     * This function will create a map indexed on the key PhysicalIPAddress with
+     * value OVXIPAddress.
+     *  
+     * @param physicalIP
+     * @param virtualIP
+     */
+    public void addPhysicalIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
+	this.physicalIPMap.put(physicalIP.toString(), virtualIP);
+    }
+    
+    /**
+     * This function will create a map indexed on the key OVXIPAddress with value
+     * PhysicalIPAddress
+     * 
+     * @param virtualIP
+     * @param physicalIP
+     */
+    public void addOVXIPMapping(OVXIPAddress virtualIP, PhysicalIPAddress physicalIP) {
+	ConcurrentHashMap<Integer, PhysicalIPAddress> ipMap = this.virtualIPMap.getValueForExactKey(virtualIP.toString());
+	if (ipMap == null)
+	    ipMap = new ConcurrentHashMap<Integer, PhysicalIPAddress>();
+	ipMap.put(virtualIP.getTenantId(),physicalIP);
+    }
+    
+    /**
      * sets up the mapping from the physicalSwitch to the virtualSwitch
      * which has been specified
      * 
      * @param physicalSwitch
      * @param virtualSwitch
      * 
-     * @return success
      */
     public void addPhysicalSwitchMapping(final PhysicalSwitch physicalSwitch,
 	    final OVXSwitch virtualSwitch) {
@@ -139,7 +177,6 @@ public class OVXMap implements Mappable {
      * @param physicalLink
      * @param virtualLink
      * 
-     * @return success
      */
     public void addPhysicalLinkMapping(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
@@ -154,7 +191,6 @@ public class OVXMap implements Mappable {
      * @param virtualSwitch
      * @param physicalSwitch
      * 
-     * @return success
      */
     public void addVirtualSwitchMapping(final OVXSwitch virtualSwitch,
 	    final PhysicalSwitch physicalSwitch) {
@@ -166,7 +202,6 @@ public class OVXMap implements Mappable {
      * 
      * @param virtualLink
      * @param physicalLinks
-     * @return success
      */
     public void addVirtualLinkMapping(final OVXLink virtualLink,
 	    final PhysicalLink physicalLink) {
@@ -179,7 +214,6 @@ public class OVXMap implements Mappable {
      * 
      * @param virtualNetwork
      * 
-     * @return success
      */
     @Override
     public void addNetworkMapping(final OVXNetwork virtualNetwork) {

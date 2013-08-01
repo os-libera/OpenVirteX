@@ -5,6 +5,8 @@ package net.onrc.openvirtex.elements;
 
 import java.util.List;
 
+import net.onrc.openvirtex.elements.address.OVXIPAddress;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
@@ -13,6 +15,15 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 
 public interface Mappable {
     // ADD objects to dictionary
+    
+    /**
+     * This function creates the map between the PhysicalIP and VirtualIP in
+     * both directions.
+     * 
+     * @param physicalIP
+     * @param virtualIP
+     */
+    void addIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP);
 
     /**
      * create the mapping between virtual switch to physical switch and from
@@ -21,7 +32,6 @@ public interface Mappable {
      * @param physicalSwitch
      * @param virtualSwitch
      * 
-     * @return success
      */
     void addSwitchMapping(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch);
 
@@ -31,8 +41,6 @@ public interface Mappable {
      * 
      * @param physicalLink
      * @param virtualLink
-     * 
-     * @return success
      */
     void addLinkMapping(PhysicalLink physicalLink, OVXLink virtualLink);
 
@@ -40,9 +48,7 @@ public interface Mappable {
      * Maintain a list of all the virtualNetworks in the system
      * indexed by the tenant id mapping to VirtualNetworks
      * 
-     * @param virtualNetwork
-     * 
-     * @return success
+     * @param virtualNetwork      
      */
     void addNetworkMapping(OVXNetwork virtualNetwork);
 
