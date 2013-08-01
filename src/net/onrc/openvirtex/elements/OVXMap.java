@@ -50,7 +50,7 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 
 public class OVXMap implements Mappable {
 
-    private static OVXMap                                                    mapInstance = new OVXMap();
+    private static OVXMap                                                    mapInstance;
 
     ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>                  virtualSwitchMap;
     ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
@@ -77,7 +77,7 @@ public class OVXMap implements Mappable {
      * getInstance will get the instance of the class and if this already exists
      * then the existing object will be returned. This is a singleton class.
      * 
-     * @return OVXMap
+     * @return mapInstance Return the OVXMap object instance
      */
     public static OVXMap getInstance() {
 	if (OVXMap.mapInstance == null) {
@@ -89,11 +89,11 @@ public class OVXMap implements Mappable {
     // ADD objects to dictionary
 
     /**
-     * create the mapping between virtual switch to physical switch and from
+     * create the mapping between OVX switch to physical switch and from
      * physical switch to virtual switch
      * 
-     * @param physicalSwitch
-     * @param virtualSwitch
+     * @param physicalSwitch Refers to the PhysicalSwitch from the PhysicalNetwork 
+     * @param virtualSwitch Has type OVXSwitch and this switch is specific to a tenantId 
      * 
      */
     @Override
@@ -104,11 +104,11 @@ public class OVXMap implements Mappable {
     }
 
     /**
-     * create the mapping between the virtual link to phsyical link and physical
+     * create the mapping between the virtual link to physical link and physical
      * link to virtual link
      * 
-     * @param physicalLink
-     * @param virtualLink
+     * @param physicalLink Refers to the PhysicalLink in the PhysicalNetwork
+     * @param virtualLink Refers to the OVXLink which consists of many PhysicalLinks and specific to a tenantId
      * 
      */
     @Override
@@ -123,8 +123,8 @@ public class OVXMap implements Mappable {
      * and the OVXIPAddress. This will add the value into both the physical
      * to virtual map and in the other direction.
      * 
-     * @param physicalIP
-     * @param virtualIP
+     * @param physicalIP Refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
+     * @param virtualIP The IP address used within the VirtualNetwork
      */
     public void addIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
 	this.addPhysicalIPMapping(physicalIP, virtualIP);
@@ -135,8 +135,8 @@ public class OVXMap implements Mappable {
      * This function will create a map indexed on the key PhysicalIPAddress with
      * value OVXIPAddress.
      *  
-     * @param physicalIP
-     * @param virtualIP
+     * @param physicalIP refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
+     * @param virtualIP  the IP address used within the VirtualNetwork
      */
     public void addPhysicalIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
 	this.physicalIPMap.put(physicalIP.toString(), virtualIP);
@@ -144,10 +144,10 @@ public class OVXMap implements Mappable {
     
     /**
      * This function will create a map indexed on the key OVXIPAddress with value
-     * PhysicalIPAddress
+     * a ConcurrentHashMap mapping the tenant id to the PhysicalIPAddress
      * 
-     * @param virtualIP
-     * @param physicalIP
+     * @param virtualIP the IP address used within the VirtualNetwork
+     * @param physicalIP refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
      */
     public void addOVXIPMapping(OVXIPAddress virtualIP, PhysicalIPAddress physicalIP) {
 	ConcurrentHashMap<Integer, PhysicalIPAddress> ipMap = this.virtualIPMap.getValueForExactKey(virtualIP.toString());
@@ -157,11 +157,11 @@ public class OVXMap implements Mappable {
     }
     
     /**
-     * sets up the mapping from the physicalSwitch to the virtualSwitch
-     * which has been specified
+     * This function sets up the mapping from the physicalSwitch to the 
+     * tenant id and virtualSwitch which has been specified
      * 
-     * @param physicalSwitch
-     * @param virtualSwitch
+     * @param physicalSwitch A PhysicalSwitch object which is found in the PhysicalNetwork
+     * @param virtualSwitch An OVXSwitch object which is found in the OVXNetwork
      * 
      */
     public void addPhysicalSwitchMapping(final PhysicalSwitch physicalSwitch,
@@ -171,12 +171,11 @@ public class OVXMap implements Mappable {
     }
 
     /**
-     * sets up the mapping from the physical link to the virtualLinks which
+     * sets up the mapping from the physical link to the OVXLinks which
      * contain the given physical link
      * 
-     * @param physicalLink
-     * @param virtualLink
-     * 
+     * @param physicalLink A Link consisting of the PhysicalPort and PhysicalSwitch objects for both the source and destinations
+     * @param virtualLink OVXLink contains the OVXPort and OVXSwitch for source and destination in the OVXNetwork
      */
     public void addPhysicalLinkMapping(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
@@ -185,11 +184,11 @@ public class OVXMap implements Mappable {
     }
 
     /**
-     * sets up the mapping from the virtualSwitch to the physicalSwitch
+     * sets up the mapping from the OVXSwitch to the physicalSwitch
      * which has been specified
      * 
-     * @param virtualSwitch
-     * @param physicalSwitch
+     * @param virtualSwitch A OVXSwitch object which represents a single switch in the OVXNetwork
+     * @param physicalSwitch A PhysicalSwitch object is a single switch in the PhysicalNetwork
      * 
      */
     public void addVirtualSwitchMapping(final OVXSwitch virtualSwitch,
@@ -200,8 +199,8 @@ public class OVXMap implements Mappable {
     /**
      * maps the virtual link to the physical links that it contains
      * 
-     * @param virtualLink
-     * @param physicalLinks
+     * @param virtualLink A OVXLink object which represents a single link in the OVXNetwork
+     * @param physicalLink A PhysicalLink object which represent a single source and destination PhysicalPort and PhysicalSwitch 
      */
     public void addVirtualLinkMapping(final OVXLink virtualLink,
 	    final PhysicalLink physicalLink) {
@@ -210,9 +209,9 @@ public class OVXMap implements Mappable {
 
     /**
      * Maintain a list of all the virtualNetworks in the system
-     * indexed by the tenant id mapping to VirtualNetworks
+     * indexed by the tenant id mapping to OVXNetworks
      * 
-     * @param virtualNetwork
+     * @param virtualNetwork An OVXNetwork object which keeps track of all the elements in the Virtual network
      * 
      */
     @Override
@@ -223,12 +222,12 @@ public class OVXMap implements Mappable {
     // Access objects from dictionary given the key
 
     /**
-     * get the virtualSwitch which has been specified by the physicalSwitch
+     * get the OVXSwitch which has been specified by the physicalSwitch
      * and tenantId
      * 
-     * @param physicalSwitch
+     * @param physicalSwitch A PhysicalSwitch object is a single switch in the PhysicalNetwork
      * 
-     * @return virtualSwitches
+     * @return virtualSwitch A OVXSwitch object which represents a single switch in the OVXNetwork 
      */
     @Override
     public OVXSwitch getVirtualSwitch(final PhysicalSwitch physicalSwitch,
@@ -237,13 +236,13 @@ public class OVXMap implements Mappable {
     }
 
     /**
-     * get the virtualLink which has been specified by the physicalLink and
-     * the tenantId. This function will return a list of virtualLinks all of
+     * get the OVXLink which has been specified by the physicalLink and
+     * the tenantId. This function will return a list of OVXLinks all of
      * which contain the specified physicalLink in the tenantId.
      * 
-     * @param physicalLink
+     * @param physicalLink A PhysicalLink object which represent a single source and destination PhysicalPort and PhysicalSwitch 
      * 
-     * @return virtualLink
+     * @return virtualLink A OVXLink object which represents a single link in the OVXNetwork
      */
     @Override
     public OVXLink getVirtualLink(final PhysicalLink physicalLink,
@@ -252,12 +251,12 @@ public class OVXMap implements Mappable {
     }
 
     /**
-     * get the physicalLinks that all make up a specified virtualLink.
-     * Return a list of all the physicalLinks that make up the virtualLink
+     * get the physicalLinks that all make up a specified OVXLink.
+     * Return a list of all the physicalLinks that make up the OVXLink
      * 
-     * @param virtualLink
+     * @param virtualLink An OVXLink object which represents a single link in the OVXNetwork
      * 
-     * @return physicalLinks
+     * @return physicalLinks A List of PhysicalLink objects which represent a single source and destination PhysicalPort and PhysicalSwitch
      */
     @Override
     public List<PhysicalLink> getPhysicalLinks(final OVXLink virtualLink) {
@@ -266,12 +265,12 @@ public class OVXMap implements Mappable {
     }
 
     /**
-     * get the physicalSwitches that are contained in the virtualSwitch. for
+     * get the physicalSwitches that are contained in the OVXSwitch. for
      * a big switch this will be multiple physicalSwitches
      * 
-     * @param virtualSwitch
+     * @param virtualSwitch A OVXSwitch object representing a single switch in the virtual network
      * 
-     * @return physicalSwitches
+     * @return physicalSwitches A List of PhysicalSwitch objects that are each part of the OVXSwitch specified
      */
     @Override
     public List<PhysicalSwitch> getPhysicalSwitches(
@@ -282,9 +281,9 @@ public class OVXMap implements Mappable {
     /**
      * use the tenantId to return the OVXNetwork object
      * 
-     * @param tenantId
+     * @param tenantId This is an Integer that represents a unique number for each virtualNetwork
      * 
-     * @return virtualNetwork
+     * @return virtualNetwork A OVXNetwork object that represents all the information related to a virtual network
      */
     @Override
     public OVXNetwork getVirtualNetwork(final Integer tenantId) {
