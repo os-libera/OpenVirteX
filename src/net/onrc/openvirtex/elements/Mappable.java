@@ -3,7 +3,7 @@
  */
 package net.onrc.openvirtex.elements;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -13,17 +13,9 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 
 public interface Mappable {
     // ADD objects to dictionary
-     
+
     /**
-     * getInstance will get the instance of the class and if this already exists
-     * then the existing object will be returned. This is a singleton class.
-     * 
-     * @return OVXMap
-     */
-    Mappable getInstance();
-    
-    /**
-     * create the mapping between virtual switch to physical switch and from 
+     * create the mapping between virtual switch to physical switch and from
      * physical switch to virtual switch
      * 
      * @param physicalSwitch
@@ -31,8 +23,7 @@ public interface Mappable {
      * 
      * @return success
      */
-    boolean addSwitchMapping(PhysicalSwitch physicalSwitch,
-	    OVXSwitch virtualSwitch);
+    void addSwitchMapping(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch);
 
     /**
      * create the mapping between the virtual link to physical link and physical
@@ -43,8 +34,7 @@ public interface Mappable {
      * 
      * @return success
      */
-    boolean addLinkMapping(PhysicalLink physicalLink,
-	    OVXLink virtualLink);
+    void addLinkMapping(PhysicalLink physicalLink, OVXLink virtualLink);
 
     /**
      * Maintain a list of all the virtualNetworks in the system
@@ -54,7 +44,7 @@ public interface Mappable {
      * 
      * @return success
      */
-    boolean addNetworkMapping(OVXNetwork virtualNetwork);
+    void addNetworkMapping(OVXNetwork virtualNetwork);
 
     // Access objects from dictionary given the key
 
@@ -67,7 +57,7 @@ public interface Mappable {
      * @return virtualSwitches
      */
     OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch, Integer tenantId);
-    
+
     /**
      * get the virtualLink which has been specified by the physicalLink and
      * the tenantId. This function will return a list of virtualLinks all of
@@ -87,7 +77,7 @@ public interface Mappable {
      * 
      * @return physicalLinks
      */
-    ArrayList<PhysicalLink> getPhysicalLinks(OVXLink virtualLink);
+    List<PhysicalLink> getPhysicalLinks(OVXLink virtualLink);
 
     /**
      * get the physicalSwitches that are contained in the virtualSwitch. for
@@ -97,7 +87,7 @@ public interface Mappable {
      * 
      * @return physicalSwitches
      */
-    ArrayList<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
+    List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
 
     /**
      * use the tenantId to return the OVXNetwork object.
