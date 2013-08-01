@@ -97,10 +97,10 @@ public class OVXMap implements Mappable {
      * 
      */
     @Override
-    public void addSwitchMapping(final PhysicalSwitch physicalSwitch,
+    public void addSwitch(final PhysicalSwitch physicalSwitch,
 	    final OVXSwitch virtualSwitch) {
-	this.addPhysicalSwitchMapping(physicalSwitch, virtualSwitch);
-	this.addVirtualSwitchMapping(virtualSwitch, physicalSwitch);
+	this.addPhysicalSwitch(physicalSwitch, virtualSwitch);
+	this.addVirtualSwitch(virtualSwitch, physicalSwitch);
     }
 
     /**
@@ -112,10 +112,10 @@ public class OVXMap implements Mappable {
      * 
      */
     @Override
-    public void addLinkMapping(final PhysicalLink physicalLink,
+    public void addLink(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
-	this.addPhysicalLinkMapping(physicalLink, virtualLink);
-	this.addVirtualLinkMapping(virtualLink, physicalLink);
+	this.addPhysicalLink(physicalLink, virtualLink);
+	this.addVirtualLink(virtualLink, physicalLink);
     }
 
     /**
@@ -126,9 +126,9 @@ public class OVXMap implements Mappable {
      * @param physicalIP Refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
      * @param virtualIP The IP address used within the VirtualNetwork
      */
-    public void addIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
-	this.addPhysicalIPMapping(physicalIP, virtualIP);
-	this.addOVXIPMapping(virtualIP, physicalIP);
+    public void addIP(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
+	this.addPhysicalIP(physicalIP, virtualIP);
+	this.addOVXIP(virtualIP, physicalIP);
     }
     
     /**
@@ -138,7 +138,7 @@ public class OVXMap implements Mappable {
      * @param physicalIP refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
      * @param virtualIP  the IP address used within the VirtualNetwork
      */
-    public void addPhysicalIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
+    public void addPhysicalIP(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
 	this.physicalIPMap.put(physicalIP.toString(), virtualIP);
     }
     
@@ -149,7 +149,7 @@ public class OVXMap implements Mappable {
      * @param virtualIP the IP address used within the VirtualNetwork
      * @param physicalIP refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
      */
-    public void addOVXIPMapping(OVXIPAddress virtualIP, PhysicalIPAddress physicalIP) {
+    public void addOVXIP(OVXIPAddress virtualIP, PhysicalIPAddress physicalIP) {
 	ConcurrentHashMap<Integer, PhysicalIPAddress> ipMap = this.virtualIPMap.getValueForExactKey(virtualIP.toString());
 	if (ipMap == null)
 	    ipMap = new ConcurrentHashMap<Integer, PhysicalIPAddress>();
@@ -164,7 +164,7 @@ public class OVXMap implements Mappable {
      * @param virtualSwitch An OVXSwitch object which is found in the OVXNetwork
      * 
      */
-    public void addPhysicalSwitchMapping(final PhysicalSwitch physicalSwitch,
+    public void addPhysicalSwitch(final PhysicalSwitch physicalSwitch,
 	    final OVXSwitch virtualSwitch) {
 	this.physicalSwitchMap.get(physicalSwitch).put(
 	        virtualSwitch.getTenantId(), virtualSwitch);
@@ -177,7 +177,7 @@ public class OVXMap implements Mappable {
      * @param physicalLink A Link consisting of the PhysicalPort and PhysicalSwitch objects for both the source and destinations
      * @param virtualLink OVXLink contains the OVXPort and OVXSwitch for source and destination in the OVXNetwork
      */
-    public void addPhysicalLinkMapping(final PhysicalLink physicalLink,
+    public void addPhysicalLink(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
 	this.physicalLinkMap.get(physicalLink).put(virtualLink.getTenantId(),
 	        virtualLink);
@@ -191,7 +191,7 @@ public class OVXMap implements Mappable {
      * @param physicalSwitch A PhysicalSwitch object is a single switch in the PhysicalNetwork
      * 
      */
-    public void addVirtualSwitchMapping(final OVXSwitch virtualSwitch,
+    public void addVirtualSwitch(final OVXSwitch virtualSwitch,
 	    final PhysicalSwitch physicalSwitch) {
 	this.virtualSwitchMap.get(virtualSwitch).add(physicalSwitch);
     }
@@ -202,7 +202,7 @@ public class OVXMap implements Mappable {
      * @param virtualLink A OVXLink object which represents a single link in the OVXNetwork
      * @param physicalLink A PhysicalLink object which represent a single source and destination PhysicalPort and PhysicalSwitch 
      */
-    public void addVirtualLinkMapping(final OVXLink virtualLink,
+    public void addVirtualLink(final OVXLink virtualLink,
 	    final PhysicalLink physicalLink) {
 	this.virtualLinkMap.get(virtualLink).add(physicalLink);
     }
@@ -215,7 +215,7 @@ public class OVXMap implements Mappable {
      * 
      */
     @Override
-    public void addNetworkMapping(final OVXNetwork virtualNetwork) {
+    public void addNetwork(final OVXNetwork virtualNetwork) {
 	this.networkMap.put(virtualNetwork.getTenantId(), virtualNetwork);
     }
 

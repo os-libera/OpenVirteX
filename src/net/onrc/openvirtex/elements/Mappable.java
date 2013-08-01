@@ -23,7 +23,7 @@ public interface Mappable {
      * @param physicalIP Refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
      * @param virtualIP The IP address used within the VirtualNetwork
      */
-    void addIPMapping(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP);
+    void addIP(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP);
 
     /**
      * create the mapping between virtual switch to physical switch and from
@@ -33,7 +33,7 @@ public interface Mappable {
      * @param virtualSwitch Has type OVXSwitch and this switch is specific to a tenantId
      * 
      */
-    void addSwitchMapping(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch);
+    void addSwitch(PhysicalSwitch physicalSwitch, OVXSwitch virtualSwitch);
 
     /**
      * create the mapping between the virtual link to physical link and physical
@@ -42,7 +42,7 @@ public interface Mappable {
      * @param physicalLink Refers to the PhysicalLink in the PhysicalNetwork
      * @param virtualLink Refers to the OVXLink which consists of many PhysicalLinks and specific to a tenantId
      */
-    void addLinkMapping(PhysicalLink physicalLink, OVXLink virtualLink);
+    void addLink(PhysicalLink physicalLink, OVXLink virtualLink);
 
     /**
      * Maintain a list of all the virtualNetworks in the system
@@ -50,7 +50,7 @@ public interface Mappable {
      * 
      * @param virtualNetwork An OVXNetwork object which keeps track of all the elements in the Virtual network
      */
-    void addNetworkMapping(OVXNetwork virtualNetwork);
+    void addNetwork(OVXNetwork virtualNetwork);
 
     // Access objects from dictionary given the key
 
