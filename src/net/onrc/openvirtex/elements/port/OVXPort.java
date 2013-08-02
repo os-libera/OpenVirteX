@@ -30,7 +30,7 @@ import net.onrc.openvirtex.util.MACAddress;
  * 
  */
 public class OVXPort extends Port {
-	private int tenantId;
+	private Integer tenantId;
 	private PhysicalPort physicalPort;
 	private OVXSwitch parentSwitch;
 
@@ -56,26 +56,97 @@ public class OVXPort extends Port {
 	 * @param parentSwitch
 	 */
 	public OVXPort(final short portNumber, final MACAddress hardwareAddress,
-			final int config, final int mask, final int advertise,
-			final Boolean isEdge, final int tenantId,
-			final PhysicalPort physicalPort, final OVXSwitch parentSwitch) {
-		super(portNumber, hardwareAddress, config, mask, advertise, isEdge);
+			Boolean isEdge, final Integer tenantId, final OVXSwitch parentSwitch) {
+		super(portNumber, hardwareAddress, isEdge);
+
+		// advertise current speed/duplex as 100MB FD, media type copper
+		this.currentFeatures = 324;
+		// advertise current feature + 1GB FD
+		this.advertisedFeatures = 340;
+		// advertise all the OF1.0 physical port speeds and duplex. Advertise
+		// media type as copper
+		this.supportedFeatures = 383;
+
+		this.tenantId = tenantId;
+		this.physicalPort = null;
+		this.parentSwitch = parentSwitch;
+	}
+
+	/**
+	 * @param portNumber
+	 * @param hwAddress
+	 * @param tenantId
+	 * @param physicalPort
+	 * @param parentSwitch
+	 * @param config
+	 * @param state
+	 * @param currentFeatures
+	 * @param advertisedFeatures
+	 * @param supportedFeatures
+	 */
+	public OVXPort(short portNumber, MACAddress hwAddress, Integer tenantId,
+			PhysicalPort physicalPort, OVXSwitch parentSwitch, Integer config,
+			Integer state, Integer currentFeatures, Integer advertisedFeatures,
+			Integer supportedFeatures, boolean isEdge) {
+		super(portNumber, hwAddress, isEdge);
+		this.config = config;
+		this.state = state;
+		this.currentFeatures = currentFeatures;
+		this.advertisedFeatures = advertisedFeatures;
+		this.supportedFeatures = supportedFeatures;
 		this.tenantId = tenantId;
 		this.physicalPort = physicalPort;
 		this.parentSwitch = parentSwitch;
 	}
 
-	public OVXPort(OVXPort op) {
-		this(op.portNumber, op.hardwareAddress, op.config, op.mask,
-				op.advertise, op.isEdge, op.tenantId, op.physicalPort,
-				op.parentSwitch);
+	/**
+	 * @param portNumber
+	 * @param name
+	 * @param hwAddress
+	 * @param tenantId
+	 * @param physicalPort
+	 * @param parentSwitch
+	 * @param config
+	 * @param state
+	 * @param currentFeatures
+	 * @param advertisedFeatures
+	 * @param supportedFeatures
+	 * @param peerFeatures
+	 * @param isEdge
+	 */
+	public OVXPort(short portNumber, String name, byte[] hwAddress,
+			Integer tenantId, PhysicalPort physicalPort,
+			OVXSwitch parentSwitch, Integer config, Integer state,
+			Integer currentFeatures, Integer advertisedFeatures,
+			Integer supportedFeatures, Integer peerFeatures, boolean isEdge) {
+		super();
+		this.portNumber = portNumber;
+		this.name = name;
+		this.hardwareAddress = hwAddress;
+		this.config = config;
+		this.state = state;
+		this.currentFeatures = currentFeatures;
+		this.advertisedFeatures = advertisedFeatures;
+		this.supportedFeatures = supportedFeatures;
+		this.tenantId = tenantId;
+		this.physicalPort = physicalPort;
+		this.parentSwitch = parentSwitch;
+		this.isEdge = isEdge;
+		this.peerFeatures = peerFeatures;
 	}
 
-	public int getTenantId() {
+	public OVXPort(OVXPort op) {
+		this(op.portNumber, op.name, op.hardwareAddress, op.tenantId,
+				op.physicalPort, op.parentSwitch, op.config, op.state,
+				op.currentFeatures, op.advertisedFeatures,
+				op.supportedFeatures, op.peerFeatures, op.isEdge);
+	}
+
+	public Integer getTenantId() {
 		return this.tenantId;
 	}
 
-	public void setTenantId(final int tenantId) {
+	public void setTenantId(final Integer tenantId) {
 		this.tenantId = tenantId;
 	}
 
@@ -90,6 +161,10 @@ public class OVXPort extends Port {
 			this.physicalPort = physicalPort;
 			return true;
 		}
+	}
+
+	public Short getPhysicalPortNumber() {
+		return this.physicalPort.getPortNumber();
 	}
 
 	boolean updatePhysicalPort(final PhysicalPort physicalPort) {
@@ -109,15 +184,22 @@ public class OVXPort extends Port {
 		this.parentSwitch = parentSwitch;
 	}
 
-	public OVXPort getCopy() {
-		return new OVXPort(this.portNumber, this.hardwareAddress, this.config,
-				this.mask, this.advertise, this.isEdge, this.tenantId,
-				this.physicalPort, this.parentSwitch);
-	}
-
 	@Override
 	public OVXPort clone() {
 		return new OVXPort(this);
 	}
 
+	@Override
+	public String toString() {
+		return "PORT:\n- portNumber: " + this.portNumber + "\n- portName: "
+				+ this.name + "\n- hardwareAddress: "
+				+ MACAddress.valueOf(this.hardwareAddress) + "\n- isEdge: "
+				+ this.isEdge + "\n- tenantId: " + this.tenantId
+				+ "\n- parentSwitch: " + this.parentSwitch.getSwitchName()
+				+ "\n- config: " + this.config + "\n- state: " + this.state
+				+ "\n- currentFeatures: " + this.currentFeatures
+				+ "\n- advertisedFeatures: " + this.advertisedFeatures
+				+ "\n- supportedFeatures: " + this.supportedFeatures
+				+ "\n- peerFeatures: " + this.peerFeatures;
+	}
 }
