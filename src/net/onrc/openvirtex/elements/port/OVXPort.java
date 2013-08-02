@@ -98,14 +98,6 @@ public class OVXPort extends Port<OVXSwitch> {
 		}
 	}
 
-	public OVXSwitch getParentSwitch() {
-		return this.parentSwitch;
-	}
-
-	public void setParentSwitch(final OVXSwitch parentSwitch) {
-		this.parentSwitch = parentSwitch;
-	}
-
 	public OVXPort getCopy() {
 		return new OVXPort(this.portNumber, this.hardwareAddress, this.config,
 				this.mask, this.advertise, this.isEdge, this.tenantId,
