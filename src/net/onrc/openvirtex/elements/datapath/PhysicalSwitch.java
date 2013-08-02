@@ -22,45 +22,55 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
-import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
-
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.Virtualizable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPhysicalPort;
 
+/**
+ * The Class PhysicalSwitch.
+ */
 public class PhysicalSwitch extends Switch<PhysicalPort> {
 
+	/** The log. */
 	Logger log = LogManager.getLogger(PhysicalSwitch.class.getName());
 
 	/**
-     * 
-     */
+	 * Instantiates a new physical switch.
+	 */
 	public PhysicalSwitch() {
 		super();
 	}
 
 	/**
-	 * @param switchName
-	 * @param switchId
-	 * @param map
+	 * Instantiates a new physical switch.
+	 *
+	 * @param switchId the switch id
 	 */
-	public PhysicalSwitch(final String switchName, final long switchId,
-			final OVXMap map) {
-		super(switchName, switchId, map);
+	public PhysicalSwitch(final long switchId) {
+		super(switchId);
 	}
 
-	@Override
-	public boolean initialize() {
-		// TODO: Take featuresReply and add ports to the maps
-		return false;
+	/**
+	 * Gets the oVX port number.
+	 *
+	 * @param physicalPortNumber the physical port number
+	 * @param tenantId the tenant id
+	 * @return the oVX port number
+	 */
+	public Short getOVXPortNumber(Short physicalPortNumber, Integer tenantId) {
+		return this.portMap.get(physicalPortNumber).getOVXPortNumber(tenantId);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.onrc.openvirtex.elements.datapath.Switch#handleIO(org.openflow.protocol.OFMessage)
+	 */
 	@Override
 	public synchronized void handleIO(OFMessage msgs) {
 		try {
@@ -71,18 +81,38 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see net.onrc.openvirtex.elements.datapath.Switch#tearDown()
+	 */
 	@Override
 	public void tearDown() {
 		log.info("Switch disconnected {} ", this.featuresReply.getDatapathId());
 
 	}
 
+	/**
+	 * Fill port map.
+	 */
+	protected void fillPortMap() {
+		for (OFPhysicalPort port : this.featuresReply.getPorts()) {
+			PhysicalPort physicalPort = new PhysicalPort(port.getPortNumber(),
+					port.getName(), port.getHardwareAddress(), this,
+					port.getConfig(), port.getState(),
+					port.getCurrentFeatures(), port.getAdvertisedFeatures(),
+					port.getSupportedFeatures(), port.getPeerFeatures(), false);
+			this.portMap.put(port.getPortNumber(), physicalPort);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see net.onrc.openvirtex.elements.datapath.Switch#init()
+	 */
 	@Override
 	public void init() {
 		log.info("Switch connected {} : {}",
 				this.featuresReply.getDatapathId(),
 				this.desc.getHardwareDescription());
-
+		fillPortMap();
 	}
 
 	/*
@@ -97,6 +127,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		channel.write(Collections.singletonList(msg));
 	}
 
+	/* (non-Javadoc)
+	 * @see net.onrc.openvirtex.elements.datapath.Switch#toString()
+	 */
 	@Override
 	public String toString() {
 		return "DPID : " + this.featuresReply.getDatapathId()
@@ -104,9 +137,23 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				+ this.channel.getRemoteAddress().toString();
 	}
 
+	/* (non-Javadoc)
+	 * @see net.onrc.openvirtex.elements.datapath.Switch#setSwitchId(java.lang.Long)
+	 */
 	@Override
-	public boolean setSwitchId(long switchId) {
+	public boolean setSwitchId(Long switchId) {
 		return false;
 	}
 
+	/**
+	 * Gets the port.
+	 * 
+	 * @param portNumber
+	 *            the port number
+	 * @return a COPY of the port instance
+	 */
+	@Override
+	public PhysicalPort getPort(Short portNumber) {
+		return this.portMap.get(portNumber).clone();
+	};
 }

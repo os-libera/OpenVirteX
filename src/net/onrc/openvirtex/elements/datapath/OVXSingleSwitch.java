@@ -3,11 +3,10 @@
  */
 package net.onrc.openvirtex.elements.datapath;
 
-import org.openflow.protocol.OFMessage;
-
 import net.onrc.openvirtex.core.io.OVXSendMsg;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
+
+import org.openflow.protocol.OFMessage;
 
 /**
  * @author gerola
@@ -29,14 +28,8 @@ public class OVXSingleSwitch extends OVXSwitch {
 	 * @param tenantId
 	 * @param pktLenght
 	 */
-	public OVXSingleSwitch(final String switchName, final long switchId,
-			final OVXMap map, final int tenantId, final short pktLenght) {
-		super(switchName, switchId, map, tenantId, pktLenght);
-	}
-
-	@Override
-	public OVXPort getPort(final short portNumber) {
-		return this.portMap.get(portNumber).getCopy();
+	public OVXSingleSwitch(final long switchId, final int tenantId) {
+		super(switchId, tenantId);
 	}
 
 	@Override
@@ -60,19 +53,13 @@ public class OVXSingleSwitch extends OVXSwitch {
 	}
 
 	@Override
-	public boolean removePort(final short portNumber) {
+	public boolean removePort(final Short portNumber) {
 		if (!this.portMap.containsKey(portNumber)) {
 			return false;
 		} else {
 			this.portMap.remove(portNumber);
 			return true;
 		}
-	}
-
-	@Override
-	public boolean initialize() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	/*
@@ -86,6 +73,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 	public void sendMsg(OFMessage msg, OVXSendMsg from) {
 		// TODO Auto-generated method stub
 
+		// Truncate the message for the ctrl to the missSetLenght value
 	}
 
 	/*
@@ -119,14 +107,27 @@ public class OVXSingleSwitch extends OVXSwitch {
 	 */
 	@Override
 	public void init() {
-		// TODO Auto-generated method stub
+		generateFeaturesReply();
+		// TODO: Register to the upper loop
 
 	}
 
 	@Override
-	public boolean setSwitchId(long switchId) {
+	public boolean setSwitchId(Long switchId) {
 		this.switchId = switchId;
 		return true;
 	}
+
+	/**
+	 * Gets the port.
+	 * 
+	 * @param portNumber
+	 *            the port number
+	 * @return a COPY of the port instance
+	 */
+	@Override
+	public OVXPort getPort(Short portNumber) {
+		return this.portMap.get(portNumber).clone();
+	};
 
 }

@@ -24,101 +24,89 @@ package net.onrc.openvirtex.elements.port;
 
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.openflow.protocol.OFPhysicalPort;
+
 /**
- * @author gerola
+ * The Class Port.
  * 
  */
-public class Port implements Cloneable {
-	protected short portNumber;
-	protected MACAddress hardwareAddress;
-	protected int config;
-	protected int mask;
-	protected int advertise;
+public class Port extends OFPhysicalPort implements Cloneable {
 
-	// dovremmo mettere duplixing/speed anche
-	// vedere come averli
+	// TODO: duplexing/speed on port/link???
 
+	/** The is edge. */
 	protected Boolean isEdge;
 
 	/**
-     * 
-     */
+	 * Instantiates a new port.
+	 */
 	protected Port() {
 	}
 
 	/**
+	 * Instantiates a new port.
+	 * 
 	 * @param portNumber
+	 *            the port number
 	 * @param hardwareAddress
-	 * @param config
-	 * @param mask
-	 * @param advertise
-	 * @param isEdge
+	 *            the hardware address
 	 */
-	protected Port(final short portNumber, final MACAddress hardwareAddress,
-			final int config, final int mask, final int advertise,
-			final Boolean isEdge) {
+	protected Port(final short portNumber, final MACAddress hwAddress,
+			final boolean isEdge) {
 		super();
 		this.portNumber = portNumber;
-		this.hardwareAddress = hardwareAddress;
-		this.config = config;
-		this.mask = mask;
-		this.advertise = advertise;
+		this.hardwareAddress = hwAddress.getAddress();
+		this.name = "vport" + portNumber;
+		this.config = 0;
+		this.state = 0;
+		this.currentFeatures = 0;
+		this.advertisedFeatures = 0;
+		this.supportedFeatures = 0;
+		this.peerFeatures = 0;
 		this.isEdge = isEdge;
 	}
 
-	public short getPortNumber() {
-		return this.portNumber;
-	}
-
-	public void setPortNumber(final short portNumber) {
-		this.portNumber = portNumber;
-	}
-
-	public MACAddress getHardwareAddress() {
-		return this.hardwareAddress;
-	}
-
-	public void setHardwareAddress(final MACAddress hardwareAddress) {
-		this.hardwareAddress = hardwareAddress;
-	}
-
-	public int getConfig() {
-		return this.config;
-	}
-
-	public void setConfig(final int config) {
-		this.config = config;
-	}
-
-	public int getMask() {
-		return this.mask;
-	}
-
-	public void setMask(final int mask) {
-		this.mask = mask;
-	}
-
-	public int getAdvertise() {
-		return this.advertise;
-	}
-
-	public void setAdvertise(final int advertise) {
-		this.advertise = advertise;
-	}
-
+	/**
+	 * Gets the checks if is edge.
+	 * 
+	 * @return the checks if is edge
+	 */
 	public Boolean getIsEdge() {
 		return this.isEdge;
 	}
 
+	/**
+	 * Sets the checks if is edge.
+	 * 
+	 * @param isEdge
+	 *            the new checks if is edge
+	 */
 	public void setIsEdge(final Boolean isEdge) {
 		this.isEdge = isEdge;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#clone()
+	 */
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		// Log error throw exception
 		throw new CloneNotSupportedException(
 				"The base class should never be cloned.");
+	}
+
+	@Override
+	public String toString() {
+		return "PORT:\n- portNumber: " + this.portNumber + "\n- portName: "
+				+ this.name + "\n- hardwareAddress: "
+				+ MACAddress.valueOf(this.hardwareAddress) + "\n- isEdge: "
+				+ this.isEdge + "\n- config: " + this.config + "\n- state: "
+				+ this.state + "\n- currentFeatures: " + this.currentFeatures
+				+ "\n- advertisedFeatures: " + this.advertisedFeatures
+				+ "\n- supportedFeatures: " + this.supportedFeatures
+				+ "\n- peerFeatures: " + this.peerFeatures;
 	}
 
 }

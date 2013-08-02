@@ -6,13 +6,12 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import org.openflow.protocol.OFMessage;
-
 import net.onrc.openvirtex.core.io.OVXSendMsg;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
+
+import org.openflow.protocol.OFMessage;
 
 /**
  * The Class OVXBigSwitch.
@@ -44,8 +43,6 @@ public class OVXBigSwitch extends OVXSwitch {
 	 *            the switch name
 	 * @param switchId
 	 *            the switch id
-	 * @param map
-	 *            the map
 	 * @param tenantId
 	 *            the tenant id
 	 * @param pktLenght
@@ -53,10 +50,9 @@ public class OVXBigSwitch extends OVXSwitch {
 	 * @param alg
 	 *            the alg
 	 */
-	public OVXBigSwitch(final String switchName, final long switchId,
-			final OVXMap map, final int tenantId, final short pktLenght,
+	public OVXBigSwitch(final long switchId, final int tenantId,
 			final RoutingAlgorithms alg) {
-		super(switchName, switchId, map, tenantId, pktLenght);
+		super(switchId, tenantId);
 		this.alg = alg;
 		this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
 	}
@@ -78,16 +74,6 @@ public class OVXBigSwitch extends OVXSwitch {
 	 */
 	public void setAlg(final RoutingAlgorithms alg) {
 		this.alg = alg;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.onrc.openvirtex.elements.datapath.Switch#getPort(short)
-	 */
-	@Override
-	public OVXPort getPort(final short portNumber) {
-		return this.portMap.get(portNumber).getCopy();
 	}
 
 	/*
@@ -128,25 +114,13 @@ public class OVXBigSwitch extends OVXSwitch {
 	 * @see net.onrc.openvirtex.elements.datapath.Switch#removePort(short)
 	 */
 	@Override
-	public boolean removePort(final short portNumber) {
+	public boolean removePort(final Short portNumber) {
 		if (!this.portMap.containsKey(portNumber)) {
 			return false;
 		} else {
 			this.portMap.remove(portNumber);
 			return true;
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.onrc.openvirtex.elements.datapath.Switch#initialize()
-	 */
-	@Override
-	public boolean initialize() {
-		// TODO Auto-generated method stub
-
-		return false;
 	}
 
 	/*
@@ -159,6 +133,7 @@ public class OVXBigSwitch extends OVXSwitch {
 	@Override
 	public void sendMsg(OFMessage msg, OVXSendMsg from) {
 		// TODO Auto-generated method stub
+		// Truncate the message for the ctrl to the missSetLenght value
 
 	}
 
@@ -193,14 +168,38 @@ public class OVXBigSwitch extends OVXSwitch {
 	 */
 	@Override
 	public void init() {
-		// TODO Auto-generated method stub
+		generateFeaturesReply();
+		// TODO: Register to the upper loop
+		// TODO: Start the internal routing protocol
 
 	}
 
 	@Override
-	public boolean setSwitchId(long switchId) {
+	public boolean setSwitchId(Long switchId) {
 		this.switchId = switchId;
 		return true;
 	}
 
+	/**
+	 * Gets the port.
+	 * 
+	 * @param portNumber
+	 *            the port number
+	 * @return a COPY of the port instance
+	 */
+	@Override
+	public OVXPort getPort(Short portNumber) {
+		return this.portMap.get(portNumber).clone();
+	};
+
+	@Override
+	public String toString() {
+		return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
+				+ this.switchName + "\n- isConnected: " + this.isConnected
+				+ "\n- tenantId: " + this.tenantId + "\n- missSendLenght: "
+				+ this.missSendLen + "\n- isActive: " + this.isActive
+				+ "\n- capabilities: "
+				+ this.capabilities.getOVXSwitchCapabilities()
+				+ "\n- algorithm: " + this.alg.getValue();
+	}
 }
