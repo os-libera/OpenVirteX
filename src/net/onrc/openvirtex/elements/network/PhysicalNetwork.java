@@ -41,13 +41,16 @@ import org.openflow.protocol.OFMessage;
 public class PhysicalNetwork extends
         Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 
-    private static final PhysicalNetwork instance = new PhysicalNetwork();
-    private ArrayList<Uplink>            uplinkList;
+    private static PhysicalNetwork instance;
+    private ArrayList<Uplink>      uplinkList;
 
     private PhysicalNetwork() {
     }
 
     public static PhysicalNetwork getInstance() {
+	if (PhysicalNetwork.instance == null) {
+	    PhysicalNetwork.instance = new PhysicalNetwork();
+	}
 	return PhysicalNetwork.instance;
     }
 
@@ -62,10 +65,13 @@ public class PhysicalNetwork extends
     @Override
     public void handleIO(final OFMessage msgs) {
 	// TODO Auto-generated method stub
+
     }
 
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 	// TODO Auto-generated method stub
+
     }
+
 }

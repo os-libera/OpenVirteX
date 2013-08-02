@@ -29,10 +29,9 @@ import net.onrc.openvirtex.util.MACAddress;
  * @author gerola
  * 
  */
-public class OVXPort extends Port {
+public class OVXPort extends Port<OVXSwitch> {
 	private int tenantId;
 	private PhysicalPort physicalPort;
-	private OVXSwitch parentSwitch;
 
 	/**
      * 
@@ -41,7 +40,6 @@ public class OVXPort extends Port {
 		super();
 		this.tenantId = 0;
 		this.physicalPort = null;
-		this.parentSwitch = null;
 	}
 
 	/**
@@ -59,10 +57,9 @@ public class OVXPort extends Port {
 			final int config, final int mask, final int advertise,
 			final Boolean isEdge, final int tenantId,
 			final PhysicalPort physicalPort, final OVXSwitch parentSwitch) {
-		super(portNumber, hardwareAddress, config, mask, advertise, isEdge);
+		super(portNumber, hardwareAddress, config, mask, advertise, isEdge, parentSwitch);
 		this.tenantId = tenantId;
 		this.physicalPort = physicalPort;
-		this.parentSwitch = parentSwitch;
 	}
 
 	public OVXPort(OVXPort op) {

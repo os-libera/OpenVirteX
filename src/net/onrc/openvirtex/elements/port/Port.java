@@ -22,18 +22,20 @@
 
 package net.onrc.openvirtex.elements.port;
 
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.util.MACAddress;
 
 /**
  * @author gerola
  * 
  */
-public class Port implements Cloneable {
+public class Port<T> implements Cloneable {
 	protected short portNumber;
 	protected MACAddress hardwareAddress;
 	protected int config;
 	protected int mask;
 	protected int advertise;
+	protected T parentSwitch;
 
 	// dovremmo mettere duplixing/speed anche
 	// vedere come averli
@@ -56,7 +58,7 @@ public class Port implements Cloneable {
 	 */
 	protected Port(final short portNumber, final MACAddress hardwareAddress,
 			final int config, final int mask, final int advertise,
-			final Boolean isEdge) {
+			final Boolean isEdge, final T parentSwitch) {
 		super();
 		this.portNumber = portNumber;
 		this.hardwareAddress = hardwareAddress;
@@ -64,6 +66,7 @@ public class Port implements Cloneable {
 		this.mask = mask;
 		this.advertise = advertise;
 		this.isEdge = isEdge;
+		this.parentSwitch = parentSwitch;
 	}
 
 	public short getPortNumber() {
@@ -113,7 +116,15 @@ public class Port implements Cloneable {
 	public void setIsEdge(final Boolean isEdge) {
 		this.isEdge = isEdge;
 	}
-
+	
+	public T getParentSwitch() {
+	    return this.parentSwitch;
+	}
+	
+	public void setParentSwitch(final T parentSwitch) {
+	    this.parentSwitch = parentSwitch;
+	}
+	
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		// Log error throw exception

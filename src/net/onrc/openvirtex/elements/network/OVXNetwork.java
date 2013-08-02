@@ -30,7 +30,7 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.address.IPAddress;
@@ -67,16 +67,18 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.mask = mask;
     }
 
-    public boolean register() {
-	// TODO = access map
+    public boolean register() {	
+	// TODO
+	// map = OVXMap.getInstance();
+	// return map.addVirtualNetwork(this);
 	return true;
     }
 
-    public int getTenantId() {
+    public Integer getTenantId() {
 	return this.tenantId;
     }
 
-    public void setTenantId(final int tenantId) {
+    public void setTenantId(final Integer tenantId) {
 	this.tenantId = tenantId;
     }
 
@@ -96,7 +98,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.mask = mask;
     }
 
-    public OVXSwitch addSwitch(final HashSet<OVXSwitch> swSet) {
+    public OVXSwitch addSwitch(final ArrayList<OVXSwitch> swSet) {
+	// switch = new OVXBigSwitch();
 	return new OVXBigSwitch();
     }
 

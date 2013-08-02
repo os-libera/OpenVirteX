@@ -31,7 +31,7 @@ import net.onrc.openvirtex.util.MACAddress;
  * @author gerola
  * 
  */
-public class PhysicalPort extends Port {
+public class PhysicalPort extends Port<PhysicalSwitch> {
 	private final HashMap<Integer, OVXPort> ovxPortMap;
 	private PhysicalSwitch parentSwitch;
 
@@ -57,9 +57,8 @@ public class PhysicalPort extends Port {
 			final MACAddress hardwareAddress, final int config, final int mask,
 			final int advertise, final Boolean isEdge,
 			final PhysicalSwitch parentSwitch) {
-		super(portNumber, hardwareAddress, config, mask, advertise, isEdge);
+		super(portNumber, hardwareAddress, config, mask, advertise, isEdge, parentSwitch);
 		this.ovxPortMap = new HashMap<Integer, OVXPort>();
-		this.parentSwitch = parentSwitch;
 	}
 
 	public PhysicalPort(PhysicalPort pp) {
@@ -86,15 +85,6 @@ public class PhysicalPort extends Port {
 		} else {
 			this.ovxPortMap.put(tenantId, ovxPort);
 		}
-		return true;
-	}
-
-	public PhysicalSwitch getParentSwitch() {
-		return this.parentSwitch;
-	}
-
-	public boolean setParentSwitch(final PhysicalSwitch parentSwitch) {
-		this.parentSwitch = parentSwitch;
 		return true;
 	}
 
