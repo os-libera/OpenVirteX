@@ -22,47 +22,83 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import net.onrc.openvirtex.elements.port.Port;
+
 /**
- * @author gerola
+ * The Class Link.
  * 
+ * @param <T1>
+ *            the generic type (Port)
  */
-public abstract class Link<T1> {
-	private T1 srcPort;
-	private T1 dstPort;
+public abstract class Link<T extends Port> {
+
+	/** The source port. */
+	protected T srcPort = null;
+
+	/** The destination port. */
+	protected T dstPort = null;
 
 	/**
-     * 
-     */
-	public Link() {
-		super();
-		this.srcPort = null;
-		this.dstPort = null;
+	 * Instantiates a new link.
+	 */
+	protected Link() {
 	}
 
 	/**
+	 * Instantiates a new link.
+	 * 
 	 * @param srcPort
+	 *            the source port instance
 	 * @param dstPort
+	 *            the destination port instance
 	 */
-	public Link(final T1 srcPort, final T1 dstPort) {
+	protected Link(final T srcPort, final T dstPort) {
 		super();
 		this.srcPort = srcPort;
 		this.dstPort = dstPort;
 	}
 
-	public T1 getSrcPort() {
+	/**
+	 * Gets the source port instance.
+	 * 
+	 * @return the source port
+	 */
+	public T getSrcPort() {
 		return this.srcPort;
 	}
 
-	public void setSrcPort(final T1 srcPort) {
+	/**
+	 * Sets the source port instance.
+	 * 
+	 * @param srcPort
+	 *            the new source port
+	 */
+	public void setSrcPort(final T srcPort) {
 		this.srcPort = srcPort;
 	}
 
-	public T1 getDstPort() {
+	/**
+	 * Gets the destination port instance.
+	 * 
+	 * @return the destination port
+	 */
+	public T getDstPort() {
 		return this.dstPort;
 	}
 
-	public void setDstPort(final T1 dstPort) {
+	/**
+	 * Sets the destination port instance.
+	 * 
+	 * @param dstPort
+	 *            the new destination port
+	 */
+	public void setDstPort(final T dstPort) {
 		this.dstPort = dstPort;
 	}
+
+	/**
+	 * Inits the instance.
+	 */
+	public abstract void init();
 
 }

@@ -71,7 +71,7 @@ public class OpenVirteXController implements Runnable {
     @Override
     public void run() {
 	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
-	this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)1, null, 1, (short)100), "192.168.2.136", 6633);
+	this.registerOVXSwitch(new OVXSingleSwitch(1,1), "192.168.2.136", 6633);
 	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
 	try {
 	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();

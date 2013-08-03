@@ -25,16 +25,20 @@ package net.onrc.openvirtex.elements.link;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
 /**
- * @author gerola
+ * The Class OVXLink.
  * 
  */
 public class OVXLink extends Link<OVXPort> {
-	private int linkId;
-	private int tenantId;
+
+	/** The link id. */
+	private Integer linkId;
+
+	/** The tenant id. */
+	private Integer tenantId;
 
 	/**
-     * 
-     */
+	 * Instantiates a new virtual link.
+	 */
 	public OVXLink() {
 		super();
 		this.linkId = 0;
@@ -42,32 +46,66 @@ public class OVXLink extends Link<OVXPort> {
 	}
 
 	/**
+	 * Instantiates a new virtual link.
+	 * 
 	 * @param srcPort
+	 *            the source port
 	 * @param dstPort
+	 *            the destination port
 	 * @param tenantId
+	 *            the tenant id
 	 * @param linkId
+	 *            the link id
 	 */
 	public OVXLink(final OVXPort srcPort, final OVXPort dstPort,
-			final int tenantId, final int linkId) {
+			final Integer tenantId, final Integer linkId) {
 		super(srcPort, dstPort);
 		this.linkId = linkId;
 		this.tenantId = tenantId;
 	}
 
-	public int getLinkId() {
+	/**
+	 * Gets the link id.
+	 * 
+	 * @return the link id
+	 */
+	public Integer getLinkId() {
 		return this.linkId;
 	}
 
-	public void setLinkId(final int linkId) {
+	/**
+	 * Sets the link id.
+	 * 
+	 * @param linkId
+	 *            the new link id
+	 */
+	public void setLinkId(final Integer linkId) {
 		this.linkId = linkId;
 	}
 
-	public int getTenantId() {
+	/**
+	 * Gets the tenant id.
+	 * 
+	 * @return the tenant id
+	 */
+	public Integer getTenantId() {
 		return this.tenantId;
 	}
 
-	public void setTenantId(final int tenantId) {
+	/**
+	 * Sets the tenant id.
+	 * 
+	 * @param tenantId
+	 *            the new tenant id
+	 */
+	public void setTenantId(final Integer tenantId) {
 		this.tenantId = tenantId;
+	}
+
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+
 	}
 
 }

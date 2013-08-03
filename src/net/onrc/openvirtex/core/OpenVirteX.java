@@ -25,10 +25,10 @@ package net.onrc.openvirtex.core;
 import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.exceptions.OpenVirteXException;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 
 public class OpenVirteX {
 
