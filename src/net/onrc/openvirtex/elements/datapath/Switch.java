@@ -241,4 +241,9 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 		this.desc = description;
 
 	}
+	
+	@Override
+	public String getName() {
+	    return this.switchName + ":" + this.switchId;
+	}
 }

@@ -62,7 +62,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	}
 
 	@Override
-	public synchronized void handleIO(OFMessage msgs) {
+	public void handleIO(OFMessage msgs) {
 		try {
 			((Virtualizable) msgs).virtualize(this);
 		} catch (ClassCastException e) {
@@ -74,6 +74,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	@Override
 	public void tearDown() {
 		log.info("Switch disconnected {} ", this.featuresReply.getDatapathId());
+		channel.disconnect();
 
 	}
 

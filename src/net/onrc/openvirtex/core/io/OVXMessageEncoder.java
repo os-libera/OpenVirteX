@@ -53,9 +53,11 @@ public class OVXMessageEncoder extends OneToOneEncoder {
 		}
 
 		ChannelBuffer buf = ChannelBuffers.buffer(size);
-		;
+		
 		for (OFMessage ofm : msglist) {
+		    
 			ofm.writeTo(buf);
+		    
 		}
 		return buf;
 	}

@@ -120,6 +120,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 
 			@Override
 			void processOFError(SwitchChannelHandler h, OFError m) {
+			    	h.log.error("Error waiting for Hello (type:{}, code:{})", 
+			    		m.getErrorType(), m.getErrorCode());
 				// TODO: log the error and disconnect
 				h.channel.disconnect();
 			}

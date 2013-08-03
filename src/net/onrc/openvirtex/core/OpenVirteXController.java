@@ -25,78 +25,137 @@ package net.onrc.openvirtex.core;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+import net.onrc.openvirtex.core.io.ClientChannelPipeline;
+import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
+import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.openflow.protocol.OFMessage;
 
 public class OpenVirteXController implements Runnable {
 
-	Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
+    Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
 
-	private static final int SEND_BUFFER_SIZE = 1024 * 1024;
+    private static final int SEND_BUFFER_SIZE = 1024 * 1024;
 
-	private String configFile = null;
-	private String ofHost = null;
-	private Integer ofPort = null;
+    private String configFile = null;
+    private String ofHost = null;
+    private Integer ofPort = null;
 
-	private final ChannelGroup cg = new DefaultChannelGroup();
-	private SwitchChannelPipeline pfact = null;
 
-	public OpenVirteXController(String configFile, String ofHost, Integer ofPort) {
-		this.configFile = configFile;
-		this.ofHost = ofHost;
-		this.ofPort = ofPort;
+    private NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
+	    Executors.newCachedThreadPool(), 
+	    Executors.newCachedThreadPool());
+
+    private final ChannelGroup cg = new DefaultChannelGroup();
+    
+    private SwitchChannelPipeline pfact = null;
+
+    public OpenVirteXController(String configFile, String ofHost, Integer ofPort) {
+	this.configFile = configFile;
+	this.ofHost = ofHost;
+	this.ofPort = ofPort;
+    }
+
+    @Override
+    public void run() {
+	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
+	this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)1, null, 1, (short)100), "192.168.2.136", 6633);
+	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
+	try {
+	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
+
+	    setServerBootStrapParams(switchServerBootStrap);
+
+	    pfact = new SwitchChannelPipeline(this, null);
+	    switchServerBootStrap.setPipelineFactory(pfact);
+	    InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
+		    ofPort) : new InetSocketAddress(ofHost, ofPort);
+
+		    cg.add(switchServerBootStrap.bind(sa));
+
+	} catch (Exception e) {
+	    throw new RuntimeException(e);
 	}
 
-	@Override
-	public void run() {
-		Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
-		try {
-			final ServerBootstrap switchServerBootStrap = createServerBootStrap();
+    }
 
-			setServerBootStrapParams(switchServerBootStrap);
 
-			pfact = new SwitchChannelPipeline(this, null);
-			switchServerBootStrap.setPipelineFactory(pfact);
-			InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
-					ofPort) : new InetSocketAddress(ofHost, ofPort);
 
-			cg.add(switchServerBootStrap.bind(sa));
+    public void registerOVXSwitch(final OVXSwitch sw, String host, Integer port) {
+	ClientBootstrap clientBootStrap = createClientBootStrap();
+	setClientBootStrapParams(clientBootStrap);
+	final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
+	clientBootStrap.setOption("remoteAddress", remoteAddr);
 
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	ClientChannelPipeline cfact = new ClientChannelPipeline(this, null, 
+		clientBootStrap, sw);
+	clientBootStrap.setPipelineFactory(cfact);
 
+	ChannelFuture cf = clientBootStrap.connect();
+
+	cf.addListener(new ChannelFutureListener() {
+	    
+	    @Override
+	    public void operationComplete(ChannelFuture e) throws Exception {
+		if (e.isSuccess())
+		    sw.setChannel(e.getChannel());
+		else
+		    log.error("Failed to connect to controller {} for switch {}", remoteAddr, sw.getSwitchId());
+		
+	    }
+	});
+	
+    }
+
+
+    private void setServerBootStrapParams(ServerBootstrap bootstrap) {
+	bootstrap.setOption("reuseAddr", true);
+	bootstrap.setOption("child.keepAlive", true);
+	bootstrap.setOption("child.tcpNoDelay", true);
+	bootstrap.setOption("child.sendBufferSize",
+		OpenVirteXController.SEND_BUFFER_SIZE);
+
+    }
+
+    private void setClientBootStrapParams(ClientBootstrap bootstrap) {
+	bootstrap.setOption("reuseAddr", true);
+	bootstrap.setOption("child.keepAlive", true);
+	bootstrap.setOption("child.tcpNoDelay", true);
+	bootstrap.setOption("child.sendBufferSize",
+		OpenVirteXController.SEND_BUFFER_SIZE);
+
+    }
+
+    private ClientBootstrap createClientBootStrap() {
+	return new ClientBootstrap(clientSockets);
+    }
+
+    private ServerBootstrap createServerBootStrap() {
+	return new ServerBootstrap(new NioServerSocketChannelFactory(
+		Executors.newCachedThreadPool(),
+		Executors.newCachedThreadPool()));
+    }
+
+    public void terminate() {
+	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
+	    log.info("Shut down all connections. Quitting...");
+	} else {
+	    log.error("Error shutting down all connections. Quitting anyway.");
 	}
-
-	private void setServerBootStrapParams(ServerBootstrap bootstrap) {
-		bootstrap.setOption("reuseAddr", true);
-		bootstrap.setOption("child.keepAlive", true);
-		bootstrap.setOption("child.tcpNoDelay", true);
-		bootstrap.setOption("child.sendBufferSize",
-				OpenVirteXController.SEND_BUFFER_SIZE);
-
-	}
-
-	private ServerBootstrap createServerBootStrap() {
-		return new ServerBootstrap(new NioServerSocketChannelFactory(
-				Executors.newCachedThreadPool(),
-				Executors.newCachedThreadPool()));
-	}
-
-	public void terminate() {
-		if (cg != null && cg.close().awaitUninterruptibly(1000)) {
-			log.info("Shut down all connections. Quitting...");
-		} else {
-			log.error("Error shutting down all connections. Quitting anyway.");
-		}
-		if (pfact != null)
-			pfact.releaseExternalResources();
-	}
+	if (pfact != null)
+	    pfact.releaseExternalResources();
+    }
 
 }

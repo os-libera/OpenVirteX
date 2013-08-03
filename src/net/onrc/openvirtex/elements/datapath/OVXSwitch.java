@@ -22,50 +22,70 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
 public abstract class OVXSwitch extends Switch<OVXPort> {
-	private int tenantId;
-	private short pktLength;
+    private int tenantId;
+    private short pktLength;
 
-	/**
+    private AtomicInteger backOffCounter = null;
+
+
+
+    /**
      * 
      */
-	public OVXSwitch() {
-		super();
-		this.tenantId = 0;
-		this.pktLength = 0;
-	}
+    public OVXSwitch() {
+	super();
+	this.tenantId = 0;
+	this.pktLength = 0;
+	this.backOffCounter = new AtomicInteger();
+	//TODO: the below should be in init
+	this.resetBackOff();
+    }
 
-	/**
-	 * @param switchName
-	 * @param switchId
-	 * @param map
-	 */
-	public OVXSwitch(final String switchName, final long switchId,
-			final OVXMap map, final int tenantId, final short pktLenght) {
-		super(switchName, switchId, map);
-		this.tenantId = tenantId;
-		this.pktLength = pktLenght;
-	}
+    /**
+     * @param switchName
+     * @param switchId
+     * @param map
+     */
+    public OVXSwitch(final String switchName, final long switchId,
+	    final OVXMap map, final int tenantId, final short pktLenght) {
+	super(switchName, switchId, map);
+	this.tenantId = tenantId;
+	this.pktLength = pktLenght;
+	this.backOffCounter = new AtomicInteger();
+	//TODO: the below should be in init
+	this.resetBackOff();
+    }
 
-	public int getTenantId() {
-		return this.tenantId;
-	}
+    public int getTenantId() {
+	return this.tenantId;
+    }
 
-	public boolean setTenantId(final int tenantId) {
-		this.tenantId = tenantId;
-		return true;
-	}
+    public boolean setTenantId(final int tenantId) {
+	this.tenantId = tenantId;
+	return true;
+    }
 
-	public short getPktLength() {
-		return this.pktLength;
-	}
+    public short getPktLength() {
+	return this.pktLength;
+    }
 
-	public boolean setPktLength(final short pktLenght) {
-		this.pktLength = pktLenght;
-		return true;
-	}
+    public boolean setPktLength(final short pktLenght) {
+	this.pktLength = pktLenght;
+	return true;
+    }
+
+    public void resetBackOff() {
+	this.backOffCounter.set(-1);
+    }
+
+    public int incrementBackOff() {
+	return this.backOffCounter.incrementAndGet();
+    }
 
 }

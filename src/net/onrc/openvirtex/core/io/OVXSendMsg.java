@@ -4,4 +4,6 @@ import org.openflow.protocol.OFMessage;
 
 public interface OVXSendMsg {
 	public void sendMsg(OFMessage msg, OVXSendMsg from);
+	
+	public String getName();
 }
