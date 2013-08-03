@@ -5,10 +5,14 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
 import net.onrc.openvirtex.messages.Devirtualizable;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 
@@ -210,6 +214,34 @@ public class OVXBigSwitch extends OVXSwitch {
 		+ "\n- capabilities: "
 		+ this.capabilities.getOVXSwitchCapabilities()
 		+ "\n- algorithm: " + this.alg.getValue();
+    }
+
+    @Override
+    public boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
+            Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration {
+	OVXPort ovxPort = getPort(ovxPortNumber);
+	List<PhysicalSwitch> switchList =  OVXMap.getInstance().getPhysicalSwitches(this);
+	PhysicalSwitch physicalSwitch = null;
+	for (PhysicalSwitch sw : switchList) {
+	    if (sw.getSwitchId() == physicalSwitchId) {
+		physicalSwitch = sw;
+		break;
+	    }
+	}
+	if (physicalSwitch == null)
+	    throw new IllegalVirtualSwitchConfiguration("Big Virtual switch port " + ovxPortNumber +
+		    " on switch " + this.switchId + " has no physical counterpart");
+	
+	PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
+
+	// Map the two ports
+	ovxPort.setPhysicalPort(physicalPort);
+	physicalPort.setOVXPort(this.tenantId, ovxPort);
+	// If the ovxPort is an edgePort, set also the physicalPort as an edge
+	
+	physicalPort.setIsEdge(ovxPort.getIsEdge());
+	
+	return true;
     }
 
 }

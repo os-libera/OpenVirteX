@@ -3,14 +3,22 @@
  */
 package net.onrc.openvirtex.elements.datapath;
 
-import net.onrc.openvirtex.core.io.OVXSendMsg;
-import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.messages.Devirtualizable;
 
+import java.util.Collections;
+import java.util.List;
+
+import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
+import net.onrc.openvirtex.messages.Devirtualizable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
+
+
 
 /**
  * @author gerola
@@ -77,9 +85,7 @@ public class OVXSingleSwitch extends OVXSwitch {
      */
     @Override
     public void sendMsg(OFMessage msg, OVXSendMsg from) {
-	// TODO Auto-generated method stub
-
-	// Truncate the message for the ctrl to the missSetLenght value
+	channel.write(Collections.singletonList(msg));
     }
 
     /*
@@ -96,7 +102,6 @@ public class OVXSingleSwitch extends OVXSwitch {
 	} catch (ClassCastException e) {
 	    log.error("Received illegal message : " + msgs);
 	}
-
     }
 
     /*
@@ -133,11 +138,37 @@ public class OVXSingleSwitch extends OVXSwitch {
      * 
      * @param portNumber
      *            the port number
-     * @return a COPY of the port instance
+     * @return the port instance
      */
     @Override
-    public OVXPort getPort(Short portNumber) {
-	return this.portMap.get(portNumber).clone();
+    protected OVXPort getPort(Short portNumber) {
+	return this.portMap.get(portNumber);
+    }
+
+    @Override
+    public boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
+            Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration {
+	
+	OVXPort ovxPort = getPort(ovxPortNumber);
+	List<PhysicalSwitch> switchList =  OVXMap.getInstance().getPhysicalSwitches(this);
+	if (switchList.size() > 1)
+	    throw new IllegalVirtualSwitchConfiguration("Switch " + this.switchId + 
+		    " is a single switch made up of multiple physical switches");
+	PhysicalSwitch physicalSwitch = switchList.get(0);
+	
+	
+	assert(physicalSwitchId == this.switchId);
+	
+	PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
+
+	// Map the two ports
+	ovxPort.setPhysicalPort(physicalPort);
+	physicalPort.setOVXPort(this.tenantId, ovxPort);
+	// If the ovxPort is an edgePort, set also the physicalPort as an edge
+	
+	physicalPort.setIsEdge(ovxPort.getIsEdge());
+	
+	return true;
     };
 
 }

@@ -24,14 +24,13 @@ package net.onrc.openvirtex.elements.datapath;
 
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-
 import java.util.LinkedList;
 import java.util.Set;
 
-
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFFeaturesReply;
@@ -217,25 +216,11 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	 * @param physicalSwitchId the physical switch id
 	 * @param physicalPortNumber the physical port number
 	 * @return true, if successful
+	 * @throws IllegalVirtualSwitchConfiguration 
 	 */
-	public boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
-			Short physicalPortNumber) {
-		boolean result = false;
-		OVXPort ovxPort = getPort(ovxPortNumber);
-		PhysicalSwitch physicalSwitch = null;
-		//TODO: Ali, here you have to retrieve the physical switch from the OVXMap
+	public abstract boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
+			Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration;
 		
-		PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
-
-		// Map the two ports
-		ovxPort.setPhysicalPort(physicalPort);
-		physicalPort.setOVXPort(this.tenantId, ovxPort);
-		// If the ovxPort is an edgePort, set also the physicalPort as an edge
-		if (ovxPort.getIsEdge())
-			physicalPort.setIsEdge(true);
-		result = true;
-		return result;
-	}
 
 	/**
 	 * Generate features reply.
@@ -268,17 +253,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		setFeaturesReply(ofReply);
 	}
 
-	/**
-	 * Gets the features reply.
-	 *
-	 * @param xid the xid
-	 * @return the features reply
-	 */
-	public OFFeaturesReply getFeaturesReply(Integer xid) {
-		this.featuresReply.setXid(xid);
-		// TODO: Check if is correct to return the instance, or to create a copy
-		return this.featuresReply;
-	}
+	
 
 	/* (non-Javadoc)
 	 * @see net.onrc.openvirtex.elements.datapath.Switch#toString()
