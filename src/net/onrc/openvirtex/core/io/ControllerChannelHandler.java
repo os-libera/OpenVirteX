@@ -73,7 +73,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		    throws IOException {
 		h.log.error("Error waiting for Hello (type:{}, code:{})", 
 			m.getErrorType(), m.getErrorCode());
-		// TODO: log the error and disconnect
+		
 		h.channel.disconnect();   
 	    }
 
@@ -104,7 +104,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		    throws IOException {
 		h.log.error("Error waiting for Features Request (type:{}, code:{})", 
 			m.getErrorType(), m.getErrorCode());
-		// TODO: log the error and disconnect
+		
 		h.channel.disconnect(); 
 
 	    }
@@ -151,15 +151,12 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			processOFFeaturesRequest(h, (OFFeaturesRequest) m);
 			break;
 		    case BARRIER_REQUEST:
-			//TODO actually implement barrier contract
+			//TODO: actually implement barrier contract
 			OFBarrierReply breply = new OFBarrierReply();
 			breply.setXid(m.getXid());
 			h.channel.write(Collections.singletonList(breply));
 			break;
 		    case SET_CONFIG:
-			//TODO: set miss send len
-			//h.sw.setMissSendLen(((OFSetConfig)m).getMissSendLength());
-			break;
 		    case ERROR:
 		    case PACKET_OUT:
 		    case PORT_MOD:
@@ -418,9 +415,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 
 	void processOFVendor(ControllerChannelHandler h, OFVendor m)
 		throws IOException {
-	    // TODO: it might make sense to parse the vendor message here
-	    // into the known vendor messages we support and then call more
-	    // spefic event handlers
+	    
 	    unhandledMessageReceived(h, m);
 	}
 
@@ -465,9 +460,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	    ChannelStateEvent e) throws Exception {
 
 	if (this.sw != null) {
-	    // TODO: switchDisconnected() will check if we've previously
-	    // activated the switch. Nevertheless, we might want to check
-	    // here as well.
+	   
 	    this.sw.setConnected(false);
 	    this.sw.tearDown();
 	}
@@ -486,7 +479,8 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	    throws Exception {
 
 	/*
-	 * TODO: Get all messages from socket and pass it to the handlers.
+	 * Pass all messages to the handlers, except LLDP which goes to 
+	 * the virtual network handler.
 	 * 
 	 * This should be implemented with a token bucket in order to rate limit
 	 * the connections a little.
@@ -509,7 +503,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			    if (data.length > 14) {
 				if ((data[12] == (byte) 0x88)
 					&& (data[13] == (byte) 0xcc)) {
-				    // send to topo controller
+				    log.warn("GOT LLDP; send it to virtual network. unimplemented.");
 				    break;
 				}
 			    }
