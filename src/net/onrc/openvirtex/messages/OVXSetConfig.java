@@ -24,14 +24,19 @@ package net.onrc.openvirtex.messages;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFSetConfig;
 
 public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 
-	@Override
-	public void devirtualize(OVXSwitch sw) {
-		// TODO Auto-generated method stub
 
-	}
+    private Logger log = LogManager.getLogger(OVXSetConfig.class.getName());
+    @Override
+    public void devirtualize(OVXSwitch sw) {
+
+	sw.setMissSendLen(this.missSendLength);
+	log.info("Setting miss send length to {} for OVXSwitch {}", this.missSendLength, sw.getSwitchId());
+    }
 
 }

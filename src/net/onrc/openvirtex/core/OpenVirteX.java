@@ -32,6 +32,7 @@ import org.kohsuke.args4j.CmdLineParser;
 
 public class OpenVirteX {
 
+	public static final String VERSION = "OpenVirteX-0.0.1";
 	static Logger log = LogManager.getLogger(OpenVirteX.class.getName());
 
 	/**

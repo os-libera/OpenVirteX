@@ -28,12 +28,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 
     
     private static Logger log = LogManager.getLogger(OVXSingleSwitch.class.getName());
-    /**
-     * 
-     */
-    public OVXSingleSwitch() {
-	super();
-    }
+    
 
     /**
      * @param switchName
@@ -44,6 +39,7 @@ public class OVXSingleSwitch extends OVXSwitch {
      */
     public OVXSingleSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
+	
     }
 
     @Override

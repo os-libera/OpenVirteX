@@ -11,7 +11,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ControllerStateException;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
-import net.onrc.openvirtex.messages.OVXFeaturesReply;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,7 +50,7 @@ import org.openflow.protocol.factory.MessageParseException;
 
 public class ControllerChannelHandler extends OFChannelHandler {
 
-    Logger log = LogManager.getLogger(ControllerChannelHandler.class.getName());
+    private Logger log = LogManager.getLogger(ControllerChannelHandler.class.getName());
 
     enum ChannelState {
 	INIT(false) {
@@ -171,6 +171,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			break;
 		    case VENDOR:
 			unhandledMessageReceived(h, m);
+			break;
 		    case FEATURES_REPLY:
 		    case FLOW_REMOVED:
 		    case PACKET_IN:
@@ -252,7 +253,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	 */
 	protected void unhandledMessageReceived(ControllerChannelHandler h,
 		OFMessage m) {
-	    // TODO: add log statement for unhandled message
+	   h.log.warn("Received currently unhandled message {}", m);
 	}
 
 
@@ -454,7 +455,6 @@ public class ControllerChannelHandler extends OFChannelHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
 	    throws Exception {
-	log.warn("Channel Connected");
 	channel = e.getChannel();
 	sendHandShakeMessage(OFType.HELLO);
 	setState(ChannelState.WAIT_HELLO);

@@ -27,9 +27,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.LinkedList;
 import java.util.Set;
 
-import net.onrc.openvirtex.elements.OVXMap;
+
 import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
+
 import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
 import net.onrc.openvirtex.util.MACAddress;
 
@@ -41,6 +41,12 @@ import org.openflow.protocol.OFPhysicalPort;
  */
 public abstract class OVXSwitch extends Switch<OVXPort> {
 
+    	/** 
+    	 *  Datapath description string 
+    	 *  should this be made specific per type of virtual switch
+    	 */
+    	public static final String DPDESCSTRING = "OpenVirteX Virtual Switch"; 
+    
 	/** The supported actions. */
 	protected static int supportedActions = 0xFFF;
 	
@@ -82,9 +88,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	 */
 	protected OVXSwitch(final Long switchId, final Integer tenantId) {
 		this();
+		this.switchId = switchId;
 		this.tenantId = tenantId;
 		this.missSendLen = 0;
 		this.isActive = false;
+		this.switchName = "OpenVirteX Virtual Switch 1.0";
+		
 	}
 
 	/**
@@ -260,11 +269,11 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	 */
 	@Override
 	public String toString() {
-		return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
-				+ this.switchName + "\n- isConnected: " + this.isConnected
-				+ "\n- tenantId: " + this.tenantId + "\n- missSendLenght: "
-				+ this.missSendLen + "\n- isActive: " + this.isActive
-				+ "\n- capabilities: "
+		return "SWITCH: switchId: " + this.switchId + " - switchName: "
+				+ this.switchName + " - isConnected: " + this.isConnected
+				+ " - tenantId: " + this.tenantId + " - missSendLength: "
+				+ this.missSendLen + " - isActive: " + this.isActive
+				+ " - capabilities: "
 				+ this.capabilities.getOVXSwitchCapabilities();
 	}
 }

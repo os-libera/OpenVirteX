@@ -31,7 +31,12 @@ public class OVXGetConfigRequest extends OFGetConfigRequest implements
 
 	@Override
 	public void devirtualize(OVXSwitch sw) {
-		// TODO Auto-generated method stub
+		OVXGetConfigReply reply = new OVXGetConfigReply();
+		reply.setMissSendLength(sw.getMissSendLen());
+		
+		reply.setXid(this.getXid());
+		
+		sw.sendMsg(reply, sw);
 
 	}
 

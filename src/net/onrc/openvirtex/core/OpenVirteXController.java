@@ -26,7 +26,6 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
-import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -35,13 +34,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.openflow.protocol.OFMessage;
+
 
 public class OpenVirteXController implements Runnable {
 
@@ -58,9 +58,11 @@ public class OpenVirteXController implements Runnable {
 	    Executors.newCachedThreadPool(), 
 	    Executors.newCachedThreadPool());
 
+    private final ChannelGroup sg = new DefaultChannelGroup();
     private final ChannelGroup cg = new DefaultChannelGroup();
     
     private SwitchChannelPipeline pfact = null;
+    private ClientChannelPipeline cfact = null;
 
     public OpenVirteXController(String configFile, String ofHost, Integer ofPort) {
 	this.configFile = configFile;
@@ -82,8 +84,7 @@ public class OpenVirteXController implements Runnable {
 	    switchServerBootStrap.setPipelineFactory(pfact);
 	    InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
 		    ofPort) : new InetSocketAddress(ofHost, ofPort);
-
-		    cg.add(switchServerBootStrap.bind(sa));
+		    sg.add(switchServerBootStrap.bind(sa));
 
 	} catch (Exception e) {
 	    throw new RuntimeException(e);
@@ -99,24 +100,26 @@ public class OpenVirteXController implements Runnable {
 	final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
 	clientBootStrap.setOption("remoteAddress", remoteAddr);
 
-	ClientChannelPipeline cfact = new ClientChannelPipeline(this, null, 
+	cfact = new ClientChannelPipeline(this, cg, null,
 		clientBootStrap, sw);
 	clientBootStrap.setPipelineFactory(cfact);
 
 	ChannelFuture cf = clientBootStrap.connect();
 
 	cf.addListener(new ChannelFutureListener() {
-	    
+
 	    @Override
 	    public void operationComplete(ChannelFuture e) throws Exception {
-		if (e.isSuccess())
-		    sw.setChannel(e.getChannel());
-		else
+		if (e.isSuccess()) {
+		    Channel chan = e.getChannel();
+		    sw.setChannel(chan);
+		    cg.add(chan);
+		} else
 		    log.error("Failed to connect to controller {} for switch {}", remoteAddr, sw.getSwitchId());
-		
+
 	    }
 	});
-	
+
     }
 
 
@@ -150,12 +153,21 @@ public class OpenVirteXController implements Runnable {
 
     public void terminate() {
 	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
-	    log.info("Shut down all connections. Quitting...");
+	    log.info("Shut down all controller connections. Quitting...");
 	} else {
-	    log.error("Error shutting down all connections. Quitting anyway.");
+	    log.error("Error shutting down all controller connections. Quitting anyway.");
 	}
+	
+	if (sg != null && sg.close().awaitUninterruptibly(1000)) {
+	    log.info("Shut down all switch connections. Quitting...");
+	} else {
+	    log.error("Error shutting down all switch connections. Quitting anyway.");
+	}
+	
 	if (pfact != null)
 	    pfact.releaseExternalResources();
+	if (cfact != null)
+	    cfact.releaseExternalResources();
     }
 
 }

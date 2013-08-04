@@ -43,7 +43,7 @@ import org.openflow.util.HexString;
  *            generic type (Port) that is casted in the subclasses
  */
 public abstract class Switch<T extends Port> implements OVXEventHandler,
-OVXSendMsg {
+	OVXSendMsg {
 
     /** Switch channel status. */
     protected boolean isConnected = false;

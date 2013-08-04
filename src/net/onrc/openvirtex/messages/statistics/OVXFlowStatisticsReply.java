@@ -22,8 +22,21 @@
 
 package net.onrc.openvirtex.messages.statistics;
 
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.messages.OVXStatisticsRequest;
+
 import org.openflow.protocol.statistics.OFFlowStatisticsReply;
 
-public class OVXFlowStatisticsReply extends OFFlowStatisticsReply {
+public class OVXFlowStatisticsReply extends OFFlowStatisticsReply
+	implements DevirtualizableStatistic {
+
+    @Override
+    public void devirtualizeStatistic(OVXSwitch sw, OVXStatisticsRequest msg) {
+	// TODO Auto-generated method stub
+	
+    }
+
+    
+
 
 }

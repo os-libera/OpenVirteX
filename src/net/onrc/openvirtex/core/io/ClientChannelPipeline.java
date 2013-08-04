@@ -8,6 +8,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
@@ -18,9 +19,10 @@ public class ClientChannelPipeline  extends OpenflowChannelPipeline{
 
     private ClientBootstrap bootstrap = null;
     private OVXSwitch sw = null;
+    private ChannelGroup cg;
     
 
-    public ClientChannelPipeline(OpenVirteXController openVirteXController,
+    public ClientChannelPipeline(OpenVirteXController openVirteXController, ChannelGroup cg,
 	    ThreadPoolExecutor pipelineExecutor, ClientBootstrap bootstrap, OVXSwitch sw) {
 	super();
 	this.ctrl = openVirteXController;
@@ -30,6 +32,7 @@ public class ClientChannelPipeline  extends OpenflowChannelPipeline{
 	this.readTimeoutHandler = new ReadTimeoutHandler(timer, 30);
 	this.bootstrap  = bootstrap;
 	this.sw  = sw;
+	this.cg = cg;
     }
 
     @Override
@@ -37,7 +40,7 @@ public class ClientChannelPipeline  extends OpenflowChannelPipeline{
 	ControllerChannelHandler handler = new ControllerChannelHandler(ctrl, sw);
 
 	ChannelPipeline pipeline = Channels.pipeline();
-	pipeline.addLast("reconnect", new ReconnectHandler(sw, bootstrap, timer, 15));
+	pipeline.addLast("reconnect", new ReconnectHandler(sw, bootstrap, timer, 15, cg));
 	pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
 	pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
 	pipeline.addLast("idle", idleHandler);
