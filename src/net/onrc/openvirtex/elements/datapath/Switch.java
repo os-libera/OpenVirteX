@@ -24,221 +24,245 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.util.HashMap;
 
-import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.port.Port;
-
-import org.openflow.protocol.OFFeaturesReply;
-
 import net.onrc.openvirtex.core.io.OVXEventHandler;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.channel.Channel;
+import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
+import org.openflow.util.HexString;
 
 /**
  * The Class Switch.
  * 
- * @param <T1>
- *            the generic type
- * @author gerola
+ * @param <T>
+ *            generic type (Port) that is casted in the subclasses
  */
 public abstract class Switch<T extends Port> implements OVXEventHandler,
-		OVXSendMsg {
+	OVXSendMsg {
 
-	protected boolean isConnected = false;
+    /** Switch channel status. */
+    protected boolean isConnected = false;
 
-	protected Channel channel = null;
+    /** The channel descriptor */
+    protected Channel channel = null;
 
-	protected OVXDescriptionStatistics desc = null;
+    /** The description of OXV stats */
+    protected OVXDescriptionStatistics desc = null;
 
-	/** The switch name. */
-	protected String switchName = null;
+    /** The switch name (converted from the DPID). */
+    protected String switchName = null;
 
-	/** The port map. */
-	protected HashMap<Short, T> portMap = null;
+    /**
+     * The port map. Associate all the port instances with the switch. The port
+     * number is the key.
+     */
+    protected HashMap<Short, T> portMap = null;
 
-	/** The switch info. */
-	protected OFFeaturesReply featuresReply = null;
+    /** The features reply message. */
+    protected OFFeaturesReply featuresReply = null;
 
-	/** The switch id. */
-	protected long switchId = 0;
+    /** The switch id (DPID). */
+    protected Long switchId = (long) 0;
 
-	/** The map. */
-	protected OVXMap map = null;
+    /** The log. */
+    private Logger log = LogManager.getLogger(this.getClass().getName());
 
-	private Logger log = LogManager.getLogger(this.getClass().getName());
+    /**
+     * Instantiates a new switch (should be never used).
+     */
+    protected Switch() {
+    }
 
-	/**
-	 * Instantiates a new switch.
-	 */
-	protected Switch() {
+    /**
+     * Instantiates a new switch (should be never used).
+     * 
+     * @param switchId
+     *            the switchId (long) that represent the DPID
+     * @param map
+     *            reference to the OVXMap
+     */
+
+    protected Switch(final Long switchId) {
+	super();
+	this.switchName = HexString.toHexString(switchId);
+	this.switchId = switchId;
+	this.portMap = new HashMap<Short, T>();
+	this.featuresReply = null;
+    }
+
+    /**
+     * Gets the switch name.
+     * 
+     * @return a user-friendly String that map the switch DPID
+     */
+    public String getSwitchName() {
+	return this.switchName;
+    }
+
+    /**
+     * Gets the switch info.
+     * 
+     * @return the switch info
+     */
+    public OFFeaturesReply getFeaturesReply() {
+	return this.featuresReply;
+    }
+
+    /**
+     * Sets the features reply.
+     * 
+     * @param the
+     *            new features reply
+     */
+    public void setFeaturesReply(OFFeaturesReply m) {
+	this.featuresReply = m;
+    }
+
+    /**
+     * Gets the switch id.
+     * 
+     * @return the switch id
+     */
+    public Long getSwitchId() {
+	return this.switchId;
+    }
+
+    /**
+     * Sets the switch id.
+     * 
+     * @param switchId
+     *            the switch id (DPID)
+     * @return true, if successful
+     */
+    public abstract boolean setSwitchId(final Long switchId);
+
+    /**
+     * Gets the port.
+     * 
+     * @param portNumber
+     *            the port number
+     * @return a COPY of the port instance
+     */
+    @SuppressWarnings("unchecked")
+    protected T getPort(Short portNumber) {
+	try {
+	    return (T) this.portMap.get(portNumber).clone();
+	} catch (CloneNotSupportedException e) {
+	    log.error("Cloning wrong port type", e.getCause());
+	    return null;
 	}
+    };
 
-	/**
-	 * Instantiates a new switch.
-	 * 
-	 * @param switchName
-	 *            the switch name
-	 * @param switchId
-	 *            the switch id
-	 * @param map
-	 *            the map
-	 */
+    /**
+     * Adds the port. If the port is already present then no action is
+     * performed.
+     * 
+     * @param port
+     *            the port instance
+     * @return true, if successful
+     */
+    public boolean addPort(T port) {
+	if (this.portMap.containsKey(port.getPortNumber()))
+	    return false;
+	this.portMap.put(port.getPortNumber(), port);
+	return true;
+    }
 
-	protected Switch(final String switchName, final long switchId,
-			final OVXMap map) {
-		super();
-		this.switchName = switchName;
-		this.switchId = switchId;
-		this.map = map;
-		this.portMap = new HashMap<Short, T>();
-		this.featuresReply = null;
+    /**
+     * Update port. Adds the port only if the port is already present.
+     * 
+     * @param port
+     *            the port instance
+     * @return true, if updated
+     */
+    public boolean updatePort(T port) {
+	if (this.portMap.containsKey(port.getPortNumber())) {
+	    this.portMap.put(port.getPortNumber(), port);
+	    return true;
 	}
+	return false;
+    }
 
-	/**
-	 * Gets the switch name.
-	 * 
-	 * @return the switch name
-	 */
-	public String getSwitchName() {
-		return this.switchName;
+    /**
+     * Removes the port.
+     * 
+     * @param portNumber
+     *            the port number
+     * @return true, if successful
+     */
+    public boolean removePort(Short portNumber) {
+	if (this.portMap.containsKey(portNumber)) {
+	    this.portMap.remove(portNumber);
+	    return true;
 	}
+	return false;
+    };
 
-	/**
-	 * Sets the switch name.
-	 * 
-	 * @param switchName
-	 *            the switch name
-	 * @return true, if successful
-	 */
-	public Switch<T> setSwitchName(final String switchName) {
-		this.switchName = switchName;
-		return this;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * net.onrc.openvirtex.core.io.OVXEventHandler#handleIO(org.openflow.protocol
+     * .OFMessage)
+     */
+    @Override
+    public abstract void handleIO(OFMessage msgs);
 
-	/**
-	 * Gets the switch info.
-	 * 
-	 * @return the switch info
-	 */
-	public OFFeaturesReply getFeaturesReply() {
-		return this.featuresReply;
-	}
+    /**
+     * Sets the connected.
+     * 
+     * @param isConnected
+     *            the new connected
+     */
+    public void setConnected(boolean isConnected) {
+	this.isConnected = isConnected;
+    }
 
-	public void setFeaturesReply(OFFeaturesReply m) {
-		this.featuresReply = m;
-	}
+    /**
+     * Sets the channel.
+     * 
+     * @param channel
+     *            the new channel
+     */
+    public void setChannel(Channel channel) {
+	this.channel = channel;
 
-	/**
-	 * Gets the switch id.
-	 * 
-	 * @return the switch id
-	 */
-	public long getSwitchId() {
-		return this.switchId;
-	}
+    }
 
-	/**
-	 * Sets the switch id.
-	 * 
-	 * @param switchId
-	 *            the switch id
-	 * @return true, if successful
-	 */
-	public abstract boolean setSwitchId(final long switchId);
+    /**
+     * Tear down.
+     */
+    public abstract void tearDown();
 
-	/**
-	 * Gets the port.
-	 * 
-	 * @param portNumber
-	 *            the port number
-	 * @return the port
-	 * @throws CloneNotSupportedException
-	 */
-	@SuppressWarnings("unchecked")
-	protected T getPort(short portNumber) {
-		try {
-			return (T) this.portMap.get(portNumber).clone();
-		} catch (CloneNotSupportedException e) {
-			log.error("Cloning wrong port type", e.getCause());
-			return null;
-		}
-	};
+    /**
+     * Inits the switch.
+     */
+    public abstract void init();
 
-	/**
-	 * Adds the port. If the port is already present then no action is
-	 * performed.
-	 * 
-	 * @param port
-	 *            the port
-	 * @return true, if successful
-	 */
-	public boolean addPort(T port) {
-		if (this.portMap.containsKey(port.getPortNumber()))
-			return false;
-		this.portMap.put(port.getPortNumber(), port);
-		return true;
-	}
+    /**
+     * Sets the description stats.
+     * 
+     * @param description
+     *            the new description stats
+     */
+    public void setDescriptionStats(OVXDescriptionStatistics description) {
+	this.desc = description;
 
-	/**
-	 * Update port. Adds the port only if the port is already present.
-	 * 
-	 * @param port
-	 *            the port
-	 * @return
-	 * @return true, if updated
-	 */
-	public boolean updatePort(T port) {
-		if (this.portMap.containsKey(port.getPortNumber())) {
-			this.portMap.put(port.getPortNumber(), port);
-			return true;
-		}
-		return false;
-	}
+    }
 
-	/**
-	 * Removes the port.
-	 * 
-	 * @param portNumber
-	 *            the port number
-	 * @return true, if successful
-	 */
-	public boolean removePort(short portNumber) {
-		if (this.portMap.containsKey(portNumber)) {
-			this.portMap.remove(portNumber);
-			return true;
-		}
-		return false;
-	};
+    @Override
+    public String getName() {
+	return this.switchName + ":" + this.switchId;
+    }
 
-	/**
-	 * Initialize.
-	 * 
-	 * @return true, if successful
-	 */
-	public abstract boolean initialize();
-
-	@Override
-	public abstract void handleIO(OFMessage msgs);
-
-	public void setConnected(boolean isConnected) {
-		this.isConnected = isConnected;
-	}
-
-	public void setChannel(Channel channel) {
-		this.channel = channel;
-
-	}
-
-	public abstract void tearDown();
-
-	public abstract void init();
-
-	public void setDescriptionStats(OVXDescriptionStatistics description) {
-		this.desc = description;
-
-	}
+    @Override
+    public String toString() {
+	return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
+		+ this.switchName + "\n- isConnected: " + this.isConnected;
+    }
 }

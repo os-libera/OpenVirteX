@@ -25,25 +25,34 @@ package net.onrc.openvirtex.elements.link;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 
 /**
- * @author gerola
+ * The Class PhysicalLink.
  * 
  */
 public class PhysicalLink extends Link<PhysicalPort> {
 
 	/**
-     * 
-     */
+	 * Instantiates a new physical link.
+	 */
 	public PhysicalLink() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
+	 * Instantiates a new physical link.
+	 * 
 	 * @param srcPort
+	 *            the source port
 	 * @param dstPort
+	 *            the destination port
 	 */
 	public PhysicalLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
 		super(srcPort, dstPort);
+	}
+
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+
 	}
 
 }

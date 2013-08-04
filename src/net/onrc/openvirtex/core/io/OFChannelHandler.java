@@ -33,7 +33,8 @@ import org.openflow.protocol.OFType;
 
 public abstract class OFChannelHandler extends IdleStateAwareChannelHandler {
 
-	protected Switch sw;
+	@SuppressWarnings("rawtypes")
+        protected Switch sw;
 	protected Channel channel;
 	protected OpenVirteXController ctrl;
 

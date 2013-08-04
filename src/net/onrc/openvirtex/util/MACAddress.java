@@ -199,4 +199,8 @@ public class MACAddress {
 		}
 		return builder.toString();
 	}
+
+	public byte[] getAddress() {
+		return address;
+	}
 }
