@@ -68,10 +68,4 @@ public class PhysicalNetwork extends
 
     }
 
-    @Override
-    public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	// TODO Auto-generated method stub
-
-    }
-
 }

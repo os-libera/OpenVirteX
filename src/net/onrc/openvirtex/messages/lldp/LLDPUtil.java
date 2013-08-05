@@ -4,9 +4,12 @@
 package net.onrc.openvirtex.messages.lldp;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.elements.port.Port;
+import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.Switch;
 
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -38,7 +41,7 @@ public class LLDPUtil {
      * @return
      */
 
-    static public boolean LLDPCheck(final byte[] packetArray) {
+    static public boolean checkLLDP(final byte[] packetArray) {
 	if (packetArray == null || packetArray.length < 14) {
 	    return false; // not lddp if no packet exists or too short
 	}
@@ -53,11 +56,10 @@ public class LLDPUtil {
 	    // FVLog.log(LogLevel.DEBUG,null,"The pkt is not LLDP" );
 	    return false;
 	}
-	// TODO think about checking for NOX OID
 	return true;
     }
 
-    public byte[] makeLLDP(final Port port) {
+    public static byte[] makeLLDP(final Port port) {
 	final short portNumber = port.getPortNumber();
 	final byte[] hardwareAddress = port.getHardwareAddress().toBytes();
 	final long dpid = ((Switch) port.getParentSwitch()).getSwitchId();
@@ -130,6 +132,59 @@ public class LLDPUtil {
 	    bb.putInt(0xcafebabe); // fill with well known padding
 	}
 	return buf;
+    }
+
+    static public DPIDandPort parseLLDP(byte[] packet) {
+	// TODO: generalize this so we can parse OVX-generated LLDPs
+	// and generic controller-generated ones
+	// LLDP packets sent by FV should have the following byte offsets:
+	// 0 - dst addr (MAC)
+	// 6 - src addr (MAC)
+	// 12 - ether lldp
+	// 14 - chassis id tl
+	// 16 - subtype
+	// 17 - src addr (MAC)
+	// 23 - port id tl
+	// 25 - subtype
+	// 26 - port num
+	// 28 - ttl tl
+	// 30 - ttl value
+	// 32 - sysdesc tl
+	// 34 - dpid
+	// 42 - oui header
+	// 44 - oui id
+	// 47 - oui subtype
+	// 48 - oui string (2 bytes for fvName; 1 for null; 1 for fvNameLength)
+	// 52 - endOfLLDPDU
+	// 54 - padding 
+
+	int vlan_offset = 0;
+	ByteBuffer bb = ByteBuffer.wrap(packet);
+	byte[] dst = new byte[6];
+	bb.get(dst);
+	// could move this to LLDPCheck
+	if (!Arrays.equals(dst, LLDPUtil.LLDP_MULTICAST))
+	    return null;
+	bb.position(12);
+	short etherType = bb.getShort();
+	while (etherType == LLDPUtil.ETHER_VLAN) {
+	    vlan_offset += 4;
+	    etherType = bb.getShort(); // noop to advance two bytes
+	    etherType = bb.getShort();
+	}
+	if (etherType != LLDPUtil.ETHER_LLDP)
+	    return null;
+	bb.position(26 + vlan_offset);
+	short port = bb.getShort();
+	// Unnecessary to verify 
+	//	byte possibleSysId[] = new byte[2];
+	//	bb.position(32 + vlan_offset);
+	//	bb.get(possibleSysId);
+	//	if (!Arrays.equals(possibleSysId, TopologyConnection.lldpSysD))
+	//	    return null;
+	bb.position(34 + vlan_offset);
+	long dpid = bb.getLong();
+	return new DPIDandPort(dpid, port);
     }
 
 }

@@ -33,20 +33,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.onrc.openvirtex.core.io.OVXEventHandler;
-import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
 
-public abstract class Network<T1, T2, T3> implements OVXEventHandler,
-        OVXSendMsg {
+public abstract class Network<T1, T2, T3> implements OVXEventHandler {
 
-    private ArrayList<T1>              switchSet;
-    private ArrayList<T3>              linkSet;
-    private HashMap<T2, T2>            neighbourPortMap;
-    private OVXMap                     map;
-    private HashMap<T1, ArrayList<T1>> neighbourMap;
+    protected ArrayList<T1>              switchList;
+    protected HashMap<Long, T1>		dpidMap;
+    protected ArrayList<T3>              linkList;
+    protected HashMap<T2, T2>            neighbourPortMap;
+    protected HashMap<T1, ArrayList<T1>> neighbourMap;
 
     // public OFControllerChannel channel;
 
+    protected Network() {
+	ArrayList<T1> switchList = new ArrayList();
+	HashMap<Long, T1> dpidMap = new HashMap();
+    }
+    
     private void registerSwitch(final T1 sw) {
     }
 
@@ -65,5 +68,9 @@ public abstract class Network<T1, T2, T3> implements OVXEventHandler,
 
     public ArrayList<T1> getNeighbours(final T1 sw) {
 	return null;
+    }
+    
+    public T1 getSwitch(Long dpid) {
+	return this.dpidMap.get(dpid);
     }
 }

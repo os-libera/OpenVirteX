@@ -30,15 +30,19 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.HashMap;
-import java.util.ArrayList;
 
-import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
+import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.messages.OVXPacketIn;
+import net.onrc.openvirtex.messages.OVXPacketOut;
+import net.onrc.openvirtex.messages.lldp.LLDPUtil;
+import net.onrc.openvirtex.packet.LLDP;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFMessage;
@@ -59,6 +63,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     public OVXNetwork(final Integer tenantId, final String ctrlProto,
 	    final IPAddress ctrlAddr, final short ctrlPort,
 	    final IPAddress network, final short mask) {
+	super();
 	this.tenantId = tenantId;
 	this.ctrlProto = ctrlProto;
 	this.ctrlAddr = ctrlAddr;
@@ -67,11 +72,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.mask = mask;
     }
 
-    public boolean register() {	
-	// TODO
-	// map = OVXMap.getInstance();
-	// return map.addVirtualNetwork(this);
-	return true;
+    public void register() {	
+	OVXMap.getInstance().addNetwork(this);
     }
 
     public Integer getTenantId() {
@@ -98,7 +100,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.mask = mask;
     }
 
-    public OVXSwitch addSwitch(final ArrayList<OVXSwitch> swSet) {
+    public OVXSwitch addSwitch(final OVXSwitch sw) {
 	// switch = new OVXBigSwitch();
 	return new OVXBigSwitch();
     }
@@ -121,12 +123,27 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     @Override
-    public void handleIO(final OFMessage msgs) {
-	// TODO Auto-generated method stub
-    }
-
-    @Override
-    public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	// TODO Auto-generated method stub
+    public void handleIO(final OFMessage msg) {  
+	// Only handle pkt_out, ignore all the rest
+	try {
+	    OVXPacketOut po = (OVXPacketOut) msg;
+	    byte [] pkt = po.getPacketData();
+	    if (LLDPUtil.checkLLDP(pkt)) {
+		DPIDandPort dp = LLDPUtil.parseLLDP(pkt);
+		// TODO: check if dpid present
+		OVXSwitch sw = dpidMap.get(dp.getDpid());
+		//OVXPort port = sw.getPort(dp.getPort());
+		//OVXPort neighbour = neighbourPortMap.get(port);
+		// Return other end 
+		OVXPacketIn pi = new OVXPacketIn();
+		//pi.setInPort(neighbour.getPortNumber());
+		pi.setPacketData(pkt);
+		//neighbour.getParentSwitch().sendMsg(pi, this);
+	    } else {
+		System.out.println("not a valid LLDP");		
+	    }
+	} catch (ClassCastException c) {
+	    System.out.println("not a pkt_out");
+	}
     }
 }
