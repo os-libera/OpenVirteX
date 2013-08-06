@@ -29,7 +29,6 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
-
 import org.openflow.protocol.OFMessage;
 
 /**
@@ -53,9 +52,11 @@ public class OVXMessageEncoder extends OneToOneEncoder {
 		}
 
 		ChannelBuffer buf = ChannelBuffers.buffer(size);
-		;
+		
 		for (OFMessage ofm : msglist) {
+		    
 			ofm.writeTo(buf);
+		    
 		}
 		return buf;
 	}
