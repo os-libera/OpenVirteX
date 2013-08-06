@@ -30,6 +30,7 @@
 package net.onrc.openvirtex.elements.port;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.util.MACAddress;
 
 public class OVXPort extends Port<OVXSwitch> {
 
@@ -63,8 +64,8 @@ public class OVXPort extends Port<OVXSwitch> {
      * @param tenantId
      * @param physicalPort
      */
-    public OVXPort(final short portNumber, final byte[] hardwareAddress,
-	    final boolean isEdge, final OVXSwitch parentSwitch,
+    public OVXPort(final Short portNumber, final byte[] hardwareAddress,
+	    final Boolean isEdge, final OVXSwitch parentSwitch,
 	    final Integer config, final Integer state,
 	    final Integer peerFeatures, final Integer tenantId,
 	    final PhysicalPort physicalPort) {
@@ -74,6 +75,16 @@ public class OVXPort extends Port<OVXSwitch> {
 	this.physicalPort = physicalPort;
     }
 
+    public OVXPort(final Short portNumber, final byte[] hardwareAddress,
+	    final Boolean isEdge, final Integer tenantId, final OVXSwitch parentSwitch) {
+	this();
+	this.portNumber = portNumber;
+	this.hardwareAddress = new MACAddress(hardwareAddress);
+	this.isEdge = isEdge;
+	this.tenantId = tenantId;
+	this.parentSwitch = parentSwitch;
+    }
+    
     public OVXPort(final OVXPort op) {
 	this(op.portNumber, op.hardwareAddress.getAddress(), op.isEdge,
 	        op.parentSwitch, op.config, op.state, op.peerFeatures,

@@ -54,11 +54,11 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
 	this.ovxPortMap = new HashMap<Integer, OVXPort>();
     }
 
-    public OVXPort getOVXPort(final int tenantId) {
+    public OVXPort getOVXPort(final Integer tenantId) {
 	return this.ovxPortMap.get(tenantId);
     }
 
-    public boolean setOVXPort(final int tenantId, final OVXPort ovxPort) {
+    public boolean setOVXPort(final Integer tenantId, final OVXPort ovxPort) {
 	if (this.ovxPortMap.containsKey(tenantId)) {
 	    return false;
 	} else {
@@ -71,7 +71,7 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
 	return this.ovxPortMap.get(tenantId).getPortNumber();
     }
 
-    public boolean updateOVXPort(final int tenantId, final OVXPort ovxPort) {
+    public boolean updateOVXPort(final Integer tenantId, final OVXPort ovxPort) {
 	if (!this.ovxPortMap.containsKey(tenantId)) {
 	    return false;
 	} else {

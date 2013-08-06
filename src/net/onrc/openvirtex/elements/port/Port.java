@@ -39,7 +39,7 @@ import org.openflow.protocol.OFPhysicalPort;
  */
 public class Port<T> extends OFPhysicalPort implements Cloneable {
 
-    protected short      portNumber;
+    protected Short      portNumber;
     protected MACAddress hardwareAddress;
     protected Boolean    isEdge;
     protected T          parentSwitch;
@@ -68,7 +68,7 @@ public class Port<T> extends OFPhysicalPort implements Cloneable {
      * @param hardwareAddress
      *            the hardware address
      */
-    protected Port(final short portNumber, final byte[] hardwareAddress,
+    protected Port(final Short portNumber, final byte[] hardwareAddress,
 	    final Boolean isEdge, final T parentSwitch, final Integer config,
 	    final Integer state, final Integer currentFeatures,
 	    final Integer advertisedFeatures, final Integer supportedFeatures,
