@@ -23,16 +23,27 @@
 package net.onrc.openvirtex.messages;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.messages.statistics.VirtualizableStatistic;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFStatisticsReply;
+import org.openflow.protocol.statistics.OFStatistics;
 
 public class OVXStatisticsReply extends OFStatisticsReply implements
-		Virtualizable {
+Virtualizable {
 
-	@Override
-	public void virtualize(PhysicalSwitch sw) {
-		// TODO Auto-generated method stub
+    private Logger log = LogManager.getLogger(OVXStatisticsReply.class.getName());
 
+    @Override
+    public void virtualize(PhysicalSwitch sw) {
+	try {
+	    OFStatistics stat = this.getFirstStatistics();
+	    ((VirtualizableStatistic)stat).virtualizeStatistic(sw, this);
+	} catch (ClassCastException e) {
+	    log.error("Statistic received is not virtualizable {}", this);
 	}
+
+    }
 
 }

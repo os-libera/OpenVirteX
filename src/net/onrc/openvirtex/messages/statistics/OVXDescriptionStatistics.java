@@ -22,8 +22,54 @@
 
 package net.onrc.openvirtex.messages.statistics;
 
-import org.openflow.protocol.statistics.OFDescriptionStatistics;
+import java.util.Collections;
 
-public class OVXDescriptionStatistics extends OFDescriptionStatistics {
+import net.onrc.openvirtex.core.OpenVirteX;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.messages.OVXStatisticsReply;
+import net.onrc.openvirtex.messages.OVXStatisticsRequest;
+
+import org.openflow.protocol.statistics.OFDescriptionStatistics;
+import org.openflow.protocol.statistics.OFStatisticsType;
+
+public class OVXDescriptionStatistics extends OFDescriptionStatistics
+implements VirtualizableStatistic, DevirtualizableStatistic {
+
+  
+
+
+    /**
+     * Received a Description stats request from the controller
+     * Create a reply object populated with the virtual switch 
+     * params and send it back to the controller.
+     */
+    @Override
+    public void devirtualizeStatistic(OVXSwitch sw, OVXStatisticsRequest msg) {
+	OVXStatisticsReply reply = new OVXStatisticsReply();
+
+	OVXDescriptionStatistics desc = new OVXDescriptionStatistics();
+	
+
+	desc.setDatapathDescription(OVXSwitch.DPDESCSTRING);
+	desc.setHardwareDescription("virtual hardware");
+	desc.setManufacturerDescription("Open Networking Lab");
+	desc.setSerialNumber(sw.getSwitchName());
+	desc.setSoftwareDescription(OpenVirteX.VERSION);
+
+
+	reply.setXid(msg.getXid());
+	reply.setLengthU(reply.getLength() + desc.getLength());
+	reply.setStatisticType(OFStatisticsType.DESC);
+	reply.setStatistics(Collections.singletonList(desc));
+	sw.sendMsg(reply, sw);
+
+    }
+
+    @Override
+    public void virtualizeStatistic(PhysicalSwitch sw, OVXStatisticsReply msg) {
+	//log.error("Received illegal message form physical network; {}", msg);
+	
+    }
 
 }

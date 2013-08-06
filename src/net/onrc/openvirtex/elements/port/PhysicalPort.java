@@ -46,25 +46,74 @@ public class PhysicalPort extends Port {
 
 	/**
 	 * @param portNumber
-	 * @param hardwareAddress
-	 * @param config
-	 * @param mask
-	 * @param advertise
-	 * @param isEdge
+	 * @param name
+	 * @param hwAddress
 	 * @param parentSwitch
+	 * @param config
+	 * @param state
+	 * @param currentFeatures
+	 * @param advertisedFeatures
+	 * @param supportedFeatures
+	 * @param peerFeatures
+	 * @param isEdge
 	 */
-	public PhysicalPort(final short portNumber,
-			final MACAddress hardwareAddress, final int config, final int mask,
-			final int advertise, final Boolean isEdge,
-			final PhysicalSwitch parentSwitch) {
-		super(portNumber, hardwareAddress, config, mask, advertise, isEdge);
+	public PhysicalPort(short portNumber, String name, byte[] hwAddress,
+			PhysicalSwitch parentSwitch, Integer config, Integer state,
+			Integer currentFeatures, Integer advertisedFeatures,
+			Integer supportedFeatures, Integer peerFeatures, boolean isEdge) {
+		super();
+		this.portNumber = portNumber;
+		this.name = name;
+		this.hardwareAddress = hwAddress;
+		this.config = config;
+		this.state = state;
+		this.currentFeatures = currentFeatures;
+		this.advertisedFeatures = advertisedFeatures;
+		this.supportedFeatures = supportedFeatures;
 		this.ovxPortMap = new HashMap<Integer, OVXPort>();
 		this.parentSwitch = parentSwitch;
+		this.isEdge = isEdge;
+		this.peerFeatures = peerFeatures;
+	}
+
+	/**
+	 * @param portNumber
+	 * @param name
+	 * @param hwAddress
+	 * @param parentSwitch
+	 * @param config
+	 * @param state
+	 * @param currentFeatures
+	 * @param advertisedFeatures
+	 * @param supportedFeatures
+	 * @param peerFeatures
+	 * @param isEdge
+	 */
+	public PhysicalPort(short portNumber, String name, byte[] hwAddress,
+			PhysicalSwitch parentSwitch, HashMap<Integer, OVXPort> ovxPortMap,
+			Integer config, Integer state, Integer currentFeatures,
+			Integer advertisedFeatures, Integer supportedFeatures,
+			Integer peerFeatures, boolean isEdge) {
+		super();
+		this.portNumber = portNumber;
+		this.name = name;
+		this.hardwareAddress = hwAddress;
+		this.config = config;
+		this.state = state;
+		this.currentFeatures = currentFeatures;
+		this.advertisedFeatures = advertisedFeatures;
+		this.supportedFeatures = supportedFeatures;
+		this.ovxPortMap = ovxPortMap;
+		this.parentSwitch = parentSwitch;
+		this.isEdge = isEdge;
+		this.peerFeatures = peerFeatures;
 	}
 
 	public PhysicalPort(PhysicalPort pp) {
-		this(pp.portNumber, pp.hardwareAddress, pp.config, pp.mask,
-				pp.advertise, pp.isEdge, pp.parentSwitch);
+		this(pp.portNumber, pp.name, pp.hardwareAddress, pp.parentSwitch,
+				pp.ovxPortMap, pp.config, pp.state, pp.currentFeatures,
+				pp.advertisedFeatures, pp.supportedFeatures, pp.peerFeatures,
+				pp.isEdge);
 	}
 
 	public OVXPort getOVXPort(final int tenantId) {
@@ -78,6 +127,10 @@ public class PhysicalPort extends Port {
 			this.ovxPortMap.put(tenantId, ovxPort);
 		}
 		return true;
+	}
+
+	public Short getOVXPortNumber(Integer tenantId) {
+		return this.ovxPortMap.get(tenantId).getPortNumber();
 	}
 
 	public boolean updateOVXPort(final int tenantId, final OVXPort ovxPort) {
@@ -103,4 +156,17 @@ public class PhysicalPort extends Port {
 		return new PhysicalPort(this);
 	}
 
+	@Override
+	public String toString() {
+		return "PORT:\n- portNumber: " + this.portNumber + "\n- portName: "
+				+ this.name + "\n- hardwareAddress: "
+				+ MACAddress.valueOf(this.hardwareAddress) + "\n- isEdge: "
+				+ this.isEdge + "\n- parentSwitch: "
+				+ this.parentSwitch.getSwitchName() + "\n- config: "
+				+ this.config + "\n- state: " + this.state
+				+ "\n- currentFeatures: " + this.currentFeatures
+				+ "\n- advertisedFeatures: " + this.advertisedFeatures
+				+ "\n- supportedFeatures: " + this.supportedFeatures
+				+ "\n- peerFeatures: " + this.peerFeatures;
+	}
 }

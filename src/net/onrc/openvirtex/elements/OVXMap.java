@@ -48,6 +48,10 @@ import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 
+/**
+ * @author Karthik Jagadeesh
+ * 
+ */
 public class OVXMap implements Mappable {
 
     private static OVXMap                                                    mapInstance;
