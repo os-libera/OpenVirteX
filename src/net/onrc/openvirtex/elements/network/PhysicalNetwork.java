@@ -35,8 +35,10 @@ import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.messages.OVXPortStatus;
 
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFType;
 
 public class PhysicalNetwork extends
         Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
@@ -63,9 +65,17 @@ public class PhysicalNetwork extends
     }
 
     @Override
-    public void handleIO(final OFMessage msgs) {
-	// TODO Auto-generated method stub
-
+    public void handleIO(final OFMessage msg) {
+	// Handle (i) LLDP pkt_in, and (ii) port up/down messages
+	if (msg.getType() == OFType.PORT_STATUS) {
+	    // how to find out which switch this came from?
+	    OVXPortStatus ps = (OVXPortStatus) msg;
+	    // handle here
+	} else if (msg.getType() == OFType.PACKET_OUT) {
+	    
+	} else {
+	    System.out.println("not a valid LLDP");	    
+	}
     }
 
 }
