@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
+import org.openflow.util.HexString;
 
 /**
  * The Class PhysicalSwitch.
@@ -86,7 +87,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 */
 	@Override
 	public void tearDown() {
-		log.info("Switch disconnected {} ", this.featuresReply.getDatapathId());
+		log.info("Switch disconnected {} ", HexString.toHexString(this.featuresReply.getDatapathId()));
 		channel.disconnect();
 
 	}
@@ -111,7 +112,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	@Override
 	public void init() {
 		log.info("Switch connected {} : {}",
-				this.featuresReply.getDatapathId(),
+				HexString.toHexString(this.featuresReply.getDatapathId()),
 				this.desc.getHardwareDescription());
 		fillPortMap();
 	}
