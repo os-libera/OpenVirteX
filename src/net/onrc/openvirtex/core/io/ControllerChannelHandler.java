@@ -35,7 +35,6 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFGetConfigRequest;
 import org.openflow.protocol.OFHello;
 import org.openflow.protocol.OFMessage;
-import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPortMod;
 import org.openflow.protocol.OFQueueGetConfigRequest;
@@ -495,7 +494,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		    switch (ofm.getType()) {
 			case PACKET_OUT:
 			    /*
-			     * Is this packet a packet in? If yes is it an lldp?
+			     * Is this packet a packet out? If yes is it an lldp?
 			     * then send it to the PhysicalTopoHandler.
 			     */
 			    byte[] data = ((OFPacketOut) ofm).getPacketData();

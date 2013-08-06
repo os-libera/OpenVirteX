@@ -25,7 +25,6 @@ package net.onrc.openvirtex.core;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-import javax.management.RuntimeErrorException;
 
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
