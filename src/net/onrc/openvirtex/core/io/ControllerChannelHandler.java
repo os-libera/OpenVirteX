@@ -35,7 +35,6 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFGetConfigRequest;
 import org.openflow.protocol.OFHello;
 import org.openflow.protocol.OFMessage;
-import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPortMod;
 import org.openflow.protocol.OFQueueGetConfigRequest;
@@ -112,12 +111,11 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	    @Override
 	    void processOFFeaturesRequest(ControllerChannelHandler h, OFFeaturesRequest m) {
 		OFFeaturesReply reply = h.sw.getFeaturesReply();
-		if (reply == null)
-		    reply = new OFFeaturesReply();
+		if (reply == null) {
+		    h.log.error("OVXSwitch failed to return a featuresReply message: {}" + h.sw.getSwitchId());
+		    h.channel.disconnect();
+		}
 		reply.setXid(m.getXid());
-		reply.setDatapathId(h.sw.getSwitchId());
-		reply.setPorts(null);
-		reply.setCapabilities(0);
 		h.channel.write(Collections.singletonList(reply));
 		h.log.info("Connected dpid {} to controller {}", reply.getDatapathId(), h.channel.getRemoteAddress());
 		h.setState(ACTIVE);
@@ -494,12 +492,12 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		try {
 
 		    switch (ofm.getType()) {
-			case PACKET_IN:
+			case PACKET_OUT:
 			    /*
-			     * Is this packet a packet in? If yes is it an lldp?
+			     * Is this packet a packet out? If yes is it an lldp?
 			     * then send it to the PhysicalTopoHandler.
 			     */
-			    byte[] data = ((OFPacketIn) ofm).getPacketData();
+			    byte[] data = ((OFPacketOut) ofm).getPacketData();
 			    if (data.length > 14) {
 				if ((data[12] == (byte) 0x88)
 					&& (data[13] == (byte) 0xcc)) {

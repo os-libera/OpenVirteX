@@ -3,13 +3,16 @@
  */
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
@@ -141,9 +144,8 @@ public class OVXBigSwitch extends OVXSwitch {
      */
     @Override
     public void sendMsg(OFMessage msg, OVXSendMsg from) {
-	// TODO Auto-generated method stub
-	// Truncate the message for the ctrl to the missSetLenght value
-
+	// TODO Truncate the message for the ctrl to the missSetLenght value
+	channel.write(Collections.singletonList(msg));
     }
 
     /*
@@ -170,7 +172,8 @@ public class OVXBigSwitch extends OVXSwitch {
      */
     @Override
     public void tearDown() {
-	// TODO Auto-generated method stub
+	//TODO: Release any acquired resources.
+	channel.disconnect();
 
     }
 
@@ -182,7 +185,9 @@ public class OVXBigSwitch extends OVXSwitch {
     @Override
     public void init() {
 	generateFeaturesReply();
-	// TODO: Register to the upper loop
+	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
+	OpenVirteXController.getInstance().registerOVXSwitch(this, 
+		net.getControllerHost(), net.getContollerPort());
 	// TODO: Start the internal routing protocol
 
     }
