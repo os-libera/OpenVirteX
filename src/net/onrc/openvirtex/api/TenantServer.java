@@ -34,9 +34,9 @@ public class TenantServer {
 
   public interface Iface {
 
-    public int createVirtualNetwork(int tenantId, String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException;
+    public int createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException;
 
-    public int createVirtualSwitch(int tenantId, List<String> dpids) throws org.apache.thrift.TException;
+    public long createVirtualSwitch(int tenantId, List<String> dpids) throws org.apache.thrift.TException;
 
     public int createHost(int tenantId, String dpid, short portNumber) throws org.apache.thrift.TException;
 
@@ -48,7 +48,7 @@ public class TenantServer {
 
   public interface AsyncIface {
 
-    public void createVirtualNetwork(int tenantId, String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createVirtualNetwork_call> resultHandler) throws org.apache.thrift.TException;
+    public void createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createVirtualNetwork_call> resultHandler) throws org.apache.thrift.TException;
 
     public void createVirtualSwitch(int tenantId, List<String> dpids, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createVirtualSwitch_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -80,16 +80,15 @@ public class TenantServer {
       super(iprot, oprot);
     }
 
-    public int createVirtualNetwork(int tenantId, String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException
+    public int createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException
     {
-      send_createVirtualNetwork(tenantId, protocol, controllerAddress, controllerPort, networkAddress, mask);
+      send_createVirtualNetwork(protocol, controllerAddress, controllerPort, networkAddress, mask);
       return recv_createVirtualNetwork();
     }
 
-    public void send_createVirtualNetwork(int tenantId, String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException
+    public void send_createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException
     {
       createVirtualNetwork_args args = new createVirtualNetwork_args();
-      args.setTenantId(tenantId);
       args.setProtocol(protocol);
       args.setControllerAddress(controllerAddress);
       args.setControllerPort(controllerPort);
@@ -108,7 +107,7 @@ public class TenantServer {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "createVirtualNetwork failed: unknown result");
     }
 
-    public int createVirtualSwitch(int tenantId, List<String> dpids) throws org.apache.thrift.TException
+    public long createVirtualSwitch(int tenantId, List<String> dpids) throws org.apache.thrift.TException
     {
       send_createVirtualSwitch(tenantId, dpids);
       return recv_createVirtualSwitch();
@@ -122,7 +121,7 @@ public class TenantServer {
       sendBase("createVirtualSwitch", args);
     }
 
-    public int recv_createVirtualSwitch() throws org.apache.thrift.TException
+    public long recv_createVirtualSwitch() throws org.apache.thrift.TException
     {
       createVirtualSwitch_result result = new createVirtualSwitch_result();
       receiveBase(result, "createVirtualSwitch");
@@ -222,23 +221,21 @@ public class TenantServer {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void createVirtualNetwork(int tenantId, String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask, org.apache.thrift.async.AsyncMethodCallback<createVirtualNetwork_call> resultHandler) throws org.apache.thrift.TException {
+    public void createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask, org.apache.thrift.async.AsyncMethodCallback<createVirtualNetwork_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      createVirtualNetwork_call method_call = new createVirtualNetwork_call(tenantId, protocol, controllerAddress, controllerPort, networkAddress, mask, resultHandler, this, ___protocolFactory, ___transport);
+      createVirtualNetwork_call method_call = new createVirtualNetwork_call(protocol, controllerAddress, controllerPort, networkAddress, mask, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class createVirtualNetwork_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private int tenantId;
       private String protocol;
       private String controllerAddress;
       private short controllerPort;
       private String networkAddress;
       private short mask;
-      public createVirtualNetwork_call(int tenantId, String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask, org.apache.thrift.async.AsyncMethodCallback<createVirtualNetwork_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public createVirtualNetwork_call(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask, org.apache.thrift.async.AsyncMethodCallback<createVirtualNetwork_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.tenantId = tenantId;
         this.protocol = protocol;
         this.controllerAddress = controllerAddress;
         this.controllerPort = controllerPort;
@@ -249,7 +246,6 @@ public class TenantServer {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("createVirtualNetwork", org.apache.thrift.protocol.TMessageType.CALL, 0));
         createVirtualNetwork_args args = new createVirtualNetwork_args();
-        args.setTenantId(tenantId);
         args.setProtocol(protocol);
         args.setControllerAddress(controllerAddress);
         args.setControllerPort(controllerPort);
@@ -294,7 +290,7 @@ public class TenantServer {
         prot.writeMessageEnd();
       }
 
-      public int getResult() throws org.apache.thrift.TException {
+      public long getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -445,7 +441,7 @@ public class TenantServer {
 
       public createVirtualNetwork_result getResult(I iface, createVirtualNetwork_args args) throws org.apache.thrift.TException {
         createVirtualNetwork_result result = new createVirtualNetwork_result();
-        result.success = iface.createVirtualNetwork(args.tenantId, args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask);
+        result.success = iface.createVirtualNetwork(args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask);
         result.setSuccessIsSet(true);
         return result;
       }
@@ -540,12 +536,11 @@ public class TenantServer {
   public static class createVirtualNetwork_args implements org.apache.thrift.TBase<createVirtualNetwork_args, createVirtualNetwork_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createVirtualNetwork_args");
 
-    private static final org.apache.thrift.protocol.TField TENANT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tenantId", org.apache.thrift.protocol.TType.I32, (short)1);
-    private static final org.apache.thrift.protocol.TField PROTOCOL_FIELD_DESC = new org.apache.thrift.protocol.TField("protocol", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField CONTROLLER_ADDRESS_FIELD_DESC = new org.apache.thrift.protocol.TField("controllerAddress", org.apache.thrift.protocol.TType.STRING, (short)3);
-    private static final org.apache.thrift.protocol.TField CONTROLLER_PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("controllerPort", org.apache.thrift.protocol.TType.I16, (short)4);
-    private static final org.apache.thrift.protocol.TField NETWORK_ADDRESS_FIELD_DESC = new org.apache.thrift.protocol.TField("networkAddress", org.apache.thrift.protocol.TType.STRING, (short)5);
-    private static final org.apache.thrift.protocol.TField MASK_FIELD_DESC = new org.apache.thrift.protocol.TField("mask", org.apache.thrift.protocol.TType.I16, (short)6);
+    private static final org.apache.thrift.protocol.TField PROTOCOL_FIELD_DESC = new org.apache.thrift.protocol.TField("protocol", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CONTROLLER_ADDRESS_FIELD_DESC = new org.apache.thrift.protocol.TField("controllerAddress", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField CONTROLLER_PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("controllerPort", org.apache.thrift.protocol.TType.I16, (short)3);
+    private static final org.apache.thrift.protocol.TField NETWORK_ADDRESS_FIELD_DESC = new org.apache.thrift.protocol.TField("networkAddress", org.apache.thrift.protocol.TType.STRING, (short)4);
+    private static final org.apache.thrift.protocol.TField MASK_FIELD_DESC = new org.apache.thrift.protocol.TField("mask", org.apache.thrift.protocol.TType.I16, (short)5);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -553,7 +548,6 @@ public class TenantServer {
       schemes.put(TupleScheme.class, new createVirtualNetwork_argsTupleSchemeFactory());
     }
 
-    public int tenantId; // required
     public String protocol; // required
     public String controllerAddress; // required
     public short controllerPort; // required
@@ -562,12 +556,11 @@ public class TenantServer {
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TENANT_ID((short)1, "tenantId"),
-      PROTOCOL((short)2, "protocol"),
-      CONTROLLER_ADDRESS((short)3, "controllerAddress"),
-      CONTROLLER_PORT((short)4, "controllerPort"),
-      NETWORK_ADDRESS((short)5, "networkAddress"),
-      MASK((short)6, "mask");
+      PROTOCOL((short)1, "protocol"),
+      CONTROLLER_ADDRESS((short)2, "controllerAddress"),
+      CONTROLLER_PORT((short)3, "controllerPort"),
+      NETWORK_ADDRESS((short)4, "networkAddress"),
+      MASK((short)5, "mask");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -582,17 +575,15 @@ public class TenantServer {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TENANT_ID
-            return TENANT_ID;
-          case 2: // PROTOCOL
+          case 1: // PROTOCOL
             return PROTOCOL;
-          case 3: // CONTROLLER_ADDRESS
+          case 2: // CONTROLLER_ADDRESS
             return CONTROLLER_ADDRESS;
-          case 4: // CONTROLLER_PORT
+          case 3: // CONTROLLER_PORT
             return CONTROLLER_PORT;
-          case 5: // NETWORK_ADDRESS
+          case 4: // NETWORK_ADDRESS
             return NETWORK_ADDRESS;
-          case 6: // MASK
+          case 5: // MASK
             return MASK;
           default:
             return null;
@@ -634,15 +625,12 @@ public class TenantServer {
     }
 
     // isset id assignments
-    private static final int __TENANTID_ISSET_ID = 0;
-    private static final int __CONTROLLERPORT_ISSET_ID = 1;
-    private static final int __MASK_ISSET_ID = 2;
+    private static final int __CONTROLLERPORT_ISSET_ID = 0;
+    private static final int __MASK_ISSET_ID = 1;
     private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TENANT_ID, new org.apache.thrift.meta_data.FieldMetaData("tenantId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
       tmpMap.put(_Fields.PROTOCOL, new org.apache.thrift.meta_data.FieldMetaData("protocol", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CONTROLLER_ADDRESS, new org.apache.thrift.meta_data.FieldMetaData("controllerAddress", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -661,7 +649,6 @@ public class TenantServer {
     }
 
     public createVirtualNetwork_args(
-      int tenantId,
       String protocol,
       String controllerAddress,
       short controllerPort,
@@ -669,8 +656,6 @@ public class TenantServer {
       short mask)
     {
       this();
-      this.tenantId = tenantId;
-      setTenantIdIsSet(true);
       this.protocol = protocol;
       this.controllerAddress = controllerAddress;
       this.controllerPort = controllerPort;
@@ -685,7 +670,6 @@ public class TenantServer {
      */
     public createVirtualNetwork_args(createVirtualNetwork_args other) {
       __isset_bitfield = other.__isset_bitfield;
-      this.tenantId = other.tenantId;
       if (other.isSetProtocol()) {
         this.protocol = other.protocol;
       }
@@ -705,8 +689,6 @@ public class TenantServer {
 
     @Override
     public void clear() {
-      setTenantIdIsSet(false);
-      this.tenantId = 0;
       this.protocol = null;
       this.controllerAddress = null;
       setControllerPortIsSet(false);
@@ -714,29 +696,6 @@ public class TenantServer {
       this.networkAddress = null;
       setMaskIsSet(false);
       this.mask = 0;
-    }
-
-    public int getTenantId() {
-      return this.tenantId;
-    }
-
-    public createVirtualNetwork_args setTenantId(int tenantId) {
-      this.tenantId = tenantId;
-      setTenantIdIsSet(true);
-      return this;
-    }
-
-    public void unsetTenantId() {
-      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TENANTID_ISSET_ID);
-    }
-
-    /** Returns true if field tenantId is set (has been assigned a value) and false otherwise */
-    public boolean isSetTenantId() {
-      return EncodingUtils.testBit(__isset_bitfield, __TENANTID_ISSET_ID);
-    }
-
-    public void setTenantIdIsSet(boolean value) {
-      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TENANTID_ISSET_ID, value);
     }
 
     public String getProtocol() {
@@ -859,14 +818,6 @@ public class TenantServer {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TENANT_ID:
-        if (value == null) {
-          unsetTenantId();
-        } else {
-          setTenantId((Integer)value);
-        }
-        break;
-
       case PROTOCOL:
         if (value == null) {
           unsetProtocol();
@@ -912,9 +863,6 @@ public class TenantServer {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TENANT_ID:
-        return Integer.valueOf(getTenantId());
-
       case PROTOCOL:
         return getProtocol();
 
@@ -941,8 +889,6 @@ public class TenantServer {
       }
 
       switch (field) {
-      case TENANT_ID:
-        return isSetTenantId();
       case PROTOCOL:
         return isSetProtocol();
       case CONTROLLER_ADDRESS:
@@ -969,15 +915,6 @@ public class TenantServer {
     public boolean equals(createVirtualNetwork_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_tenantId = true;
-      boolean that_present_tenantId = true;
-      if (this_present_tenantId || that_present_tenantId) {
-        if (!(this_present_tenantId && that_present_tenantId))
-          return false;
-        if (this.tenantId != that.tenantId)
-          return false;
-      }
 
       boolean this_present_protocol = true && this.isSetProtocol();
       boolean that_present_protocol = true && that.isSetProtocol();
@@ -1040,16 +977,6 @@ public class TenantServer {
       int lastComparison = 0;
       createVirtualNetwork_args typedOther = (createVirtualNetwork_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTenantId()).compareTo(typedOther.isSetTenantId());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTenantId()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tenantId, typedOther.tenantId);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetProtocol()).compareTo(typedOther.isSetProtocol());
       if (lastComparison != 0) {
         return lastComparison;
@@ -1120,10 +1047,6 @@ public class TenantServer {
       StringBuilder sb = new StringBuilder("createVirtualNetwork_args(");
       boolean first = true;
 
-      sb.append("tenantId:");
-      sb.append(this.tenantId);
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("protocol:");
       if (this.protocol == null) {
         sb.append("null");
@@ -1200,15 +1123,7 @@ public class TenantServer {
             break;
           }
           switch (schemeField.id) {
-            case 1: // TENANT_ID
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.tenantId = iprot.readI32();
-                struct.setTenantIdIsSet(true);
-              } else { 
-                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 2: // PROTOCOL
+            case 1: // PROTOCOL
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.protocol = iprot.readString();
                 struct.setProtocolIsSet(true);
@@ -1216,7 +1131,7 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // CONTROLLER_ADDRESS
+            case 2: // CONTROLLER_ADDRESS
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.controllerAddress = iprot.readString();
                 struct.setControllerAddressIsSet(true);
@@ -1224,7 +1139,7 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 4: // CONTROLLER_PORT
+            case 3: // CONTROLLER_PORT
               if (schemeField.type == org.apache.thrift.protocol.TType.I16) {
                 struct.controllerPort = iprot.readI16();
                 struct.setControllerPortIsSet(true);
@@ -1232,7 +1147,7 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 5: // NETWORK_ADDRESS
+            case 4: // NETWORK_ADDRESS
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.networkAddress = iprot.readString();
                 struct.setNetworkAddressIsSet(true);
@@ -1240,7 +1155,7 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 6: // MASK
+            case 5: // MASK
               if (schemeField.type == org.apache.thrift.protocol.TType.I16) {
                 struct.mask = iprot.readI16();
                 struct.setMaskIsSet(true);
@@ -1263,9 +1178,6 @@ public class TenantServer {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldBegin(TENANT_ID_FIELD_DESC);
-        oprot.writeI32(struct.tenantId);
-        oprot.writeFieldEnd();
         if (struct.protocol != null) {
           oprot.writeFieldBegin(PROTOCOL_FIELD_DESC);
           oprot.writeString(struct.protocol);
@@ -1305,28 +1217,22 @@ public class TenantServer {
       public void write(org.apache.thrift.protocol.TProtocol prot, createVirtualNetwork_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetTenantId()) {
+        if (struct.isSetProtocol()) {
           optionals.set(0);
         }
-        if (struct.isSetProtocol()) {
+        if (struct.isSetControllerAddress()) {
           optionals.set(1);
         }
-        if (struct.isSetControllerAddress()) {
+        if (struct.isSetControllerPort()) {
           optionals.set(2);
         }
-        if (struct.isSetControllerPort()) {
+        if (struct.isSetNetworkAddress()) {
           optionals.set(3);
         }
-        if (struct.isSetNetworkAddress()) {
+        if (struct.isSetMask()) {
           optionals.set(4);
         }
-        if (struct.isSetMask()) {
-          optionals.set(5);
-        }
-        oprot.writeBitSet(optionals, 6);
-        if (struct.isSetTenantId()) {
-          oprot.writeI32(struct.tenantId);
-        }
+        oprot.writeBitSet(optionals, 5);
         if (struct.isSetProtocol()) {
           oprot.writeString(struct.protocol);
         }
@@ -1347,28 +1253,24 @@ public class TenantServer {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createVirtualNetwork_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(6);
+        BitSet incoming = iprot.readBitSet(5);
         if (incoming.get(0)) {
-          struct.tenantId = iprot.readI32();
-          struct.setTenantIdIsSet(true);
-        }
-        if (incoming.get(1)) {
           struct.protocol = iprot.readString();
           struct.setProtocolIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(1)) {
           struct.controllerAddress = iprot.readString();
           struct.setControllerAddressIsSet(true);
         }
-        if (incoming.get(3)) {
+        if (incoming.get(2)) {
           struct.controllerPort = iprot.readI16();
           struct.setControllerPortIsSet(true);
         }
-        if (incoming.get(4)) {
+        if (incoming.get(3)) {
           struct.networkAddress = iprot.readString();
           struct.setNetworkAddressIsSet(true);
         }
-        if (incoming.get(5)) {
+        if (incoming.get(4)) {
           struct.mask = iprot.readI16();
           struct.setMaskIsSet(true);
         }
@@ -2238,7 +2140,7 @@ public class TenantServer {
   public static class createVirtualSwitch_result implements org.apache.thrift.TBase<createVirtualSwitch_result, createVirtualSwitch_result._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createVirtualSwitch_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I64, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -2246,7 +2148,7 @@ public class TenantServer {
       schemes.put(TupleScheme.class, new createVirtualSwitch_resultTupleSchemeFactory());
     }
 
-    public int success; // required
+    public long success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -2313,7 +2215,7 @@ public class TenantServer {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createVirtualSwitch_result.class, metaDataMap);
     }
@@ -2322,7 +2224,7 @@ public class TenantServer {
     }
 
     public createVirtualSwitch_result(
-      int success)
+      long success)
     {
       this();
       this.success = success;
@@ -2347,11 +2249,11 @@ public class TenantServer {
       this.success = 0;
     }
 
-    public int getSuccess() {
+    public long getSuccess() {
       return this.success;
     }
 
-    public createVirtualSwitch_result setSuccess(int success) {
+    public createVirtualSwitch_result setSuccess(long success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
@@ -2376,7 +2278,7 @@ public class TenantServer {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Integer)value);
+          setSuccess((Long)value);
         }
         break;
 
@@ -2386,7 +2288,7 @@ public class TenantServer {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return Integer.valueOf(getSuccess());
+        return Long.valueOf(getSuccess());
 
       }
       throw new IllegalStateException();
@@ -2522,8 +2424,8 @@ public class TenantServer {
           }
           switch (schemeField.id) {
             case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.success = iprot.readI32();
+              if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+                struct.success = iprot.readI64();
                 struct.setSuccessIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -2546,7 +2448,7 @@ public class TenantServer {
         oprot.writeStructBegin(STRUCT_DESC);
         if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          oprot.writeI32(struct.success);
+          oprot.writeI64(struct.success);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -2572,7 +2474,7 @@ public class TenantServer {
         }
         oprot.writeBitSet(optionals, 1);
         if (struct.isSetSuccess()) {
-          oprot.writeI32(struct.success);
+          oprot.writeI64(struct.success);
         }
       }
 
@@ -2581,7 +2483,7 @@ public class TenantServer {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.success = iprot.readI32();
+          struct.success = iprot.readI64();
           struct.setSuccessIsSet(true);
         }
       }

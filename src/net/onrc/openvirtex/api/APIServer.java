@@ -1,47 +1,31 @@
 package net.onrc.openvirtex.api;
 
-import java.util.List;
 
-import org.apache.thrift.TException;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 
-public class APIServer implements TenantServer.Iface {
+public class APIServer {
     APITenantManager tenantManager;
     public APIServer () {
 	tenantManager = new APITenantManager();
     }
 
-    @Override
-    public int createVirtualNetwork(int tenantId, String protocol,
-            String controllerAddress, short controllerPort,
-            String networkAddress, short mask) throws TException {
-	// TODO Auto-generated method stub
-	return tenantManager.createOVXNetwork(tenantId, protocol, controllerAddress, controllerPort, networkAddress, mask);
+    private void start() {
+	try {
+	    int port = 8080;
+	    TServerSocket serverTransport = new TServerSocket(port);
+	    TenantServer.Processor<APIServiceImpl> processor = new TenantServer.Processor<APIServiceImpl>(new APIServiceImpl());
+	    TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
+	    server.serve();
+	} catch (TTransportException e) {
+	    e.printStackTrace();
+	}
     }
 
-    @Override
-    public int createVirtualSwitch(int tenantId, List<String> dpids)
-            throws TException {
-	// TODO Auto-generated method stub
-	return this.createVirtualSwitch(tenantId, dpids);
+    public static void main (String[] agrs) {
+	APIServer server = new APIServer();
+	server.start();
     }
-
-    @Override
-    public int createHost(int tenantId, String dpid, short portNumber)
-            throws TException {
-	// TODO Auto-generated method stub
-	return this.tenantManager.createEdgePort(tenantId, dpid, portNumber);
-    }
-
-    @Override
-    public int createVirtualLink(int tenantId, String pathString)
-            throws TException {
-	// TODO Auto-generated method stub
-	return this.tenantManager.createOVXLink(tenantId, pathString);
-    }
-
-    @Override
-    public boolean startNetwork(int tenantId) throws TException {
-	// TODO Auto-generated method stub
-	return this.tenantManager.createNetwork(tenantId);
-    }
-}
+ }
