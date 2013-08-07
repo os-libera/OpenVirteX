@@ -112,9 +112,4 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	    return controllerPort;
         }
 
-	public OVXSwitch getSwitch(Long longDpid) {
-	    // TODO Auto-generated method stub
-	    return null;
-        }
-
 }
