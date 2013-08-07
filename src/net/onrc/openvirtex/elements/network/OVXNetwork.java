@@ -46,6 +46,10 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	public int getTenantId() {
 		return this.tenantId;
 	}
+	
+	public OVXSwitch getSwitch(long dpid) {
+	    return null;
+	}
 
 	public void setTenantId(final int tenantId) {
 		this.tenantId = tenantId;
