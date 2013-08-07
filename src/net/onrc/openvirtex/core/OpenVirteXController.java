@@ -25,6 +25,7 @@ package net.onrc.openvirtex.core;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
@@ -48,7 +49,9 @@ public class OpenVirteXController implements Runnable {
     Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
 
     private static final int SEND_BUFFER_SIZE = 1024 * 1024;
-
+    private static OpenVirteXController instance = null;
+    
+    
     private String configFile = null;
     private String ofHost = null;
     private Integer ofPort = null;
@@ -68,12 +71,15 @@ public class OpenVirteXController implements Runnable {
 	this.configFile = configFile;
 	this.ofHost = ofHost;
 	this.ofPort = ofPort;
+	instance = this;
     }
 
     @Override
     public void run() {
 	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
-	this.registerOVXSwitch(new OVXSingleSwitch(1,1), "192.168.2.136", 6633);
+	OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
+	sw.init();
+	this.registerOVXSwitch(sw, "192.168.2.136", 6633);
 	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
 	try {
 	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
@@ -168,6 +174,12 @@ public class OpenVirteXController implements Runnable {
 	    pfact.releaseExternalResources();
 	if (cfact != null)
 	    cfact.releaseExternalResources();
+    }
+    
+    public static OpenVirteXController getInstance() {
+	if (instance == null)
+	    throw new RuntimeException("The OpenVirtexController has not been initialized; quitting.");
+	return instance;
     }
 
 }

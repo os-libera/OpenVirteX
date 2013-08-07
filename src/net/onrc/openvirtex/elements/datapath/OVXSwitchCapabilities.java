@@ -52,6 +52,13 @@ public class OVXSwitchCapabilities {
 	 * Instantiates a new oVX switch capabilities.
 	 */
 	public OVXSwitchCapabilities() {
+	    this.flowStatsCapability = true;
+	    this.tableStatsCapability = true;
+	    this.portStatsCapability = true;
+	    this.stpCapability = false;
+	    this.reassembleCapability = false;
+	    this.queueStatsCapability = false;
+	    this.matchIpCapability = true;
 	}
 
 	/**
@@ -75,25 +82,19 @@ public class OVXSwitchCapabilities {
 	public Integer getOVXSwitchCapabilities() {
 		Integer capabilities = 0;
 		if (this.flowStatsCapability)
-			capabilities = capabilities
-					+ OFCapabilities.OFPC_FLOW_STATS.getValue();
+			capabilities += OFCapabilities.OFPC_FLOW_STATS.getValue();
 		if (this.tableStatsCapability)
-			capabilities = capabilities
-					+ OFCapabilities.OFPC_TABLE_STATS.getValue();
+			capabilities +=  OFCapabilities.OFPC_TABLE_STATS.getValue();
 		if (this.portStatsCapability)
-			capabilities = capabilities
-					+ OFCapabilities.OFPC_PORT_STATS.getValue();
+			capabilities += OFCapabilities.OFPC_PORT_STATS.getValue();
 		if (this.stpCapability)
-			capabilities = capabilities + OFCapabilities.OFPC_STP.getValue();
+			capabilities += OFCapabilities.OFPC_STP.getValue();
 		if (this.reassembleCapability)
-			capabilities = capabilities
-					+ OFCapabilities.OFPC_IP_REASM.getValue();
+			capabilities += OFCapabilities.OFPC_IP_REASM.getValue();
 		if (this.queueStatsCapability)
-			capabilities = capabilities
-					+ OFCapabilities.OFPC_QUEUE_STATS.getValue();
+			capabilities += OFCapabilities.OFPC_QUEUE_STATS.getValue();
 		if (this.matchIpCapability)
-			capabilities = capabilities
-					+ OFCapabilities.OFPC_ARP_MATCH_IP.getValue();
+			capabilities += OFCapabilities.OFPC_ARP_MATCH_IP.getValue();
 		return capabilities;
 	}
 

@@ -27,14 +27,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.LinkedList;
 import java.util.Set;
 
-
 import net.onrc.openvirtex.elements.port.OVXPort;
-
 import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFPhysicalPort;
+import org.openflow.protocol.OFPort;
 
 /**
  * The Class OVXSwitch.
@@ -68,10 +67,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	/** The backoff counter for this switch when unconnected */
 	private AtomicInteger backOffCounter = null;
 
-	// TODO Add the packetIn buffer Map
-
 	/**
-	 * Instantiates a new oVX switch.
+	 * Instantiates a new OVX switch.
 	 */
 	protected OVXSwitch() {
 		super();
@@ -231,6 +228,21 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 			Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration;
 		
 
+	
+	protected void addDefaultPort(LinkedList<OFPhysicalPort> ports) {
+	    OFPhysicalPort port = new OFPhysicalPort();
+	    port.setPortNumber(OFPort.OFPP_LOCAL.getValue());
+	    port.setName("OpenFlow Local Port");
+	    port.setConfig(1);
+	    byte[] addr ={ (byte) 0xA4,(byte)0x23,(byte)0x05,(byte)0x00,(byte)0x00,(byte)0x00};
+	    port.setHardwareAddress(addr);
+	    port.setState(1);
+	    port.setAdvertisedFeatures(0);
+	    port.setCurrentFeatures(0);
+	    port.setSupportedFeatures(0);
+	    ports.add(port);
+	}
+	
 	/**
 	 * Generate features reply.
 	 */
@@ -250,14 +262,23 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 			port.setSupportedFeatures(port.getSupportedFeatures());
 			portList.add(port);
 		}
+		
+		/*
+		 * Giving the switch a port (the local port) which 
+		 * is set administratively down.
+		 * 
+		 * Perhaps this can be used to send the packets to somewhere
+		 * interesting.
+		 */
+		addDefaultPort(portList);
 		ofReply.setPorts(portList);
 		ofReply.setBuffers(bufferDimension);
 		ofReply.setTables((byte) 1);
 		ofReply.setCapabilities(this.capabilities.getOVXSwitchCapabilities());
 		ofReply.setActions(supportedActions);
 		ofReply.setXid(0);
-		ofReply.setLength((short) (OFFeaturesReply.MINIMUM_LENGTH + (OFPhysicalPort.MINIMUM_LENGTH * portList
-				.size())));
+		ofReply.setLengthU(OFFeaturesReply.MINIMUM_LENGTH + (OFPhysicalPort.MINIMUM_LENGTH * portList
+				.size()));
 
 		setFeaturesReply(ofReply);
 	}

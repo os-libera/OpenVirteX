@@ -93,7 +93,6 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	} catch (final ClassCastException e) {
 	    this.log.error("Received illegal message : " + msgs);
 	}
-
     }
 
     /*
@@ -114,7 +113,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     protected void fillPortMap() {
 	for (final OFPhysicalPort port : this.featuresReply.getPorts()) {
-	    final PhysicalPort physicalPort = new PhysicalPort(port, false, this);
+	    final PhysicalPort physicalPort = new PhysicalPort(port, false,
+		    this);
 	    this.portMap.put(port.getPortNumber(), physicalPort);
 	}
     }
@@ -177,5 +177,5 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     @Override
     public PhysicalPort getPort(final Short portNumber) {
 	return this.portMap.get(portNumber).clone();
-    };
+    }
 }

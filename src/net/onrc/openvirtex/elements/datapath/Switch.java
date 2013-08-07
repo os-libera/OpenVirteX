@@ -76,6 +76,9 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * Instantiates a new switch (should be never used).
      */
     protected Switch() {
+	this.switchName = HexString.toHexString(switchId);
+	this.portMap = new HashMap<Short, T>();
+	this.featuresReply = null;
     }
 
     /**
