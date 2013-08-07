@@ -42,19 +42,19 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	private IPAddress network;
 	private short mask;
 	private HashMap<IPAddress, MACAddress> gwsMap;
+	private String controllerHost;
+	private Integer controllerPort;
+	
+	public OVXNetwork(String controllerHost, Integer controllerPort, Integer tenantId) {
+	    this.tenantId = tenantId;
+	    this.controllerHost = controllerHost;
+	    this.controllerPort = controllerPort;
+	}
 
 	public int getTenantId() {
 		return this.tenantId;
 	}
 	
-	public OVXSwitch getSwitch(long dpid) {
-	    return null;
-	}
-
-	public void setTenantId(final int tenantId) {
-		this.tenantId = tenantId;
-	}
-
 	public IPAddress getNetwork() {
 		return this.network;
 	}
@@ -103,5 +103,18 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		// TODO Auto-generated method stub
 
 	}
+
+	public String getControllerHost() {
+	    return controllerHost;
+        }
+
+	public Integer getContollerPort() {
+	    return controllerPort;
+        }
+
+	public OVXSwitch getSwitch(Long longDpid) {
+	    // TODO Auto-generated method stub
+	    return null;
+        }
 
 }
