@@ -31,6 +31,8 @@ package net.onrc.openvirtex.elements.port;
 
 import java.util.HashMap;
 
+import org.openflow.protocol.OFPhysicalPort;
+
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 public class PhysicalPort extends Port<PhysicalSwitch> {
@@ -48,17 +50,21 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
     // TODO: do we need constructor with ovxPortMap?
 
     public PhysicalPort(final PhysicalPort pp) {
-	super(pp.portNumber, pp.hardwareAddress.getAddress(), pp.isEdge,
-	        pp.parentSwitch, pp.config, pp.state, pp.currentFeatures,
-	        pp.advertisedFeatures, pp.supportedFeatures, pp.peerFeatures);
+	super((OFPhysicalPort) pp, pp.isEdge, pp.parentSwitch);
 	this.ovxPortMap = new HashMap<Integer, OVXPort>();
     }
 
+    public PhysicalPort(final OFPhysicalPort pp, final Boolean isEdge, final PhysicalSwitch parentSwitch) {
+	super(pp, isEdge, parentSwitch);
+	this.ovxPortMap = new HashMap<Integer, OVXPort>();
+    }
+    
     public OVXPort getOVXPort(final Integer tenantId) {
 	return this.ovxPortMap.get(tenantId);
     }
 
-    public boolean setOVXPort(final Integer tenantId, final OVXPort ovxPort) {
+    public boolean setOVXPort(final OVXPort ovxPort) {
+	Integer tenantId = ovxPort.getTenantId();
 	if (this.ovxPortMap.containsKey(tenantId)) {
 	    return false;
 	} else {
@@ -71,7 +77,8 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
 	return this.ovxPortMap.get(tenantId).getPortNumber();
     }
 
-    public boolean updateOVXPort(final Integer tenantId, final OVXPort ovxPort) {
+    public boolean updateOVXPort(final OVXPort ovxPort) {
+	Integer tenantId = ovxPort.getTenantId();
 	if (!this.ovxPortMap.containsKey(tenantId)) {
 	    return false;
 	} else {

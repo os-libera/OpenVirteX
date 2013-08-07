@@ -19,7 +19,7 @@ import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.messages.OVXMessageFactory;
 
-public class LinkDiscoveryManager implements OVXSendMsg, OVXEventHandler {
+public class LinkDiscoveryManager implements OVXSendMsg {
 
     private static LinkDiscoveryManager instance;
     OVXMessageFactory ovxMessageFactory;
@@ -34,10 +34,6 @@ public class LinkDiscoveryManager implements OVXSendMsg, OVXEventHandler {
 	return LinkDiscoveryManager.instance;
     }
         
-    @Override
-    public void handleIO(final OFMessage msg) {
-    }
-
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 	PhysicalPort port;

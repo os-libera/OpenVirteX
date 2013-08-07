@@ -146,16 +146,10 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * 
      * @param portNumber
      *            the port number
-     * @return a COPY of the port instance
+     * @return the port instance
      */
-    @SuppressWarnings("unchecked")
-    protected T getPort(Short portNumber) {
-	try {
-	    return (T) this.portMap.get(portNumber).clone();
-	} catch (CloneNotSupportedException e) {
-	    log.error("Cloning wrong port type", e.getCause());
-	    return null;
-	}
+    public T getPort(Short portNumber) {
+	return this.portMap.get(portNumber);
     };
 
     /**

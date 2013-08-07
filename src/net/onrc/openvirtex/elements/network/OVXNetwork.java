@@ -31,18 +31,19 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.HashMap;
 
+import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.lldp.LLDPUtil;
-import net.onrc.openvirtex.packet.LLDP;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFMessage;
@@ -72,7 +73,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.mask = mask;
     }
 
-    public void register() {	
+    public void register() {
 	OVXMap.getInstance().addNetwork(this);
     }
 
@@ -123,27 +124,34 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     @Override
-    public void handleIO(final OFMessage msg) {  
-	// Only handle pkt_out, ignore all the rest
-	try {
-	    OVXPacketOut po = (OVXPacketOut) msg;
-	    byte [] pkt = po.getPacketData();
-	    if (LLDPUtil.checkLLDP(pkt)) {
-		DPIDandPort dp = LLDPUtil.parseLLDP(pkt);
-		// TODO: check if dpid present
-		OVXSwitch sw = dpidMap.get(dp.getDpid());
-		//OVXPort port = sw.getPort(dp.getPort());
-		//OVXPort neighbour = neighbourPortMap.get(port);
-		// Return other end 
-		OVXPacketIn pi = new OVXPacketIn();
-		//pi.setInPort(neighbour.getPortNumber());
-		pi.setPacketData(pkt);
-		//neighbour.getParentSwitch().sendMsg(pi, this);
-	    } else {
-		System.out.println("not a valid LLDP");		
-	    }
-	} catch (ClassCastException c) {
-	    System.out.println("not a pkt_out");
+    // sw argument is irrelevant in this case
+    public void handleLLDP(final OFMessage msg, final Switch sw) {
+	final OVXPacketOut po = (OVXPacketOut) msg;
+	final byte[] pkt = po.getPacketData();
+	if (LLDPUtil.checkLLDP(pkt)) {
+	    final DPIDandPort dp = LLDPUtil.parseLLDP(pkt);
+	    // TODO: check if dpid present
+	    final OVXSwitch lldpSwitch = this.dpidMap.get(dp.getDpid());
+	    final OVXPort port = lldpSwitch.getPort(dp.getPort());
+	    final OVXPort neighbour = this.neighbourPortMap.get(port);
+	    // Return other end
+	    OVXPacketIn pi = new OVXPacketIn();
+	    pi.setInPort(neighbour.getPortNumber());
+	    pi.setPacketData(pkt);
+	    neighbour.getParentSwitch().sendMsg(pi, this);
+	} else {
+	    System.out.println("not a valid LLDP");
 	}
+    }
+
+    @Override
+    public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+	// Do nothing
+
+    }
+
+    @Override
+    public String getName() {
+	return "Virtual network:" + this.tenantId.toString();
     }
 }

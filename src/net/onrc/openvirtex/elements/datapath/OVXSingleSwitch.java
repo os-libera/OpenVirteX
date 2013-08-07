@@ -129,18 +129,6 @@ public class OVXSingleSwitch extends OVXSwitch {
 	return true;
     }
 
-    /**
-     * Gets the port.
-     * 
-     * @param portNumber
-     *            the port number
-     * @return the port instance
-     */
-    @Override
-    protected OVXPort getPort(Short portNumber) {
-	return this.portMap.get(portNumber);
-    }
-
     @Override
     public boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
             Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration {
@@ -159,7 +147,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 
 	// Map the two ports
 	ovxPort.setPhysicalPort(physicalPort);
-	physicalPort.setOVXPort(this.tenantId, ovxPort);
+	physicalPort.setOVXPort(ovxPort);
 	// If the ovxPort is an edgePort, set also the physicalPort as an edge
 	
 	physicalPort.setIsEdge(ovxPort.getIsEdge());

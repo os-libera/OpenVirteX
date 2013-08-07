@@ -211,7 +211,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		Short ovxPortNumber = getNewPortNumber();
 		if (ovxPortNumber != 0) {
 			OVXPort ovxPort = new OVXPort(ovxPortNumber, hwAddress.getAddress(), isEdge,
-					this.tenantId, this);
+					this, this.tenantId);
 			this.portMap.put(ovxPortNumber, ovxPort);
 		}
 

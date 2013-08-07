@@ -236,7 +236,7 @@ public class OVXBigSwitch extends OVXSwitch {
 
 	// Map the two ports
 	ovxPort.setPhysicalPort(physicalPort);
-	physicalPort.setOVXPort(this.tenantId, ovxPort);
+	physicalPort.setOVXPort(ovxPort);
 	// If the ovxPort is an edgePort, set also the physicalPort as an edge
 	
 	physicalPort.setIsEdge(ovxPort.getIsEdge());

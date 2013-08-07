@@ -39,16 +39,9 @@ import org.openflow.protocol.OFPhysicalPort;
  */
 public class Port<T> extends OFPhysicalPort implements Cloneable {
 
-    protected Short      portNumber;
-    protected MACAddress hardwareAddress;
+    protected MACAddress mac;
     protected Boolean    isEdge;
     protected T          parentSwitch;
-    protected Integer    config;
-    protected Integer    state;
-    protected Integer    currentFeatures;
-    protected Integer    advertisedFeatures;
-    protected Integer    supportedFeatures;
-    protected Integer    peerFeatures;
 
     // TODO: duplexing/speed on port/link???
 
@@ -57,7 +50,8 @@ public class Port<T> extends OFPhysicalPort implements Cloneable {
      */
     protected Port() {
 	super();
-	parentSwitch = null;
+	this.isEdge = false;
+	this.parentSwitch = null;
     }
 
     /**
@@ -69,23 +63,39 @@ public class Port<T> extends OFPhysicalPort implements Cloneable {
      *            the hardware address
      */
     protected Port(final Short portNumber, final byte[] hardwareAddress,
-	    final Boolean isEdge, final T parentSwitch, final Integer config,
+	    final String name,
+	    final Integer config,
 	    final Integer state, final Integer currentFeatures,
 	    final Integer advertisedFeatures, final Integer supportedFeatures,
-	    final Integer peerFeatures) {
+	    final Integer peerFeatures, final Boolean isEdge, final T parentSwitch) {
 	super();
 	this.portNumber = portNumber;
-	this.hardwareAddress = new MACAddress(hardwareAddress);
-	this.isEdge = isEdge;
-	this.parentSwitch = parentSwitch;
+	this.hardwareAddress = hardwareAddress;
+	this.name = name;
 	this.config = 0;
 	this.state = 0;
 	this.currentFeatures = 0;
 	this.advertisedFeatures = 0;
 	this.supportedFeatures = 0;
 	this.peerFeatures = 0;
+	this.isEdge = isEdge;
+	this.parentSwitch = parentSwitch;
+	this.mac = new MACAddress(hardwareAddress);
     }
 
+    protected Port(final OFPhysicalPort port, final Boolean isEdge, final T parentSwitch) {
+	this(port.getPortNumber(), port.getHardwareAddress(), port.getName(),
+		port.getConfig(), port.getState(), port.getCurrentFeatures(),
+		port.getAdvertisedFeatures(), port.getSupportedFeatures(),
+		port.getPeerFeatures(), isEdge, parentSwitch);
+    }
+
+    public void setHardwareAddress(byte[] hardwareAddress) {
+	super.setHardwareAddress(hardwareAddress);
+	// no way to update MACAddress instances
+	this.mac = new MACAddress(hardwareAddress);
+    }
+    
     /**
      * Gets the checks if is edge.
      * 
@@ -129,13 +139,13 @@ public class Port<T> extends OFPhysicalPort implements Cloneable {
     public String toString() {
 	return "PORT:\n- portNumber: " + this.portNumber +
 		"\n- hardwareAddress: " + this.hardwareAddress.toString() +
-		"\n- isEdge: " + this.isEdge +
 		"\n- config: " + this.config +
 		"\n- state: " + this.state +
-		"\n- currentFeatures: " + this.currentFeatures
-	        + "\n- advertisedFeatures: " + this.advertisedFeatures
-	        + "\n- supportedFeatures: " + this.supportedFeatures
-	        + "\n- peerFeatures: " + this.peerFeatures;
+		"\n- currentFeatures: " + this.currentFeatures +
+	        "\n- advertisedFeatures: " + this.advertisedFeatures +
+	        "\n- supportedFeatures: " + this.supportedFeatures +
+	        "\n- peerFeatures: " + this.peerFeatures +
+		"\n- isEdge: " + this.isEdge;
     }
 
 }

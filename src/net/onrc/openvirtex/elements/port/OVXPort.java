@@ -32,6 +32,8 @@ package net.onrc.openvirtex.elements.port;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.openflow.protocol.OFPhysicalPort;
+
 public class OVXPort extends Port<OVXSwitch> {
 
     private Integer      tenantId;
@@ -44,51 +46,35 @@ public class OVXPort extends Port<OVXSwitch> {
 	super();
 	this.tenantId = -1;
 	this.physicalPort = null;
+	this.makeVirtual();
+    }
+
+    public OVXPort(final OVXPort vp) {
+	super((OFPhysicalPort) vp, vp.isEdge, vp.parentSwitch);
+	this.tenantId = -1;
+	this.physicalPort = null;
+    }
+
+    public OVXPort(final OVXPort vp, Integer tenantId, PhysicalPort physicalPort) {
+	this(vp);
+	this.tenantId = tenantId;
+	this.physicalPort = physicalPort;
+    }
+    
+    public OVXPort(final Short portNumber, final byte[] hardwareAddress, final Boolean isEdge,
+	    final OVXSwitch parentSwitch, final Integer tenantId) {
+	super(portNumber, hardwareAddress, "vport", 0, 0, 0, 0, 0, 0, isEdge, parentSwitch);
+	this.tenantId = tenantId;
+    }
+    
+    private void makeVirtual() {
 	// advertise current speed/duplex as 100MB FD, media type copper
 	this.currentFeatures = 324;
 	// advertise current feature + 1GB FD
 	this.advertisedFeatures = 340;
 	// advertise all the OF1.0 physical port speeds and duplex. Advertise
 	// media type as copper
-	this.supportedFeatures = 383;
-    }
-
-    /**
-     * @param portNumber
-     * @param hardwareAddress
-     * @param isEdge
-     * @param parentSwitch
-     * @param config
-     * @param state
-     * @param peerFeatures
-     * @param tenantId
-     * @param physicalPort
-     */
-    public OVXPort(final Short portNumber, final byte[] hardwareAddress,
-	    final Boolean isEdge, final OVXSwitch parentSwitch,
-	    final Integer config, final Integer state,
-	    final Integer peerFeatures, final Integer tenantId,
-	    final PhysicalPort physicalPort) {
-	super(portNumber, hardwareAddress, isEdge, parentSwitch, config, state,
-	        324, 340, 383, peerFeatures);
-	this.tenantId = tenantId;
-	this.physicalPort = physicalPort;
-    }
-
-    public OVXPort(final Short portNumber, final byte[] hardwareAddress,
-	    final Boolean isEdge, final Integer tenantId, final OVXSwitch parentSwitch) {
-	this();
-	this.portNumber = portNumber;
-	this.hardwareAddress = new MACAddress(hardwareAddress);
-	this.isEdge = isEdge;
-	this.tenantId = tenantId;
-	this.parentSwitch = parentSwitch;
-    }
-    
-    public OVXPort(final OVXPort op) {
-	this(op.portNumber, op.hardwareAddress.getAddress(), op.isEdge,
-	        op.parentSwitch, op.config, op.state, op.peerFeatures,
-	        op.tenantId, op.physicalPort);
+	this.supportedFeatures = 383;	
     }
 
     public Integer getTenantId() {

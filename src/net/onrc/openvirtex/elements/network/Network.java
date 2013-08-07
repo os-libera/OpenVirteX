@@ -32,10 +32,11 @@ package net.onrc.openvirtex.elements.network;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import net.onrc.openvirtex.core.io.OVXEventHandler;
+import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.linkdiscovery.Discoverable;
 
-public abstract class Network<T1, T2, T3> implements OVXEventHandler {
+public abstract class Network<T1, T2, T3> implements Discoverable, OVXSendMsg {
 
     protected ArrayList<T1>              switchList;
     protected HashMap<Long, T1>		dpidMap;

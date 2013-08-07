@@ -61,7 +61,7 @@ public class LLDPUtil {
 
     public static byte[] makeLLDP(final Port port) {
 	final short portNumber = port.getPortNumber();
-	final byte[] hardwareAddress = port.getHardwareAddress().toBytes();
+	final byte[] hardwareAddress = port.getHardwareAddress();
 	final long dpid = ((Switch) port.getParentSwitch()).getSwitchId();
 	// TODO: put this somewhere where it makes sense
 	final String ovxName = "OpenVirteX";
