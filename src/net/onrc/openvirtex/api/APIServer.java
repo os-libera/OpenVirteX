@@ -1,9 +1,10 @@
 package net.onrc.openvirtex.api;
 
 
+import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
 public class APIServer {
@@ -15,9 +16,9 @@ public class APIServer {
     private void start() {
 	try {
 	    int port = 8080;
-	    TServerSocket serverTransport = new TServerSocket(port);
+	    TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(port);
 	    TenantServer.Processor<APIServiceImpl> processor = new TenantServer.Processor<APIServiceImpl>(new APIServiceImpl());
-	    TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
+	    TServer server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).processor(processor));
 	    server.serve();
 	} catch (TTransportException e) {
 	    e.printStackTrace();
