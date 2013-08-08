@@ -36,6 +36,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.linkdiscovery.TopologyDiscoveryManager;
 
 import org.openflow.protocol.OFMessage;
 
@@ -65,7 +66,7 @@ public class PhysicalNetwork extends
 
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
-
+	TopologyDiscoveryManager.getInstance().handleLLDP(msg, sw);
     }
 
     @Override

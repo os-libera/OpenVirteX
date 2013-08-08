@@ -124,7 +124,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 	generateFeaturesReply();
 	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
 	OpenVirteXController.getInstance().registerOVXSwitch(this, 
-		net.getControllerHost(), net.getContollerPort());
+		net.getControllerHost(), net.getControllerPort());
 
     }
 

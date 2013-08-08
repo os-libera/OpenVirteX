@@ -33,13 +33,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
-import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.linkdiscovery.Discoverable;
+import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
-public abstract class Network<T1, T2, T3> implements Discoverable, OVXSendMsg {
+public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
+        OVXSendMsg {
 
     protected ArrayList<T1>              switchList;
-    protected HashMap<Long, T1>		dpidMap;
+    protected HashMap<Long, T1>          dpidMap;
     protected ArrayList<T3>              linkList;
     protected HashMap<T2, T2>            neighbourPortMap;
     protected HashMap<T1, ArrayList<T1>> neighbourMap;
@@ -47,14 +48,19 @@ public abstract class Network<T1, T2, T3> implements Discoverable, OVXSendMsg {
     // public OFControllerChannel channel;
 
     protected Network() {
-	ArrayList<T1> switchList = new ArrayList();
-	HashMap<Long, T1> dpidMap = new HashMap();
+	final ArrayList<T1> switchList = new ArrayList();
+	final HashMap<Long, T1> dpidMap = new HashMap();
     }
-    
+
     private void registerSwitch(final T1 sw) {
+	switchList.add(sw);
+	dpidMap.put(((Switch) sw).getSwitchId(), sw);
     }
 
     private void unregisterSwitch(final T1 sw) {
+	dpidMap.remove(((Switch) sw).getSwitchId());
+	// TODO: remove ports
+	switchList.remove(sw);
     }
 
     private void registerLink(final T3 link) {
@@ -70,8 +76,8 @@ public abstract class Network<T1, T2, T3> implements Discoverable, OVXSendMsg {
     public ArrayList<T1> getNeighbours(final T1 sw) {
 	return null;
     }
-    
-    public T1 getSwitch(Long dpid) {
+
+    public T1 getSwitch(final Long dpid) {
 	return this.dpidMap.get(dpid);
     }
 }

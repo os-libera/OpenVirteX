@@ -46,59 +46,67 @@ import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.lldp.LLDPUtil;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
     // public VLinkManager vLinkMgmt;
 
-    private Integer                        tenantId;
-    private final String                   ctrlProto;
-    private final IPAddress                ctrlAddr;
-    private final short                    ctrlPort;
+    private final Integer                  tenantId;
+    private final String                   protocol;
+    private final String                   controllerHost;
+    private final Integer                  controllerPort;
     private IPAddress                      network;
     private short                          mask;
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
 
-    public OVXNetwork(final Integer tenantId, final String ctrlProto,
-	    final IPAddress ctrlAddr, final short ctrlPort,
+    /** The log. */
+    Logger                                 log = LogManager
+	                                               .getLogger(OVXNetwork.class
+	                                                       .getName());
+
+    public OVXNetwork(final Integer tenantId, final String protocol,
+	    final String controllerHost, final Integer controllerPort,
 	    final IPAddress network, final short mask) {
 	super();
 	this.tenantId = tenantId;
-	this.ctrlProto = ctrlProto;
-	this.ctrlAddr = ctrlAddr;
-	this.ctrlPort = ctrlPort;
+	this.protocol = protocol;
+	this.controllerHost = controllerHost;
+	this.controllerPort = controllerPort;
 	this.network = network;
 	this.mask = mask;
+	this.bootState = false;
     }
 
-    public void register() {
-	OVXMap.getInstance().addNetwork(this);
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public String getControllerHost() {
+	return this.controllerHost;
+    }
+
+    public Integer getControllerPort() {
+	return this.controllerPort;
     }
 
     public Integer getTenantId() {
 	return this.tenantId;
     }
 
-    public void setTenantId(final Integer tenantId) {
-	this.tenantId = tenantId;
-    }
-
     public IPAddress getNetwork() {
 	return this.network;
-    }
-
-    public void setNetwork(final IPAddress network) {
-	this.network = network;
     }
 
     public short getMask() {
 	return this.mask;
     }
 
-    public void setMask(final short mask) {
-	this.mask = mask;
+    public void register() {
+	OVXMap.getInstance().addNetwork(this);
     }
 
     public OVXSwitch addSwitch(final OVXSwitch sw) {
@@ -120,7 +128,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     public boolean boot() {
-	return true;
+	this.bootState = true;
+	return this.bootState;
     }
 
     @Override
@@ -135,12 +144,12 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	    final OVXPort port = lldpSwitch.getPort(dp.getPort());
 	    final OVXPort neighbour = this.neighbourPortMap.get(port);
 	    // Return other end
-	    OVXPacketIn pi = new OVXPacketIn();
+	    final OVXPacketIn pi = new OVXPacketIn();
 	    pi.setInPort(neighbour.getPortNumber());
 	    pi.setPacketData(pkt);
 	    neighbour.getParentSwitch().sendMsg(pi, this);
 	} else {
-	    System.out.println("not a valid LLDP");
+	    this.log.debug("Invalid LLDP");
 	}
     }
 
