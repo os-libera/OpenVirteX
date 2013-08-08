@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -29,8 +28,8 @@ public class APITenantManager {
      * 
      * @return success
      */
-    public Integer createOVXNetwork (int tenantId, String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) {
-	OVXNetwork virtualNetwork = new OVXNetwork();
+    public Integer createOVXNetwork (int tenantId, String protocol, String controllerAddress, int controllerPort, String networkAddress, short mask) {
+	OVXNetwork virtualNetwork = new OVXNetwork(controllerAddress, controllerPort, tenantId);
 	virtualNetwork.initialize();
 	//virtualNetwork.register();
 	return virtualNetwork.getTenantId();
