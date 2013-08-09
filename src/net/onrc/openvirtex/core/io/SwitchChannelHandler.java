@@ -196,10 +196,9 @@ public class SwitchChannelHandler extends OFChannelHandler {
 		OFStatistics f = m.getFirstStatistics();
 		f.writeTo(data);
 		description.readFrom(data);
-		//h.sw = new PhysicalSwitch();
-		h.sw = PhysicalNetwork.getInstance().createSwitch();
+		h.sw = new PhysicalSwitch(h.featuresReply.getDatapathId());
 		// set switch information
-		// set features reply and channel first so we a DPID and
+		// set features reply and channel first so we have a DPID and
 		// channel info.
 		h.sw.setFeaturesReply(h.featuresReply);
 		h.sw.setDescriptionStats(description);

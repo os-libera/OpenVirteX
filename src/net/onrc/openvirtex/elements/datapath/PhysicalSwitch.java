@@ -32,6 +32,7 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.Virtualizable;
 
@@ -50,19 +51,13 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
     /**
      * Instantiates a new physical switch.
-     */
-    public PhysicalSwitch() {
-	super();
-    }
-
-    /**
-     * Instantiates a new physical switch.
      * 
      * @param switchId
      *            the switch id
      */
     public PhysicalSwitch(final long switchId) {
 	super(switchId);
+	PhysicalNetwork.getInstance().addSwitch(this);
     }
 
     /**
@@ -115,10 +110,18 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	for (final OFPhysicalPort port : this.featuresReply.getPorts()) {
 	    final PhysicalPort physicalPort = new PhysicalPort(port, false,
 		    this);
-	    this.portMap.put(port.getPortNumber(), physicalPort);
+	    this.addPort(physicalPort);
 	}
     }
-
+    
+    public boolean addPort(PhysicalPort port) {
+	boolean result = super.addPort(port);
+	if (result) {
+	    PhysicalNetwork.getInstance().addPort(port);
+	}
+	return result;
+    }
+    
     /*
      * (non-Javadoc)
      * 

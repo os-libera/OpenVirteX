@@ -63,7 +63,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
 
-    /** The log. */
     Logger                                 log = LogManager
 	                                               .getLogger(OVXNetwork.class
 	                                                       .getName());

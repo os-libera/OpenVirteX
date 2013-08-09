@@ -39,17 +39,23 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
 public class PhysicalNetwork extends
         Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 
-    private static PhysicalNetwork instance;
-    private ArrayList<Uplink>      uplinkList;
-    private HashMap<Long, SwitchDiscoveryManager> discoveryManager;
-    
+    private static PhysicalNetwork                      instance;
+    private ArrayList<Uplink>                           uplinkList;
+    private final HashMap<Long, SwitchDiscoveryManager> discoveryManager;
+    Logger                                              log = LogManager
+	                                                            .getLogger(PhysicalNetwork.class
+	                                                                    .getName());
+
     private PhysicalNetwork() {
-	discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
+	log.info("Starting physical network discovery");
+	this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
     }
 
     public static PhysicalNetwork getInstance() {
@@ -66,23 +72,27 @@ public class PhysicalNetwork extends
     public void setUplinkList(final ArrayList<Uplink> uplinkList) {
 	this.uplinkList = uplinkList;
     }
+
+    public void addSwitch(final PhysicalSwitch sw) {
+	this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
+	        sw));
+    }
     
-    public PhysicalSwitch createSwitch() {
-	PhysicalSwitch sw = new PhysicalSwitch();
-	this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(sw));
-	return sw;
+    public void addPort(final PhysicalPort port) {
+	this.discoveryManager.get(port.getParentSwitch().getSwitchId()).addPort(port);
     }
 
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
-	SwitchDiscoveryManager sdm = this.discoveryManager.get(sw.getSwitchId());
+	final SwitchDiscoveryManager sdm = this.discoveryManager.get(sw
+	        .getSwitchId());
 	if (sdm != null) {
 	    sdm.handleLLDP(msg, sw);
 	}
     }
 
     @Override
-    public void sendMsg(OFMessage msg, OVXSendMsg from) {
+    public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 	// Do nothing
     }
 

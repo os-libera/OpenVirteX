@@ -51,6 +51,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	this.fastPorts = new HashSet<Short>();
 	this.timer = new HashedWheelTimer();
 	this.timer.newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
+	log.debug("Started discovery manager for switch {}", sw.getSwitchId().toString());
     }
 
     synchronized public void addPort(final PhysicalPort port) {
