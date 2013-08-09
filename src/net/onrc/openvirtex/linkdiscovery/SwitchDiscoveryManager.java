@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -15,6 +16,9 @@ import net.onrc.openvirtex.messages.lldp.LLDPUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jboss.netty.util.HashedWheelTimer;
+import org.jboss.netty.util.Timeout;
+import org.jboss.netty.util.TimerTask;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFType;
@@ -22,66 +26,56 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
 
-public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg {
+public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
+        TimerTask {
 
-    private final TopologyDiscoveryManager topologyDiscoveryManager;
-    private final PhysicalSwitch           sw;
-    private final long                     probesPerPeriod;                              // this
-	                                                                                  // is
-	                                                                                  // the
-	                                                                                  // safety
-	                                                                                  // rate:
-	                                                                                  // this
-	                                                                                  // many
-    private final long                     fastProbeRate;
-    private final Set<Short>               slowPorts;
-    private final Set<Short>               fastPorts;
-    private Iterator<Short>                slowIterator;
-    Logger                                 log               = LogManager
-	                                                             .getLogger(SwitchDiscoveryManager.class
-	                                                                     .getName());
-    private final OVXMessageFactory        ovxMessageFactory = OVXMessageFactory
-	                                                             .getInstance();
+    private final PhysicalSwitch    sw;
+    // this is the safety rate: this many
+    private final long              probesPerPeriod;
+    private final long              fastProbeRate;
+    private final Set<Short>        slowPorts;
+    private final Set<Short>        fastPorts;
+    private Iterator<Short>         slowIterator;
+    Logger                          log               = LogManager
+	                                                      .getLogger(SwitchDiscoveryManager.class
+	                                                              .getName());
+    private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory
+	                                                      .getInstance();
+    private final HashedWheelTimer  timer;
 
-    public SwitchDiscoveryManager(
-	    final TopologyDiscoveryManager topologyDiscoveryManager,
-	    final PhysicalSwitch sw) {
-	this.topologyDiscoveryManager = topologyDiscoveryManager;
+    public SwitchDiscoveryManager(final PhysicalSwitch sw) {
 	this.sw = sw;
 	this.probesPerPeriod = 3;
-	this.fastProbeRate = this.topologyDiscoveryManager.getUpdatePeriod()
-	        / this.probesPerPeriod;
+	this.fastProbeRate = 5000 / this.probesPerPeriod;
 	this.slowPorts = new HashSet<Short>();
 	this.fastPorts = new HashSet<Short>();
+	this.timer = new HashedWheelTimer();
+	this.timer.newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
     }
 
-    // assume this is entry point after waking up
-    public void run() {
-	this.log.debug("sending probes");
-	// send a probe per fast port
-	for (final Short portNumber : this.fastPorts) {
-	    this.log.debug("sending fast probe to port");
-	    final OFPacketOut pkt = this.createLLDPPacketOut(this.sw
-		    .getPort(portNumber));
-	    this.sendMsg(pkt, this);
-	}
+    synchronized public void addPort(final PhysicalPort port) {
+	// this function is synchronized so it shouldn't get hosed
+	this.log.debug("sending init probe to port {}", port.getPortNumber());
+	final OFPacketOut pkt = this.createLLDPPacketOut(port);
+	this.sendMsg(pkt, this);
+	this.slowPorts.add(port.getPortNumber());
+	this.slowIterator = this.slowPorts.iterator();
+    }
 
-	// send a probe for the next slow port
-	if (this.slowPorts.size() > 0) {
-	    if (!this.slowIterator.hasNext()) {
-		this.slowIterator = this.slowPorts.iterator();
+    synchronized public void removePort(final PhysicalPort port) {
+	// this function is synchronized so it shouldn't get hosed
+	if (this.slowPorts.contains(port)) {
+	    this.slowPorts.remove(port);
+	    this.slowIterator = this.slowPorts.iterator();
+	} else
+	    if (this.fastPorts.contains(port)) {
+		this.fastPorts.remove(port);
+		// no iterator to update
+	    } else {
+		this.log.warn(
+		        "tried to dynamically remove non-existant port {}",
+		        port.getPortNumber());
 	    }
-	    if (this.slowIterator.hasNext()) {
-		final short portNumber = this.slowIterator.next();
-		this.log.debug("sending slow probe to port");
-		final OFPacketOut pkt = this.createLLDPPacketOut(this.sw
-		        .getPort(portNumber));
-		this.sendMsg(pkt, this);
-	    }
-	}
-	// reschedule timer
-	// this.pollLoop.addTimer(new FVTimerEvent(System.currentTimeMillis()
-	// + this.fastProbeRate, this, this, null));
     }
 
     private OFPacketOut createLLDPPacketOut(final PhysicalPort port) {
@@ -125,6 +119,34 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg {
     public void handleLLDP(final OFMessage msg, final Switch sw) {
 	// register link in topology
 	// reset timer
+    }
+
+    @Override
+    public void run(final Timeout t) throws Exception {
+	this.log.debug("sending probes");
+	// send a probe per fast port
+	for (final Short portNumber : this.fastPorts) {
+	    this.log.debug("sending fast probe to port");
+	    final OFPacketOut pkt = this.createLLDPPacketOut(this.sw
+		    .getPort(portNumber));
+	    this.sendMsg(pkt, this);
+	}
+
+	// send a probe for the next slow port
+	if (this.slowPorts.size() > 0) {
+	    if (!this.slowIterator.hasNext()) {
+		this.slowIterator = this.slowPorts.iterator();
+	    }
+	    if (this.slowIterator.hasNext()) {
+		final short portNumber = this.slowIterator.next();
+		this.log.debug("sending slow probe to port");
+		final OFPacketOut pkt = this.createLLDPPacketOut(this.sw
+		        .getPort(portNumber));
+		this.sendMsg(pkt, this);
+	    }
+	}
+	// reschedule timer
+	this.timer.newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
     }
 
 }

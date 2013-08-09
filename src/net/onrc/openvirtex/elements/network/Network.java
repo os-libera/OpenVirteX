@@ -52,21 +52,21 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	final HashMap<Long, T1> dpidMap = new HashMap();
     }
 
-    private void registerSwitch(final T1 sw) {
+    protected void addSwitch(final T1 sw) {
 	switchList.add(sw);
 	dpidMap.put(((Switch) sw).getSwitchId(), sw);
     }
 
-    private void unregisterSwitch(final T1 sw) {
+    protected void removeSwitch(final T1 sw) {
 	dpidMap.remove(((Switch) sw).getSwitchId());
 	// TODO: remove ports
 	switchList.remove(sw);
     }
 
-    private void registerLink(final T3 link) {
+    protected void addLink(final T3 link) {
     }
 
-    private void unregisterLink(final T3 link) {
+    protected void removeLink(final T3 link) {
     }
 
     public boolean initialize() {

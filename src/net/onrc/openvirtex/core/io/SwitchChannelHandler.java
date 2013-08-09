@@ -37,6 +37,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
@@ -195,7 +196,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 		OFStatistics f = m.getFirstStatistics();
 		f.writeTo(data);
 		description.readFrom(data);
-		h.sw = new PhysicalSwitch();
+		//h.sw = new PhysicalSwitch();
+		h.sw = PhysicalNetwork.getInstance().createSwitch();
 		// set switch information
 		// set features reply and channel first so we a DPID and
 		// channel info.

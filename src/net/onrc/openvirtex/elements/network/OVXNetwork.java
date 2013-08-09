@@ -58,8 +58,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private final String                   protocol;
     private final String                   controllerHost;
     private final Integer                  controllerPort;
-    private IPAddress                      network;
-    private short                          mask;
+    private final IPAddress                      network;
+    private final short                          mask;
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
 
@@ -109,21 +109,24 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	OVXMap.getInstance().addNetwork(this);
     }
 
-    public OVXSwitch addSwitch(final OVXSwitch sw) {
-	// switch = new OVXBigSwitch();
-	return new OVXBigSwitch();
+    public OVXSwitch createSwitch() {
+	OVXBigSwitch sw = new OVXBigSwitch();
+	super.addSwitch(sw);
+	// start discovery
+	return sw;
     }
 
-    public OVXPort addHost(final PhysicalPort port) {
+    public Integer createLink() {
+	OVXLink link = new OVXLink();
+	super.addLink(link);
+	return link.getLinkId();
+    }
+
+    public OVXPort createHost(final PhysicalPort port) {
 	return new OVXPort();
     }
 
-    public OVXLink addLink(final PhysicalPort in_port,
-	    final PhysicalPort out_port) {
-	return new OVXLink();
-    }
-
-    public void addGateway(final IPAddress ip) {
+    public void createGateway(final IPAddress ip) {
 
     }
 

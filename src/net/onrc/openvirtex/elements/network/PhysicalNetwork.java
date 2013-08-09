@@ -30,13 +30,14 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.linkdiscovery.TopologyDiscoveryManager;
+import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
 
 import org.openflow.protocol.OFMessage;
 
@@ -45,8 +46,10 @@ public class PhysicalNetwork extends
 
     private static PhysicalNetwork instance;
     private ArrayList<Uplink>      uplinkList;
-
+    private HashMap<Long, SwitchDiscoveryManager> discoveryManager;
+    
     private PhysicalNetwork() {
+	discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
     }
 
     public static PhysicalNetwork getInstance() {
@@ -63,10 +66,19 @@ public class PhysicalNetwork extends
     public void setUplinkList(final ArrayList<Uplink> uplinkList) {
 	this.uplinkList = uplinkList;
     }
+    
+    public PhysicalSwitch createSwitch() {
+	PhysicalSwitch sw = new PhysicalSwitch();
+	this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(sw));
+	return sw;
+    }
 
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
-	TopologyDiscoveryManager.getInstance().handleLLDP(msg, sw);
+	SwitchDiscoveryManager sdm = this.discoveryManager.get(sw.getSwitchId());
+	if (sdm != null) {
+	    sdm.handleLLDP(msg, sw);
+	}
     }
 
     @Override
