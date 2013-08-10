@@ -51,6 +51,9 @@ import net.onrc.openvirtex.util.MACAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPhysicalPort;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
 
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
@@ -120,7 +123,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	return sw;
     }
 
-    public Integer addLink(OVXPort srcPort, OVXPort dstPort) {
+    public Integer createLink(OVXPort srcPort, OVXPort dstPort) {
 	System.out.println("adding link " + srcPort.toString() + "-" + dstPort.toString());
 	int linkId = -1;
 	if (!this.neighbourPortMap.containsKey(srcPort)) {
@@ -146,21 +149,24 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     @Override
-    // sw argument is irrelevant in this case
     public void handleLLDP(final OFMessage msg, final Switch sw) {
 	final OVXPacketOut po = (OVXPacketOut) msg;
 	final byte[] pkt = po.getPacketData();
 	if (LLDPUtil.checkLLDP(pkt)) {
-	    final DPIDandPort dp = LLDPUtil.parseLLDP(pkt);
-	    // TODO: check if dpid present
-	    final OVXSwitch lldpSwitch = this.dpidMap.get(dp.getDpid());
-	    final OVXPort port = lldpSwitch.getPort(dp.getPort());
-	    final OVXPort neighbour = this.neighbourPortMap.get(port);
-	    // Return other end
-	    final OVXPacketIn pi = new OVXPacketIn();
-	    pi.setInPort(neighbour.getPortNumber());
-	    pi.setPacketData(pkt);
-	    neighbour.getParentSwitch().sendMsg(pi, this);
+	    // Get input port from pkt_out
+	    for (final OFAction action : po.getActions()) {
+		try {
+		    final short portNumber = ((OFActionOutput) action).getPort();
+		    final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
+		    final OVXPort dstPort = this.neighbourPortMap.get(srcPort);
+		    final OVXPacketIn pi = new OVXPacketIn();
+		    pi.setInPort(dstPort.getPortNumber());
+		    pi.setPacketData(pkt);
+		    dstPort.getParentSwitch().sendMsg(pi, this);
+		} catch (ClassCastException c) {
+		    // ignore non-ActionOutput pkt_out's 
+		}
+	    }
 	} else {
 	    this.log.debug("Invalid LLDP");
 	}
@@ -169,7 +175,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 	// Do nothing
-
     }
 
     @Override

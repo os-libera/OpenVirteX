@@ -29,8 +29,10 @@
 
 package net.onrc.openvirtex.elements.network;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.Switch;
@@ -55,8 +57,6 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     }
 
     protected void addLink(final T3 link) {
-	System.out.println("K " + this.neighbourMap.keySet());
-	System.out.println("V " + this.neighbourMap.values());
 	// Actual link creation is in child classes, because creation of generic
 	// types sucks
 	// Update the linkSet
@@ -65,9 +65,7 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
 	final HashSet<T1> neighbours = this.neighbourMap.get(srcSwitch);
-	System.out.println("1 " + neighbours);
 	neighbours.add(dstSwitch);
-	System.out.println("2 " + neighbours);
     }
 
     protected void addSwitch(final T1 sw) {
@@ -87,8 +85,8 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	return true;
     }
 
-    public HashSet<T1> getNeighbours(final T1 sw) {
-	return this.neighbourMap.get(sw);
+    public Set<T1> getNeighbours(final T1 sw) {
+	return Collections.unmodifiableSet(this.neighbourMap.get(sw));
     }
 
     public T1 getSwitch(final Long dpid) {

@@ -75,7 +75,6 @@ public class PhysicalNetwork extends
     }
 
     public void addSwitch(final PhysicalSwitch sw) {
-	System.out.println("Adding switch " + sw.getSwitchId());
 	super.addSwitch(sw);
 	this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
 	        sw));
@@ -88,7 +87,6 @@ public class PhysicalNetwork extends
     synchronized public void addLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
 	String src = srcPort.getParentSwitch().getSwitchId() + "-" + srcPort.getPortNumber();
 	String dst = dstPort.getParentSwitch().getSwitchId() + "-" + dstPort.getPortNumber();
-	System.out.println("adding link " + src + "<>" + dst);
 	if (this.neighbourPortMap.get(srcPort) != dstPort) {
 	    PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 	    this.neighbourPortMap.put(srcPort, dstPort);

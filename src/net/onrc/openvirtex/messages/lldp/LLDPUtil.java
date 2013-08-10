@@ -16,9 +16,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.openflow.util.StringByteSerializer;
 
 /**
- * Set of utilities for handling our LLDP virtualisation hacks
- * 
- * @author capveg
+ * Set of utilities for handling LLDP packets
  * 
  */
 public class LLDPUtil {
@@ -47,13 +45,10 @@ public class LLDPUtil {
 	}
 	final ByteBuffer packet = ByteBuffer.wrap(packetArray);
 	short ether_type = packet.getShort(12);
-	// FVLog.log(LogLevel.DEBUG,null,"Checking if the pkt is LLDP?",
-	// ether_type );
 	if (ether_type == LLDPUtil.ETHER_VLAN) {
 	    ether_type = packet.getShort(16);
 	}
 	if (ether_type != LLDPUtil.ETHER_LLDP) {
-	    // FVLog.log(LogLevel.DEBUG,null,"The pkt is not LLDP" );
 	    return false;
 	}
 	return true;
@@ -177,6 +172,7 @@ public class LLDPUtil {
 	    return null;
 	bb.position(26 + vlan_offset);
 	short port = bb.getShort();
+	// TODO: need to do this for LLDPs coming from physical switches
 	// Unnecessary to verify 
 	//	byte possibleSysId[] = new byte[2];
 	//	bb.position(32 + vlan_offset);
