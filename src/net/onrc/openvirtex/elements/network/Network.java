@@ -29,52 +29,64 @@
 
 package net.onrc.openvirtex.elements.network;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
         OVXSendMsg {
 
-    protected ArrayList<T1>              switchList;
-    protected HashMap<Long, T1>          dpidMap;
-    protected ArrayList<T3>              linkList;
-    protected HashMap<T2, T2>            neighbourPortMap;
-    protected HashMap<T1, ArrayList<T1>> neighbourMap;
+    protected HashSet<T1>              switchSet;
+    protected HashSet<T3>              linkSet;
+    protected HashMap<Long, T1>        dpidMap;
+    protected HashMap<T2, T2>          neighbourPortMap;
+    protected HashMap<T1, HashSet<T1>> neighbourMap;
 
     // public OFControllerChannel channel;
 
     protected Network() {
-	final ArrayList<T1> switchList = new ArrayList();
-	final HashMap<Long, T1> dpidMap = new HashMap();
-    }
-
-    protected void addSwitch(final T1 sw) {
-	switchList.add(sw);
-	dpidMap.put(((Switch) sw).getSwitchId(), sw);
-    }
-
-    protected void removeSwitch(final T1 sw) {
-	dpidMap.remove(((Switch) sw).getSwitchId());
-	// TODO: remove ports
-	switchList.remove(sw);
+	this.switchSet = new HashSet();
+	this.dpidMap = new HashMap();
+	this.neighbourPortMap = new HashMap();
+	this.neighbourMap = new HashMap();
     }
 
     protected void addLink(final T3 link) {
+	// Actual link creation is in child classes, because creation of generic
+	// types sucks
+	// Update the linkSet
+	this.linkSet.add(link);
+	// Update the neighbourMap
+	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
+	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
+	final HashSet<T1> neighbours = this.neighbourMap.get(srcSwitch);
+	neighbours.add(dstSwitch);
     }
 
-    protected void removeLink(final T3 link) {
+    protected void addSwitch(final T1 sw) {
+	if (this.switchSet.add(sw)) {
+	    this.dpidMap.put(((Switch) sw).getSwitchId(), sw);
+	    final HashSet<T1> neighbours = new HashSet();
+	    this.neighbourMap.put(sw, neighbours);
+	}
+    }
+
+    protected void removeSwitch(final T1 sw) {
+	this.dpidMap.remove(((Switch) sw).getSwitchId());
+	// TODO: remove ports
+	this.switchSet.remove(sw);
     }
 
     public boolean initialize() {
 	return true;
     }
 
-    public ArrayList<T1> getNeighbours(final T1 sw) {
-	return null;
+    public HashSet<T1> getNeighbours(final T1 sw) {
+	return this.neighbourMap.get(sw);
     }
 
     public T1 getSwitch(final Long dpid) {

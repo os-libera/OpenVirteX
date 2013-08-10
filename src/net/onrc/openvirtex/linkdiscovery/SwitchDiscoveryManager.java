@@ -8,10 +8,16 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.datapath.DPIDandPort;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXMessageFactory;
+import net.onrc.openvirtex.messages.OVXPacketIn;
+import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.lldp.LLDPUtil;
 
 import org.apache.logging.log4j.LogManager;
@@ -39,8 +45,8 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     Logger                          log               = LogManager
 	                                                      .getLogger(SwitchDiscoveryManager.class
 	                                                              .getName());
-    private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory
-	                                                      .getInstance();
+    private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory.getInstance();
+    
     private final HashedWheelTimer  timer;
 
     public SwitchDiscoveryManager(final PhysicalSwitch sw) {
@@ -57,7 +63,9 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     synchronized public void addPort(final PhysicalPort port) {
 	// this function is synchronized so it shouldn't get hosed
 	this.log.debug("sending init probe to port {}", port.getPortNumber());
+	System.out.println("sending init probe to port " + port.getParentSwitch().getSwitchId() + " - " + port.getPortNumber());
 	final OFPacketOut pkt = this.createLLDPPacketOut(port);
+	System.out.println(pkt.toString());
 	this.sendMsg(pkt, this);
 	this.slowPorts.add(port.getPortNumber());
 	this.slowIterator = this.slowPorts.iterator();
@@ -95,6 +103,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	packetOut.setPacketData(lldp);
 	packetOut
 	        .setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
+	System.out.println("PO " + packetOut.getPacketData());
 	return packetOut;
     }
 
@@ -118,6 +127,18 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
+	final OVXPacketIn pi = (OVXPacketIn) msg;
+	final byte[] pkt = pi.getPacketData();
+	if (LLDPUtil.checkLLDP(pkt)) {
+	    // TODO: check if dpid present
+	    final PhysicalPort dstPort =  (PhysicalPort) sw.getPort(pi.getInPort());
+	    final DPIDandPort dp = LLDPUtil.parseLLDP(pkt);
+	    final PhysicalSwitch srcSwitch = PhysicalNetwork.getInstance().getSwitch(dp.getDpid());
+	    final PhysicalPort srcPort = srcSwitch.getPort(dp.getPort());
+	    PhysicalNetwork.getInstance().addLink(srcPort, dstPort);
+	} else {
+	    this.log.debug("Invalid LLDP");
+	}	
 	// register link in topology
 	// reset timer
     }

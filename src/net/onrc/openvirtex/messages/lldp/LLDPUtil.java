@@ -118,8 +118,9 @@ public class LLDPUtil {
 	bb.put(oui);
 	final byte ouiSubtype[] = { 0x01 };
 	bb.put(ouiSubtype);
-	StringByteSerializer.writeTo(ChannelBuffers.wrappedBuffer(bb),
-	        ovxName.length() + 1, ovxName);
+	// TODO: what does this do and why does it fail?
+//	StringByteSerializer.writeTo(ChannelBuffers.copiedBuffer(bb),
+//	        ovxName.length() + 1, ovxName);
 	bb.put((byte) (ovxName.length() + 1));
 
 	// EndOfLLDPDU TLV

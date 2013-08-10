@@ -35,6 +35,7 @@ import java.util.HashMap;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
@@ -74,6 +75,7 @@ public class PhysicalNetwork extends
     }
 
     public void addSwitch(final PhysicalSwitch sw) {
+	super.addSwitch(sw);
 	this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
 	        sw));
     }
@@ -82,6 +84,15 @@ public class PhysicalNetwork extends
 	this.discoveryManager.get(port.getParentSwitch().getSwitchId()).addPort(port);
     }
 
+    synchronized public void addLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
+	System.out.println("adding link " + srcPort.toString() + "-" + dstPort.toString());
+	if (this.neighbourPortMap.get(srcPort) != dstPort) {
+	    PhysicalLink link = new PhysicalLink(srcPort, dstPort);
+	    this.neighbourPortMap.put(srcPort, dstPort);
+	    super.addLink(link);
+	}
+    }
+    
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
 	final SwitchDiscoveryManager sdm = this.discoveryManager.get(sw

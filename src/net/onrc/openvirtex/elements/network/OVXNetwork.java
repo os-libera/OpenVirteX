@@ -30,6 +30,7 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
@@ -39,6 +40,7 @@ import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXPacketIn;
@@ -62,6 +64,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private final short                          mask;
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
+    private AtomicInteger		linkCounter;
 
     Logger                                 log = LogManager
 	                                               .getLogger(OVXNetwork.class
@@ -78,6 +81,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.network = network;
 	this.mask = mask;
 	this.bootState = false;
+	// TODO: decide which value to start linkId's
+	this.linkCounter = new AtomicInteger(2);
     }
 
     public String getProtocol() {
@@ -115,10 +120,16 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	return sw;
     }
 
-    public Integer createLink() {
-	OVXLink link = new OVXLink();
-	super.addLink(link);
-	return link.getLinkId();
+    public Integer addLink(OVXPort srcPort, OVXPort dstPort) {
+	System.out.println("adding link " + srcPort.toString() + "-" + dstPort.toString());
+	int linkId = -1;
+	if (!this.neighbourPortMap.containsKey(srcPort)) {
+	    linkId = this.linkCounter.getAndIncrement(); 
+	    OVXLink link = new OVXLink(srcPort, dstPort, this.tenantId, linkId);	    
+	    this.neighbourPortMap.put(srcPort, dstPort);
+	    super.addLink(link);
+	}
+	return linkId;
     }
 
     public OVXPort createHost(final PhysicalPort port) {
