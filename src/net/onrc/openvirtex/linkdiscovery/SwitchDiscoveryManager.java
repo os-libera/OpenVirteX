@@ -63,9 +63,9 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     synchronized public void addPort(final PhysicalPort port) {
 	// this function is synchronized so it shouldn't get hosed
 	this.log.debug("sending init probe to port {}", port.getPortNumber());
+	// TODO: remove
 	System.out.println("sending init probe to port " + port.getParentSwitch().getSwitchId() + " - " + port.getPortNumber());
 	final OFPacketOut pkt = this.createLLDPPacketOut(port);
-	System.out.println(pkt.toString());
 	this.sendMsg(pkt, this);
 	this.slowPorts.add(port.getPortNumber());
 	this.slowIterator = this.slowPorts.iterator();
@@ -103,7 +103,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	packetOut.setPacketData(lldp);
 	packetOut
 	        .setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
-	System.out.println("PO " + packetOut.getPacketData());
 	return packetOut;
     }
 

@@ -46,16 +46,17 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     protected HashMap<T2, T2>          neighbourPortMap;
     protected HashMap<T1, HashSet<T1>> neighbourMap;
 
-    // public OFControllerChannel channel;
-
     protected Network() {
 	this.switchSet = new HashSet();
+	this.linkSet = new HashSet();
 	this.dpidMap = new HashMap();
 	this.neighbourPortMap = new HashMap();
 	this.neighbourMap = new HashMap();
     }
 
     protected void addLink(final T3 link) {
+	System.out.println("K " + this.neighbourMap.keySet());
+	System.out.println("V " + this.neighbourMap.values());
 	// Actual link creation is in child classes, because creation of generic
 	// types sucks
 	// Update the linkSet
@@ -64,14 +65,15 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
 	final HashSet<T1> neighbours = this.neighbourMap.get(srcSwitch);
+	System.out.println("1 " + neighbours);
 	neighbours.add(dstSwitch);
+	System.out.println("2 " + neighbours);
     }
 
     protected void addSwitch(final T1 sw) {
 	if (this.switchSet.add(sw)) {
 	    this.dpidMap.put(((Switch) sw).getSwitchId(), sw);
-	    final HashSet<T1> neighbours = new HashSet();
-	    this.neighbourMap.put(sw, neighbours);
+	    this.neighbourMap.put(sw, new HashSet());
 	}
     }
 

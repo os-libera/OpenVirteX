@@ -683,7 +683,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	    throws Exception {
 
 	/*
-	 * Pass all messages to the handlers, except LLDP which we send staight to
+	 * Pass all messages to the handlers, except LLDP which we send straight to
 	 * the topology controller.
 	 * 
 	 * This should be implemented with a token bucket in order to rate limit
@@ -707,6 +707,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			    if (data.length > 14) {
 				if ((data[12] == (byte) 0x88)
 					&& (data[13] == (byte) 0xcc)) {
+				    PhysicalNetwork.getInstance().handleLLDP(ofm, sw);
 				    log.warn("Got LLDP; send to physicalnetwork. unimplemented"); 
 				    break;
 				}
