@@ -35,12 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
-import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
-import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXPacketIn;
@@ -51,23 +49,28 @@ import net.onrc.openvirtex.util.MACAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
-import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
+/**
+ * Virtual networks contain tenantId, controller info, subnet and gateway
+ * information. Handles registration of virtual switches and links. Responds to
+ * LLDP discovery probes from the controller.
+ * 
+ */
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
-
-    // public VLinkManager vLinkMgmt;
 
     private final Integer                  tenantId;
     private final String                   protocol;
     private final String                   controllerHost;
     private final Integer                  controllerPort;
-    private final IPAddress                      network;
-    private final short                          mask;
+    private final IPAddress                network;
+    private final short                    mask;
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
-    private AtomicInteger		linkCounter;
+    private final AtomicInteger            linkCounter;
+    // TODO: implement vlink flow pusher
+    // public VLinkManager vLinkMgmt;
 
     Logger                                 log = LogManager
 	                                               .getLogger(OVXNetwork.class
@@ -89,7 +92,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     public String getProtocol() {
-        return protocol;
+	return this.protocol;
     }
 
     public String getControllerHost() {
@@ -108,6 +111,10 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	return this.network;
     }
 
+    public MACAddress getGateway(final IPAddress ip) {
+	return this.gwsMap.get(ip);
+    }
+
     public short getMask() {
 	return this.mask;
     }
@@ -116,55 +123,75 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	OVXMap.getInstance().addNetwork(this);
     }
 
+    // TODO
     public OVXSwitch createSwitch() {
-	OVXBigSwitch sw = new OVXBigSwitch();
+	final OVXBigSwitch sw = new OVXBigSwitch();
 	super.addSwitch(sw);
-	// start discovery
 	return sw;
     }
 
-    public Integer createLink(OVXPort srcPort, OVXPort dstPort) {
-	System.out.println("adding link " + srcPort.toString() + "-" + dstPort.toString());
+    /**
+     * Create link and add it to the topology. Returns linkId when successful,
+     * -1 if source port is already used.
+     * 
+     * @param srcPort
+     * @param dstPort
+     * @return
+     */
+    public Integer createLink(final OVXPort srcPort, final OVXPort dstPort) {
 	int linkId = -1;
 	if (!this.neighbourPortMap.containsKey(srcPort)) {
-	    linkId = this.linkCounter.getAndIncrement(); 
-	    OVXLink link = new OVXLink(srcPort, dstPort, this.tenantId, linkId);	    
+	    linkId = this.linkCounter.getAndIncrement();
+	    final OVXLink link = new OVXLink(srcPort, dstPort, this.tenantId,
+		    linkId);
 	    this.neighbourPortMap.put(srcPort, dstPort);
 	    super.addLink(link);
 	}
 	return linkId;
     }
 
+    // TODO
     public OVXPort createHost(final PhysicalPort port) {
 	return new OVXPort();
     }
 
+    // TODO
     public void createGateway(final IPAddress ip) {
 
     }
 
+    // TOOD: should probably do some other stuff
     public boolean boot() {
 	this.bootState = true;
 	return this.bootState;
     }
 
+    /**
+     * Handle LLDP received from controller.
+     * 
+     * Receive LLDP from controller. Switch to which it is destined is passed in
+     * by the ControllerHandler, port is extracted from the packet_out.
+     * Packet_in is created based on topology info.
+     */
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
 	final OVXPacketOut po = (OVXPacketOut) msg;
 	final byte[] pkt = po.getPacketData();
 	if (LLDPUtil.checkLLDP(pkt)) {
-	    // Get input port from pkt_out
+	    // Create LLDP response for each output action port
 	    for (final OFAction action : po.getActions()) {
 		try {
-		    final short portNumber = ((OFActionOutput) action).getPort();
+		    final short portNumber = ((OFActionOutput) action)
+			    .getPort();
 		    final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
 		    final OVXPort dstPort = this.neighbourPortMap.get(srcPort);
 		    final OVXPacketIn pi = new OVXPacketIn();
+		    // Get input port from pkt_out
 		    pi.setInPort(dstPort.getPortNumber());
 		    pi.setPacketData(pkt);
 		    dstPort.getParentSwitch().sendMsg(pi, this);
-		} catch (ClassCastException c) {
-		    // ignore non-ActionOutput pkt_out's 
+		} catch (final ClassCastException c) {
+		    // ignore non-ActionOutput pkt_out's
 		}
 	    }
 	} else {

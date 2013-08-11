@@ -6,17 +6,13 @@ package net.onrc.openvirtex.messages.lldp;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.Switch;
-
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.openflow.util.StringByteSerializer;
+import net.onrc.openvirtex.elements.port.Port;
 
 /**
  * Set of utilities for handling LLDP packets
+ * Heavily based on FlowVisor 1.2 implemenation.
  * 
  */
 public class LLDPUtil {
@@ -39,7 +35,7 @@ public class LLDPUtil {
      * @return
      */
 
-    static public boolean checkLLDP(final byte[] packetArray) {
+    public static boolean checkLLDP(final byte[] packetArray) {
 	if (packetArray == null || packetArray.length < 14) {
 	    return false; // not lddp if no packet exists or too short
 	}
@@ -54,6 +50,13 @@ public class LLDPUtil {
 	return true;
     }
 
+    /**
+     * Create an LLDP packet for the specified output port
+     * 
+     * @param port
+     * @return
+     *         The LLDP packet
+     */
     public static byte[] makeLLDP(final Port port) {
 	final short portNumber = port.getPortNumber();
 	final byte[] hardwareAddress = port.getHardwareAddress();
@@ -114,8 +117,8 @@ public class LLDPUtil {
 	final byte ouiSubtype[] = { 0x01 };
 	bb.put(ouiSubtype);
 	// TODO: what does this do and why does it fail?
-//	StringByteSerializer.writeTo(ChannelBuffers.copiedBuffer(bb),
-//	        ovxName.length() + 1, ovxName);
+	// StringByteSerializer.writeTo(ChannelBuffers.copiedBuffer(bb),
+	// ovxName.length() + 1, ovxName);
 	bb.put((byte) (ovxName.length() + 1));
 
 	// EndOfLLDPDU TLV
@@ -130,7 +133,16 @@ public class LLDPUtil {
 	return buf;
     }
 
-    static public DPIDandPort parseLLDP(byte[] packet) {
+    /**
+     * Extract dpid and port from LLDP packet
+     * TODO: generalize this so we can parse OVX-generated LLDPs
+     * and generic controller-generated ones
+     * 
+     * @param packet
+     * @return
+     *         Dpid and port
+     */
+    static public DPIDandPort parseLLDP(final byte[] packet) {
 	// TODO: generalize this so we can parse OVX-generated LLDPs
 	// and generic controller-generated ones
 	// LLDP packets sent by FV should have the following byte offsets:
@@ -152,15 +164,16 @@ public class LLDPUtil {
 	// 47 - oui subtype
 	// 48 - oui string (2 bytes for fvName; 1 for null; 1 for fvNameLength)
 	// 52 - endOfLLDPDU
-	// 54 - padding 
+	// 54 - padding
 
 	int vlan_offset = 0;
-	ByteBuffer bb = ByteBuffer.wrap(packet);
-	byte[] dst = new byte[6];
+	final ByteBuffer bb = ByteBuffer.wrap(packet);
+	final byte[] dst = new byte[6];
 	bb.get(dst);
 	// could move this to LLDPCheck
-	if (!Arrays.equals(dst, LLDPUtil.LLDP_MULTICAST))
+	if (!Arrays.equals(dst, LLDPUtil.LLDP_MULTICAST)) {
 	    return null;
+	}
 	bb.position(12);
 	short etherType = bb.getShort();
 	while (etherType == LLDPUtil.ETHER_VLAN) {
@@ -168,19 +181,19 @@ public class LLDPUtil {
 	    etherType = bb.getShort(); // noop to advance two bytes
 	    etherType = bb.getShort();
 	}
-	if (etherType != LLDPUtil.ETHER_LLDP)
+	if (etherType != LLDPUtil.ETHER_LLDP) {
 	    return null;
+	}
 	bb.position(26 + vlan_offset);
-	short port = bb.getShort();
+	final short port = bb.getShort();
 	// TODO: need to do this for LLDPs coming from physical switches
-	// Unnecessary to verify 
-	//	byte possibleSysId[] = new byte[2];
-	//	bb.position(32 + vlan_offset);
-	//	bb.get(possibleSysId);
-	//	if (!Arrays.equals(possibleSysId, TopologyConnection.lldpSysD))
-	//	    return null;
+	// byte possibleSysId[] = new byte[2];
+	// bb.position(32 + vlan_offset);
+	// bb.get(possibleSysId);
+	// if (!Arrays.equals(possibleSysId, TopologyConnection.lldpSysD))
+	// return null;
 	bb.position(34 + vlan_offset);
-	long dpid = bb.getLong();
+	final long dpid = bb.getLong();
 	return new DPIDandPort(dpid, port);
     }
 

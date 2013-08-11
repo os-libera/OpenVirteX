@@ -35,7 +35,6 @@ import java.util.HashMap;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
-import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
@@ -44,6 +43,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
+/**
+ * 
+ * Singleton class for physical network. Maintains SwitchDiscoveryManager for
+ * each switch in the physical network. Listens for LLDP packets and passes them
+ * on to the appropriate SwitchDiscoveryManager. Creates and maintains links
+ * after discovery, and switch ports are made discoverable here.
+ * TODO: should probably subscribe to PORT UP/DOWN events here
+ * 
+ */
 public class PhysicalNetwork extends
         Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 
@@ -55,7 +63,7 @@ public class PhysicalNetwork extends
 	                                                                    .getName());
 
     private PhysicalNetwork() {
-	log.info("Starting physical network discovery");
+	this.log.info("Starting physical network discovery...");
 	this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
     }
 
@@ -74,28 +82,48 @@ public class PhysicalNetwork extends
 	this.uplinkList = uplinkList;
     }
 
+    /**
+     * Add switch to topology and make discoverable
+     */
+    @Override
     public void addSwitch(final PhysicalSwitch sw) {
 	super.addSwitch(sw);
 	this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
 	        sw));
     }
-    
+
+    /**
+     * Add port for discovery
+     * 
+     * @param port
+     */
     public void addPort(final PhysicalPort port) {
-	this.discoveryManager.get(port.getParentSwitch().getSwitchId()).addPort(port);
+	this.discoveryManager.get(port.getParentSwitch().getSwitchId())
+	        .addPort(port);
     }
 
-    synchronized public void addLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
-	String src = srcPort.getParentSwitch().getSwitchId() + "-" + srcPort.getPortNumber();
-	String dst = dstPort.getParentSwitch().getSwitchId() + "-" + dstPort.getPortNumber();
+    /**
+     * Create link and add it to the topology.
+     * 
+     * @param srcPort
+     * @param dstPort
+     */
+    synchronized public void createLink(final PhysicalPort srcPort,
+	    final PhysicalPort dstPort) {
 	if (this.neighbourPortMap.get(srcPort) != dstPort) {
-	    PhysicalLink link = new PhysicalLink(srcPort, dstPort);
+	    final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 	    this.neighbourPortMap.put(srcPort, dstPort);
 	    super.addLink(link);
 	}
     }
-    
+
+    /**
+     * Handle LLDP packets by passing them on to the appropriate
+     * SwitchDisoveryManager (has sent the original discovery probe).
+     */
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
+	// Pass on msg to SwitchDiscoveryManager for that switch
 	final SwitchDiscoveryManager sdm = this.discoveryManager.get(sw
 	        .getSwitchId());
 	if (sdm != null) {

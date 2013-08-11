@@ -9,15 +9,12 @@ import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.DPIDandPort;
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
-import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXMessageFactory;
 import net.onrc.openvirtex.messages.OVXPacketIn;
-import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.lldp.LLDPUtil;
 
 import org.apache.logging.log4j.LogManager;
@@ -32,6 +29,13 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
 
+/**
+ * Run discovery process from a physical switch.
+ * Based on FlowVisor topology discovery implementation.
+ * 
+ * TODO: add 'fast discovery' mode: drop LLDPs in destination switch but
+ * listen for flow_removed messages
+ */
 public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
         TimerTask {
 
@@ -42,12 +46,12 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     private final Set<Short>        slowPorts;
     private final Set<Short>        fastPorts;
     private Iterator<Short>         slowIterator;
+    private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory
+	                                                      .getInstance();
+    private final HashedWheelTimer  timer;
     Logger                          log               = LogManager
 	                                                      .getLogger(SwitchDiscoveryManager.class
 	                                                              .getName());
-    private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory.getInstance();
-    
-    private final HashedWheelTimer  timer;
 
     public SwitchDiscoveryManager(final PhysicalSwitch sw) {
 	this.sw = sw;
@@ -57,20 +61,32 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	this.fastPorts = new HashSet<Short>();
 	this.timer = new HashedWheelTimer();
 	this.timer.newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
-	log.debug("Started discovery manager for switch {}", sw.getSwitchId().toString());
+	this.log.debug("Started discovery manager for switch {}",
+	        sw.getSwitchId());
     }
 
+    /**
+     * Add port to discovery process. Send out initial LLDP and label it as slow port.
+     * 
+     * @param port
+     */
     synchronized public void addPort(final PhysicalPort port) {
-	// this function is synchronized so it shouldn't get hosed
-	this.log.debug("sending init probe to port {}", port.getPortNumber());
-	final OFPacketOut pkt = this.createLLDPPacketOut(port);
-	this.sendMsg(pkt, this);
-	this.slowPorts.add(port.getPortNumber());
-	this.slowIterator = this.slowPorts.iterator();
+	// Ignore ports that are not on this switch
+	if (port.getParentSwitch() == sw) {
+	    this.log.debug("sending init probe to port {}", port.getPortNumber());
+	    final OFPacketOut pkt = this.createLLDPPacketOut(port);
+	    this.sendMsg(pkt, this);
+	    this.slowPorts.add(port.getPortNumber());
+	    this.slowIterator = this.slowPorts.iterator();
+	}
     }
 
+    /**
+     * Remove port from discovery process
+     * 
+     * @param port
+     */
     synchronized public void removePort(final PhysicalPort port) {
-	// this function is synchronized so it shouldn't get hosed
 	if (this.slowPorts.contains(port)) {
 	    this.slowPorts.remove(port);
 	    this.slowIterator = this.slowPorts.iterator();
@@ -85,6 +101,13 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	    }
     }
 
+    /**
+     * Creates packet_out LLDP for specified output port.
+     * 
+     * @param port
+     * @return
+     *         Packet_out message with LLDP data
+     */
     private OFPacketOut createLLDPPacketOut(final PhysicalPort port) {
 	final OFPacketOut packetOut = (OFPacketOut) this.ovxMessageFactory
 	        .getMessage(OFType.PACKET_OUT);
@@ -109,6 +132,14 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	this.sw.sendMsg(msg, this);
     }
 
+    /**
+     * Count the number of actions in an actionsList
+     * TODO: why is this needed? just use actionsList.size()?
+     * 
+     * @param actionsList
+     * @return
+     *         The number of actions
+     */
     private static short countActionsLen(final List<OFAction> actionsList) {
 	short count = 0;
 	for (final OFAction act : actionsList) {
@@ -128,14 +159,16 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	final byte[] pkt = pi.getPacketData();
 	if (LLDPUtil.checkLLDP(pkt)) {
 	    // TODO: check if dpid present
-	    final PhysicalPort dstPort =  (PhysicalPort) sw.getPort(pi.getInPort());
+	    final PhysicalPort dstPort = (PhysicalPort) sw.getPort(pi
+		    .getInPort());
 	    final DPIDandPort dp = LLDPUtil.parseLLDP(pkt);
-	    final PhysicalSwitch srcSwitch = PhysicalNetwork.getInstance().getSwitch(dp.getDpid());
+	    final PhysicalSwitch srcSwitch = PhysicalNetwork.getInstance()
+		    .getSwitch(dp.getDpid());
 	    final PhysicalPort srcPort = srcSwitch.getPort(dp.getPort());
-	    PhysicalNetwork.getInstance().addLink(srcPort, dstPort);
+	    PhysicalNetwork.getInstance().createLink(srcPort, dstPort);
 	} else {
 	    this.log.debug("Invalid LLDP");
-	}	
+	}
 	// register link in topology
 	// reset timer
     }

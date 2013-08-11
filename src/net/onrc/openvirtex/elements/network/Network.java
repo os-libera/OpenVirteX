@@ -39,6 +39,18 @@ import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
+/**
+ * 
+ * Abstract parent class for networks, maintains data structures for the
+ * topology graph.
+ * 
+ * @param <T1>
+ *            Generic Switch type
+ * @param <T2>
+ *            Generic Port type
+ * @param <T3>
+ *            Generic Link type
+ */
 public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
         OVXSendMsg {
 
@@ -49,25 +61,35 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     protected HashMap<T1, HashSet<T1>> neighbourMap;
 
     protected Network() {
-	this.switchSet = new HashSet();
-	this.linkSet = new HashSet();
-	this.dpidMap = new HashMap();
-	this.neighbourPortMap = new HashMap();
-	this.neighbourMap = new HashMap();
+	this.switchSet = new HashSet<T1>();
+	this.linkSet = new HashSet<T3>();
+	this.dpidMap = new HashMap<Long, T1>();
+	this.neighbourPortMap = new HashMap<T2, T2>();
+	this.neighbourMap = new HashMap<T1, HashSet<T1>>();
     }
 
+    // Protected methods to update topology (only allowed from subclasses)
+
+    /**
+     * Add link to topology
+     * 
+     * @param link
+     */
     protected void addLink(final T3 link) {
 	// Actual link creation is in child classes, because creation of generic
 	// types sucks
-	// Update the linkSet
 	this.linkSet.add(link);
-	// Update the neighbourMap
 	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
 	final HashSet<T1> neighbours = this.neighbourMap.get(srcSwitch);
 	neighbours.add(dstSwitch);
     }
 
+    /**
+     * Add switch to topology
+     * 
+     * @param sw
+     */
     protected void addSwitch(final T1 sw) {
 	if (this.switchSet.add(sw)) {
 	    this.dpidMap.put(((Switch) sw).getSwitchId(), sw);
@@ -81,14 +103,25 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	this.switchSet.remove(sw);
     }
 
-    public boolean initialize() {
-	return true;
-    }
+    // Public methods to query topology information
 
+    /**
+     * Return neighbours of switch.
+     * 
+     * @param sw
+     * @return
+     *         Unmodifiable set of switch instances
+     */
     public Set<T1> getNeighbours(final T1 sw) {
 	return Collections.unmodifiableSet(this.neighbourMap.get(sw));
     }
 
+    /**
+     * Return switch instance based on its dpid
+     * 
+     * @param dpid
+     * @return
+     */
     public T1 getSwitch(final Long dpid) {
 	return this.dpidMap.get(dpid);
     }
