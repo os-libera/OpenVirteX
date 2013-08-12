@@ -102,6 +102,22 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     }
 
     /**
+     * Change port label from slow to fast
+     * @param port
+     */
+    private synchronized void signalFastPort(final PhysicalPort port) {
+	short portNumber = port.getPortNumber();
+	if (this.slowPorts.contains(portNumber)) {
+	    this.log.debug("setting slow port to fast: {}", portNumber);
+	    this.slowPorts.remove(portNumber);
+	    this.slowIterator = this.slowPorts.iterator();
+	    this.fastPorts.add(portNumber);
+	} else if (!this.fastPorts.contains(portNumber)) {
+	    this.log.debug("got signalFastPort for non-existant port: {}", portNumber);
+	}
+    }
+
+    /**
      * Creates packet_out LLDP for specified output port.
      * 
      * @param port
@@ -166,11 +182,10 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 		    .getSwitch(dp.getDpid());
 	    final PhysicalPort srcPort = srcSwitch.getPort(dp.getPort());
 	    PhysicalNetwork.getInstance().createLink(srcPort, dstPort);
+	    this.signalFastPort(dstPort);
 	} else {
 	    this.log.debug("Invalid LLDP");
 	}
-	// register link in topology
-	// reset timer
     }
 
     @Override
@@ -191,7 +206,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	    }
 	    if (this.slowIterator.hasNext()) {
 		final short portNumber = this.slowIterator.next();
-		this.log.debug("sending slow probe to port");
+		this.log.debug("sending slow probe to port {}", portNumber);
 		final OFPacketOut pkt = this.createLLDPPacketOut(this.sw
 		        .getPort(portNumber));
 		this.sendMsg(pkt, this);
