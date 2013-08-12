@@ -25,7 +25,6 @@ package net.onrc.openvirtex.core;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
@@ -79,7 +78,7 @@ public class OpenVirteXController implements Runnable {
 	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
 	OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
 	sw.init();
-	this.registerOVXSwitch(sw, "192.168.2.136", 6633);
+	this.registerOVXSwitch(sw, "192.168.2.136",(short) 6633);
 	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
 	try {
 	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
@@ -100,7 +99,7 @@ public class OpenVirteXController implements Runnable {
 
 
 
-    public void registerOVXSwitch(final OVXSwitch sw, String host, Integer port) {
+    public void registerOVXSwitch(final OVXSwitch sw, String host, Short port) {
 	ClientBootstrap clientBootStrap = createClientBootStrap();
 	setClientBootStrapParams(clientBootStrap);
 	final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);

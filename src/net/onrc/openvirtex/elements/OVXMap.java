@@ -142,7 +142,7 @@ public class OVXMap implements Mappable {
      * @param physicalIP refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
      * @param virtualIP  the IP address used within the VirtualNetwork
      */
-    public void addPhysicalIP(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
+    private void addPhysicalIP(PhysicalIPAddress physicalIP, OVXIPAddress virtualIP) {
 	this.physicalIPMap.put(physicalIP.toString(), virtualIP);
     }
     
@@ -153,7 +153,7 @@ public class OVXMap implements Mappable {
      * @param virtualIP the IP address used within the VirtualNetwork
      * @param physicalIP refers to the PhysicalIPAddress which is created using the tenant id and virtualIP
      */
-    public void addVirtualIP(OVXIPAddress virtualIP, PhysicalIPAddress physicalIP) {
+    private void addVirtualIP(OVXIPAddress virtualIP, PhysicalIPAddress physicalIP) {
 	ConcurrentHashMap<Integer, PhysicalIPAddress> ipMap = this.virtualIPMap.getValueForExactKey(virtualIP.toString());
 	if (ipMap == null)
 	    ipMap = new ConcurrentHashMap<Integer, PhysicalIPAddress>();
