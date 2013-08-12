@@ -58,7 +58,7 @@ public class OVXLink extends Link<OVXPort> {
 	 *            the link id
 	 */
 	public OVXLink(final OVXPort srcPort, final OVXPort dstPort,
-			final Integer tenantId, final Integer linkId) {
+			final Integer tenantId) {
 		super(srcPort, dstPort);
 		this.linkId = linkId;
 		this.tenantId = tenantId;
