@@ -6,8 +6,9 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
-public class APIServer {
+public class APIServer implements Runnable{
     APITenantManager tenantManager;
+    TServer server;
 
     public APIServer() {
 	this.tenantManager = new APITenantManager();
@@ -15,22 +16,33 @@ public class APIServer {
 
     private void start() {
 	try {
-	    final int port = 8000;
+	    final int port = 8080;
 	    final TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(
 		    port);
 	    final TenantServer.Processor<APIServiceImpl> processor = new TenantServer.Processor<APIServiceImpl>(
 		    new APIServiceImpl());
-	    final TServer server = new TNonblockingServer(
+	    this.server = new TNonblockingServer(
 		    new TNonblockingServer.Args(serverTransport)
 		            .processor(processor));
-	    server.serve();
+	    this.server.serve();
+	    
 	} catch (final TTransportException e) {
 	    e.printStackTrace();
 	}
     }
 
     public static void main(final String[] agrs) {
-	final APIServer server = new APIServer();
-	server.start();
+	new Thread(new APIServer()).start();
     }
+
+    @Override
+    public void run() {
+	this.start();
+    }
+    
+    public void stop() {
+	this.server.stop();
+    }
+    
+   
 }
