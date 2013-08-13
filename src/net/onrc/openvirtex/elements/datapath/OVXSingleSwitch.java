@@ -124,7 +124,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 	generateFeaturesReply();
 	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
 	OpenVirteXController.getInstance().registerOVXSwitch(this, 
-		net.getControllerHost(), net.getContollerPort());
+		net.getControllerHost(), net.getControllerPort());
 
     }
 
@@ -132,18 +132,6 @@ public class OVXSingleSwitch extends OVXSwitch {
     public boolean setSwitchId(Long switchId) {
 	this.switchId = switchId;
 	return true;
-    }
-
-    /**
-     * Gets the port.
-     * 
-     * @param portNumber
-     *            the port number
-     * @return the port instance
-     */
-    @Override
-    protected OVXPort getPort(Short portNumber) {
-	return this.portMap.get(portNumber);
     }
 
     @Override
@@ -164,7 +152,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 
 	// Map the two ports
 	ovxPort.setPhysicalPort(physicalPort);
-	physicalPort.setOVXPort(this.tenantId, ovxPort);
+	physicalPort.setOVXPort(ovxPort);
 	// If the ovxPort is an edgePort, set also the physicalPort as an edge
 	
 	physicalPort.setIsEdge(ovxPort.getIsEdge());

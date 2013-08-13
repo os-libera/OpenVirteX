@@ -37,6 +37,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
@@ -195,9 +196,9 @@ public class SwitchChannelHandler extends OFChannelHandler {
 		OFStatistics f = m.getFirstStatistics();
 		f.writeTo(data);
 		description.readFrom(data);
-		h.sw = new PhysicalSwitch();
+		h.sw = new PhysicalSwitch(h.featuresReply.getDatapathId());
 		// set switch information
-		// set features reply and channel first so we a DPID and
+		// set features reply and channel first so we have a DPID and
 		// channel info.
 		h.sw.setFeaturesReply(h.featuresReply);
 		h.sw.setDescriptionStats(description);
@@ -316,7 +317,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	 *            problem.
 	 * @return
 	 */
-	// needs to be protected because enum members are acutally subclasses
+	// needs to be protected because enum members are actually subclasses
 	protected String getSwitchStateMessage(SwitchChannelHandler h,
 		OFMessage m, String details) {
 	    return String.format("Switch: [%s], State: [%s], received: [%s]"
@@ -682,7 +683,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	    throws Exception {
 
 	/*
-	 * Pass all messages to the handlers, except LLDP which we send staight to
+	 * Pass all messages to the handlers, except LLDP which we send straight to
 	 * the topology controller.
 	 * 
 	 * This should be implemented with a token bucket in order to rate limit
@@ -706,8 +707,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			    if (data.length > 14) {
 				if ((data[12] == (byte) 0x88)
 					&& (data[13] == (byte) 0xcc)) {
-				    log.warn("Got LLDP; send to physicalnetwork. unimplemented"); 
+				    if (sw != null)  	
+					PhysicalNetwork.getInstance().handleLLDP(ofm, sw);
+				    else
+					log.warn("Switch has not connected yet; dropping LLDP for now.");
 				    break;
+
 				}
 			    }
 			default:

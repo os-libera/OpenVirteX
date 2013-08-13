@@ -187,7 +187,7 @@ public class OVXBigSwitch extends OVXSwitch {
 	generateFeaturesReply();
 	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
 	OpenVirteXController.getInstance().registerOVXSwitch(this, 
-		net.getControllerHost(), net.getContollerPort());
+		net.getControllerHost(), net.getControllerPort());
 	// TODO: Start the internal routing protocol
 
     }
@@ -241,7 +241,7 @@ public class OVXBigSwitch extends OVXSwitch {
 
 	// Map the two ports
 	ovxPort.setPhysicalPort(physicalPort);
-	physicalPort.setOVXPort(this.tenantId, ovxPort);
+	physicalPort.setOVXPort(ovxPort);
 	// If the ovxPort is an edgePort, set also the physicalPort as an edge
 	
 	physicalPort.setIsEdge(ovxPort.getIsEdge());

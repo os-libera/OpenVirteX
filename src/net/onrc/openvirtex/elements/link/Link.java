@@ -22,6 +22,7 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
 
 /**
@@ -29,14 +30,16 @@ import net.onrc.openvirtex.elements.port.Port;
  * 
  * @param <T1>
  *            the generic type (Port)
+ * @param <T2>
+ *            the generic type (Switch)
  */
-public abstract class Link<T extends Port> {
+public abstract class Link<T1, T2> {
 
 	/** The source port. */
-	protected T srcPort = null;
+	protected T1 srcPort = null;
 
 	/** The destination port. */
-	protected T dstPort = null;
+	protected T1 dstPort = null;
 
 	/**
 	 * Instantiates a new link.
@@ -52,7 +55,7 @@ public abstract class Link<T extends Port> {
 	 * @param dstPort
 	 *            the destination port instance
 	 */
-	protected Link(final T srcPort, final T dstPort) {
+	protected Link(final T1 srcPort, final T1 dstPort) {
 		super();
 		this.srcPort = srcPort;
 		this.dstPort = dstPort;
@@ -63,7 +66,7 @@ public abstract class Link<T extends Port> {
 	 * 
 	 * @return the source port
 	 */
-	public T getSrcPort() {
+	public T1 getSrcPort() {
 		return this.srcPort;
 	}
 
@@ -73,7 +76,7 @@ public abstract class Link<T extends Port> {
 	 * @param srcPort
 	 *            the new source port
 	 */
-	public void setSrcPort(final T srcPort) {
+	public void setSrcPort(final T1 srcPort) {
 		this.srcPort = srcPort;
 	}
 
@@ -82,7 +85,7 @@ public abstract class Link<T extends Port> {
 	 * 
 	 * @return the destination port
 	 */
-	public T getDstPort() {
+	public T1 getDstPort() {
 		return this.dstPort;
 	}
 
@@ -92,13 +95,23 @@ public abstract class Link<T extends Port> {
 	 * @param dstPort
 	 *            the new destination port
 	 */
-	public void setDstPort(final T dstPort) {
+	public void setDstPort(final T1 dstPort) {
 		this.dstPort = dstPort;
 	}
+	
+	@SuppressWarnings("unchecked")
+        public T2 getSrcSwitch() {
+	    return (T2) ((Port) this.srcPort).getParentSwitch();
+	}
 
-	/**
-	 * Inits the instance.
-	 */
-	public abstract void init();
+	@SuppressWarnings("unchecked")
+        public T2 getDstSwitch() {
+	    return (T2) ((Port) this.dstPort).getParentSwitch();
+	}
 
+	public String toString() {
+	    String src = ((Switch) this.getSrcSwitch()).getSwitchId().toString(); 
+	    String dst = ((Switch) this.getDstSwitch()).getSwitchId().toString();
+	    return src + "<>" + dst;
+	}
 }

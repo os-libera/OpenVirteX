@@ -149,16 +149,10 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * 
      * @param portNumber
      *            the port number
-     * @return a COPY of the port instance
+     * @return the port instance
      */
-    @SuppressWarnings("unchecked")
-    protected T getPort(Short portNumber) {
-	try {
-	    return (T) this.portMap.get(portNumber).clone();
-	} catch (CloneNotSupportedException e) {
-	    log.error("Cloning wrong port type", e.getCause());
-	    return null;
-	}
+    public T getPort(Short portNumber) {
+	return this.portMap.get(portNumber);
     };
 
     /**
@@ -169,7 +163,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port instance
      * @return true, if successful
      */
-    public boolean addPort(T port) {
+    protected boolean addPort(T port) {
 	if (this.portMap.containsKey(port.getPortNumber()))
 	    return false;
 	this.portMap.put(port.getPortNumber(), port);
@@ -183,7 +177,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port instance
      * @return true, if updated
      */
-    public boolean updatePort(T port) {
+    protected boolean updatePort(T port) {
 	if (this.portMap.containsKey(port.getPortNumber())) {
 	    this.portMap.put(port.getPortNumber(), port);
 	    return true;
@@ -198,7 +192,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port number
      * @return true, if successful
      */
-    public boolean removePort(Short portNumber) {
+    protected boolean removePort(Short portNumber) {
 	if (this.portMap.containsKey(portNumber)) {
 	    this.portMap.remove(portNumber);
 	    return true;
