@@ -48,7 +48,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     private Iterator<Short>         slowIterator;
     private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory
 	                                                      .getInstance();
-    private final HashedWheelTimer  timer;
     Logger                          log               = LogManager
 	                                                      .getLogger(SwitchDiscoveryManager.class
 	                                                              .getName());
@@ -59,8 +58,8 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	this.fastProbeRate = 5000 / this.probesPerPeriod;
 	this.slowPorts = new HashSet<Short>();
 	this.fastPorts = new HashSet<Short>();
-	this.timer = new HashedWheelTimer();
-	this.timer.newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
+	PhysicalNetwork.getTimer().newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
+	//this.timer.newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
 	this.log.debug("Started discovery manager for switch {}",
 	        sw.getSwitchId());
     }
@@ -219,7 +218,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	    }
 	}
 	// reschedule timer
-	this.timer.newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
+	PhysicalNetwork.getTimer().newTimeout(this, this.fastProbeRate, TimeUnit.MILLISECONDS);
     }
 
 }

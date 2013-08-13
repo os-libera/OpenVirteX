@@ -31,6 +31,9 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -41,6 +44,9 @@ import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jboss.netty.util.HashedWheelTimer;
+import org.jboss.netty.util.Timeout;
+import org.jboss.netty.util.TimerTask;
 import org.openflow.protocol.OFMessage;
 
 /**
@@ -53,18 +59,26 @@ import org.openflow.protocol.OFMessage;
  * 
  */
 public class PhysicalNetwork extends
-        Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
+        Network<PhysicalSwitch, PhysicalPort, PhysicalLink> implements
+        TimerTask {
 
     private static PhysicalNetwork                      instance;
     private ArrayList<Uplink>                           uplinkList;
+//    Map<LinkAdvertisement, Long>			latestProbes;
     private final HashMap<Long, SwitchDiscoveryManager> discoveryManager;
+    private static HashedWheelTimer                     timer;
+    private final long 					updatePeriod = 5000; 	// milliseconds
+    private final long					timeoutPeriod = 10000;	// milliseconds
     Logger                                              log = LogManager
 	                                                            .getLogger(PhysicalNetwork.class
 	                                                                    .getName());
 
     private PhysicalNetwork() {
 	this.log.info("Starting network discovery...");
+	PhysicalNetwork.timer = new HashedWheelTimer();
 	this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
+//	this.latestProbes = new HashMap<LinkAdvertisement, Long>();
+	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
     }
 
     public static PhysicalNetwork getInstance() {
@@ -72,6 +86,10 @@ public class PhysicalNetwork extends
 	    PhysicalNetwork.instance = new PhysicalNetwork();
 	}
 	return PhysicalNetwork.instance;
+    }
+
+    public static HashedWheelTimer getTimer() {
+	return PhysicalNetwork.timer;
     }
 
     public ArrayList<Uplink> getUplinkList() {
@@ -108,10 +126,10 @@ public class PhysicalNetwork extends
      * @param srcPort
      * @param dstPort
      */
-     public synchronized void createLink(final PhysicalPort srcPort,
+    public synchronized void createLink(final PhysicalPort srcPort,
 	    final PhysicalPort dstPort) {
-	PhysicalPort neighbourPort = this.neighbourPortMap.get(srcPort);
-	if ((neighbourPort == null) || !(neighbourPort.equals(dstPort))) {
+	final PhysicalPort neighbourPort = this.neighbourPortMap.get(srcPort);
+	if (neighbourPort == null || !neighbourPort.equals(dstPort)) {
 	    final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 	    super.addLink(link);
 	}
@@ -119,7 +137,7 @@ public class PhysicalNetwork extends
 
     /**
      * Handle LLDP packets by passing them on to the appropriate
-     * SwitchDisoveryManager (has sent the original discovery probe).
+     * SwitchDisoveryManager (which sent the original LLDP packet).
      */
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
@@ -139,6 +157,24 @@ public class PhysicalNetwork extends
     @Override
     public String getName() {
 	return "Physical network";
+    }
+
+    @Override
+    public void run(Timeout t) throws Exception {
+//	log.debug("processing updates");
+//	for (Iterator<LinkAdvertisement> it = this.latestProbes.keySet()
+//			.iterator(); it.hasNext();) {
+//		LinkAdvertisement linkAdvertisement = it.next();
+//		long now = System.currentTimeMillis();
+//		long thisProbe = this.latestProbes.get(linkAdvertisement).longValue();
+//		if ((thisProbe + this.timeoutPeriod) < now) {
+//			log.debug("timeout: removing timed-out link " + linkAdvertisement);
+//			it.remove();
+//		}
+//	}
+//	// Schedule next event
+//	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
+//	
     }
 
 }

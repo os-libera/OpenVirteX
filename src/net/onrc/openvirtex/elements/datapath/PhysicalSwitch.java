@@ -57,7 +57,6 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     public PhysicalSwitch(final long switchId) {
 	super(switchId);
-	PhysicalNetwork.getInstance().addSwitch(this);
     }
 
     /**
@@ -129,6 +128,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     @Override
     public void init() {
+	PhysicalNetwork.getInstance().addSwitch(this);
 	this.log.info("Switch connected {} : {}",
 	        this.featuresReply.getDatapathId(),
 	        this.desc.getHardwareDescription());
