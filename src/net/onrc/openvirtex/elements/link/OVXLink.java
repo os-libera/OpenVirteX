@@ -22,13 +22,15 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
 /**
  * The Class OVXLink.
  * 
  */
-public class OVXLink extends Link<OVXPort> {
+public class OVXLink extends Link<OVXPort,OVXSwitch> {
 
 	/** The link id. */
 	private Integer linkId;
@@ -100,12 +102,6 @@ public class OVXLink extends Link<OVXPort> {
 	 */
 	public void setTenantId(final Integer tenantId) {
 		this.tenantId = tenantId;
-	}
-
-	@Override
-	public void init() {
-		// TODO Auto-generated method stub
-
 	}
 
 }

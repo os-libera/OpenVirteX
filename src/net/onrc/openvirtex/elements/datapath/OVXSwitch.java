@@ -204,11 +204,11 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	 * @param hwAddress the hw address
 	 * @return the short
 	 */
-	public Short createPort(boolean isEdge, MACAddress hwAddress) {
+	public Short createPort(Boolean isEdge, MACAddress hwAddress) {
 		Short ovxPortNumber = getNewPortNumber();
 		if (ovxPortNumber != 0) {
-			OVXPort ovxPort = new OVXPort(ovxPortNumber, hwAddress, isEdge,
-					this.tenantId, this);
+			OVXPort ovxPort = new OVXPort(ovxPortNumber, hwAddress.getAddress(), isEdge,
+					this, this.tenantId);
 			this.portMap.put(ovxPortNumber, ovxPort);
 		}
 

@@ -58,10 +58,6 @@ import org.openflow.protocol.factory.OFStatisticsFactoryAware;
 import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
-/**
- * @author alshabib
- * 
- */
 public class OVXMessageFactory extends BasicFactory {
 
 	private static OVXMessageFactory instance = null;

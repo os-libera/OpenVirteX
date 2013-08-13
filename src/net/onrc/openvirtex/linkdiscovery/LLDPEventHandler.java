@@ -20,18 +20,14 @@
  * 
  */
 
-package net.onrc.openvirtex.messages;
+package net.onrc.openvirtex.linkdiscovery;
 
-import net.onrc.openvirtex.elements.datapath.DPIDandPort;
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.messages.lldp.LLDPUtil;
+import net.onrc.openvirtex.elements.datapath.Switch;
 
-import org.openflow.protocol.OFPacketOut;
+import org.openflow.protocol.OFMessage;
 
-public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
+public interface LLDPEventHandler {
 
-	@Override
-	public void devirtualize(OVXSwitch sw) {
+    public void handleLLDP(OFMessage msg, Switch sw);
 
-	}
 }
