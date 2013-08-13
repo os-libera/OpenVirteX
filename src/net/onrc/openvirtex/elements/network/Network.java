@@ -39,6 +39,9 @@ import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * 
  * Abstract parent class for networks, maintains data structures for the
@@ -59,6 +62,9 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     protected HashMap<Long, T1>        dpidMap;
     protected HashMap<T2, T2>          neighbourPortMap;
     protected HashMap<T1, HashSet<T1>> neighbourMap;
+
+    Logger                             log = LogManager.getLogger(Network.class
+	                                           .getName());
 
     protected Network() {
 	this.switchSet = new HashSet<T1>();
@@ -83,6 +89,9 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
 	final HashSet<T1> neighbours = this.neighbourMap.get(srcSwitch);
 	neighbours.add(dstSwitch);
+	this.neighbourPortMap.put((T2) ((Link) link).getSrcPort(),
+	        (T2) ((Link) link).getDstPort());
+	this.log.info("Adding link " + link.toString());
     }
 
     /**
@@ -124,5 +133,9 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
      */
     public T1 getSwitch(final Long dpid) {
 	return this.dpidMap.get(dpid);
+    }
+    
+    public Set<T1> getSwitches() {
+	return Collections.unmodifiableSet(this.switchSet);
     }
 }

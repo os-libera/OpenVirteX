@@ -100,11 +100,12 @@ public class LLDPUtil {
 
 	// SysD TLV
 	bb.put(LLDPUtil.lldpSysD);
-	bb.putLong(dpid);
+	bb.putLong(((Switch) port.getParentSwitch()).getSwitchId());
 
 	// OUI TLV
-	final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN
-	        + LLDPUtil.FLOWNAMELEN_NULL;
+	//final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN
+	//        + LLDPUtil.FLOWNAMELEN_NULL;
+	final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN;
 	// 4 - length of OUI Id + it's subtype
 	final int ouiHeader = ouiLen & 0x1ff
 	        | (LLDPUtil.OUI_TYPE & 0x007f) << 9;
@@ -112,14 +113,16 @@ public class LLDPUtil {
 
 	// ON.Lab OUI = a42305 and assigning the subtype to 0x01
 	final byte oui[] = { (byte) 0xa4, (byte) 0x23, (byte) 0x05 };
-	// byte oui[] = {0x0a, 0x04, 0x02, 0x03, 0x00, 0x05};
 	bb.put(oui);
 	final byte ouiSubtype[] = { 0x01 };
 	bb.put(ouiSubtype);
 	// TODO: what does this do and why does it fail?
 	// StringByteSerializer.writeTo(ChannelBuffers.copiedBuffer(bb),
 	// ovxName.length() + 1, ovxName);
-	bb.put((byte) (ovxName.length() + 1));
+	// TODO: this is probably not the most portable code
+	bb.put(ovxName.getBytes());
+	//bb.put((byte) 0);
+	bb.put((byte) (ovxName.length()));
 
 	// EndOfLLDPDU TLV
 	final byte endType[] = { 0x00 };
@@ -130,6 +133,7 @@ public class LLDPUtil {
 	while (bb.position() <= size - 4) {
 	    bb.putInt(0xcafebabe); // fill with well known padding
 	}
+	
 	return buf;
     }
 

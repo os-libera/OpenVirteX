@@ -144,7 +144,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	    linkId = this.linkCounter.getAndIncrement();
 	    final OVXLink link = new OVXLink(srcPort, dstPort, this.tenantId,
 		    linkId);
-	    this.neighbourPortMap.put(srcPort, dstPort);
 	    super.addLink(link);
 	}
 	return linkId;

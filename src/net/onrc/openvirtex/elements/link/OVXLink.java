@@ -104,10 +104,4 @@ public class OVXLink extends Link<OVXPort,OVXSwitch> {
 		this.tenantId = tenantId;
 	}
 
-	@Override
-	public void init() {
-	    // TODO Auto-generated method stub
-
-	}
-
 }

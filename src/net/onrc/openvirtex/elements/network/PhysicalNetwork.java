@@ -63,7 +63,7 @@ public class PhysicalNetwork extends
 	                                                                    .getName());
 
     private PhysicalNetwork() {
-	this.log.info("Starting physical network discovery...");
+	this.log.info("Starting network discovery...");
 	this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
     }
 
@@ -86,7 +86,7 @@ public class PhysicalNetwork extends
      * Add switch to topology and make discoverable
      */
     @Override
-    public void addSwitch(final PhysicalSwitch sw) {
+    public synchronized void addSwitch(final PhysicalSwitch sw) {
 	super.addSwitch(sw);
 	this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
 	        sw));
@@ -97,7 +97,7 @@ public class PhysicalNetwork extends
      * 
      * @param port
      */
-    public void addPort(final PhysicalPort port) {
+    public synchronized void addPort(final PhysicalPort port) {
 	this.discoveryManager.get(port.getParentSwitch().getSwitchId())
 	        .addPort(port);
     }
@@ -108,11 +108,11 @@ public class PhysicalNetwork extends
      * @param srcPort
      * @param dstPort
      */
-    synchronized public void createLink(final PhysicalPort srcPort,
+     public synchronized void createLink(final PhysicalPort srcPort,
 	    final PhysicalPort dstPort) {
-	if (this.neighbourPortMap.get(srcPort) != dstPort) {
+	PhysicalPort neighbourPort = this.neighbourPortMap.get(srcPort);
+	if ((neighbourPort == null) || !(neighbourPort.equals(dstPort))) {
 	    final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
-	    this.neighbourPortMap.put(srcPort, dstPort);
 	    super.addLink(link);
 	}
     }

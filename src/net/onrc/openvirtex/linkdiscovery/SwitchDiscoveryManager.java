@@ -72,7 +72,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
      */
     synchronized public void addPort(final PhysicalPort port) {
 	// Ignore ports that are not on this switch
-	if (port.getParentSwitch() == sw) {
+	if (port.getParentSwitch().equals(this.sw)) {
 	    this.log.debug("sending init probe to port {}", port.getPortNumber());
 	    final OFPacketOut pkt = this.createLLDPPacketOut(port);
 	    this.sendMsg(pkt, this);
@@ -87,18 +87,21 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
      * @param port
      */
     synchronized public void removePort(final PhysicalPort port) {
-	if (this.slowPorts.contains(port)) {
-	    this.slowPorts.remove(port);
-	    this.slowIterator = this.slowPorts.iterator();
-	} else
-	    if (this.fastPorts.contains(port)) {
-		this.fastPorts.remove(port);
-		// no iterator to update
-	    } else {
-		this.log.warn(
-		        "tried to dynamically remove non-existant port {}",
-		        port.getPortNumber());
-	    }
+	// Ignore ports that are not on this switch
+	if (port.getParentSwitch().equals(this.sw)) {
+	    if (this.slowPorts.contains(port)) {
+		this.slowPorts.remove(port);
+		this.slowIterator = this.slowPorts.iterator();
+	    } else
+		if (this.fastPorts.contains(port)) {
+		    this.fastPorts.remove(port);
+		    // no iterator to update
+		} else {
+		    this.log.warn(
+			    "tried to dynamically remove non-existant port {}",
+			    port.getPortNumber());
+		}
+	}
     }
 
     /**
@@ -106,14 +109,17 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
      * @param port
      */
     private synchronized void signalFastPort(final PhysicalPort port) {
-	short portNumber = port.getPortNumber();
-	if (this.slowPorts.contains(portNumber)) {
-	    this.log.debug("setting slow port to fast: {}", portNumber);
-	    this.slowPorts.remove(portNumber);
-	    this.slowIterator = this.slowPorts.iterator();
-	    this.fastPorts.add(portNumber);
-	} else if (!this.fastPorts.contains(portNumber)) {
-	    this.log.debug("got signalFastPort for non-existant port: {}", portNumber);
+	// Ignore ports that are not on this switch
+	if (port.getParentSwitch().equals(this.sw)) {
+	    short portNumber = port.getPortNumber();
+	    if (this.slowPorts.contains(portNumber)) {
+		this.log.debug("setting slow port to fast: {}", portNumber);
+		this.slowPorts.remove(portNumber);
+		this.slowIterator = this.slowPorts.iterator();
+		this.fastPorts.add(portNumber);
+	    } else if (!this.fastPorts.contains(portNumber)) {
+		this.log.debug("got signalFastPort for non-existant port: {}", portNumber);
+	    }
 	}
     }
 

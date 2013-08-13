@@ -317,7 +317,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	 *            problem.
 	 * @return
 	 */
-	// needs to be protected because enum members are acutally subclasses
+	// needs to be protected because enum members are actually subclasses
 	protected String getSwitchStateMessage(SwitchChannelHandler h,
 		OFMessage m, String details) {
 	    return String.format("Switch: [%s], State: [%s], received: [%s]"
@@ -707,9 +707,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			    if (data.length > 14) {
 				if ((data[12] == (byte) 0x88)
 					&& (data[13] == (byte) 0xcc)) {
-				    PhysicalNetwork.getInstance().handleLLDP(ofm, sw);
-				    log.warn("Got LLDP; send to physicalnetwork. unimplemented"); 
+				    if (sw != null)  	
+					PhysicalNetwork.getInstance().handleLLDP(ofm, sw);
+				    else
+					log.warn("Switch has not connected yet; dropping LLDP for now.");
 				    break;
+
 				}
 			    }
 			default:

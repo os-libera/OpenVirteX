@@ -22,6 +22,7 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
 
 /**
@@ -108,9 +109,9 @@ public abstract class Link<T1, T2> {
 	    return (T2) ((Port) this.dstPort).getParentSwitch();
 	}
 
-	/**
-	 * Inits the instance.
-	 */
-	public abstract void init();
-
+	public String toString() {
+	    String src = ((Switch) this.getSrcSwitch()).getSwitchId().toString(); 
+	    String dst = ((Switch) this.getDstSwitch()).getSwitchId().toString();
+	    return src + "<>" + dst;
+	}
 }

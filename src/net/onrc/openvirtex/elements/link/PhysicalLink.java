@@ -56,10 +56,4 @@ public class PhysicalLink extends Link<PhysicalPort,PhysicalSwitch> {
     public PhysicalLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
 	super(srcPort, dstPort);
     }
-
-    @Override
-    public void init() {
-	// Do nothing - no need to register physical links in the map
-    }
-
 }
