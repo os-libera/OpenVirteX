@@ -57,8 +57,8 @@ public class OVXBigSwitch extends OVXSwitch {
     private final HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>> pathMap;
     
 
-    public OVXBigSwitch(final long switchId, final long tenantId, final List<PhysicalSwitch> physicalSwitches) {
-	super();
+    public OVXBigSwitch(final long switchId, final int tenantId, final List<PhysicalSwitch> physicalSwitches) {
+	super(switchId, tenantId);
 	this.alg = RoutingAlgorithms.NONE;
 	this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
 	this.physicalSwitchList.addAll(physicalSwitches);
@@ -135,11 +135,11 @@ public class OVXBigSwitch extends OVXSwitch {
      * .OFMessage)
      */
     @Override
-    public void handleIO(OFMessage msgs) {
+    public void handleIO(OFMessage msg) {
 	try {
-	    ((Devirtualizable) msgs).devirtualize(this);
+	    ((Devirtualizable) msg).devirtualize(this);
 	} catch (ClassCastException e) {
-	    log.error("Received illegal message : " + msgs);
+	    log.error("Received illegal message : " + msg);
 	}
 
     }
@@ -164,11 +164,10 @@ public class OVXBigSwitch extends OVXSwitch {
     @Override
     public void init() {
 	generateFeaturesReply();
-	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
-	OpenVirteXController.getInstance().registerOVXSwitch(this, 
-		net.getControllerHost(), net.getControllerPort());
+//	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
+//	OpenVirteXController.getInstance().registerOVXSwitch(this, 
+//		net.getControllerHost(), net.getControllerPort());
 	// TODO: Start the internal routing protocol
-
     }
 
     /**

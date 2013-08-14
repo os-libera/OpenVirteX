@@ -26,6 +26,6 @@ import org.openflow.protocol.OFMessage;
 
 public interface OVXEventHandler {
 
-	public void handleIO(OFMessage msgs);
+	public void handleIO(OFMessage msg);
 
 }

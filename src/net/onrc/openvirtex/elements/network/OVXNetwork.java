@@ -96,7 +96,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.network = network;
 	this.mask = mask;
 	this.bootState = false;
-	this.dpidCounter = new AtomicLong(0);
+	this.dpidCounter = new AtomicLong(1);
 	// TODO: decide which value to start linkId's
 	this.linkCounter = new AtomicInteger(2);
     }
@@ -133,7 +133,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	OVXMap.getInstance().addNetwork(this);
     }
 
-    public OVXSwitch createSwitch(final int tenantId, final List<Long> dpids) {
+    // API-facing methods
+    
+    public OVXSwitch createSwitch(final List<Long> dpids) {
 	OVXSwitch virtualSwitch;
 	// TODO: generate ON.Lab dpid's
 	final long switchId = this.dpidCounter.getAndIncrement();
@@ -143,7 +145,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	    switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
 	}
 	if (dpids.size() == 1) {
-	    virtualSwitch = new OVXSingleSwitch(switchId, tenantId, switches.get(0));
+	    virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId, switches.get(0));
 	} else {
 	    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId, switches);
 	}
@@ -191,10 +193,21 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
     }
 
-    // TOOD: should connect to controller
+    /**
+     * Boots the virtual network by booting each virtual switch.
+     * TODO: we should roll-back if any switch fails to boot
+     * 
+     * @return
+     * 		True if successful, false otherwise
+     */
     @Override
     public boolean boot() {
-	this.bootState = true;
+	boolean result = true;
+	for (OVXSwitch sw: this.switchSet) {
+	    log.info("booting {} {}", sw.getSwitchId(), sw.getTenantId());
+	    result &= sw.boot();
+	}
+	this.bootState = result;
 	return this.bootState;
     }
 

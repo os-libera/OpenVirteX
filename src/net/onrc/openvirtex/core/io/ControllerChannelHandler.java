@@ -7,15 +7,14 @@ import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ControllerStateException;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
 
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
@@ -118,6 +117,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		reply.setXid(m.getXid());
 		h.channel.write(Collections.singletonList(reply));
 		h.log.info("Connected dpid {} to controller {}", reply.getDatapathId(), h.channel.getRemoteAddress());
+		h.sw.init();
 		h.setState(ACTIVE);
 	    }
 
@@ -208,7 +208,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	 *            problem.
 	 * @return
 	 */
-	// needs to be protected because enum members are acutally subclasses
+	// needs to be protected because enum members are actually subclasses
 	protected String getControllerStateMessage(ControllerChannelHandler h,
 		OFMessage m, String details) {
 	    return String.format("Controller: [%s], State: [%s], received: [%s]"
@@ -226,9 +226,9 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	 * @param m
 	 *            the message
 	 * @throws SwitchStateExeption
-	 *             we always through the execption
+	 *             we always through the exception
 	 */
-	// needs to be protected because enum members are acutally subclasses
+	// needs to be protected because enum members are actually subclasses
 	protected void illegalMessageReceived(ControllerChannelHandler h,
 		OFMessage m) {
 	    String msg = getControllerStateMessage(h, m,
@@ -490,7 +490,6 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	    for (OFMessage ofm : msglist) {
 
 		try {
-
 		    switch (ofm.getType()) {
 			case PACKET_OUT:
 			    /*
@@ -501,7 +500,8 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			    if (data.length > 14) {
 				if ((data[12] == (byte) 0x88)
 					&& (data[13] == (byte) 0xcc)) {
-				    log.warn("GOT LLDP; send it to virtual network. unimplemented.");
+				    int tenantId = ((OVXSwitch) this.sw).getTenantId();
+				    OVXMap.getInstance().getVirtualNetwork(tenantId).handleLLDP(ofm, this.sw);
 				    break;
 				}
 			    }

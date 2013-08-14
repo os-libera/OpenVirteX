@@ -28,7 +28,9 @@ import java.util.concurrent.Executors;
 import net.onrc.openvirtex.api.APIServer;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 
 import org.apache.logging.log4j.LogManager;
@@ -79,11 +81,12 @@ public class OpenVirteXController implements Runnable {
     public void run() {
 	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
 	PhysicalNetwork.getInstance().boot();
+	
 //	OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
 //	sw.init();
 //	this.registerOVXSwitch(sw, "192.168.2.136", 6633);
 	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
-	startServer();
+	this.startServer();
 	try {
 	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
 
@@ -101,7 +104,11 @@ public class OpenVirteXController implements Runnable {
 
     }
 
-    public void registerOVXSwitch(final OVXSwitch sw, String host, Integer port) {
+    public void registerOVXSwitch(final OVXSwitch sw) {
+	OVXNetwork ovxNetwork = OVXMap.getInstance().getVirtualNetwork(sw.getTenantId()); 
+	String host = ovxNetwork.getControllerHost();
+	Integer port = ovxNetwork.getControllerPort();
+
 	ClientBootstrap clientBootStrap = createClientBootStrap();
 	setClientBootStrapParams(clientBootStrap);
 	final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
@@ -123,10 +130,8 @@ public class OpenVirteXController implements Runnable {
 		    cg.add(chan);
 		} else
 		    log.error("Failed to connect to controller {} for switch {}", remoteAddr, sw.getSwitchId());
-
 	    }
 	});
-
     }
 
 
@@ -158,12 +163,12 @@ public class OpenVirteXController implements Runnable {
 		Executors.newCachedThreadPool()));
     }
     
-    public void startServer() {
+    private void startServer() {
 	this.server = new APIServer();
 	new Thread(server).start();
     }
 
-    public void stopServer() {
+    private void stopServer() {
 	this.server.stop();
     }
     

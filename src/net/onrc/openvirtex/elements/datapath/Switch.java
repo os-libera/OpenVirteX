@@ -199,7 +199,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * .OFMessage)
      */
     @Override
-    public abstract void handleIO(OFMessage msgs);
+    public abstract void handleIO(OFMessage msg);
 
     /**
      * Sets the connected.

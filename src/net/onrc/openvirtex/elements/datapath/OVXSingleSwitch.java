@@ -76,11 +76,11 @@ public class OVXSingleSwitch extends OVXSwitch {
      * .OFMessage)
      */
     @Override
-    public void handleIO(OFMessage msgs) {
+    public void handleIO(OFMessage msg) {
 	try {
-	    ((Devirtualizable) msgs).devirtualize(this);
+	    ((Devirtualizable) msg).devirtualize(this);
 	} catch (ClassCastException e) {
-	    log.error("Received illegal message : " + msgs);
+	    log.error("Received illegal message : " + msg);
 	}
     }
 
@@ -104,10 +104,6 @@ public class OVXSingleSwitch extends OVXSwitch {
     @Override
     public void init() {
 	generateFeaturesReply();
-	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
-	OpenVirteXController.getInstance().registerOVXSwitch(this, 
-		net.getControllerHost(), net.getControllerPort());
-
     }
 
 }

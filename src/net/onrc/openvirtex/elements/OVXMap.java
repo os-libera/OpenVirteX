@@ -215,8 +215,11 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalSwitch(final PhysicalSwitch physicalSwitch,
 	    final OVXSwitch virtualSwitch) {
-	this.physicalSwitchMap.get(physicalSwitch).put(
-	        virtualSwitch.getTenantId(), virtualSwitch);
+	ConcurrentHashMap<Integer, OVXSwitch> switchMap = this.physicalSwitchMap.get(physicalSwitch);
+	if (switchMap == null) {
+	    switchMap = new ConcurrentHashMap<Integer, OVXSwitch>();
+	}
+	switchMap.put(virtualSwitch.getTenantId(), virtualSwitch);
     }
 
     /**
@@ -232,8 +235,11 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalLink(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
-	this.physicalLinkMap.get(physicalLink).put(virtualLink.getTenantId(),
-	        virtualLink);
+	ConcurrentHashMap<Integer, OVXLink> linkMap = this.physicalLinkMap.get(physicalLink);
+	if (linkMap == null) {
+	    linkMap = new ConcurrentHashMap<Integer, OVXLink>();
+	}
+	linkMap.put(virtualLink.getTenantId(), virtualLink);
     }
 
     /**
@@ -250,7 +256,11 @@ public class OVXMap implements Mappable {
      */
     private void addVirtualSwitch(final OVXSwitch virtualSwitch,
 	    final PhysicalSwitch physicalSwitch) {
-	this.virtualSwitchMap.get(virtualSwitch).add(physicalSwitch);
+	ArrayList<PhysicalSwitch> switchList = this.virtualSwitchMap.get(virtualSwitch);
+	if (switchList == null) {
+	    switchList = new ArrayList<PhysicalSwitch>();
+	}
+	switchList.add(physicalSwitch);
     }
 
     /**
@@ -265,7 +275,11 @@ public class OVXMap implements Mappable {
      */
     private void addVirtualLink(final OVXLink virtualLink,
 	    final PhysicalLink physicalLink) {
-	this.virtualLinkMap.get(virtualLink).add(physicalLink);
+	ArrayList<PhysicalLink> linkList = this.virtualLinkMap.get(virtualLink);
+	if (linkList == null) {
+	    linkList = new ArrayList<PhysicalLink>();
+	}
+	linkList.add(physicalLink);
     }
 
     /**
@@ -379,11 +393,10 @@ public class OVXMap implements Mappable {
      */
     @Override
     public OVXNetwork getVirtualNetwork(final Integer tenantId) {
-
 	return this.networkMap.get(tenantId);
     }
 
-    public Integer getMAC(MACAddress mac) {
+    public Integer getMAC(final MACAddress mac) {
 	return this.macMap.getValueForExactKey(mac.toStringNoColon());
     }
 

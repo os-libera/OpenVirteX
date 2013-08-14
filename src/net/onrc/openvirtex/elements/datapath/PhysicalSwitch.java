@@ -82,11 +82,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      * .OFMessage)
      */
     @Override
-    public void handleIO(final OFMessage msgs) {
+    public void handleIO(final OFMessage msg) {
 	try {
-	    ((Virtualizable) msgs).virtualize(this);
+	    ((Virtualizable) msg).virtualize(this);
 	} catch (final ClassCastException e) {
-	    this.log.error("Received illegal message : " + msgs);
+	    this.log.error("Received illegal message : " + msg);
 	}
     }
 

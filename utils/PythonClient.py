@@ -33,7 +33,7 @@ try:
   transport = TSocket.TSocket('localhost', 8080)
 
   # Buffering is critical. Raw sockets are very slow
-  transport = TTransport.TBufferedTransport(transport)
+  transport = TTransport.TFramedTransport(transport)
   # Wrap in a protocol
   protocol = TBinaryProtocol.TBinaryProtocol(transport)
 
@@ -41,15 +41,17 @@ try:
   client = TenantServer.Client(protocol)
   # Connect!
   transport.open()
-  print client
-  client.createVirtualNetwork(protocol, controllerIP, 6633, networkIP, 16)
-  client.createVirtualSwitch(1, ["0", "1"])
-  client.createHost(1, 0, 1)
-  pathString =  "srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort"
-  client.createVirtualLink(tenantId, pathString)
-  client.startNetwork()
-  #client.ping()
-  #print 'ping()'
+  #client.createVirtualNetwork(protocol, controllerIP, 6633, networkIP, 16)
+  print client.createVirtualNetwork('tcp', 'localhost', 10000, '192.168.0.0', 16)
+  raw_input()
+  print client.createVirtualSwitch(1, ["1", "2"])
+  raw_input()
+  #print client.createHost(1, 0, 1)
+  #raw_input()
+  #pathString =  "srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort"
+  #print client.createVirtualLink(tenantId, pathString)
+  #raw_input()
+  print client.startNetwork(1)
 
   # Close!
   transport.close()
