@@ -101,7 +101,7 @@ public class Port<T> extends OFPhysicalPort implements Cloneable {
      * 
      * @return the checks if is edge
      */
-    public Boolean getIsEdge() {
+    public Boolean isEdge() {
 	return this.isEdge;
     }
 
@@ -111,7 +111,7 @@ public class Port<T> extends OFPhysicalPort implements Cloneable {
      * @param isEdge
      *            the new checks if is edge
      */
-    public void setIsEdge(final Boolean isEdge) {
+    public void isEdge(final Boolean isEdge) {
 	this.isEdge = isEdge;
     }
 

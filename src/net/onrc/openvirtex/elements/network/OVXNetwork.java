@@ -32,6 +32,7 @@ package net.onrc.openvirtex.elements.network;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
@@ -69,6 +70,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
     private final AtomicInteger            linkCounter;
+    private final AtomicInteger		   ipCounter;
+    
     // TODO: implement vlink flow pusher
     // public VLinkManager vLinkMgmt;
 
@@ -89,6 +92,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.bootState = false;
 	// TODO: decide which value to start linkId's
 	this.linkCounter = new AtomicInteger(2);
+	this.ipCounter = new AtomicInteger();
     }
 
     public String getProtocol() {
@@ -206,5 +210,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     @Override
     public String getName() {
 	return "Virtual network:" + this.tenantId.toString();
+    }
+
+    public Integer nextIP() {
+	return (this.tenantId<< 
+		(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
+			+ ipCounter.getAndIncrement();
     }
 }

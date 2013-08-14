@@ -9,4 +9,10 @@ package net.onrc.openvirtex.elements.address;
  */
 public class PhysicalIPAddress extends IPAddress {
 
+    public PhysicalIPAddress(Integer ip) {
+	this.ip = ip;
+    }
+    
+    
+
 }

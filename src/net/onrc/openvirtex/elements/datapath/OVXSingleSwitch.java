@@ -155,7 +155,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 	physicalPort.setOVXPort(ovxPort);
 	// If the ovxPort is an edgePort, set also the physicalPort as an edge
 	
-	physicalPort.setIsEdge(ovxPort.getIsEdge());
+	physicalPort.isEdge(ovxPort.isEdge());
 	
 	return true;
     };
