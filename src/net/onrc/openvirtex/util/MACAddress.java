@@ -207,6 +207,19 @@ public class MACAddress {
 	return builder.toString();
     }
 
+    /**
+     * @return
+     *         MAC address in string representation without colons (useful for
+     *         radix tree storage)
+     */
+    public String toStringNoColon() {
+	final StringBuilder builder = new StringBuilder();
+	for (final byte b : this.address) {
+	    builder.append(String.format("%02X", b & 0xFF));
+	}
+	return builder.toString();
+    }
+
     public byte[] getAddress() {
 	return this.address;
     }

@@ -37,6 +37,7 @@ import java.util.Set;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
+import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 import org.apache.logging.log4j.LogManager;
@@ -137,5 +138,15 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     
     public Set<T1> getSwitches() {
 	return Collections.unmodifiableSet(this.switchSet);
+    }
+    
+    // TODO: optimize this because we iterate over all links
+    public T3 getLink(T2 srcPort, T2 dstPort) {
+	for (T3 link : this.linkSet) {
+	    if (((Link) link).getSrcPort().equals(srcPort) && ((Link) link).getDstPort().equals(dstPort)) {
+		return link;
+	    }
+	}
+	return null;
     }
 }

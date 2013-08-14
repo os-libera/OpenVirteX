@@ -25,9 +25,9 @@ package net.onrc.openvirtex.core;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+import net.onrc.openvirtex.api.APIServer;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
-import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 
@@ -55,6 +55,7 @@ public class OpenVirteXController implements Runnable {
     private String configFile = null;
     private String ofHost = null;
     private Integer ofPort = null;
+    APIServer server;
 
 
     private NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
@@ -93,7 +94,7 @@ public class OpenVirteXController implements Runnable {
 	    InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
 		    ofPort) : new InetSocketAddress(ofHost, ofPort);
 		    sg.add(switchServerBootStrap.bind(sa));
-
+		    
 	} catch (Exception e) {
 	    throw new RuntimeException(e);
 	}
@@ -156,7 +157,16 @@ public class OpenVirteXController implements Runnable {
 		Executors.newCachedThreadPool(),
 		Executors.newCachedThreadPool()));
     }
+    
+    public void startServer() {
+	this.server = new APIServer();
+	new Thread(server).start();
+    }
 
+    public void stopServer() {
+	this.server.stop();
+    }
+    
     public void terminate() {
 	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
 	    log.info("Shut down all controller connections. Quitting...");
@@ -174,6 +184,8 @@ public class OpenVirteXController implements Runnable {
 	    pfact.releaseExternalResources();
 	if (cfact != null)
 	    cfact.releaseExternalResources();
+	
+	stopServer();
     }
     
     public static OpenVirteXController getInstance() {
