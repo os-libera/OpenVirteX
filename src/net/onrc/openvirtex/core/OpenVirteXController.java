@@ -79,11 +79,12 @@ public class OpenVirteXController implements Runnable {
     public void run() {
 	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
 	// Ensure PhysicalNetwork is instantiated
-	PhysicalNetwork.getInstance();
+	PhysicalNetwork.getInstance().start();
 //	OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
 //	sw.init();
 //	this.registerOVXSwitch(sw, "192.168.2.136", 6633);
 	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
+	startServer();
 	try {
 	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
 

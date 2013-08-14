@@ -78,7 +78,7 @@ public class PhysicalNetwork extends
 	PhysicalNetwork.timer = new HashedWheelTimer();
 	this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
 //	this.latestProbes = new HashMap<LinkAdvertisement, Long>();
-	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
+	
     }
 
     public static PhysicalNetwork getInstance() {
@@ -86,6 +86,10 @@ public class PhysicalNetwork extends
 	    PhysicalNetwork.instance = new PhysicalNetwork();
 	}
 	return PhysicalNetwork.instance;
+    }
+    
+    public void start() {
+	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
     }
 
     public static HashedWheelTimer getTimer() {
