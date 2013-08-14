@@ -1,5 +1,9 @@
 package net.onrc.openvirtex.api;
 
+
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.thrift.server.TNonblockingServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
@@ -7,6 +11,8 @@ import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
 public class APIServer implements Runnable{
+    
+    Logger log = LogManager.getLogger(APIServer.class.getName());    
     APITenantManager tenantManager;
     TServer server;
 
@@ -24,6 +30,7 @@ public class APIServer implements Runnable{
 	    this.server = new TNonblockingServer(
 		    new TNonblockingServer.Args(serverTransport)
 		            .processor(processor));
+	    log.info("Starting API server");
 	    this.server.serve();
 	    
 	} catch (final TTransportException e) {
