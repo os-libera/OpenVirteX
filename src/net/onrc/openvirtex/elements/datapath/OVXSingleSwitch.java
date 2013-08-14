@@ -31,27 +31,9 @@ public class OVXSingleSwitch extends OVXSwitch {
     
     private static Logger log = LogManager.getLogger(OVXSingleSwitch.class.getName());
     
-
-    /**
-     * @param switchName
-     * @param switchId
-     * @param map
-     * @param tenantId
-     * @param pktLenght
-     */
-    public OVXSingleSwitch(final long switchId, final int tenantId) {
+    public OVXSingleSwitch(final long switchId, final int tenantId, final PhysicalSwitch physicalSwitch) {
 	super(switchId, tenantId);
-	
-    }
-
-    @Override
-    public boolean addPort(final OVXPort port) {
-	if (this.portMap.containsKey(port.getPortNumber())) {
-	    return false;
-	} else {
-	    this.portMap.put(port.getPortNumber(), port);
-	    return true;
-	}
+	this.physicalSwitchList.add(physicalSwitch);	
     }
 
     @Override
@@ -128,36 +110,5 @@ public class OVXSingleSwitch extends OVXSwitch {
 
     }
 
-    @Override
-    public boolean setSwitchId(Long switchId) {
-	this.switchId = switchId;
-	return true;
-    }
-
-    @Override
-    public boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
-            Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration {
-	
-	OVXPort ovxPort = getPort(ovxPortNumber);
-	List<PhysicalSwitch> switchList =  OVXMap.getInstance().getPhysicalSwitches(this);
-	if (switchList.size() > 1)
-	    throw new IllegalVirtualSwitchConfiguration("Switch " + this.switchId + 
-		    " is a single switch made up of multiple physical switches");
-	PhysicalSwitch physicalSwitch = switchList.get(0);
-	
-	
-	assert(physicalSwitchId == this.switchId);
-	
-	PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
-
-	// Map the two ports
-	ovxPort.setPhysicalPort(physicalPort);
-	physicalPort.setOVXPort(ovxPort);
-	// If the ovxPort is an edgePort, set also the physicalPort as an edge
-	
-	physicalPort.isEdge(ovxPort.isEdge());
-	
-	return true;
-    };
 
 }

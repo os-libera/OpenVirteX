@@ -40,13 +40,6 @@ public class PhysicalLink extends Link<PhysicalPort,PhysicalSwitch> {
 
     /**
      * Instantiates a new physical link.
-     */
-    public PhysicalLink() {
-	super();
-    }
-
-    /**
-     * Instantiates a new physical link.
      * 
      * @param srcPort
      *            the source port

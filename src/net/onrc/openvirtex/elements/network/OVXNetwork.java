@@ -29,17 +29,23 @@
 
 package net.onrc.openvirtex.elements.network;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
+import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXPacketIn;
@@ -69,6 +75,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private final short                    mask;
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
+    private static AtomicInteger           tenantIdCounter = new AtomicInteger(
+            1);
+    private final AtomicLong		dpidCounter;
     private final AtomicInteger            linkCounter;
     private final AtomicInteger		   ipCounter;
     
@@ -79,17 +88,18 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	                                               .getLogger(OVXNetwork.class
 	                                                       .getName());
 
-    public OVXNetwork(final Integer tenantId, final String protocol,
+    public OVXNetwork(final String protocol,
 	    final String controllerHost, final Integer controllerPort,
 	    final IPAddress network, final short mask) {
 	super();
-	this.tenantId = tenantId;
+	this.tenantId = tenantIdCounter.getAndIncrement();
 	this.protocol = protocol;
 	this.controllerHost = controllerHost;
 	this.controllerPort = controllerPort;
 	this.network = network;
 	this.mask = mask;
 	this.bootState = false;
+	this.dpidCounter = new AtomicLong(0);
 	// TODO: decide which value to start linkId's
 	this.linkCounter = new AtomicInteger(2);
 	this.ipCounter = new AtomicInteger();
@@ -127,11 +137,23 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	OVXMap.getInstance().addNetwork(this);
     }
 
-    // TODO
-    public OVXSwitch createSwitch() {
-	final OVXBigSwitch sw = new OVXBigSwitch();
-	super.addSwitch(sw);
-	return sw;
+    public OVXSwitch createSwitch(final int tenantId, final List<Long> dpids) {
+	OVXSwitch virtualSwitch;
+	// TODO: generate ON.Lab dpid's
+	final long switchId = this.dpidCounter.getAndIncrement();
+	List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
+	// TODO: check if dpids are present in physical network
+	for (long dpid: dpids) {
+	    switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
+	}
+	if (dpids.size() == 1) {
+	    virtualSwitch = new OVXSingleSwitch(switchId, tenantId, switches.get(0));
+	} else {
+	    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId, switches);
+	}
+	this.addSwitch(virtualSwitch);
+	virtualSwitch.register();
+	return virtualSwitch;
     }
 
     /**
@@ -142,20 +164,30 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
      * @param dstPort
      * @return
      */
-    public Integer createLink(final OVXPort srcPort, final OVXPort dstPort) {
-	int linkId = -1;
+    public synchronized OVXLink createLink(List<PhysicalLink> physicalLinks) {
+	// Get virtual source port
+	OVXPort srcPort = physicalLinks.get(0).getSrcPort().getOVXPort(this.tenantId);
 	if (!this.neighbourPortMap.containsKey(srcPort)) {
-	    linkId = this.linkCounter.getAndIncrement();
-	    final OVXLink link = new OVXLink(srcPort, dstPort, this.tenantId,
-		    linkId);
+	    int linkId = this.linkCounter.getAndIncrement();
+	    final OVXLink link = new OVXLink(linkId, this.tenantId, physicalLinks);
 	    super.addLink(link);
+	    link.register();
+	    return link;
 	}
-	return linkId;
+	return null;	
     }
 
-    // TODO
-    public OVXPort createHost(final PhysicalPort port) {
-	return new OVXPort();
+    public OVXPort createHost(final long physicalDpid, final short portNumber, final MACAddress mac) {
+	// TODO: check if dpid & port exist
+	PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance().getSwitch(physicalDpid);
+	OVXSwitch virtualSwitch = OVXMap.getInstance().getVirtualSwitch(physicalSwitch, this.tenantId);
+	PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
+	
+	OVXPort edgePort = new OVXPort(this.tenantId, physicalPort, true);
+	edgePort.register();
+	OVXMap.getInstance().addMAC(mac,  this.tenantId);
+
+	return edgePort;
     }
 
     // TODO
