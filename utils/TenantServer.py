@@ -18,10 +18,9 @@ except:
 
 
 class Iface:
-  def createVirtualNetwork(self, tenantId, protocol, controllerAddress, controllerPort, networkAddress, mask):
+  def createVirtualNetwork(self, protocol, controllerAddress, controllerPort, networkAddress, mask):
     """
     Parameters:
-     - tenantId
      - protocol
      - controllerAddress
      - controllerPort
@@ -70,23 +69,21 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def createVirtualNetwork(self, tenantId, protocol, controllerAddress, controllerPort, networkAddress, mask):
+  def createVirtualNetwork(self, protocol, controllerAddress, controllerPort, networkAddress, mask):
     """
     Parameters:
-     - tenantId
      - protocol
      - controllerAddress
      - controllerPort
      - networkAddress
      - mask
     """
-    self.send_createVirtualNetwork(tenantId, protocol, controllerAddress, controllerPort, networkAddress, mask)
+    self.send_createVirtualNetwork(protocol, controllerAddress, controllerPort, networkAddress, mask)
     return self.recv_createVirtualNetwork()
 
-  def send_createVirtualNetwork(self, tenantId, protocol, controllerAddress, controllerPort, networkAddress, mask):
+  def send_createVirtualNetwork(self, protocol, controllerAddress, controllerPort, networkAddress, mask):
     self._oprot.writeMessageBegin('createVirtualNetwork', TMessageType.CALL, self._seqid)
     args = createVirtualNetwork_args()
-    args.tenantId = tenantId
     args.protocol = protocol
     args.controllerAddress = controllerAddress
     args.controllerPort = controllerPort
@@ -269,7 +266,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createVirtualNetwork_result()
-    result.success = self._handler.createVirtualNetwork(args.tenantId, args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask)
+    result.success = self._handler.createVirtualNetwork(args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask)
     oprot.writeMessageBegin("createVirtualNetwork", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -325,7 +322,6 @@ class Processor(Iface, TProcessor):
 class createVirtualNetwork_args:
   """
   Attributes:
-   - tenantId
    - protocol
    - controllerAddress
    - controllerPort
@@ -335,16 +331,14 @@ class createVirtualNetwork_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'tenantId', None, None, ), # 1
-    (2, TType.STRING, 'protocol', None, None, ), # 2
-    (3, TType.STRING, 'controllerAddress', None, None, ), # 3
-    (4, TType.I16, 'controllerPort', None, None, ), # 4
-    (5, TType.STRING, 'networkAddress', None, None, ), # 5
-    (6, TType.I16, 'mask', None, None, ), # 6
+    (1, TType.STRING, 'protocol', None, None, ), # 1
+    (2, TType.STRING, 'controllerAddress', None, None, ), # 2
+    (3, TType.I16, 'controllerPort', None, None, ), # 3
+    (4, TType.STRING, 'networkAddress', None, None, ), # 4
+    (5, TType.I16, 'mask', None, None, ), # 5
   )
 
-  def __init__(self, tenantId=None, protocol=None, controllerAddress=None, controllerPort=None, networkAddress=None, mask=None,):
-    self.tenantId = tenantId
+  def __init__(self, protocol=None, controllerAddress=None, controllerPort=None, networkAddress=None, mask=None,):
     self.protocol = protocol
     self.controllerAddress = controllerAddress
     self.controllerPort = controllerPort
@@ -361,31 +355,26 @@ class createVirtualNetwork_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.I32:
-          self.tenantId = iprot.readI32();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
         if ftype == TType.STRING:
           self.protocol = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 3:
+      elif fid == 2:
         if ftype == TType.STRING:
           self.controllerAddress = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 4:
+      elif fid == 3:
         if ftype == TType.I16:
           self.controllerPort = iprot.readI16();
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 4:
         if ftype == TType.STRING:
           self.networkAddress = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 6:
+      elif fid == 5:
         if ftype == TType.I16:
           self.mask = iprot.readI16();
         else:
@@ -400,28 +389,24 @@ class createVirtualNetwork_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('createVirtualNetwork_args')
-    if self.tenantId is not None:
-      oprot.writeFieldBegin('tenantId', TType.I32, 1)
-      oprot.writeI32(self.tenantId)
-      oprot.writeFieldEnd()
     if self.protocol is not None:
-      oprot.writeFieldBegin('protocol', TType.STRING, 2)
+      oprot.writeFieldBegin('protocol', TType.STRING, 1)
       oprot.writeString(self.protocol)
       oprot.writeFieldEnd()
     if self.controllerAddress is not None:
-      oprot.writeFieldBegin('controllerAddress', TType.STRING, 3)
+      oprot.writeFieldBegin('controllerAddress', TType.STRING, 2)
       oprot.writeString(self.controllerAddress)
       oprot.writeFieldEnd()
     if self.controllerPort is not None:
-      oprot.writeFieldBegin('controllerPort', TType.I16, 4)
+      oprot.writeFieldBegin('controllerPort', TType.I16, 3)
       oprot.writeI16(self.controllerPort)
       oprot.writeFieldEnd()
     if self.networkAddress is not None:
-      oprot.writeFieldBegin('networkAddress', TType.STRING, 5)
+      oprot.writeFieldBegin('networkAddress', TType.STRING, 4)
       oprot.writeString(self.networkAddress)
       oprot.writeFieldEnd()
     if self.mask is not None:
-      oprot.writeFieldBegin('mask', TType.I16, 6)
+      oprot.writeFieldBegin('mask', TType.I16, 5)
       oprot.writeI16(self.mask)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -588,7 +573,7 @@ class createVirtualSwitch_result:
   """
 
   thrift_spec = (
-    (0, TType.I32, 'success', None, None, ), # 0
+    (0, TType.I64, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -604,8 +589,8 @@ class createVirtualSwitch_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.I32:
-          self.success = iprot.readI32();
+        if ftype == TType.I64:
+          self.success = iprot.readI64();
         else:
           iprot.skip(ftype)
       else:
@@ -619,8 +604,8 @@ class createVirtualSwitch_result:
       return
     oprot.writeStructBegin('createVirtualSwitch_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.I32, 0)
-      oprot.writeI32(self.success)
+      oprot.writeFieldBegin('success', TType.I64, 0)
+      oprot.writeI64(self.success)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
