@@ -30,43 +30,21 @@
 package net.onrc.openvirtex.elements.port;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.util.MACAddress;
-
-import org.openflow.protocol.OFPhysicalPort;
 
 public class OVXPort extends Port<OVXSwitch> {
 
-    private Integer      tenantId;
-    private PhysicalPort physicalPort;
+    private final Integer      tenantId;
+    private final PhysicalPort physicalPort;
 
-    /**
-     * 
-     */
-    public OVXPort() {
+    public OVXPort(final int tenantId, final PhysicalPort port,
+	    final boolean isEdge) {
 	super();
-	this.tenantId = -1;
-	this.physicalPort = null;
+	this.tenantId = tenantId;
+	this.physicalPort = port;
+	this.isEdge = isEdge;
 	this.makeVirtual();
     }
 
-    public OVXPort(final OVXPort vp) {
-	super((OFPhysicalPort) vp, vp.isEdge, vp.parentSwitch);
-	this.tenantId = -1;
-	this.physicalPort = null;
-    }
-
-    public OVXPort(final OVXPort vp, Integer tenantId, PhysicalPort physicalPort) {
-	this(vp);
-	this.tenantId = tenantId;
-	this.physicalPort = physicalPort;
-    }
-    
-    public OVXPort(final Short portNumber, final byte[] hardwareAddress, final Boolean isEdge,
-	    final OVXSwitch parentSwitch, final Integer tenantId) {
-	super(portNumber, hardwareAddress, "vport", 0, 0, 0, 0, 0, 0, isEdge, parentSwitch);
-	this.tenantId = tenantId;
-    }
-    
     private void makeVirtual() {
 	// advertise current speed/duplex as 100MB FD, media type copper
 	this.currentFeatures = 324;
@@ -74,46 +52,24 @@ public class OVXPort extends Port<OVXSwitch> {
 	this.advertisedFeatures = 340;
 	// advertise all the OF1.0 physical port speeds and duplex. Advertise
 	// media type as copper
-	this.supportedFeatures = 383;	
+	this.supportedFeatures = 383;
     }
 
     public Integer getTenantId() {
 	return this.tenantId;
     }
 
-    public void setTenantId(final Integer tenantId) {
-	this.tenantId = tenantId;
-    }
-
     public PhysicalPort getPhysicalPort() {
 	return this.physicalPort;
-    }
-
-    public boolean setPhysicalPort(final PhysicalPort physicalPort) {
-	if (this.physicalPort != null) {
-	    return false;
-	} else {
-	    this.physicalPort = physicalPort;
-	    return true;
-	}
     }
 
     public Short getPhysicalPortNumber() {
 	return this.physicalPort.getPortNumber();
     }
 
-    boolean updatePhysicalPort(final PhysicalPort physicalPort) {
-	if (this.physicalPort == null) {
-	    return false;
-	} else {
-	    this.physicalPort = physicalPort;
-	    return true;
-	}
-    }
-
-    @Override
-    public OVXPort clone() {
-	return new OVXPort(this);
+    public void register() {
+	this.parentSwitch.addPort(this);
+	this.physicalPort.setOVXPort(this);
     }
 
     @Override
