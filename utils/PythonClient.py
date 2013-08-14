@@ -30,7 +30,7 @@ from thrift.protocol import TBinaryProtocol
 try:
 
   # Make socket
-  transport = TSocket.TSocket('localhost', 8000)
+  transport = TSocket.TSocket('localhost', 8080)
 
   # Buffering is critical. Raw sockets are very slow
   transport = TTransport.TBufferedTransport(transport)
@@ -39,38 +39,18 @@ try:
 
   # Create a client to use the protocol encoder
   client = TenantServer.Client(protocol)
-
   # Connect!
   transport.open()
+  print client
+  client.createVirtualNetwork(protocol, controllerIP, 6633, networkIP, 16)
+  client.createVirtualSwitch(1, ["0", "1"])
+  client.createHost(1, 0, 1)
+  pathString =  "srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort"
+  client.createVirtualLink(tenantId, pathString)
+  client.startNetwork()
+  #client.ping()
+  #print 'ping()'
 
-  client.ping()
-  print 'ping()'
-  '''
-  sum = client.add(1,1)
-  print '1+1=%d' % (sum)
-
-  work = Work()
-
-  work.op = Operation.DIVIDE
-  work.num1 = 1
-  work.num2 = 0
-
-  try:
-    quotient = client.calculate(1, work)
-    print 'Whoa? You know how to divide by zero?'
-  except InvalidOperation, io:
-    print 'InvalidOperation: %r' % io
-
-  work.op = Operation.SUBTRACT
-  work.num1 = 15
-  work.num2 = 10
-
-  diff = client.calculate(1, work)
-  print '15-10=%d' % (diff)
-
-  log = client.getStruct(1)
-  print 'Check log: %s' % (log.value)
-  '''
   # Close!
   transport.close()
 
