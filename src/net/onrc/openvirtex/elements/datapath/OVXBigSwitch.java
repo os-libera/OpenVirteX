@@ -1,4 +1,22 @@
 /**
+ *  Copyright (c) 2013 Open Networking Laboratory
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
  * 
  */
 package net.onrc.openvirtex.elements.datapath;
@@ -26,7 +44,6 @@ import org.openflow.protocol.OFMessage;
 /**
  * The Class OVXBigSwitch.
  * 
- * @author gerola
  */
 
 public class OVXBigSwitch extends OVXSwitch {
@@ -38,37 +55,15 @@ public class OVXBigSwitch extends OVXSwitch {
 
     /** The path map. */
     private final HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>> pathMap;
+    
 
-    /**
-     * Instantiates a new oVX big switch.
-     */
-    public OVXBigSwitch() {
+    public OVXBigSwitch(final long switchId, final long tenantId, final List<PhysicalSwitch> physicalSwitches) {
 	super();
 	this.alg = RoutingAlgorithms.NONE;
 	this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
+	this.physicalSwitchList.addAll(physicalSwitches);
     }
-
-    /**
-     * Instantiates a new oVX big switch.
-     * 
-     * @param switchName
-     *            the switch name
-     * @param switchId
-     *            the switch id
-     * @param tenantId
-     *            the tenant id
-     * @param pktLenght
-     *            the pkt lenght
-     * @param alg
-     *            the alg
-     */
-    public OVXBigSwitch(final long switchId, final int tenantId,
-	    final RoutingAlgorithms alg) {
-	super(switchId, tenantId);
-	this.alg = alg;
-	this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
-    }
-
+    
     /**
      * Gets the alg.
      * 
@@ -86,22 +81,6 @@ public class OVXBigSwitch extends OVXSwitch {
      */
     public void setAlg(final RoutingAlgorithms alg) {
 	this.alg = alg;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * net.onrc.openvirtex.elements.datapath.Switch#addPort(java.lang.Object)
-     */
-    @Override
-    public boolean addPort(final OVXPort port) {
-	if (this.portMap.containsKey(port.getPortNumber())) {
-	    return false;
-	} else {
-	    this.portMap.put(port.getPortNumber(), port);
-	    return true;
-	}
     }
 
     /*
@@ -192,22 +171,16 @@ public class OVXBigSwitch extends OVXSwitch {
 
     }
 
-    @Override
-    public boolean setSwitchId(Long switchId) {
-	this.switchId = switchId;
-	return true;
-    }
-
     /**
      * Gets the port.
      * 
      * @param portNumber
      *            the port number
-     * @return a COPY of the port instance
+     * @return the port instance
      */
     @Override
     public OVXPort getPort(Short portNumber) {
-	return this.portMap.get(portNumber).clone();
+	return this.portMap.get(portNumber);
     };
 
     @Override
@@ -220,33 +193,4 @@ public class OVXBigSwitch extends OVXSwitch {
 		+ this.capabilities.getOVXSwitchCapabilities()
 		+ "\n- algorithm: " + this.alg.getValue();
     }
-
-    @Override
-    public boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
-            Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration {
-	OVXPort ovxPort = getPort(ovxPortNumber);
-	List<PhysicalSwitch> switchList =  OVXMap.getInstance().getPhysicalSwitches(this);
-	PhysicalSwitch physicalSwitch = null;
-	for (PhysicalSwitch sw : switchList) {
-	    if (sw.getSwitchId() == physicalSwitchId) {
-		physicalSwitch = sw;
-		break;
-	    }
-	}
-	if (physicalSwitch == null)
-	    throw new IllegalVirtualSwitchConfiguration("Big Virtual switch port " + ovxPortNumber +
-		    " on switch " + this.switchId + " has no physical counterpart");
-	
-	PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
-
-	// Map the two ports
-	ovxPort.setPhysicalPort(physicalPort);
-	physicalPort.setOVXPort(ovxPort);
-	// If the ovxPort is an edgePort, set also the physicalPort as an edge
-	
-	physicalPort.setIsEdge(ovxPort.getIsEdge());
-	
-	return true;
-    }
-
 }

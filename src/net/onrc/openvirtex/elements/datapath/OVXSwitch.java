@@ -24,9 +24,12 @@ package net.onrc.openvirtex.elements.datapath;
 
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
 import net.onrc.openvirtex.util.MACAddress;
@@ -66,6 +69,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	
 	/** The backoff counter for this switch when unconnected */
 	private AtomicInteger backOffCounter = null;
+	
+	protected List<PhysicalSwitch> physicalSwitchList;
 
 	/**
 	 * Instantiates a new OVX switch.
@@ -75,6 +80,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		this.capabilities = new OVXSwitchCapabilities();
 		this.backOffCounter = new AtomicInteger();
 		this.resetBackOff();
+		this.physicalSwitchList = new ArrayList<PhysicalSwitch>();
 	}
 
 	/**
@@ -90,7 +96,6 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		this.missSendLen = 0;
 		this.isActive = false;
 		this.switchName = "OpenVirteX Virtual Switch 1.0";
-		
 	}
 
 	/**
@@ -100,17 +105,6 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	 */
 	public Integer getTenantId() {
 		return this.tenantId;
-	}
-
-	/**
-	 * Sets the tenant id.
-	 *
-	 * @param tenantId the tenant id
-	 * @return true, if successful
-	 */
-	public boolean setTenantId(final Integer tenantId) {
-		this.tenantId = tenantId;
-		return true;
 	}
 
 	/**
@@ -204,30 +198,16 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	 * @param hwAddress the hw address
 	 * @return the short
 	 */
-	public Short createPort(Boolean isEdge, MACAddress hwAddress) {
-		Short ovxPortNumber = getNewPortNumber();
-		if (ovxPortNumber != 0) {
-			OVXPort ovxPort = new OVXPort(ovxPortNumber, hwAddress.getAddress(), isEdge,
-					this, this.tenantId);
-			this.portMap.put(ovxPortNumber, ovxPort);
-		}
-
-		return ovxPortNumber;
-	}
-
-	/**
-	 * Register port.
-	 *
-	 * @param ovxPortNumber the ovx port number
-	 * @param physicalSwitchId the physical switch id
-	 * @param physicalPortNumber the physical port number
-	 * @return true, if successful
-	 * @throws IllegalVirtualSwitchConfiguration 
-	 */
-	public abstract boolean registerPort(Short ovxPortNumber, Long physicalSwitchId,
-			Short physicalPortNumber) throws IllegalVirtualSwitchConfiguration;
-		
-
+//	public Short createPort(Boolean isEdge, MACAddress hwAddress) {
+//		Short ovxPortNumber = getNewPortNumber();
+//		if (ovxPortNumber != 0) {
+//			OVXPort ovxPort = new OVXPort(ovxPortNumber, hwAddress.getAddress(), isEdge,
+//					this, this.tenantId);
+//			this.portMap.put(ovxPortNumber, ovxPort);
+//		}
+//
+//		return ovxPortNumber;
+//	}
 	
 	protected void addDefaultPort(LinkedList<OFPhysicalPort> ports) {
 	    OFPhysicalPort port = new OFPhysicalPort();
@@ -241,6 +221,10 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	    port.setCurrentFeatures(0);
 	    port.setSupportedFeatures(0);
 	    ports.add(port);
+	}
+	
+	public void register() {
+	    OVXMap.getInstance().addSwitches(this.physicalSwitchList, this);
 	}
 	
 	/**

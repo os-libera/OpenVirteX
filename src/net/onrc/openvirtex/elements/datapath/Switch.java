@@ -136,15 +136,6 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     }
 
     /**
-     * Sets the switch id.
-     * 
-     * @param switchId
-     *            the switch id (DPID)
-     * @return true, if successful
-     */
-    public abstract boolean setSwitchId(final Long switchId);
-
-    /**
      * Gets the port.
      * 
      * @param portNumber
@@ -163,7 +154,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port instance
      * @return true, if successful
      */
-    protected boolean addPort(T port) {
+    public boolean addPort(T port) {
 	if (this.portMap.containsKey(port.getPortNumber()))
 	    return false;
 	this.portMap.put(port.getPortNumber(), port);

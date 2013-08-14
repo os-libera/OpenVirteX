@@ -30,6 +30,7 @@
 package net.onrc.openvirtex.elements.port;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.openflow.protocol.OFPhysicalPort;
 
@@ -37,58 +38,33 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 public class PhysicalPort extends Port<PhysicalSwitch> {
 
-    private final HashMap<Integer, OVXPort> ovxPortMap;
+    private final Map<Integer, OVXPort> ovxPortMap;
 
-    /**
-     * 
-     */
-    public PhysicalPort() {
+    public PhysicalPort(PhysicalSwitch sw) {
 	super();
+	this.parentSwitch = sw;
+	this.isEdge = false;
 	this.ovxPortMap = new HashMap<Integer, OVXPort>();
     }
-
-    // TODO: do we need constructor with ovxPortMap?
-
-    public PhysicalPort(final PhysicalPort pp) {
-	super((OFPhysicalPort) pp, pp.isEdge, pp.parentSwitch);
-	this.ovxPortMap = new HashMap<Integer, OVXPort>();
-    }
-
-    public PhysicalPort(final OFPhysicalPort pp, final Boolean isEdge, final PhysicalSwitch parentSwitch) {
-	super(pp, isEdge, parentSwitch);
-	this.ovxPortMap = new HashMap<Integer, OVXPort>();
+    
+    public PhysicalPort(OFPhysicalPort port, PhysicalSwitch sw) {
+	this(sw);
+	this.portNumber = port.getPortNumber();
+	this.hardwareAddress = port.getHardwareAddress();
+	this.name = port.getName();
+	this.config = port.getConfig();
+	this.state = port.getState();
+	this.currentFeatures = port.getCurrentFeatures();
+	this.advertisedFeatures = port.getAdvertisedFeatures();
+	this.supportedFeatures = port.getSupportedFeatures();
+	this.peerFeatures = port.getPeerFeatures();
     }
     
     public OVXPort getOVXPort(final Integer tenantId) {
 	return this.ovxPortMap.get(tenantId);
     }
 
-    public boolean setOVXPort(final OVXPort ovxPort) {
-	Integer tenantId = ovxPort.getTenantId();
-	if (this.ovxPortMap.containsKey(tenantId)) {
-	    return false;
-	} else {
-	    this.ovxPortMap.put(tenantId, ovxPort);
-	}
-	return true;
-    }
-
-    public Short getOVXPortNumber(final Integer tenantId) {
-	return this.ovxPortMap.get(tenantId).getPortNumber();
-    }
-
-    public boolean updateOVXPort(final OVXPort ovxPort) {
-	Integer tenantId = ovxPort.getTenantId();
-	if (!this.ovxPortMap.containsKey(tenantId)) {
-	    return false;
-	} else {
-	    this.ovxPortMap.put(tenantId, ovxPort);
-	}
-	return true;
-    }
-
-    @Override
-    public PhysicalPort clone() {
-	return new PhysicalPort(this);
+    public void setOVXPort(final OVXPort ovxPort) {
+	this.ovxPortMap.put(ovxPort.getTenantId(), ovxPort);
     }
 }

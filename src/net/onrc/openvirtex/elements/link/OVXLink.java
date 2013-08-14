@@ -22,6 +22,9 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
@@ -37,15 +40,8 @@ public class OVXLink extends Link<OVXPort,OVXSwitch> {
 
 	/** The tenant id. */
 	private Integer tenantId;
-
-	/**
-	 * Instantiates a new virtual link.
-	 */
-	public OVXLink() {
-		super();
-		this.linkId = 0;
-		this.tenantId = 0;
-	}
+	
+	private List<PhysicalLink> physicalLinks;
 
 	/**
 	 * Instantiates a new virtual link.
@@ -59,11 +55,15 @@ public class OVXLink extends Link<OVXPort,OVXSwitch> {
 	 * @param linkId
 	 *            the link id
 	 */
-	public OVXLink(final OVXPort srcPort, final OVXPort dstPort,
-			final Integer tenantId, final Integer linkId) {
-		super(srcPort, dstPort);
+	public OVXLink(final Integer linkId, final Integer tenantId, final List<PhysicalLink> physicalLinks) {
+		super();
 		this.linkId = linkId;
 		this.tenantId = tenantId;
+		OVXPort srcPort = physicalLinks.get(0).getSrcPort().getOVXPort(this.tenantId);
+		OVXPort dstPort = physicalLinks.get(physicalLinks.size() - 1).getDstPort().getOVXPort(this.tenantId);
+		super.srcPort = srcPort;
+		super.dstPort = dstPort;
+		this.physicalLinks = new LinkedList<PhysicalLink>(physicalLinks);
 	}
 
 	/**
@@ -76,16 +76,6 @@ public class OVXLink extends Link<OVXPort,OVXSwitch> {
 	}
 
 	/**
-	 * Sets the link id.
-	 * 
-	 * @param linkId
-	 *            the new link id
-	 */
-	public void setLinkId(final Integer linkId) {
-		this.linkId = linkId;
-	}
-
-	/**
 	 * Gets the tenant id.
 	 * 
 	 * @return the tenant id
@@ -93,15 +83,10 @@ public class OVXLink extends Link<OVXPort,OVXSwitch> {
 	public Integer getTenantId() {
 		return this.tenantId;
 	}
-
-	/**
-	 * Sets the tenant id.
-	 * 
-	 * @param tenantId
-	 *            the new tenant id
-	 */
-	public void setTenantId(final Integer tenantId) {
-		this.tenantId = tenantId;
+	
+	public void register() {
+	    OVXMap.getInstance().addLinks(this.physicalLinks, this);
 	}
+
 
 }

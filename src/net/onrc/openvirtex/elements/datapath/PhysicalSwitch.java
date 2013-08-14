@@ -70,7 +70,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     public Short getOVXPortNumber(final Short physicalPortNumber,
 	    final Integer tenantId) {
-	return this.portMap.get(physicalPortNumber).getOVXPortNumber(tenantId);
+	return this.portMap.get(physicalPortNumber).getOVXPort(tenantId)
+	        .getPortNumber();
     }
 
     /*
@@ -107,20 +108,20 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     protected void fillPortMap() {
 	for (final OFPhysicalPort port : this.featuresReply.getPorts()) {
-	    final PhysicalPort physicalPort = new PhysicalPort(port, false,
-		    this);
+	    final PhysicalPort physicalPort = new PhysicalPort(port, this);
 	    this.addPort(physicalPort);
 	}
     }
-    
-    public boolean addPort(PhysicalPort port) {
-	boolean result = super.addPort(port);
+
+    @Override
+    public boolean addPort(final PhysicalPort port) {
+	final boolean result = super.addPort(port);
 	if (result) {
 	    PhysicalNetwork.getInstance().addPort(port);
 	}
 	return result;
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -144,8 +145,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	if (this.channel != null)
+	if (this.channel != null) {
 	    this.channel.write(Collections.singletonList(msg));
+	}
     }
 
     /*
@@ -160,26 +162,15 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	        + this.channel.getRemoteAddress().toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * net.onrc.openvirtex.elements.datapath.Switch#setSwitchId(java.lang.Long)
-     */
-    @Override
-    public boolean setSwitchId(final Long switchId) {
-	return false;
-    }
-
     /**
      * Gets the port.
      * 
      * @param portNumber
      *            the port number
-     * @return a COPY of the port instance
+     * @return the port instance
      */
     @Override
     public PhysicalPort getPort(final Short portNumber) {
-	return this.portMap.get(portNumber).clone();
+	return this.portMap.get(portNumber);
     }
 }
