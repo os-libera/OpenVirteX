@@ -30,7 +30,7 @@ from thrift.protocol import TBinaryProtocol
 try:
 
   # Make socket
-  transport = TSocket.TSocket('localhost', 8000)
+  transport = TSocket.TSocket('localhost', 8080)
 
   # Buffering is critical. Raw sockets are very slow
   transport = TTransport.TBufferedTransport(transport)
@@ -43,7 +43,7 @@ try:
   # Connect!
   transport.open()
 
-  client.ping()
+  client.createVirtualNetwork('tcp', 'localhost', 10000, '192.168.0.0', 24)
   print 'ping()'
   '''
   sum = client.add(1,1)
