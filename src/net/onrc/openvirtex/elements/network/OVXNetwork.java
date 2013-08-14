@@ -191,7 +191,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
     }
 
-    // TOOD: should probably do some other stuff
+    // TOOD: should connect to controller
+    @Override
     public boolean boot() {
 	this.bootState = true;
 	return this.bootState;

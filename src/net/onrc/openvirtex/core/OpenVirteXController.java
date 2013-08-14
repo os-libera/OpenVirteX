@@ -78,8 +78,7 @@ public class OpenVirteXController implements Runnable {
     @Override
     public void run() {
 	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
-	// Ensure PhysicalNetwork is instantiated
-	PhysicalNetwork.getInstance().start();
+	PhysicalNetwork.getInstance().boot();
 //	OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
 //	sw.init();
 //	this.registerOVXSwitch(sw, "192.168.2.136", 6633);

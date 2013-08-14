@@ -149,4 +149,6 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	}
 	return null;
     }
+    
+    public abstract boolean boot();
 }
