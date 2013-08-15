@@ -44,4 +44,9 @@ public class APIServiceImpl implements TenantServer.Iface {
 	return this.tenantManager.bootNetwork(tenantId);
     }
 
+    @Override
+    public String saveConfig() throws TException {
+	return this.tenantManager.saveConfig();
+    }
+
 }

@@ -158,4 +158,9 @@ public class APITenantManager {
 	final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
 	return virtualNetwork.boot();
     }
+
+    public String saveConfig() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }
