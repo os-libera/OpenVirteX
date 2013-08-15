@@ -22,6 +22,9 @@
 
 package net.onrc.openvirtex.messages;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
@@ -36,6 +39,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
+import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
@@ -43,6 +47,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
     private Logger log = LogManager.getLogger(OVXPacketOut.class.getName());
     private OFMatch match = null;
+    private final List<OFAction> acts = new LinkedList<OFAction>();
     
     @Override
     public void devirtualize(OVXSwitch sw) {
@@ -63,12 +68,13 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	    }
 	
 	    match = new OFMatch().loadFromPacket(cause.getPacketData(), this.inPort);
-	    this.setBufferId(-1);
+	    this.setBufferId(cause.getBufferId());
 	}
 	
 	for (OFAction act : this.getActions()) {
 	    try {
 		((VirtualizableAction) act).virtualize(sw);
+		acts.add(act);
 	    } catch (ActionVirtualizationDenied e) {
 		log.warn("Action {} could not be virtualized; error: {}", act, e.getMessage());
 		//TODO: send error to controller
@@ -76,7 +82,15 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	    } 
 	}
 
-	prependRewriteActions(sw);
+	this.prependRewriteActions(sw);
+	this.setActions(acts);
+	this.setActionsLength((short)0);
+	this.setLengthU(OVXPacketOut.MINIMUM_LENGTH);
+	for (final OFAction act : this.acts) {
+	    this.setLengthU(this.getLengthU() + act.getLengthU());
+	    this.setActionsLength((short) (this.getActionsLength() + act.getLength()));
+	}
+	//prependRewriteActions(sw);
 	
 	sw.sendSouth(this);
 	
@@ -98,7 +112,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
    	    }
    	    OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
    	    srcAct.setNetworkAddress(pip.getIp());
-   	    this.actions.add(0,srcAct);
+   	    acts.add(0,srcAct);
+   	    
    	    
    	}
 
@@ -114,7 +129,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
    	    }
    	    OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
    	    dstAct.setNetworkAddress(pip.getIp());
-   	    this.actions.add(0, dstAct);
+   	    acts.add(0, dstAct);
+   	    	
    	   
    	}
        }

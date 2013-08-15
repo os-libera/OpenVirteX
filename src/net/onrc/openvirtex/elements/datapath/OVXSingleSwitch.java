@@ -7,6 +7,7 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.Devirtualizable;
 
@@ -75,12 +76,9 @@ public class OVXSingleSwitch extends OVXSwitch {
 
     }
     @Override
+    // TODO: this is probably not optimal
     public void sendSouth(OFMessage msg) {
-	if (physicalSwitchList.size() != 1) {
-	    log.error("Virtual single switch {} does not map to a single physical switch", this.getName());
-	    return;
-	}
-	PhysicalSwitch sw = this.physicalSwitchList.get(0);
-	sw.sendMsg(msg, sw);
+	PhysicalSwitch sw = OVXMap.getInstance().getPhysicalSwitches(this).get(0);
+	sw.sendMsg(msg, this);
     }
 }
