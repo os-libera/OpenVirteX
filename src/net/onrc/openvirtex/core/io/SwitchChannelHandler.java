@@ -208,7 +208,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 		for (OFPortStatus ps : h.pendingPortStatusMsg)
 		    handlePortStatusMessage(h, ps);
 		h.pendingPortStatusMsg.clear();
-		h.sw.init();
+		h.sw.boot();
 		h.setState(ACTIVE);
 	    }
 

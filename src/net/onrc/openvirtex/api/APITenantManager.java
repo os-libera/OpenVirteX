@@ -16,7 +16,12 @@ import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class APITenantManager {
+
+    Logger log = LogManager.getLogger(APITenantManager.class.getName());
 
     /**
      * Creates a new OVXNetwork object that is registered in the OVXMap.
@@ -41,6 +46,8 @@ public class APITenantManager {
 	final OVXNetwork virtualNetwork = new OVXNetwork(protocol, controllerAddress,
 	        controllerPort, addr, mask);
 	virtualNetwork.register();
+	this.log.info("Created virtual network {}",
+	        virtualNetwork.getTenantId());
 	return virtualNetwork.getTenantId();
     }
 
@@ -67,11 +74,12 @@ public class APITenantManager {
 	    final long longDpid = Long.parseLong(dpid);
 	    longDpids.add(longDpid);
 	}
-	final OVXSwitch ovxSwitch = virtualNetwork.createSwitch(tenantId,
-	        longDpids);
+	final OVXSwitch ovxSwitch = virtualNetwork.createSwitch(longDpids);
 	if (ovxSwitch == null) {
 	    return -1;
 	} else {
+	    this.log.info("Created virtual switch {} in virtual network {}",
+		    ovxSwitch.getSwitchId(), virtualNetwork.getTenantId());
 	    return ovxSwitch.getSwitchId();
 	}
     }
@@ -103,6 +111,10 @@ public class APITenantManager {
 	if (edgePort == null) {
 	    return -1;
 	} else {
+	    this.log.info(
+		    "Created edge port {} on virtual switch {} in virtual network {}",
+		    edgePort.getPortNumber(), edgePort.getParentSwitch()
+		            .getSwitchId(), virtualNetwork.getTenantId());
 	    return edgePort.getPortNumber();
 	}
     }
@@ -110,7 +122,7 @@ public class APITenantManager {
     /**
      * Takes a path of physicalLinks in a string and creates the virtualLink
      * based on this data. Each virtualLink consists of a set of PhysicalLinks
-     * that are all continuous in the PHysicalNetwork topology.
+     * that are all continuous in the PhysicalNetwork topology.
      * 
      * @param tenantId
      *            Specify which virtualNetwork that the link is being created in
@@ -142,6 +154,8 @@ public class APITenantManager {
 	if (virtualLink == null) {
 	    return -1;
 	} else {
+	    this.log.info("Created virtual link {} in virtual network {}", virtualLink.getLinkId(),
+		    virtualNetwork.getTenantId());
 	    return virtualLink.getLinkId();
 	}
     }
@@ -157,6 +171,7 @@ public class APITenantManager {
 	// initialize the virtualNetwork using the given tenantId
 	final OVXMap map = OVXMap.getInstance();
 	final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
+	this.log.info("Booted virtual network {}", virtualNetwork.getTenantId());
 	return virtualNetwork.boot();
     }
 
