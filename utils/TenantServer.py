@@ -37,12 +37,13 @@ class Iface:
     """
     pass
 
-  def createHost(self, tenantId, dpid, portNumber):
+  def createHost(self, tenantId, dpid, portNumber, mac):
     """
     Parameters:
      - tenantId
      - dpid
      - portNumber
+     - mac
     """
     pass
 
@@ -59,6 +60,9 @@ class Iface:
     Parameters:
      - tenantId
     """
+    pass
+
+  def saveConfig(self, ):
     pass
 
 
@@ -139,22 +143,24 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "createVirtualSwitch failed: unknown result");
 
-  def createHost(self, tenantId, dpid, portNumber):
+  def createHost(self, tenantId, dpid, portNumber, mac):
     """
     Parameters:
      - tenantId
      - dpid
      - portNumber
+     - mac
     """
-    self.send_createHost(tenantId, dpid, portNumber)
+    self.send_createHost(tenantId, dpid, portNumber, mac)
     return self.recv_createHost()
 
-  def send_createHost(self, tenantId, dpid, portNumber):
+  def send_createHost(self, tenantId, dpid, portNumber, mac):
     self._oprot.writeMessageBegin('createHost', TMessageType.CALL, self._seqid)
     args = createHost_args()
     args.tenantId = tenantId
     args.dpid = dpid
     args.portNumber = portNumber
+    args.mac = mac
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -235,6 +241,31 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "startNetwork failed: unknown result");
 
+  def saveConfig(self, ):
+    self.send_saveConfig()
+    return self.recv_saveConfig()
+
+  def send_saveConfig(self, ):
+    self._oprot.writeMessageBegin('saveConfig', TMessageType.CALL, self._seqid)
+    args = saveConfig_args()
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_saveConfig(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = saveConfig_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "saveConfig failed: unknown result");
+
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
@@ -245,6 +276,7 @@ class Processor(Iface, TProcessor):
     self._processMap["createHost"] = Processor.process_createHost
     self._processMap["createVirtualLink"] = Processor.process_createVirtualLink
     self._processMap["startNetwork"] = Processor.process_startNetwork
+    self._processMap["saveConfig"] = Processor.process_saveConfig
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -288,7 +320,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createHost_result()
-    result.success = self._handler.createHost(args.tenantId, args.dpid, args.portNumber)
+    result.success = self._handler.createHost(args.tenantId, args.dpid, args.portNumber, args.mac)
     oprot.writeMessageBegin("createHost", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -312,6 +344,17 @@ class Processor(Iface, TProcessor):
     result = startNetwork_result()
     result.success = self._handler.startNetwork(args.tenantId)
     oprot.writeMessageBegin("startNetwork", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_saveConfig(self, seqid, iprot, oprot):
+    args = saveConfig_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = saveConfig_result()
+    result.success = self._handler.saveConfig()
+    oprot.writeMessageBegin("saveConfig", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -631,6 +674,7 @@ class createHost_args:
    - tenantId
    - dpid
    - portNumber
+   - mac
   """
 
   thrift_spec = (
@@ -638,12 +682,14 @@ class createHost_args:
     (1, TType.I32, 'tenantId', None, None, ), # 1
     (2, TType.STRING, 'dpid', None, None, ), # 2
     (3, TType.I16, 'portNumber', None, None, ), # 3
+    (4, TType.STRING, 'mac', None, None, ), # 4
   )
 
-  def __init__(self, tenantId=None, dpid=None, portNumber=None,):
+  def __init__(self, tenantId=None, dpid=None, portNumber=None, mac=None,):
     self.tenantId = tenantId
     self.dpid = dpid
     self.portNumber = portNumber
+    self.mac = mac
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -669,6 +715,11 @@ class createHost_args:
           self.portNumber = iprot.readI16();
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.mac = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -690,6 +741,10 @@ class createHost_args:
     if self.portNumber is not None:
       oprot.writeFieldBegin('portNumber', TType.I16, 3)
       oprot.writeI16(self.portNumber)
+      oprot.writeFieldEnd()
+    if self.mac is not None:
+      oprot.writeFieldBegin('mac', TType.STRING, 4)
+      oprot.writeString(self.mac)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -999,6 +1054,107 @@ class startNetwork_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.BOOL, 0)
       oprot.writeBool(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class saveConfig_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('saveConfig_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class saveConfig_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('saveConfig_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
