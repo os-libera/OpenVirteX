@@ -104,11 +104,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     }
 
     /**
-     * Fill port map.
+     * Fill port map. Assume all ports are edges until discovery says otherwise.
      */
     protected void fillPortMap() {
 	for (final OFPhysicalPort port : this.featuresReply.getPorts()) {
-	    final PhysicalPort physicalPort = new PhysicalPort(port, this);
+	    final PhysicalPort physicalPort = new PhysicalPort(port, this, true);
 	    this.addPort(physicalPort);
 	}
     }
@@ -152,9 +152,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     @Override
     public String toString() {
-	return "DPID : " + this.featuresReply.getDatapathId()
+	
+	return Integer.toString(this.hashCode());/*"DPID : " + this.featuresReply.getDatapathId()
 	        + ", remoteAddr : "
-	        + this.channel.getRemoteAddress().toString();
+	        + this.channel.getRemoteAddress().toString();*/
     }
 
     /**
@@ -167,5 +168,13 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     @Override
     public PhysicalPort getPort(final Short portNumber) {
 	return this.portMap.get(portNumber);
+    }
+    
+    @Override
+    public boolean equals(Object other) {
+	//TODO: fix this big shit
+	if (other instanceof PhysicalSwitch)
+	    return this.switchId == ((PhysicalSwitch)other).switchId;
+	return false;
     }
 }

@@ -59,8 +59,13 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
     @Override
     public void devirtualize(final OVXSwitch sw) {
+	
 	this.sw = sw;
-
+	
+	int bufferId = OVXPacketOut.BUFFER_ID_NONE;
+	if (sw.getFromBufferMap(this.bufferId)  != null) {
+	    bufferId = sw.getFromBufferMap(this.bufferId).getBufferId();
+	}
 	final short inport = this.getMatch().getInputPort();
 
 	for (final OFAction act : this.getActions()) {
@@ -86,6 +91,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	} else {
 	    this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
 	    if (ovxInPort.isEdge()) {
+		this.setBufferId(bufferId);
+		sw.sendSouth(this);
 		return;
 	    } else {
 		this.rewriteMatch();
@@ -97,7 +104,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	for (final OFAction act : this.acts) {
 	    this.setLengthU(this.getLengthU() + act.getLengthU());
 	}
-
+	
+	this.setBufferId(bufferId);
 	sw.sendSouth(this);
 
     }

@@ -30,7 +30,7 @@ public class CmdLineSettings {
     public static final String DEFAULT_CONFIG_FILE = "config/config.json";
     public static final String DEFAULT_OF_HOST = "0.0.0.0";
     public static final Integer DEFAULT_OF_PORT = 6633;
-    public static final Integer DEFAULT_NUMBER_VIRT_NETS = 256;
+    public static final Integer DEFAULT_NUMBER_VIRT_NETS = 255;
 
     @Option(name = "-cf", aliases = "--configFile", metaVar = "FILE", usage = "OpenVirteX configuration file")
     private String configFile = DEFAULT_CONFIG_FILE;
