@@ -22,8 +22,28 @@
 
 package net.onrc.openvirtex.messages.actions;
 
+
+
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+
 import org.openflow.protocol.action.OFActionOutput;
 
-public class OVXActionOutput extends OFActionOutput {
+public class OVXActionOutput extends OFActionOutput implements VirtualizableAction {
+
+    @Override
+    public boolean virtualize(OVXSwitch sw)
+            throws ActionVirtualizationDenied {
+	
+	OVXPort outPort = sw.getPort(this.getPort());
+	if (outPort != null)
+	    this.setPort(outPort.getPhysicalPortNumber());
+	else
+	    throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
+		    " does not exist in virtual switch " + sw.getName());
+	
+	return outPort.isEdge();
+    }
 
 }

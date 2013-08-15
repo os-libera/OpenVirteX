@@ -70,10 +70,13 @@ public class OpenVirteXController implements Runnable {
     private SwitchChannelPipeline pfact = null;
     private ClientChannelPipeline cfact = null;
 
-    public OpenVirteXController(String configFile, String ofHost, Integer ofPort) {
+    private int maxVirtual = 0;
+
+    public OpenVirteXController(String configFile, String ofHost, Integer ofPort, int maxVirtual) {
 	this.configFile = configFile;
 	this.ofHost = ofHost;
 	this.ofPort = ofPort;
+	this.maxVirtual  = maxVirtual;
 	instance = this;
     }
 
@@ -197,6 +200,13 @@ public class OpenVirteXController implements Runnable {
 	if (instance == null)
 	    throw new RuntimeException("The OpenVirtexController has not been initialized; quitting.");
 	return instance;
+    }
+    
+    /*
+     * return the number of bits needed to encode the tenant id
+     */
+    public int getNumberVirtualNets() {
+	return this.maxVirtual;
     }
 
 }

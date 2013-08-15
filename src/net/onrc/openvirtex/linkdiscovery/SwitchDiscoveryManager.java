@@ -150,6 +150,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+
 	this.sw.sendMsg(msg, this);
     }
 

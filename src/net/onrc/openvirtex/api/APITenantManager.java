@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
+import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
@@ -41,9 +42,9 @@ public class APITenantManager {
     public Integer createOVXNetwork(final String protocol,
 	    final String controllerAddress, final int controllerPort,
 	    final String networkAddress, final short mask) {
-	final IPAddress addr = new IPAddress(networkAddress);
-	final OVXNetwork virtualNetwork = new OVXNetwork(protocol,
-	        controllerAddress, controllerPort, addr, mask);
+	final IPAddress addr = new OVXIPAddress(networkAddress, -1); 
+	final OVXNetwork virtualNetwork = new OVXNetwork(protocol, controllerAddress,
+	        controllerPort, addr, mask);
 	virtualNetwork.register();
 	this.log.info("Created virtual network {}",
 	        virtualNetwork.getTenantId());
@@ -172,5 +173,10 @@ public class APITenantManager {
 	final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
 	this.log.info("Booted virtual network {}", virtualNetwork.getTenantId());
 	return virtualNetwork.boot();
+    }
+
+    public String saveConfig() {
+	// TODO Auto-generated method stub
+	return null;
     }
 }

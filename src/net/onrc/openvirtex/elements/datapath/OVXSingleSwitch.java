@@ -74,4 +74,13 @@ public class OVXSingleSwitch extends OVXSwitch {
 	channel.disconnect();
 
     }
+    @Override
+    public void sendSouth(OFMessage msg) {
+	if (physicalSwitchList.size() != 1) {
+	    log.error("Virtual single switch {} does not map to a single physical switch", this.getName());
+	    return;
+	}
+	PhysicalSwitch sw = this.physicalSwitchList.get(0);
+	sw.sendMsg(msg, sw);
+    }
 }

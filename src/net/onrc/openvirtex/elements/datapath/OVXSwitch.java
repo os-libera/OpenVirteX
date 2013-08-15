@@ -40,14 +40,19 @@ import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
+import net.onrc.openvirtex.messages.OVXPacketIn;
+import net.onrc.openvirtex.util.MACAddress;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.openflow.protocol.OFFeaturesReply;
+import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPort;
+import org.openflow.util.LRULinkedHashMap;
 
 /**
  * The Class OVXSwitch.
@@ -67,33 +72,45 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     protected static int            bufferDimension  = 4096;
 
     /** The tenant id. */
-    protected Integer               tenantId         = 0;
+	protected Integer tenantId = 0;
+	
+	/** The miss send len. */
+	protected Short missSendLen = 0;
+	
+	/** The is active. */
+	protected boolean isActive = false;
+	
+	/** The capabilities. */
+	protected OVXSwitchCapabilities capabilities;
+	
+	/** The backoff counter for this switch when unconnected */
+	private AtomicInteger backOffCounter = null;
+	
+	protected List<PhysicalSwitch> physicalSwitchList;
+	
+	/**
+	 * The buffer map
+	 */
+	protected LRULinkedHashMap<Integer, OVXPacketIn> bufferMap;
+	
+	private AtomicInteger bufferId = null;
 
-    /** The miss send len. */
-    protected Short                 missSendLen      = 0;
+	private AtomicInteger		portCounter;
 
-    /** The is active. */
-    protected boolean               isActive         = false;
-
-    /** The capabilities. */
-    protected OVXSwitchCapabilities capabilities;
-
-    /** The backoff counter for this switch when unconnected */
-    private AtomicInteger           backOffCounter   = null;
-
-    private AtomicInteger		portCounter;
-    
-    /**
-     * Instantiates a new OVX switch.
-     */
-    protected OVXSwitch() {
-	super();
-	this.capabilities = new OVXSwitchCapabilities();
-	this.backOffCounter = new AtomicInteger();
-	this.resetBackOff();
-	this.portCounter = new AtomicInteger(1);
-    }
-
+	/**
+	 * Instantiates a new OVX switch.
+	 */
+	protected OVXSwitch() {
+		super();
+		this.capabilities = new OVXSwitchCapabilities();
+		this.backOffCounter = new AtomicInteger();
+		this.resetBackOff();
+		this.physicalSwitchList = new ArrayList<PhysicalSwitch>();
+		this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(bufferDimension);
+		this.portCounter = new AtomicInteger(1);
+		this.bufferId = new AtomicInteger(1);
+	}
+	
     /**
      * Instantiates a new OVX switch.
      * 
@@ -299,5 +316,19 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	        + this.missSendLen + " - isActive: " + this.isActive
 	        + " - capabilities: "
 	        + this.capabilities.getOVXSwitchCapabilities();
-    }
+    }	
+	
+	public synchronized int addToBufferMap(OVXPacketIn pktIn) {
+	    //TODO: this isn't thread safe... fix it
+	    bufferId.compareAndSet(OVXSwitch.bufferDimension, 0);
+	    this.bufferMap.put(bufferId.getAndIncrement(), pktIn);
+	    return bufferId.get();
+	}
+	
+	public OVXPacketIn getFromBufferMap(Integer bufId) {
+	    return this.bufferMap.get(bufId);
+	}
+	
+	
+	public abstract void sendSouth(OFMessage msg);
 }

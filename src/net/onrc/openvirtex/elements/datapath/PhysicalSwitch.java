@@ -137,15 +137,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	return true;
     }
 
-    /*
-     * Temporary implementation(non-Javadoc)
-     * 
-     * @see
-     * net.onrc.openvirtex.core.io.OVXSendMsg#sendMsg(org.openflow.protocol.
-     * OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
-     */
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+	// TODO: if (this.isConnected && this.channel != null) ??
 	if (this.isConnected) {
 	    this.channel.write(Collections.singletonList(msg));
 	}
