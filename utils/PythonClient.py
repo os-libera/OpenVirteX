@@ -33,17 +33,17 @@ try:
   transport = TSocket.TSocket('localhost', 8080)
 
   # Buffering is critical. Raw sockets are very slow
-  transport = TTransport.TBufferedTransport(transport)
+  transport = TTransport.TFramedTransport(transport)
   # Wrap in a protocol
   protocol = TBinaryProtocol.TBinaryProtocol(transport)
 
   # Create a client to use the protocol encoder
   client = TenantServer.Client(protocol)
-
   # Connect!
   transport.open()
+  #print 'ping()'
 
-  client.createVirtualNetwork('tcp', 'localhost', 10000, '192.168.0.0', 24)
+  print client.createVirtualNetwork('tcp', 'localhost', 10001, '192.168.0.0', 24)
   print 'ping()'
   '''
   sum = client.add(1,1)

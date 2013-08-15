@@ -194,4 +194,10 @@ public class OVXBigSwitch extends OVXSwitch {
 		+ "\n- algorithm: " + this.alg.getValue();
     }
 
+    @Override
+    public void sendSouth(OFMessage msg) {
+	// TODO Auto-generated method stub
+	
+    }
+
 }

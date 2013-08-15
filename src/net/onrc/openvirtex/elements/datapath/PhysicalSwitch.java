@@ -145,7 +145,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	if (this.channel != null) {
+	if (this.isConnected && this.channel != null) {
 	    this.channel.write(Collections.singletonList(msg));
 	}
     }

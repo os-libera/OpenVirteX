@@ -5,15 +5,12 @@ package net.onrc.openvirtex.elements.datapath;
 
 
 import java.util.Collections;
-import java.util.List;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
 import net.onrc.openvirtex.messages.Devirtualizable;
 
 import org.apache.logging.log4j.LogManager;
@@ -108,6 +105,16 @@ public class OVXSingleSwitch extends OVXSwitch {
 	OpenVirteXController.getInstance().registerOVXSwitch(this, 
 		net.getControllerHost(), net.getControllerPort());
 
+    }
+
+    @Override
+    public void sendSouth(OFMessage msg) {
+	if (physicalSwitchList.size() != 1) {
+	    log.error("Virtual single switch {} does not map to a single physical switch", this.getName());
+	    return;
+	}
+	PhysicalSwitch sw = this.physicalSwitchList.get(0);
+	sw.sendMsg(msg, sw);
     }
 
 
