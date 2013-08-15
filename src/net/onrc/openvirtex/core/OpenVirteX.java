@@ -50,7 +50,7 @@ public class OpenVirteX {
 
 		OpenVirteXController ctrl = new OpenVirteXController(
 				settings.getConfigFile(), settings.getOFHost(),
-				settings.getOFPort());
+				settings.getOFPort(), settings.getNumberOfVirtualNets());
 		log.info("Starting OpenVirtex...");
 		ctrl.run();
 	}

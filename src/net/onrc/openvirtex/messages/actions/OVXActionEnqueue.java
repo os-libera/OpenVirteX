@@ -22,8 +22,16 @@
 
 package net.onrc.openvirtex.messages.actions;
 
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+
 import org.openflow.protocol.action.OFActionEnqueue;
 
-public class OVXActionEnqueue extends OFActionEnqueue {
+public class OVXActionEnqueue extends OFActionEnqueue implements VirtualizableAction {
+
+    @Override
+    public boolean virtualize(OVXSwitch sw) throws ActionVirtualizationDenied {
+	return false;
+    }
 
 }

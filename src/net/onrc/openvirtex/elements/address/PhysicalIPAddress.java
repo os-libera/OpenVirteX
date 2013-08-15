@@ -23,8 +23,16 @@ package net.onrc.openvirtex.elements.address;
 
 public class PhysicalIPAddress extends IPAddress {
 
+
+    public PhysicalIPAddress(Integer ip) {
+	this.ip = ip;
+    }
+    
+    
+
     public PhysicalIPAddress(final String ipAddress) {
 	super(ipAddress);
     }
+
 
 }

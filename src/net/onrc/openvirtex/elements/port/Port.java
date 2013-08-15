@@ -66,8 +66,19 @@ public class Port<T> extends OFPhysicalPort {
      * 
      * @return the checks if is edge
      */
-    public Boolean getIsEdge() {
+    public Boolean isEdge() {
 	return this.isEdge;
+    }
+
+
+    /**
+     * Sets the checks if is edge.
+     * 
+     * @param isEdge
+     *            the new checks if is edge
+     */
+    public void isEdge(final Boolean isEdge) {
+	this.isEdge = isEdge;
     }
 
     public T getParentSwitch() {
