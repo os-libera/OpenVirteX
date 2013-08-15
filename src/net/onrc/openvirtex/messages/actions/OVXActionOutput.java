@@ -28,6 +28,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 
+import org.openflow.protocol.OFPort;
 import org.openflow.protocol.action.OFActionOutput;
 
 public class OVXActionOutput extends OFActionOutput implements VirtualizableAction {
@@ -36,7 +37,17 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
     public boolean virtualize(OVXSwitch sw)
             throws ActionVirtualizationDenied {
 	
-	OVXPort outPort = sw.getPort(this.getPort());
+	short outport = this.getPort();
+	OVXPort outPort = sw.getPort(outport);
+	
+	if (outport > OFPort.OFPP_MAX.getValue())
+	    //TODO: Expand Flood message
+	    return false;
+	
+	
+	
+	
+	
 	if (outPort != null)
 	    this.setPort(outPort.getPhysicalPortNumber());
 	else

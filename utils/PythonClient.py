@@ -46,16 +46,15 @@ try:
   raw_input()
   print client.createVirtualSwitch(1, ["1"])
   print client.createVirtualSwitch(1, ["2"])
-  print client.createVirtualSwitch(1, ["3"])
-  print client.createVirtualSwitch(1, ["4", "5"])
   raw_input()
   #print client.createHost(1, 0, 1)
   #raw_input()
-  pathString =  "1/2-2/2,2/3-3/2"
+  pathString =  "1/2-2/2"
   print client.createVirtualLink(1, pathString)
-  pathString =  "1/2-2/2,2/3-3/2,3/3-4/2,4/3-5/2"
+  pathString =  "2/3-3/2"
   print client.createVirtualLink(1, pathString)
   raw_input()
+  #  print client.connectHost(1, 
   print client.startNetwork(1)
 
   '''

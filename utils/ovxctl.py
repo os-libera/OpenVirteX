@@ -173,6 +173,8 @@ DESCS = {
                      ("Connect host to edge switch. Must specify a network_id, mac, dpid and port.")),
     'bootNetwork' : ("Boot virtual network",
                      ("Boot virtual network. Must specify a network_id.")),
+    'saveConfig' : ("Saves the config",
+                     ("Saves the configuration file into the given fileName."))
 }
 
 USAGE="%prog {}"

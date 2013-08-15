@@ -261,13 +261,16 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 			    .getPort();
 		    final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
 		    final OVXPort dstPort = this.getNeighborPort(srcPort);
-		    final OVXPacketIn pi = new OVXPacketIn();
-		    // Get input port from pkt_out
-		    pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-		    pi.setInPort(dstPort.getPortNumber());
-		    pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
-		    pi.setPacketData(pkt);
-		    dstPort.getParentSwitch().sendMsg(pi, this);
+		    if (dstPort != null) {
+			final OVXPacketIn pi = new OVXPacketIn();
+			pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+			// Get input port from pkt_out
+			pi.setInPort(dstPort.getPortNumber());
+			pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
+			pi.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + pkt.length));
+			pi.setPacketData(pkt);
+			dstPort.getParentSwitch().sendMsg(pi, this);
+		    }
 		} catch (final ClassCastException c) {
 		    // ignore non-ActionOutput pkt_out's
 		}
@@ -289,6 +292,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     public Integer nextIP() {
+	System.err.println(OpenVirteXController.getInstance().getNumberVirtualNets());
 	return (this.tenantId<< 
 		(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
 			+ ipCounter.getAndIncrement();
