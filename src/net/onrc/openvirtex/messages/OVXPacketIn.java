@@ -45,6 +45,8 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
     private Logger log = LogManager.getLogger(OVXPacketIn.class.getName());
 
+
+
     @Override
     public void virtualize(PhysicalSwitch sw) {
 
@@ -89,19 +91,22 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	 * Below handles packets traveling in the core.
 	 */
 
-
+	System.out.println(match);
 	if (match.getDataLayerType() == Ethernet.TYPE_IPv4 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
 	    PhysicalIPAddress srcIP = new PhysicalIPAddress(match.getNetworkSource());
 	    PhysicalIPAddress dstIP = new PhysicalIPAddress(match.getNetworkDestination());
 
 	    Ethernet eth = new Ethernet();
 	    eth.deserialize(this.getPacketData(), 0, this.getPacketData().length);
+	    System.err.println(eth);
 	    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 		//ARP packet
 		ARP arp = (ARP) eth.getPayload();
-		tenantId = map.getVirtualIP(srcIP).getTenantId();
-		arp.setSenderProtocolAddress(map.getVirtualIP(srcIP).getIp());
-		arp.setTargetProtocolAddress(map.getVirtualIP(dstIP).getIp());
+		tenantId = fetchTenantId(match, map, true);
+		if (map.getVirtualIP(srcIP) != null)
+		    arp.setSenderProtocolAddress(map.getVirtualIP(srcIP).getIp());
+		if (map.getVirtualIP(dstIP) != null)
+		    arp.setTargetProtocolAddress(map.getVirtualIP(dstIP).getIp());
 	    } else if (match.getDataLayerType() == Ethernet.TYPE_IPv4) {
 		IPv4 ip = (IPv4) eth.getPayload();
 		tenantId = map.getVirtualIP(srcIP).getTenantId();
@@ -122,9 +127,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	tenantId = fetchTenantId(match, map, true);
 	if (tenantId == null) {
 	    log.warn("PacketIn {} does not belong to any virtual network; "
-			+ "dropping and intalling a temporary drop rule", this);
-		installDropRule(sw, match);
-		return;
+		    + "dropping and intalling a temporary drop rule", this);
+	    installDropRule(sw, match);
+	    return;
 	}
 	vSwitch = map.getVirtualSwitch(sw, tenantId);
 	sendPkt(vSwitch, match, sw, tenantId);
@@ -149,13 +154,13 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
 	    OVXIPAddress vip = new OVXIPAddress(tenantId, match.getNetworkSource());
 	    if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC) 
-		    && map.getPhysicalIP(vip, tenantId) != null) { 
+		    && map.getPhysicalIP(vip, tenantId) == null) { 
 		PhysicalIPAddress pip = new PhysicalIPAddress(vnet.nextIP());
 		map.addIP(pip, vip);
 	    }
 	    vip = new OVXIPAddress(tenantId, match.getNetworkDestination());
 	    if (!match.getWildcardObj().isWildcarded(Flag.NW_DST) 
-		    && map.getPhysicalIP(vip, tenantId) != null) { 
+		    && map.getPhysicalIP(vip, tenantId) == null) { 
 		PhysicalIPAddress pip = new PhysicalIPAddress(vnet.nextIP());
 		map.addIP(pip, vip);
 	    }
@@ -175,5 +180,22 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    return map.getMAC(MACAddress.valueOf(match.getDataLayerSource()));
 	return null;
     }
+
+
+    public OVXPacketIn(OVXPacketIn pktIn) {
+	this.bufferId = pktIn.bufferId;
+	this.inPort = pktIn.inPort;
+	this.length = pktIn.length;
+	this.packetData = pktIn.packetData;
+	this.reason = pktIn.reason;
+	this.totalLength = pktIn.totalLength;
+	this.type = pktIn.type;
+	this.version = pktIn.version;
+	this.xid = pktIn.xid;
+    }
+
+
+    public OVXPacketIn() {}
+
 
 }
