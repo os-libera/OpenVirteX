@@ -102,6 +102,7 @@ public class OVXMap implements Mappable {
      */
     public void addSwitches(final List<PhysicalSwitch> physicalSwitches,
 	    final OVXSwitch virtualSwitch) {
+	
 	for (final PhysicalSwitch physicalSwitch : physicalSwitches) {
 	    this.addSwitch(physicalSwitch, virtualSwitch);
 	}
@@ -208,6 +209,7 @@ public class OVXMap implements Mappable {
 	        .getValueForExactKey(virtualIP.toString());
 	if (ipMap == null) {
 	    ipMap = new ConcurrentHashMap<Integer, PhysicalIPAddress>();
+	    this.virtualIPMap.put(virtualIP.toString(), ipMap);
 	}
 	ipMap.put(virtualIP.getTenantId(), physicalIP);
     }
@@ -224,8 +226,12 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalSwitch(final PhysicalSwitch physicalSwitch,
 	    final OVXSwitch virtualSwitch) {
-	this.physicalSwitchMap.get(physicalSwitch).put(
-	        virtualSwitch.getTenantId(), virtualSwitch);
+	ConcurrentHashMap<Integer, OVXSwitch> switchMap = this.physicalSwitchMap.get(physicalSwitch);
+	if (switchMap == null) {
+	    switchMap = new ConcurrentHashMap<Integer, OVXSwitch>();
+	    this.physicalSwitchMap.put(physicalSwitch, switchMap);
+	}
+	switchMap.put(virtualSwitch.getTenantId(), virtualSwitch);
     }
 
     /**
@@ -241,8 +247,12 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalLink(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
-	this.physicalLinkMap.get(physicalLink).put(virtualLink.getTenantId(),
-	        virtualLink);
+	ConcurrentHashMap<Integer, OVXLink> linkMap = this.physicalLinkMap.get(physicalLink);
+	if (linkMap == null) {
+	    linkMap = new ConcurrentHashMap<Integer, OVXLink>();
+	    this.physicalLinkMap.put(physicalLink, linkMap);
+	}
+	linkMap.put(virtualLink.getTenantId(), virtualLink);
     }
 
     /**
@@ -259,7 +269,12 @@ public class OVXMap implements Mappable {
      */
     private void addVirtualSwitch(final OVXSwitch virtualSwitch,
 	    final PhysicalSwitch physicalSwitch) {
-	this.virtualSwitchMap.get(virtualSwitch).add(physicalSwitch);
+	ArrayList<PhysicalSwitch> switchList = this.virtualSwitchMap.get(virtualSwitch);
+	if (switchList == null) {
+	    switchList = new ArrayList<PhysicalSwitch>();
+	    this.virtualSwitchMap.put(virtualSwitch, switchList);
+	}
+	switchList.add(physicalSwitch);
     }
 
     /**
@@ -274,7 +289,12 @@ public class OVXMap implements Mappable {
      */
     private void addVirtualLink(final OVXLink virtualLink,
 	    final PhysicalLink physicalLink) {
-	this.virtualLinkMap.get(virtualLink).add(physicalLink);
+	ArrayList<PhysicalLink> linkList = this.virtualLinkMap.get(virtualLink);
+	if (linkList == null) {
+	    linkList = new ArrayList<PhysicalLink>();
+	    this.virtualLinkMap.put(virtualLink,  linkList);
+	}
+	linkList.add(physicalLink);
     }
 
     /**
@@ -388,11 +408,10 @@ public class OVXMap implements Mappable {
      */
     @Override
     public OVXNetwork getVirtualNetwork(final Integer tenantId) {
-
 	return this.networkMap.get(tenantId);
     }
 
-    public Integer getMAC(MACAddress mac) {
+    public Integer getMAC(final MACAddress mac) {
 	return this.macMap.getValueForExactKey(mac.toStringNoColon());
     }
 

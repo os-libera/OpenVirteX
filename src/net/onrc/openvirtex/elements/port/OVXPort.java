@@ -32,6 +32,8 @@ package net.onrc.openvirtex.elements.port;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import net.onrc.openvirtex.elements.OVXMap;
+
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 public class OVXPort extends Port<OVXSwitch> {
@@ -41,14 +43,14 @@ public class OVXPort extends Port<OVXSwitch> {
 
     public OVXPort(final int tenantId, final PhysicalPort port,
 	    final boolean isEdge) {
-	super();
+	super(port);
 	this.tenantId = tenantId;
 	this.physicalPort = port;
+	this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(
+	        port.getParentSwitch(), tenantId);
+	this.portNumber = this.parentSwitch.getNextPortNumber();
+	this.hardwareAddress = port.getHardwareAddress();
 	this.isEdge = isEdge;
-	this.makeVirtual();
-    }
-
-    private void makeVirtual() {
 	// advertise current speed/duplex as 100MB FD, media type copper
 	this.currentFeatures = 324;
 	// advertise current feature + 1GB FD
@@ -70,6 +72,9 @@ public class OVXPort extends Port<OVXSwitch> {
 	return this.physicalPort.getPortNumber();
     }
 
+    /**
+     * Registers a port in the virtual parent switch and in the physical port
+     */
     public void register() {
 	this.parentSwitch.addPort(this);
 	this.physicalPort.setOVXPort(this);
