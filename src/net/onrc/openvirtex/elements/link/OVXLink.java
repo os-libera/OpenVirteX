@@ -27,6 +27,11 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+
 import net.onrc.openvirtex.elements.port.OVXPort;
 
 /**
@@ -88,5 +93,20 @@ public class OVXLink extends Link<OVXPort,OVXSwitch> {
 	    OVXMap.getInstance().addLinks(this.physicalLinks, this);
 	}
 
+	
+	public HashMap<String,Object> toJson() {
+		//HashMap<String,Object> output = new HashMap<String,Object>();
+		//LinkedList<Object> list = new LinkedList<Object>();
+		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+		
+		ovxMap.put("tenant-id",this.tenantId);
+		ovxMap.put("link-id",this.getLinkId());
+		ovxMap.put("src", this.getSrcPort().toJson());
+		ovxMap.put("dst", this.getDstPort().toJson());
+		
+		//list.add(ovxMap);
+		//output.put("edge", list);
+		return ovxMap; 
+	    }
 
 }

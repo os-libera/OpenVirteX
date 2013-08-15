@@ -42,6 +42,7 @@ import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFMessage;
 
 /**
  * 
@@ -115,6 +116,7 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 
     // Public methods to query topology information
 
+
     /**
      * Return neighbours of switch.
      * 
@@ -125,6 +127,7 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     public Set<T1> getNeighbours(final T1 sw) {
 	return Collections.unmodifiableSet(this.neighbourMap.get(sw));
     }
+
 
     /**
      * Return switch instance based on its dpid

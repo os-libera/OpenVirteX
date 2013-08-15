@@ -23,6 +23,9 @@
 package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.concurrent.Executors;
 
 import net.onrc.openvirtex.api.APIServer;
@@ -56,6 +59,8 @@ public class OpenVirteXController implements Runnable {
     private String ofHost = null;
     private Integer ofPort = null;
     APIServer server;
+    
+    private Integer apiPort = null;
 
 
     private NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
@@ -76,6 +81,16 @@ public class OpenVirteXController implements Runnable {
 	this.ofPort = ofPort;
 	this.maxVirtual  = maxVirtual;
 	instance = this;
+    }
+    
+    public OpenVirteXController(String ofHost, Integer ofPort, Integer apiPort){
+	this.ofHost = ofHost;
+	this.ofPort = ofPort;
+	this.apiPort = apiPort;
+    }
+    
+    public OpenVirteXController(){
+	
     }
 
     @Override
@@ -198,6 +213,7 @@ public class OpenVirteXController implements Runnable {
 	return instance;
     }
     
+
     /*
      * return the number of bits needed to encode the tenant id
      */
@@ -205,4 +221,26 @@ public class OpenVirteXController implements Runnable {
 	return this.maxVirtual;
     }
 
+
+    public void fromJson(ArrayList<HashMap<String,Object>> list) {
+	for (HashMap<String,Object> row: list){
+	    this.ofHost = (String) row.get("host");
+	    this.ofPort = (Integer) row.get("openflow-port");
+	    this.apiPort  = (Integer) row.get("api-port");
+	}
+    }
+   
+    public HashMap<String,Object> toJson() {
+	HashMap<String,Object> output = new HashMap<String,Object>();
+	LinkedList<Object> list = new LinkedList<Object>();
+	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+	ovxMap.put("api-port",this.apiPort);
+	ovxMap.put("openflow-port",this.ofPort);
+	ovxMap.put("host",this.ofHost);
+	
+	list.add(ovxMap);
+	output.put("openvirtex", list);
+	return output; 
+    }
+    
 }

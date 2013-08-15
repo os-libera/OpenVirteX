@@ -25,6 +25,9 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ArrayList;
+
+import java.util.HashMap;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -290,6 +293,22 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	public OVXPacketIn getFromBufferMap(Integer bufId) {
 	    return this.bufferMap.get(bufId);
 	}
+	
+	public HashMap<String,Object> toJson() {
+		//HashMap<String,Object> output = new HashMap<String,Object>();
+		//LinkedList<Object> list = new LinkedList<Object>();
+		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+		
+		ovxMap.put("tenant-id",this.tenantId);
+		
+		ovxMap.put("dpid",String.valueOf(this.getSwitchId()));
+		ArrayList<Short> ports = (ArrayList<Short>)getPortNumbers();
+		ovxMap.put("port",ports);
+		
+		//list.add(ovxMap);
+		//output.put("virtualnetwork", list);
+		return ovxMap; 
+	    }
 	
 
 	/* (non-Javadoc)

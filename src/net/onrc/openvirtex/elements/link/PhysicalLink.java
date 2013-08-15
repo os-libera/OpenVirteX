@@ -30,12 +30,17 @@
 package net.onrc.openvirtex.elements.link;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 
 /**
  * The Class PhysicalLink.
  * 
  */
+
 public class PhysicalLink extends Link<PhysicalPort,PhysicalSwitch> {
 
     /**
@@ -49,4 +54,21 @@ public class PhysicalLink extends Link<PhysicalPort,PhysicalSwitch> {
     public PhysicalLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
 	super(srcPort, dstPort);
     }
+    
+    public HashMap<String,Object> toJson() {
+	HashMap<String,Object> output = new HashMap<String,Object>();
+	
+	HashMap<String,Object> srcMap = new HashMap<String,Object>();
+	HashMap<String,Object> dstMap = new HashMap<String,Object>();
+	srcMap.put("switch-id",String.valueOf(srcPort.getParentSwitch().getSwitchId()));
+	srcMap.put("port-number",String.valueOf(srcPort.getPortNumber()));
+	dstMap.put("switch-id",String.valueOf(dstPort.getParentSwitch().getSwitchId()));
+	dstMap.put("port-number",String.valueOf(dstPort.getPortNumber()));
+	
+	//list.add(ovxMap);
+	output.put("src", srcMap);
+	output.put("dst", dstMap);
+	return output; 
+    }
+
 }

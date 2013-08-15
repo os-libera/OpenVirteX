@@ -31,9 +31,13 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import java.util.HashSet;
+import java.util.LinkedList;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -67,6 +71,7 @@ import org.openflow.protocol.action.OFActionOutput;
  */
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
+
     private final Integer                  tenantId;
     private final String                   protocol;
     private final String                   controllerHost;
@@ -84,9 +89,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     // TODO: implement vlink flow pusher
     // public VLinkManager vLinkMgmt;
 
-    Logger                                 log = LogManager
-	                                               .getLogger(OVXNetwork.class
-	                                                       .getName());
+    Logger log = LogManager.getLogger(OVXNetwork.class.getName());
 
     public OVXNetwork(final String protocol,
 	    final String controllerHost, final Integer controllerPort,
@@ -146,15 +149,21 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	for (long dpid: dpids) {
 	    switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
 	}
-	if (dpids.size() == 1) {
-	    virtualSwitch = new OVXSingleSwitch(switchId, tenantId, switches.get(0));
-	} else {
-	    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId, switches);
+	    if (dpids.size() == 1) {
+		virtualSwitch = new OVXSingleSwitch(switchId, tenantId, switches.get(0));
+	    } else {
+		    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId, switches);
+	    }
+		this.addSwitch(virtualSwitch);
+		virtualSwitch.register();
+		return virtualSwitch;
+	    }
+	    
+	    
+    public HashMap<IPAddress, MACAddress> getGwsMap() {
+		return this.gwsMap;
 	}
-	this.addSwitch(virtualSwitch);
-	virtualSwitch.register();
-	return virtualSwitch;
-    }
+
 
     /**
      * Create link and add it to the topology. Returns linkId when successful,
@@ -195,7 +204,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
     }
 
-    // TOOD: should probably do some other stuff
+    // TODO: should probably do some other stuff
     public boolean boot() {
 	this.bootState = true;
 	return this.bootState;
@@ -232,6 +241,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	} else {
 	    this.log.debug("Invalid LLDP");
 	}
+
     }
 
     @Override
@@ -249,4 +259,51 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
 			+ ipCounter.getAndIncrement();
     }
+
+	/*public void fromJson(HashMap<String, Object> map) {
+		    this.tenantId = (Integer) map.get("tenant-id");
+		    this.network = (IPAddress) map.get("network");
+		    /*for(Object ip : ((HashMap<Object,Object>) map.get("gateway")).keySet()){
+			ip = (IPAddress) ip;
+		    }
+		    for(Object mac : ((HashMap<Object,Object>) map.get("gateway")).values()){
+			mac = (MACAddress) mac;
+		    }*/
+		    /*this.gwsMap  = (HashMap<IPAddress,MACAddress>) map.get("gateway");
+		    //this.gwsMap.put(ip, mac);
+		    
+        }*/
+	
+	    public HashMap<String,Object> toJson() {
+		//HashMap<String,Object> output = new HashMap<String,Object>();
+		//LinkedList<Object> list = new LinkedList<Object>();
+		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+		ovxMap.put("tenant-id",this.tenantId);
+		String subnet = getNetworkWithMask(network,mask);
+		ovxMap.put("network",subnet);
+		ovxMap.put("gateway",this.gwsMap);
+		LinkedList<String> switches = getDpids();//new LinkedList<Long>();
+		ovxMap.put("switch-id",switches);
+		ovxMap.put("controller-address", this.controllerHost);
+		ovxMap.put("controller-port", this.controllerPort);
+		//list.add(ovxMap);
+		//output.put("virtualnetwork", list);
+		return ovxMap; 
+	    }
+
+	    private LinkedList<String> getDpids() {
+		ArrayList<OVXSwitch> switches = (ArrayList<OVXSwitch>) getSwitches();
+		LinkedList<String> dpids = new LinkedList<String>();
+		for(OVXSwitch sw: switches){
+		    dpids.add(String.valueOf(sw.getSwitchId()));
+		}
+	        return dpids;
+            }
+	    private String getNetworkWithMask(IPAddress network, short mask) {
+	        String subnet = new String();
+	        subnet.concat(network.toString());
+	        subnet.concat("/");
+	        subnet.concat(String.valueOf(mask));
+	        return subnet;
+            }
 }
