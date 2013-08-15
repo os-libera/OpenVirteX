@@ -6,10 +6,7 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
 
-import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
-import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.Devirtualizable;
 
@@ -18,29 +15,13 @@ import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
 
-
-/**
- * @author gerola
- * 
- */
 public class OVXSingleSwitch extends OVXSwitch {
 
     
     private static Logger log = LogManager.getLogger(OVXSingleSwitch.class.getName());
     
-    public OVXSingleSwitch(final long switchId, final int tenantId, final PhysicalSwitch physicalSwitch) {
+    public OVXSingleSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
-	this.physicalSwitchList.add(physicalSwitch);	
-    }
-
-    @Override
-    public boolean updatePort(final OVXPort port) {
-	if (!this.portMap.containsKey(port.getPortNumber())) {
-	    return false;
-	} else {
-	    this.portMap.put(port.getPortNumber(), port);
-	    return true;
-	}
     }
 
     @Override
@@ -62,7 +43,8 @@ public class OVXSingleSwitch extends OVXSwitch {
      */
     @Override
     public void sendMsg(OFMessage msg, OVXSendMsg from) {
-	channel.write(Collections.singletonList(msg));
+	if (this.isConnected)
+	    channel.write(Collections.singletonList(msg));
     }
 
     /*
@@ -73,11 +55,11 @@ public class OVXSingleSwitch extends OVXSwitch {
      * .OFMessage)
      */
     @Override
-    public void handleIO(OFMessage msgs) {
+    public void handleIO(OFMessage msg) {
 	try {
-	    ((Devirtualizable) msgs).devirtualize(this);
+	    ((Devirtualizable) msg).devirtualize(this);
 	} catch (ClassCastException e) {
-	    log.error("Received illegal message : " + msgs);
+	    log.error("Received illegal message : " + msg);
 	}
     }
 
@@ -92,21 +74,6 @@ public class OVXSingleSwitch extends OVXSwitch {
 	channel.disconnect();
 
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.onrc.openvirtex.elements.datapath.Switch#init()
-     */
-    @Override
-    public void init() {
-	generateFeaturesReply();
-	OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
-	OpenVirteXController.getInstance().registerOVXSwitch(this, 
-		net.getControllerHost(), net.getControllerPort());
-
-    }
-
     @Override
     public void sendSouth(OFMessage msg) {
 	if (physicalSwitchList.size() != 1) {
@@ -116,6 +83,4 @@ public class OVXSingleSwitch extends OVXSwitch {
 	PhysicalSwitch sw = this.physicalSwitchList.get(0);
 	sw.sendMsg(msg, sw);
     }
-
-
 }
