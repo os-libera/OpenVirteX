@@ -48,11 +48,20 @@ public class Port<T> extends OFPhysicalPort {
     /**
      * Instantiates a new port.
      */
-    protected Port() {
+    protected Port(OFPhysicalPort ofPort) {
 	super();
+	this.portNumber = ofPort.getPortNumber();
+	this.hardwareAddress = ofPort.getHardwareAddress();
+	this.name = ofPort.getName();
+	this.config = ofPort.getConfig();
+	this.state = ofPort.getState();
+	this.currentFeatures = ofPort.getCurrentFeatures();
+	this.advertisedFeatures = ofPort.getAdvertisedFeatures();
+	this.supportedFeatures = ofPort.getSupportedFeatures();
+	this.peerFeatures = ofPort.getPeerFeatures();	
+	this.mac = null;
 	this.isEdge = false;
 	this.parentSwitch = null;
-	this.mac = null;
     }
     
     public void setHardwareAddress(byte[] hardwareAddress) {

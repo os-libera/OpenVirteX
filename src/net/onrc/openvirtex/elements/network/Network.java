@@ -37,7 +37,6 @@ import java.util.Set;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
-import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 import org.apache.logging.log4j.LogManager;
@@ -58,21 +57,22 @@ import org.apache.logging.log4j.Logger;
 public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
         OVXSendMsg {
 
-    protected HashSet<T1>              switchSet;
-    protected HashSet<T3>              linkSet;
-    protected HashMap<Long, T1>        dpidMap;
-    protected HashMap<T2, T2>          neighbourPortMap;
-    protected HashMap<T1, HashSet<T1>> neighbourMap;
+    private final HashSet<T1>              switchSet;
+    private final HashSet<T3>              linkSet;
+    private final HashMap<Long, T1>        dpidMap;
+    private final HashMap<T2, T2>          neighborPortMap;
+    private final HashMap<T1, HashSet<T1>> neighborMap;
 
-    Logger                             log = LogManager.getLogger(Network.class
-	                                           .getName());
+    Logger                                 log = LogManager
+	                                               .getLogger(Network.class
+	                                                       .getName());
 
     protected Network() {
 	this.switchSet = new HashSet<T1>();
 	this.linkSet = new HashSet<T3>();
 	this.dpidMap = new HashMap<Long, T1>();
-	this.neighbourPortMap = new HashMap<T2, T2>();
-	this.neighbourMap = new HashMap<T1, HashSet<T1>>();
+	this.neighborPortMap = new HashMap<T2, T2>();
+	this.neighborMap = new HashMap<T1, HashSet<T1>>();
     }
 
     // Protected methods to update topology (only allowed from subclasses)
@@ -88,9 +88,9 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	this.linkSet.add(link);
 	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
-	final HashSet<T1> neighbours = this.neighbourMap.get(srcSwitch);
+	final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 	neighbours.add(dstSwitch);
-	this.neighbourPortMap.put((T2) ((Link) link).getSrcPort(),
+	this.neighborPortMap.put((T2) ((Link) link).getSrcPort(),
 	        (T2) ((Link) link).getDstPort());
 	this.log.info("Adding link " + link.toString());
     }
@@ -103,7 +103,7 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     protected void addSwitch(final T1 sw) {
 	if (this.switchSet.add(sw)) {
 	    this.dpidMap.put(((Switch) sw).getSwitchId(), sw);
-	    this.neighbourMap.put(sw, new HashSet());
+	    this.neighborMap.put(sw, new HashSet());
 	}
     }
 
@@ -116,14 +116,24 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     // Public methods to query topology information
 
     /**
-     * Return neighbours of switch.
+     * Return neighbor switches of switch.
      * 
      * @param sw
      * @return
      *         Unmodifiable set of switch instances
      */
-    public Set<T1> getNeighbours(final T1 sw) {
-	return Collections.unmodifiableSet(this.neighbourMap.get(sw));
+    public Set<T1> getNeighbors(final T1 sw) {
+	return Collections.unmodifiableSet(this.neighborMap.get(sw));
+    }
+
+    /**
+     * Return neighbor port of port
+     * 
+     * @param port
+     * @return
+     */
+    public T2 getNeighborPort(final T2 port) {
+	return this.neighborPortMap.get(port);
     }
 
     /**
@@ -135,20 +145,21 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     public T1 getSwitch(final Long dpid) {
 	return this.dpidMap.get(dpid);
     }
-    
+
     public Set<T1> getSwitches() {
 	return Collections.unmodifiableSet(this.switchSet);
     }
-    
+
     // TODO: optimize this because we iterate over all links
-    public T3 getLink(T2 srcPort, T2 dstPort) {
-	for (T3 link : this.linkSet) {
-	    if (((Link) link).getSrcPort().equals(srcPort) && ((Link) link).getDstPort().equals(dstPort)) {
+    public T3 getLink(final T2 srcPort, final T2 dstPort) {
+	for (final T3 link : this.linkSet) {
+	    if (((Link) link).getSrcPort().equals(srcPort)
+		    && ((Link) link).getDstPort().equals(dstPort)) {
 		return link;
 	    }
 	}
 	return null;
     }
-    
+
     public abstract boolean boot();
 }

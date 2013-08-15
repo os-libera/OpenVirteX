@@ -128,12 +128,13 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      * @see net.onrc.openvirtex.elements.datapath.Switch#init()
      */
     @Override
-    public void init() {
+    public boolean boot() {
 	PhysicalNetwork.getInstance().addSwitch(this);
 	this.log.info("Switch connected {} : {}",
 	        this.featuresReply.getDatapathId(),
 	        this.desc.getHardwareDescription());
 	this.fillPortMap();
+	return true;
     }
 
     /*
@@ -145,7 +146,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	if (this.channel != null) {
+	if (this.isConnected) {
 	    this.channel.write(Collections.singletonList(msg));
 	}
     }

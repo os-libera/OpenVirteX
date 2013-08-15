@@ -22,7 +22,6 @@
 
 package net.onrc.openvirtex.elements.link;
 
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
 
@@ -42,10 +41,6 @@ public abstract class Link<T1, T2> {
 	/** The destination port. */
 	protected T1 dstPort = null;
 
-	protected Link() {
-	    super();
-	}
-	
 	/**
 	 * Instantiates a new link.
 	 * 
@@ -89,8 +84,10 @@ public abstract class Link<T1, T2> {
 	}
 	
 	public String toString() {
-	    String src = ((Switch) this.getSrcSwitch()).getSwitchId().toString(); 
-	    String dst = ((Switch) this.getDstSwitch()).getSwitchId().toString();
-	    return src + "<>" + dst;
+	    String srcSwitch = ((Switch) this.getSrcSwitch()).getSwitchId().toString(); 
+	    String dstSwitch = ((Switch) this.getDstSwitch()).getSwitchId().toString();
+	    short srcPort = ((Port) this.srcPort).getPortNumber();
+	    short dstPort = ((Port) this.dstPort).getPortNumber();
+	    return srcSwitch + ":" + srcPort + "-" + dstSwitch + ":" + dstPort;
 	}
 }

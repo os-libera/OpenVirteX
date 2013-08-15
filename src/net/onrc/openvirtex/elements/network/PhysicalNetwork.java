@@ -128,7 +128,7 @@ public class PhysicalNetwork extends
      */
     public synchronized void createLink(final PhysicalPort srcPort,
 	    final PhysicalPort dstPort) {
-	final PhysicalPort neighbourPort = this.neighbourPortMap.get(srcPort);
+	final PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
 	if (neighbourPort == null || !neighbourPort.equals(dstPort)) {
 	    final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 	    super.addLink(link);

@@ -117,7 +117,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		reply.setXid(m.getXid());
 		h.channel.write(Collections.singletonList(reply));
 		h.log.info("Connected dpid {} to controller {}", reply.getDatapathId(), h.channel.getRemoteAddress());
-		h.sw.init();
+		h.sw.setConnected(true);
 		h.setState(ACTIVE);
 	    }
 

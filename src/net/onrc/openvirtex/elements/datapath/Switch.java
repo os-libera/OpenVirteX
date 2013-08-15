@@ -162,21 +162,6 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     }
 
     /**
-     * Update port. Adds the port only if the port is already present.
-     * 
-     * @param port
-     *            the port instance
-     * @return true, if updated
-     */
-    protected boolean updatePort(T port) {
-	if (this.portMap.containsKey(port.getPortNumber())) {
-	    this.portMap.put(port.getPortNumber(), port);
-	    return true;
-	}
-	return false;
-    }
-
-    /**
      * Removes the port.
      * 
      * @param portNumber
@@ -222,15 +207,12 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 
     }
 
+    public abstract boolean boot();
+    
     /**
      * Tear down.
      */
     public abstract void tearDown();
-
-    /**
-     * Inits the switch.
-     */
-    public abstract void init();
 
     /**
      * Sets the description stats.

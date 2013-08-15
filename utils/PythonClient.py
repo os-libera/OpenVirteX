@@ -42,14 +42,19 @@ try:
   # Connect!
   transport.open()
   #client.createVirtualNetwork(protocol, controllerIP, 6633, networkIP, 16)
-  print client.createVirtualNetwork('tcp', 'localhost', 10000, '192.168.0.0', 16)
+  print client.createVirtualNetwork('tcp', '192.168.56.5', 10000, '192.168.0.0', 16)
   raw_input()
-  print client.createVirtualSwitch(1, ["1", "2"])
+  print client.createVirtualSwitch(1, ["1"])
+  print client.createVirtualSwitch(1, ["2"])
+  print client.createVirtualSwitch(1, ["3"])
+  print client.createVirtualSwitch(1, ["4", "5"])
   raw_input()
   #print client.createHost(1, 0, 1)
   #raw_input()
-  #pathString =  "srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort,srcDPID/srcPort-dstDPID/dstPort"
-  #print client.createVirtualLink(tenantId, pathString)
+  pathString =  "1/2-2/2,2/3-3/2"
+  print client.createVirtualLink(1, pathString)
+  pathString =  "1/2-2/2,2/3-3/2,3/3-4/2,4/3-5/2"
+  print client.createVirtualLink(1, pathString)
   #raw_input()
   print client.startNetwork(1)
 

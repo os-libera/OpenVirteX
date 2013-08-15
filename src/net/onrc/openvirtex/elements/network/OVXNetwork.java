@@ -55,6 +55,8 @@ import net.onrc.openvirtex.util.MACAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
@@ -145,12 +147,13 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	    switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
 	}
 	if (dpids.size() == 1) {
-	    virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId, switches.get(0));
+	    virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId);
 	} else {
-	    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId, switches);
+	    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId);
 	}
+	// Add switch to topology and register it in the map 
 	this.addSwitch(virtualSwitch);
-	virtualSwitch.register();
+	virtualSwitch.register(switches);
 	return virtualSwitch;
     }
 
@@ -163,16 +166,23 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
      * @return
      */
     public synchronized OVXLink createLink(List<PhysicalLink> physicalLinks) {
-	// Get virtual source port
-	OVXPort srcPort = physicalLinks.get(0).getSrcPort().getOVXPort(this.tenantId);
-	if (!this.neighbourPortMap.containsKey(srcPort)) {
-	    int linkId = this.linkCounter.getAndIncrement();
-	    final OVXLink link = new OVXLink(linkId, this.tenantId, physicalLinks);
-	    super.addLink(link);
-	    link.register();
-	    return link;
-	}
-	return null;	
+	// Create and register virtual source and destination ports
+	PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
+	OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
+	srcPort.register();
+	PhysicalPort phyDstPort = physicalLinks.get(physicalLinks.size() - 1).getDstPort();
+	OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
+	dstPort.register();
+	// Create link, add it to the topology, register it in the map
+	int linkId = this.linkCounter.getAndIncrement();
+	OVXLink link = new OVXLink(linkId, this.tenantId, srcPort, dstPort);
+	OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort, srcPort);
+	super.addLink(link);
+	super.addLink(reverseLink);
+	link.register(physicalLinks);
+	reverseLink.register(physicalLinks);
+	
+	return link;
     }
 
     public OVXPort createHost(final long physicalDpid, final short portNumber, final MACAddress mac) {
@@ -203,8 +213,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     @Override
     public boolean boot() {
 	boolean result = true;
-	for (OVXSwitch sw: this.switchSet) {
-	    log.info("booting {} {}", sw.getSwitchId(), sw.getTenantId());
+	for (OVXSwitch sw: this.getSwitches()) {
 	    result &= sw.boot();
 	}
 	this.bootState = result;
@@ -229,10 +238,12 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		    final short portNumber = ((OFActionOutput) action)
 			    .getPort();
 		    final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
-		    final OVXPort dstPort = this.neighbourPortMap.get(srcPort);
+		    final OVXPort dstPort = this.getNeighborPort(srcPort);
 		    final OVXPacketIn pi = new OVXPacketIn();
 		    // Get input port from pkt_out
+		    pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 		    pi.setInPort(dstPort.getPortNumber());
+		    pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
 		    pi.setPacketData(pkt);
 		    dstPort.getParentSwitch().sendMsg(pi, this);
 		} catch (final ClassCastException c) {

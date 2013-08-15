@@ -81,8 +81,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     /** The backoff counter for this switch when unconnected */
     private AtomicInteger           backOffCounter   = null;
 
-    protected List<PhysicalSwitch>  physicalSwitchList;
-
+    private AtomicInteger		portCounter;
+    
     /**
      * Instantiates a new OVX switch.
      */
@@ -91,11 +91,11 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	this.capabilities = new OVXSwitchCapabilities();
 	this.backOffCounter = new AtomicInteger();
 	this.resetBackOff();
-	this.physicalSwitchList = new ArrayList<PhysicalSwitch>();
+	this.portCounter = new AtomicInteger(1);
     }
 
     /**
-     * Instantiates a new oVX switch.
+     * Instantiates a new OVX switch.
      * 
      * @param switchId
      *            the switch id
@@ -179,54 +179,39 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	return this.backOffCounter.incrementAndGet();
     }
 
-    /**
-     * Gets the new port number.
-     * 
-     * @return the new port number
-     */
-    private Short getNewPortNumber() {
-	short portNumber = 1;
-	final Set<Short> keys = this.portMap.keySet();
-
-	if (keys.isEmpty()) {
-	    return portNumber;
-	} else {
-	    boolean solved = false;
-	    while (solved == false && portNumber < 256) {
-		if (!keys.contains(portNumber)) {
-		    solved = true;
-		} else {
-		    portNumber += 1;
-		}
-	    }
-	    if (solved == true) {
-		return portNumber;
-	    } else {
-		return 0;
-	    }
-	}
+//    /**
+//     * Gets the new port number.
+//     * 
+//     * @return the new port number
+//     */
+//    private Short getNewPortNumber() {
+//	short portNumber = 1;
+//	final Set<Short> keys = this.portMap.keySet();
+//
+//	if (keys.isEmpty()) {
+//	    return portNumber;
+//	} else {
+//	    boolean solved = false;
+//	    while (solved == false && portNumber < 256) {
+//		if (!keys.contains(portNumber)) {
+//		    solved = true;
+//		} else {
+//		    portNumber += 1;
+//		}
+//	    }
+//	    if (solved == true) {
+//		return portNumber;
+//	    } else {
+//		return 0;
+//	    }
+//	}
+//    }
+    
+    // TODO: add check for maximum value
+    // TODO: use bitmap to keep track of released port numbers
+    public short getNextPortNumber() {
+	return (short) this.portCounter.getAndIncrement();
     }
-
-    /**
-     * Creates the port.
-     * 
-     * @param isEdge
-     *            the is edge
-     * @param hwAddress
-     *            the hw address
-     * @return the short
-     */
-    // public Short createPort(Boolean isEdge, MACAddress hwAddress) {
-    // Short ovxPortNumber = getNewPortNumber();
-    // if (ovxPortNumber != 0) {
-    // OVXPort ovxPort = new OVXPort(ovxPortNumber, hwAddress.getAddress(),
-    // isEdge,
-    // this, this.tenantId);
-    // this.portMap.put(ovxPortNumber, ovxPort);
-    // }
-    //
-    // return ovxPortNumber;
-    // }
 
     protected void addDefaultPort(final LinkedList<OFPhysicalPort> ports) {
 	final OFPhysicalPort port = new OFPhysicalPort();
@@ -243,8 +228,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	ports.add(port);
     }
 
-    public void register() {
-	OVXMap.getInstance().addSwitches(this.physicalSwitchList, this);
+    public void register(List<PhysicalSwitch> physicalSwitches) {
+	OVXMap.getInstance().addSwitches(physicalSwitches, this);
     }
 
     /**
@@ -254,17 +239,17 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	final OFFeaturesReply ofReply = new OFFeaturesReply();
 	ofReply.setDatapathId(this.switchId);
 	final LinkedList<OFPhysicalPort> portList = new LinkedList<OFPhysicalPort>();
-	for (final Short portNumber : this.portMap.keySet()) {
-	    final OFPhysicalPort port = new OFPhysicalPort();
-	    port.setPortNumber(portNumber);
-	    port.setName(port.getName());
-	    port.setConfig(port.getConfig());
-	    port.setHardwareAddress(port.getHardwareAddress());
-	    port.setState(port.getState());
-	    port.setAdvertisedFeatures(port.getAdvertisedFeatures());
-	    port.setCurrentFeatures(port.getCurrentFeatures());
-	    port.setSupportedFeatures(port.getSupportedFeatures());
-	    portList.add(port);
+	for (final OVXPort ovxPort: this.portMap.values()) {
+	    final OFPhysicalPort ofPort = new OFPhysicalPort();
+	    ofPort.setPortNumber(ovxPort.getPortNumber());
+	    ofPort.setName(ovxPort.getName());
+	    ofPort.setConfig(ovxPort.getConfig());
+	    ofPort.setHardwareAddress(ovxPort.getHardwareAddress());
+	    ofPort.setState(ovxPort.getState());
+	    ofPort.setAdvertisedFeatures(ovxPort.getAdvertisedFeatures());
+	    ofPort.setCurrentFeatures(ovxPort.getCurrentFeatures());
+	    ofPort.setSupportedFeatures(ovxPort.getSupportedFeatures());
+	    portList.add(ofPort);
 	}
 
 	/*
@@ -288,13 +273,14 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     }
 
     /**
-     * Boots virtual switch by connecting it to the controller. Right before the
-     * switch becomes active, the backend will call the init() routing.
+     * Boots virtual switch by connecting it to the controller
+     * TODO: should 
      * 
      * @return
      * 		True if successful, false otherwise
      */
     public boolean boot() {
+	this.generateFeaturesReply();
 	OpenVirteXController ovxController = OpenVirteXController.getInstance();
 	ovxController.registerOVXSwitch(this);
 	return true;
