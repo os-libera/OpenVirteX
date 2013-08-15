@@ -286,7 +286,7 @@ public class OVXMap implements Mappable {
     @Override
     public void addMAC(MACAddress mac, Integer tenantId) {
 	this.macMap.put(mac.toStringNoColon(), tenantId);
-    }
+    } 
 
     // Access objects from dictionary given the key
 
