@@ -32,11 +32,14 @@ import java.util.Set;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
+import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFFeaturesReply;
+import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPort;
+import org.openflow.util.LRULinkedHashMap;
 
 /**
  * The Class OVXSwitch.
@@ -71,6 +74,13 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	private AtomicInteger backOffCounter = null;
 	
 	protected List<PhysicalSwitch> physicalSwitchList;
+	
+	/**
+	 * The buffer map
+	 */
+	protected LRULinkedHashMap<Integer, OVXPacketIn> bufferMap;
+	
+	private AtomicInteger bufferId = null;
 
 	/**
 	 * Instantiates a new OVX switch.
@@ -81,6 +91,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		this.backOffCounter = new AtomicInteger();
 		this.resetBackOff();
 		this.physicalSwitchList = new ArrayList<PhysicalSwitch>();
+		this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(bufferDimension);
+		this.bufferId = new AtomicInteger(0);
 	}
 
 	/**
@@ -266,7 +278,18 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 
 		setFeaturesReply(ofReply);
 	}
-
+	
+	
+	public synchronized int addToBufferMap(OVXPacketIn pktIn) {
+	    //TODO: this isn't thread safe... fix it
+	    bufferId.compareAndSet(OVXSwitch.bufferDimension, 0);
+	    this.bufferMap.put(bufferId.getAndIncrement(), pktIn);
+	    return bufferId.get();
+	}
+	
+	public OVXPacketIn getFromBufferMap(Integer bufId) {
+	    return this.bufferMap.get(bufId);
+	}
 	
 
 	/* (non-Javadoc)
@@ -281,4 +304,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 				+ " - capabilities: "
 				+ this.capabilities.getOVXSwitchCapabilities();
 	}
+	
+	
+	public abstract void sendSouth(OFMessage msg);
 }

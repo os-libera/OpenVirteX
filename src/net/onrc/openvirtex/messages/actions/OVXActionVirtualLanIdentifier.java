@@ -22,8 +22,17 @@
 
 package net.onrc.openvirtex.messages.actions;
 
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+
 import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
 
-public class OVXActionVirtualLanIdentifier extends OFActionVirtualLanIdentifier {
+public class OVXActionVirtualLanIdentifier extends OFActionVirtualLanIdentifier
+	implements VirtualizableAction {
 
+    @Override
+    public boolean virtualize(OVXSwitch sw) throws ActionVirtualizationDenied {
+	return false;
+    }
+    
 }

@@ -22,13 +22,23 @@
 package net.onrc.openvirtex.elements.address;
 
 public class OVXIPAddress extends IPAddress {
-    private int tenantId;
 
-    public OVXIPAddress(final String ipAddress) {
-	super(ipAddress);
-    }
+	private int tenantId;
+	
+	public OVXIPAddress(int tenantId, int ip) {
+	    super();
+	    this.tenantId = tenantId;
+	    this.ip = ip;
+	}
+	
+	public OVXIPAddress(final String ipAddress, final int tenantId) {
+	    super(ipAddress);
+	    this.tenantId = tenantId;
+	}
 
-    public int getTenantId() {
-	return this.tenantId;
-    }
+
+	public int getTenantId() {
+		return this.tenantId;
+	}
+
 }
