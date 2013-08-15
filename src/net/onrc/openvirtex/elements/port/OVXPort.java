@@ -42,7 +42,8 @@ public class OVXPort extends Port<OVXSwitch> {
 	super(port);
 	this.tenantId = tenantId;
 	this.physicalPort = port;
-	this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(port.getParentSwitch(), tenantId);
+	this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(
+	        port.getParentSwitch(), tenantId);
 	this.portNumber = this.parentSwitch.getNextPortNumber();
 	this.hardwareAddress = port.getHardwareAddress();
 	this.isEdge = isEdge;

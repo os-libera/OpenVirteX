@@ -77,21 +77,21 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private HashMap<IPAddress, MACAddress> gwsMap;
     private boolean                        bootState;
     private static AtomicInteger           tenantIdCounter = new AtomicInteger(
-            1);
-    private final AtomicLong		dpidCounter;
+	                                                           1);
+    private final AtomicLong               dpidCounter;
     private final AtomicInteger            linkCounter;
     // TODO: implement vlink flow pusher
     // public VLinkManager vLinkMgmt;
 
-    Logger                                 log = LogManager
-	                                               .getLogger(OVXNetwork.class
-	                                                       .getName());
+    Logger                                 log             = LogManager
+	                                                           .getLogger(OVXNetwork.class
+	                                                                   .getName());
 
-    public OVXNetwork(final String protocol,
-	    final String controllerHost, final Integer controllerPort,
-	    final IPAddress network, final short mask) {
+    public OVXNetwork(final String protocol, final String controllerHost,
+	    final Integer controllerPort, final IPAddress network,
+	    final short mask) {
 	super();
-	this.tenantId = tenantIdCounter.getAndIncrement();
+	this.tenantId = OVXNetwork.tenantIdCounter.getAndIncrement();
 	this.protocol = protocol;
 	this.controllerHost = controllerHost;
 	this.controllerPort = controllerPort;
@@ -136,14 +136,14 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     // API-facing methods
-    
+
     public OVXSwitch createSwitch(final List<Long> dpids) {
 	OVXSwitch virtualSwitch;
 	// TODO: generate ON.Lab dpid's
 	final long switchId = this.dpidCounter.getAndIncrement();
-	List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
+	final List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
 	// TODO: check if dpids are present in physical network
-	for (long dpid: dpids) {
+	for (final long dpid : dpids) {
 	    switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
 	}
 	if (dpids.size() == 1) {
@@ -151,7 +151,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	} else {
 	    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId);
 	}
-	// Add switch to topology and register it in the map 
+	// Add switch to topology and register it in the map
 	this.addSwitch(virtualSwitch);
 	virtualSwitch.register(switches);
 	return virtualSwitch;
@@ -165,35 +165,40 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
      * @param dstPort
      * @return
      */
-    public synchronized OVXLink createLink(List<PhysicalLink> physicalLinks) {
+    public synchronized OVXLink createLink(
+	    final List<PhysicalLink> physicalLinks) {
 	// Create and register virtual source and destination ports
-	PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
-	OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
+	final PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
+	final OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
 	srcPort.register();
-	PhysicalPort phyDstPort = physicalLinks.get(physicalLinks.size() - 1).getDstPort();
-	OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
+	final PhysicalPort phyDstPort = physicalLinks.get(
+	        physicalLinks.size() - 1).getDstPort();
+	final OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
 	dstPort.register();
 	// Create link, add it to the topology, register it in the map
-	int linkId = this.linkCounter.getAndIncrement();
-	OVXLink link = new OVXLink(linkId, this.tenantId, srcPort, dstPort);
-	OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort, srcPort);
+	final int linkId = this.linkCounter.getAndIncrement();
+	final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
+	        dstPort);
+	final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
+	        srcPort);
 	super.addLink(link);
 	super.addLink(reverseLink);
 	link.register(physicalLinks);
 	reverseLink.register(physicalLinks);
-	
+
 	return link;
     }
 
-    public OVXPort createHost(final long physicalDpid, final short portNumber, final MACAddress mac) {
+    public OVXPort createHost(final long physicalDpid, final short portNumber,
+	    final MACAddress mac) {
 	// TODO: check if dpid & port exist
-	PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance().getSwitch(physicalDpid);
-	OVXSwitch virtualSwitch = OVXMap.getInstance().getVirtualSwitch(physicalSwitch, this.tenantId);
-	PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
-	
-	OVXPort edgePort = new OVXPort(this.tenantId, physicalPort, true);
+	final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance()
+	        .getSwitch(physicalDpid);
+	final PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
+
+	final OVXPort edgePort = new OVXPort(this.tenantId, physicalPort, true);
 	edgePort.register();
-	OVXMap.getInstance().addMAC(mac,  this.tenantId);
+	OVXMap.getInstance().addMAC(mac, this.tenantId);
 
 	return edgePort;
     }
@@ -208,12 +213,12 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
      * TODO: we should roll-back if any switch fails to boot
      * 
      * @return
-     * 		True if successful, false otherwise
+     *         True if successful, false otherwise
      */
     @Override
     public boolean boot() {
 	boolean result = true;
-	for (OVXSwitch sw: this.getSwitches()) {
+	for (final OVXSwitch sw : this.getSwitches()) {
 	    result &= sw.boot();
 	}
 	this.bootState = result;
