@@ -27,6 +27,8 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
+import argparse
+
 try:
 
   # Make socket
@@ -85,7 +87,34 @@ try:
   print 'Check log: %s' % (log.value)
   '''
   # Close!
-  transport.close()
+o  transport.close()
 
 except Thrift.TException, tx:
   print '%s' % (tx.message)
+
+
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("command", help="Specify the command that we want to run. Options are: createNetwork, createVirtualSwitch, createHost, createVirtualLink, startNetwork")
+
+
+def do_createVirtualNetwork(args):
+  pass
+
+def do_createVirtualSwitch(args):
+  pass
+
+def do_createVirtualLink(args):
+  pass
+
+def do_startNetwork(args):
+  pass
+
+CMDS = {
+  'createVirtualNetwork' : ('do_createVirtualNetwork'),
+  'createVirtualSwitch' : ('do_createVirtualNetwork'),
+  'createVirtualLink' : ('do_createVirtualNetwork'),
+  'startNetwork' : ('do_createVirtualNetwork'),
+}
