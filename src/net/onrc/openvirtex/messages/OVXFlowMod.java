@@ -78,9 +78,11 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	}
 
 	final OVXPort ovxInPort = sw.getPort(inport);
-	// TODO: Ali should check this
+	
 	if (ovxInPort == null) {
-	    this.getMatch().setInputPort(inport);
+	   //TODO: Send an error to the controller
+	    log.error("Unknown virtual port id {}; dropping flowmod {}", inport, this);
+	    return;
 	} else {
 	    this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
 	    if (ovxInPort.isEdge()) {
