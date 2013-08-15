@@ -30,6 +30,7 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import java.util.List;
@@ -325,7 +326,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	    }
 
 	    private LinkedList<String> getDpids() {
-		ArrayList<OVXSwitch> switches = (ArrayList<OVXSwitch>) getSwitches();
+		Collection<OVXSwitch> switches = getSwitches();
 		LinkedList<String> dpids = new LinkedList<String>();
 		for(OVXSwitch sw: switches){
 		    dpids.add(String.valueOf(sw.getSwitchId()));

@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -51,7 +52,7 @@ import net.onrc.openvirtex.api.APITenantManager;
 	     * @return A serialized structure to the new json file
 	     * 
 	     */
-	    public static synchronized String saveConfig(String fileName){
+	    public static synchronized String saveConfig(){
 	    		//throws FileNotFoundException{
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		HashMap<String,Object> output = new HashMap<String,Object>();
@@ -72,21 +73,23 @@ import net.onrc.openvirtex.api.APITenantManager;
 		output.putAll(ovx.toJson());
 		
 		OVXMap map = OVXMap.getInstance();
-		ArrayList<OVXNetwork> networks = (ArrayList<OVXNetwork>) map.getVirtualNetworks();
+		Collection<OVXNetwork> networks = map.getVirtualNetworks();
+		//ArrayList<OVXNetwork> networks = (ArrayList<OVXNetwork>) map.getVirtualNetworks();
 		LinkedList<HashMap<String,Object>> netList = new LinkedList<HashMap<String,Object>>();
 		for(OVXNetwork network:networks){
 		    netList.add(network.toJson());
 		}
 		output.put("virtualnetwork", netList);
 		
-		ArrayList<OVXSwitch> nodes = (ArrayList<OVXSwitch>) map.getVirtualSwitches();
+		Collection<OVXSwitch> nodes = map.getVirtualSwitches();
 		LinkedList<HashMap<String,Object>> nodeList = new LinkedList<HashMap<String,Object>>();
 		for(OVXSwitch node:nodes){
 		    nodeList.add(node.toJson());
 		}
 		output.put("node", nodeList);
 		
-		ArrayList<OVXLink> links = (ArrayList<OVXLink>) map.getVirtualLinks();
+		Collection<OVXLink> links = map.getVirtualLinks();
+		//ArrayList<OVXLink> links = (ArrayList<OVXLink>) map.getVirtualLinks();
 		LinkedList<HashMap<String,Object>> linkList = new LinkedList<HashMap<String,Object>>();
 		for(OVXLink link:links){
 		    linkList.add(link.toJson());

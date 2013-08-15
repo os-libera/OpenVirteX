@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.onrc.openvirtex.config.OVXConfig;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
@@ -177,6 +178,7 @@ public class APITenantManager {
 
     public String saveConfig() {
 	// TODO Auto-generated method stub
-	return null;
+	String file = OVXConfig.saveConfig();
+	return file;
     }
 }

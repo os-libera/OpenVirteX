@@ -46,6 +46,7 @@ public class APIServiceImpl implements TenantServer.Iface {
 
     @Override
     public String saveConfig() throws TException {
+	System.out.println(this.tenantManager.saveConfig());
 	return this.tenantManager.saveConfig();
     }
 

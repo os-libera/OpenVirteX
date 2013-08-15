@@ -436,7 +436,7 @@ public class OVXMap implements Mappable {
 	HashMap<String,Object> output = new HashMap<String,Object>();
 	LinkedList<Object> list = new LinkedList<Object>();
 	
-	ArrayList<Integer> tenants = getTenantIds();
+	Collection<Integer> tenants = getTenantIds();
 	for(Integer tenant: tenants){
 	    HashMap<String,Object> ovxMap = new HashMap<String,Object>();
 	    ArrayList<HashMap<String,Object>> switchList = new ArrayList<HashMap<String,Object>>();
@@ -457,8 +457,7 @@ public class OVXMap implements Mappable {
 		}
 		switchMap.put("pswitch-id",phySwitchIds);
 		
-		ArrayList<OVXPort> virPorts = new ArrayList<OVXPort>();
-		virPorts = (ArrayList<OVXPort>)vSwitch.getPorts();
+		Collection<OVXPort> virPorts = vSwitch.getPorts();
 		ArrayList<HashMap<String,Object>> portList = new ArrayList<HashMap<String,Object>>();
 		for(OVXPort vPort:virPorts){
 		    //HashMap<String,Object> switchMapCopy = new HashMap<String,Object>();
@@ -536,8 +535,8 @@ public class OVXMap implements Mappable {
 	return vSwitches;
     }
 
-    private ArrayList<Integer> getTenantIds() {
-	ArrayList<Integer> tenants = (ArrayList<Integer>) this.networkMap.keySet();
+    private Collection<Integer> getTenantIds() {
+	Collection<Integer> tenants = this.networkMap.keySet();
 	return tenants;
     }
     

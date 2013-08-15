@@ -106,7 +106,16 @@ def do_bootNetwork(client, gopts, opts, args):
 
     if result:
         print "Network has been booted"
-        
+
+def pa_saveConfig(args, cmd):
+    usage = "%s <cmd>" % USAGE.format(cmd)
+    parser = OptionParser(usage=usage)
+    return parser.parse_args(args)
+
+def do_saveConfig(client, gopts, opts, args):
+    file = client.saveConfig()
+    print file
+
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
     parser = OptionParser(usage=usage)
@@ -146,6 +155,7 @@ CMDS = {
     'createVLink': (pa_vlink, do_createVLink),
     'connectHost': (pa_connectHost, do_connectHost),
     'bootNetwork': (pa_bootNetwork, do_bootNetwork),
+    'saveConfig': (pa_saveConfig, do_saveConfig),
     'help' : (pa_help, do_help)
 }
 
@@ -195,7 +205,7 @@ def parse_global_args (arglist):
 if __name__ == '__main__':
   try:
     #Make socket
-    transport = TSocket.TSocket('localhost', 8080)
+    transport = TSocket.TSocket('192.168.56.1', 8080)
 
     # Buffering is critical. Raw sockets are very slow
     transport = TTransport.TFramedTransport(transport)

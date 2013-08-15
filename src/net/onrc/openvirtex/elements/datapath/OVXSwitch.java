@@ -34,6 +34,7 @@ import java.util.ArrayList;
 
 import java.util.HashMap;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -341,7 +342,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		ovxMap.put("tenant-id",this.tenantId);
 		
 		ovxMap.put("dpid",String.valueOf(this.getSwitchId()));
-		ArrayList<Short> ports = (ArrayList<Short>)getPortNumbers();
+		Collection<Short> ports = getPortNumbers();
 		ovxMap.put("port",ports);
 		
 		//list.add(ovxMap);
