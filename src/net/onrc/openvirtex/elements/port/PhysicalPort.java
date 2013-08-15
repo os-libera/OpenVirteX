@@ -40,24 +40,20 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
 
     private final Map<Integer, OVXPort> ovxPortMap;
 
-    public PhysicalPort(PhysicalSwitch sw) {
-	super();
-	this.parentSwitch = sw;
-	this.isEdge = false;
+    private PhysicalPort(OFPhysicalPort port) {
+	super(port);
 	this.ovxPortMap = new HashMap<Integer, OVXPort>();
     }
     
+    /**
+     * Instantiate PhysicalPort based on an OpenFlow physical port
+     * @param port
+     * @param sw
+     */
     public PhysicalPort(OFPhysicalPort port, PhysicalSwitch sw) {
-	this(sw);
-	this.portNumber = port.getPortNumber();
-	this.hardwareAddress = port.getHardwareAddress();
-	this.name = port.getName();
-	this.config = port.getConfig();
-	this.state = port.getState();
-	this.currentFeatures = port.getCurrentFeatures();
-	this.advertisedFeatures = port.getAdvertisedFeatures();
-	this.supportedFeatures = port.getSupportedFeatures();
-	this.peerFeatures = port.getPeerFeatures();
+	this(port);
+	this.parentSwitch = sw;
+	this.isEdge = false;
     }
     
     public OVXPort getOVXPort(final Integer tenantId) {

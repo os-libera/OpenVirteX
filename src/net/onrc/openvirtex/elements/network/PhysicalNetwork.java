@@ -88,10 +88,6 @@ public class PhysicalNetwork extends
 	return PhysicalNetwork.instance;
     }
     
-    public void start() {
-	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
-    }
-
     public static HashedWheelTimer getTimer() {
 	return PhysicalNetwork.timer;
     }
@@ -132,7 +128,7 @@ public class PhysicalNetwork extends
      */
     public synchronized void createLink(final PhysicalPort srcPort,
 	    final PhysicalPort dstPort) {
-	final PhysicalPort neighbourPort = this.neighbourPortMap.get(srcPort);
+	final PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
 	if (neighbourPort == null || !neighbourPort.equals(dstPort)) {
 	    final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 	    super.addLink(link);
@@ -179,6 +175,12 @@ public class PhysicalNetwork extends
 //	// Schedule next event
 //	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
 //	
+    }
+
+    @Override
+    public boolean boot() {
+	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
+	return true;
     }
 
 }

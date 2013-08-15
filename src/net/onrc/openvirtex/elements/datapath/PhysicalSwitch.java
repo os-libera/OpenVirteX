@@ -82,11 +82,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      * .OFMessage)
      */
     @Override
-    public void handleIO(final OFMessage msgs) {
+    public void handleIO(final OFMessage msg) {
 	try {
-	    ((Virtualizable) msgs).virtualize(this);
+	    ((Virtualizable) msg).virtualize(this);
 	} catch (final ClassCastException e) {
-	    this.log.error("Received illegal message : " + msgs);
+	    this.log.error("Received illegal message : " + msg);
 	}
     }
 
@@ -128,24 +128,19 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      * @see net.onrc.openvirtex.elements.datapath.Switch#init()
      */
     @Override
-    public void init() {
+    public boolean boot() {
 	PhysicalNetwork.getInstance().addSwitch(this);
 	this.log.info("Switch connected {} : {}",
 	        this.featuresReply.getDatapathId(),
 	        this.desc.getHardwareDescription());
 	this.fillPortMap();
+	return true;
     }
 
-    /*
-     * Temporary implementation(non-Javadoc)
-     * 
-     * @see
-     * net.onrc.openvirtex.core.io.OVXSendMsg#sendMsg(org.openflow.protocol.
-     * OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
-     */
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	if (this.isConnected && this.channel != null) {
+	// TODO: if (this.isConnected && this.channel != null) ??
+	if (this.isConnected) {
 	    this.channel.write(Collections.singletonList(msg));
 	}
     }
