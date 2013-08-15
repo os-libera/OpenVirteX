@@ -28,9 +28,9 @@ public class APIServiceImpl implements TenantServer.Iface {
 
     @Override
     public int createHost(final int tenantId, final String dpid,
-	    final short portNumber) throws TException {
-	final String mac = "";
-	return this.tenantManager.createEdgePort(tenantId, Long.valueOf(dpid), portNumber, mac);
+	    final short portNumber, final String mac) throws TException {
+	return this.tenantManager.createEdgePort(tenantId, Long.valueOf(dpid),
+	        portNumber, mac);
     }
 
     @Override

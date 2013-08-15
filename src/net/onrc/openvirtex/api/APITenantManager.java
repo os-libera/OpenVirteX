@@ -6,8 +6,6 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
-import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
-import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
@@ -20,7 +18,7 @@ import net.onrc.openvirtex.util.MACAddress;
 public class APITenantManager {
 
     /**
-     * Creates a new OVXNetwork object that is registered in the OVXMap. 
+     * Creates a new OVXNetwork object that is registered in the OVXMap.
      * 
      * @param protocol
      * @param controllerAddress
@@ -38,9 +36,9 @@ public class APITenantManager {
     public Integer createOVXNetwork(final String protocol,
 	    final String controllerAddress, final int controllerPort,
 	    final String networkAddress, final short mask) {
-	final IPAddress addr = new IPAddress(networkAddress); 
-	final OVXNetwork virtualNetwork = new OVXNetwork(protocol, controllerAddress,
-	        controllerPort, addr, mask);
+	final IPAddress addr = new IPAddress(networkAddress);
+	final OVXNetwork virtualNetwork = new OVXNetwork(protocol,
+	        controllerAddress, controllerPort, addr, mask);
 	virtualNetwork.register();
 	return virtualNetwork.getTenantId();
     }
@@ -68,7 +66,8 @@ public class APITenantManager {
 	    final long longDpid = Long.parseLong(dpid);
 	    longDpids.add(longDpid);
 	}
-	OVXSwitch ovxSwitch = virtualNetwork.createSwitch(tenantId, longDpids);
+	final OVXSwitch ovxSwitch = virtualNetwork.createSwitch(tenantId,
+	        longDpids);
 	if (ovxSwitch == null) {
 	    return -1;
 	} else {
@@ -93,14 +92,15 @@ public class APITenantManager {
      * @return portNumber The portNumber is a short that represents the port of
      *         the edge switch which this edgePort is using
      */
-    public short createEdgePort(final int tenantId, final long dpid, final short port, final String mac) {
+    public short createEdgePort(final int tenantId, final long dpid,
+	    final short port, final String mac) {
 	final OVXMap map = OVXMap.getInstance();
 	// TODO: check if tenantId exists
 	final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
 	final MACAddress macAddr = MACAddress.valueOf(mac);
 	final OVXPort edgePort = virtualNetwork.createHost(dpid, port, macAddr);
 	if (edgePort == null) {
-	    return -1; 
+	    return -1;
 	} else {
 	    return edgePort.getPortNumber();
 	}
@@ -119,15 +119,20 @@ public class APITenantManager {
      *         PhysicalLinks
      */
     public Integer createOVXLink(final int tenantId, final String pathString) {
-	List<PhysicalLink> physicalLinks = new LinkedList<PhysicalLink>();
-	for (String hop:pathString.split(",")) {
-	    String srcString = hop.split("-")[0];
-	    String dstString = hop.split("-")[1];
-	    String[] srcDpidPort = srcString.split("/");
-	    String[] dstDpidPort = dstString.split("/");
-	    PhysicalPort srcPort = PhysicalNetwork.getInstance().getSwitch(Long.valueOf(srcDpidPort[0])).getPort(Short.valueOf(srcDpidPort[1]));
-	    PhysicalPort dstPort = PhysicalNetwork.getInstance().getSwitch(Long.valueOf(dstDpidPort[0])).getPort(Short.valueOf(dstDpidPort[1]));
-	    PhysicalLink link = PhysicalNetwork.getInstance().getLink(srcPort, dstPort);
+	final List<PhysicalLink> physicalLinks = new LinkedList<PhysicalLink>();
+	for (final String hop : pathString.split(",")) {
+	    final String srcString = hop.split("-")[0];
+	    final String dstString = hop.split("-")[1];
+	    final String[] srcDpidPort = srcString.split("/");
+	    final String[] dstDpidPort = dstString.split("/");
+	    final PhysicalPort srcPort = PhysicalNetwork.getInstance()
+		    .getSwitch(Long.valueOf(srcDpidPort[0]))
+		    .getPort(Short.valueOf(srcDpidPort[1]));
+	    final PhysicalPort dstPort = PhysicalNetwork.getInstance()
+		    .getSwitch(Long.valueOf(dstDpidPort[0]))
+		    .getPort(Short.valueOf(dstDpidPort[1]));
+	    final PhysicalLink link = PhysicalNetwork.getInstance().getLink(
+		    srcPort, dstPort);
 	    physicalLinks.add(link);
 	}
 	final OVXMap map = OVXMap.getInstance();

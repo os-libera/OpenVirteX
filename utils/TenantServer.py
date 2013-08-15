@@ -37,12 +37,13 @@ class Iface:
     """
     pass
 
-  def createHost(self, tenantId, dpid, portNumber):
+  def createHost(self, tenantId, dpid, portNumber, mac):
     """
     Parameters:
      - tenantId
      - dpid
      - portNumber
+     - mac
     """
     pass
 
@@ -139,22 +140,24 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "createVirtualSwitch failed: unknown result");
 
-  def createHost(self, tenantId, dpid, portNumber):
+  def createHost(self, tenantId, dpid, portNumber, mac):
     """
     Parameters:
      - tenantId
      - dpid
      - portNumber
+     - mac
     """
-    self.send_createHost(tenantId, dpid, portNumber)
+    self.send_createHost(tenantId, dpid, portNumber, mac)
     return self.recv_createHost()
 
-  def send_createHost(self, tenantId, dpid, portNumber):
+  def send_createHost(self, tenantId, dpid, portNumber, mac):
     self._oprot.writeMessageBegin('createHost', TMessageType.CALL, self._seqid)
     args = createHost_args()
     args.tenantId = tenantId
     args.dpid = dpid
     args.portNumber = portNumber
+    args.mac = mac
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -288,7 +291,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createHost_result()
-    result.success = self._handler.createHost(args.tenantId, args.dpid, args.portNumber)
+    result.success = self._handler.createHost(args.tenantId, args.dpid, args.portNumber, args.mac)
     oprot.writeMessageBegin("createHost", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -631,6 +634,7 @@ class createHost_args:
    - tenantId
    - dpid
    - portNumber
+   - mac
   """
 
   thrift_spec = (
@@ -638,12 +642,14 @@ class createHost_args:
     (1, TType.I32, 'tenantId', None, None, ), # 1
     (2, TType.STRING, 'dpid', None, None, ), # 2
     (3, TType.I16, 'portNumber', None, None, ), # 3
+    (4, TType.STRING, 'mac', None, None, ), # 4
   )
 
-  def __init__(self, tenantId=None, dpid=None, portNumber=None,):
+  def __init__(self, tenantId=None, dpid=None, portNumber=None, mac=None,):
     self.tenantId = tenantId
     self.dpid = dpid
     self.portNumber = portNumber
+    self.mac = mac
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -669,6 +675,11 @@ class createHost_args:
           self.portNumber = iprot.readI16();
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.mac = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -690,6 +701,10 @@ class createHost_args:
     if self.portNumber is not None:
       oprot.writeFieldBegin('portNumber', TType.I16, 3)
       oprot.writeI16(self.portNumber)
+      oprot.writeFieldEnd()
+    if self.mac is not None:
+      oprot.writeFieldBegin('mac', TType.STRING, 4)
+      oprot.writeString(self.mac)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
