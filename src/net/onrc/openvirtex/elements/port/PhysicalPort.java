@@ -50,10 +50,10 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
      * @param port
      * @param sw
      */
-    public PhysicalPort(OFPhysicalPort port, PhysicalSwitch sw) {
+    public PhysicalPort(OFPhysicalPort port, PhysicalSwitch sw, boolean isEdge) {
 	this(port);
 	this.parentSwitch = sw;
-	this.isEdge = false;
+	this.isEdge = isEdge;
     }
     
     public OVXPort getOVXPort(final Integer tenantId) {

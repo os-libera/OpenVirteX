@@ -65,6 +65,7 @@ public class OVXMap implements Mappable {
 	        new DefaultCharArrayNodeFactory());
 	this.virtualIPMap = new ConcurrentRadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>(
 	        new DefaultCharArrayNodeFactory());
+	this.macMap = new ConcurrentRadixTree<Integer>(new DefaultCharArrayNodeFactory());
     }
 
     /**
@@ -311,7 +312,11 @@ public class OVXMap implements Mappable {
     // Access objects from dictionary given the key
 
     public PhysicalIPAddress getPhysicalIP(OVXIPAddress ip, Integer tenantId) {
-	return this.virtualIPMap.getValueForExactKey(ip.toString()).get(tenantId);
+	ConcurrentHashMap<Integer, PhysicalIPAddress> ips = 
+		this.virtualIPMap.getValueForExactKey(ip.toString());
+	if (ips == null)
+	    return null;
+	return ips.get(tenantId);
     }
     
     public OVXIPAddress getVirtualIP(PhysicalIPAddress ip) {
