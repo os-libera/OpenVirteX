@@ -6,10 +6,7 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
-<<<<<<< HEAD
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
-=======
->>>>>>> upstream/master
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
