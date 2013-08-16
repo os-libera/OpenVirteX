@@ -254,8 +254,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 			// Get input port from pkt_out
 			pi.setInPort(dstPort.getPortNumber());
 			pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
-			pi.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + pkt.length));
 			pi.setPacketData(pkt);
+			pi.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + pkt.length));
 			dstPort.getParentSwitch().sendMsg(pi, this);
 		    }
 		} catch (final ClassCastException c) {
