@@ -35,12 +35,13 @@ def pa_createNetwork(args, cmd):
 
     return parser.parse_args(args)
 
-def do_createNetwork(client, gopts, opts, args):
+def do_createNetwork(gopts, opts, args):
+    client = create_client(gopts.host, int(gopts.port))
     if len(args) != 5:
         print "createNetwork : Must specify protocol, controllerIP, controllerPort, networkIP, mask"
         sys.exit()
     network_id = client.createVirtualNetwork(args[0], args[1], int(args[2]), args[3], int(args[4]))
-
+    client._iprot.trans.close()
     if network_id:
         print "Network has been created (network_id %s)." % str(network_id)
 
@@ -51,11 +52,13 @@ def pa_vlink(args, cmd):
 
     return parser.parse_args(args)
 
-def do_createVLink(client, gopts, opts, args):
+def do_createVLink(gopts, opts, args):
     if len(args) != 2:
         print "createVLink : Must specify a (network_id, and a path string of all the physicalLinks that create a virtualLink)"
         sys.exit()
+    client = create_client(gopts.host, int(gopts.port))
     linkId = client.createVirtualLink(int(args[0]), args[1])
+    client._iprot.trans.close()
     if linkId:
         print "Virtual link has been created"
 
@@ -65,13 +68,14 @@ def pa_vswitch(args, cmd):
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)
 
-def do_createVSwitch(client, gopts, opts, args):
+def do_createVSwitch(gopts, opts, args):
     if len(args) != 2:
-        print "createVSwitch : Must specify (network_id and list of physical dpids which are associated with this dpid)"
+        print "createVSwitch : Must specify (network_id and [dpid, dpid, ...] - list of physical dpids which are associated with this dpid)"
         sys.exit()
+    client = create_client(gopts.host, int(gopts.port))
     dpids = [str(dpid) for dpid in ast.literal_eval(args[1])]
-    print dpids
     dpid = client.createVirtualSwitch(int(args[0]), dpids)
+    client._iprot.trans.close()
     if dpid:
         print "Virtual switch has been created (dpid %s)" % dpid
 
@@ -81,13 +85,14 @@ def pa_connectHost( args, cmd):
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)
 
-def do_connectHost(client, gopts, opts, args):
+def do_connectHost(gopts, opts, args):
     if len(args) != 4:
         print "connectHost : Must specify a tenantId, dpid, port and MAC address"
         sys.exit()
-
+    client = create_client(gopts.host, int(gopts.port))
     # takes the tenantid, dpid, port, host mac address
     port = client.createHost(int(args[0]), args[1], int(args[2]), args[3])
+    client._iprot.trans.close()
     if port:
         print "Host has been connected to edge"
 
@@ -97,13 +102,13 @@ def pa_bootNetwork(args, cmd):
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)    
 
-def do_bootNetwork(client, gopts, opts, args):
+def do_bootNetwork(gopts, opts, args):
     if len(args) != 1:
         print "bootNetwork : Must specify a network/tenant ID"
         sys.exit()
-
+    client = create_client(gopts.host, int(gopts.port))
     result = client.startNetwork(int(args[0]))
-
+    client._iprot.trans.close()
     if result:
         print "Network has been booted"
         
@@ -151,14 +156,11 @@ CMDS = {
 
 DESCS = {
     'createNetwork' : ("Creates a virtual network",
-                       ("Creates a virtual network. MAC addresses are given in a comma-separated list, "
-                        "each MAC specified as 6 pairs of hexadecimal digits delimited by colons (e.g., 00:0A:E4:25:6B:B0). "
-                        "The controller url is of the form tcp:hostname:port, "
-                       "so for example tcp:example.com:12345 is a valid controller url. IP Range is given in <net/mask> format (e.g. 172.16.0.0/24)")),
+                       ("Creates a virtual network. Input: protocol, controllerIP, controller port, ip address, mask ")),
     'createVLink' : ("Create virtual link",
-                  ("Create virtual link. Must specify a network_id and virtual link, which is specified as a list of (dpid, inport, outport) tuples.")),
+                  ("Create virtual link. Must specify a network_id and hops in the physical plane. srcDPID/port-dstDPID/port,srcDPID/port-dstDPID/port")),
     'createVSwitch' : ("Create virtual switch",
-                     ("Create a virtual switch. Must specify a network_id, returns the dpid of the newly created switch.")),
+                     ("Create a virtual switch. Must specify a network_id, and a list of the physicalDPIDs that this contains")),
     'connectHost' : ("Connect host to edge switch",
                      ("Connect host to edge switch. Must specify a network_id, mac, dpid and port.")),
     'bootNetwork' : ("Boot virtual network",
@@ -172,12 +174,8 @@ URL = "http://%s:%s"
 def addCommonOpts (parser):
     parser.add_option("-h", "--hostname", dest="host", default="localhost",
                     help="Specify the NetVisor host; default='localhost'")
-    parser.add_option("-p", "--port", dest="port", default="8000",
-                    help="Specify the NetVisor web port; default=8000")
-    # parser.add_option("-u", "--user", dest="fv_user", default="fvadmin",
-    #                 help="FlowVisor admin user; default='fvadmin'")
-    # parser.add_option("-f", "--passwd-file", dest="fv_passwdfile", default=None,
-    #                 help="Password file; default=none")
+    parser.add_option("-p", "--port", dest="port", default="8080",
+                    help="Specify the NetVisor web port; default=8080")
     parser.add_option("-v", "--version", action="callback", callback=printVersion)
     parser.add_option("--help", action="callback", callback=printHelp)
 
@@ -192,10 +190,10 @@ def parse_global_args (arglist):
     (opts, pargs) = parser.parse_args(args)
     return (opts, arglist, parser)
 
-if __name__ == '__main__':
-  try:
+
+def create_client(host, port):
     #Make socket
-    transport = TSocket.TSocket('localhost', 8080)
+    transport = TSocket.TSocket(host, port)
 
     # Buffering is critical. Raw sockets are very slow
     transport = TTransport.TFramedTransport(transport)
@@ -207,14 +205,17 @@ if __name__ == '__main__':
     # Connect!
     transport.open()
 
+    return client
+
+if __name__ == '__main__':
+  try:
     (gopts, rargs, parser) = parse_global_args(sys.argv[1:])
 
     if len(rargs) < 1:
         raise IndexError
     (parse_args, do_func) = CMDS[rargs[0]]
     (opts, args) = parse_args(rargs[1:], rargs[0])
-    do_func(client, gopts, opts, args)
-    transport.close()
+    do_func(gopts, opts, args)
   except IndexError, e:
     print "%s is an unknown command" % sys.argv[-1]
     printHelp(None, None, None, parser)
