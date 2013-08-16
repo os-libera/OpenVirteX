@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# NetVisor control script
+# OpenVirteX control script
 # Heavily based on FlowVisor's fvctl
 
 #import local thrift files
@@ -18,8 +18,6 @@ import sys
 from optparse import OptionParser
 import urllib2
 
-import ast
-
 VERSION = '0.1'
 
 def pa_none(args, cmd):
@@ -36,10 +34,10 @@ def pa_createNetwork(args, cmd):
     return parser.parse_args(args)
 
 def do_createNetwork(gopts, opts, args):
-    client = create_client(gopts.host, int(gopts.port))
     if len(args) != 5:
         print "createNetwork : Must specify protocol, controllerIP, controllerPort, networkIP, mask"
         sys.exit()
+    client = create_client(gopts.host, int(gopts.port))
     network_id = client.createVirtualNetwork(args[0], args[1], int(args[2]), args[3], int(args[4]))
     client._iprot.trans.close()
     if network_id:
@@ -70,16 +68,16 @@ def pa_vswitch(args, cmd):
 
 def do_createVSwitch(gopts, opts, args):
     if len(args) != 2:
-        print "createVSwitch : Must specify (network_id and [dpid, dpid, ...] - list of physical dpids which are associated with this dpid)"
+        print "createVSwitch : Must specify (network_id and dpid, dpid, ... - list of physical dpids which are associated with this dpid)"
         sys.exit()
     client = create_client(gopts.host, int(gopts.port))
-    dpids = [str(dpid) for dpid in ast.literal_eval(args[1])]
+    dpids = [str(dpid) for dpid in args[1].split(',')]
     dpid = client.createVirtualSwitch(int(args[0]), dpids)
     client._iprot.trans.close()
     if dpid:
         print "Virtual switch has been created (dpid %s)" % dpid
 
-def pa_connectHost( args, cmd):
+def pa_connectHost(args, cmd):
     usage = "%s <mac> <dpid> <port>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
@@ -173,9 +171,9 @@ URL = "http://%s:%s"
 
 def addCommonOpts (parser):
     parser.add_option("-h", "--hostname", dest="host", default="localhost",
-                    help="Specify the NetVisor host; default='localhost'")
+                    help="Specify the OpenVirteX host; default='localhost'")
     parser.add_option("-p", "--port", dest="port", default="8080",
-                    help="Specify the NetVisor web port; default=8080")
+                    help="Specify the OpenVirteX web port; default=8080")
     parser.add_option("-v", "--version", action="callback", callback=printVersion)
     parser.add_option("--help", action="callback", callback=printHelp)
 
