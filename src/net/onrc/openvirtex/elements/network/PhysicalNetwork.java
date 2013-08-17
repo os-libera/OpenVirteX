@@ -31,9 +31,7 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -45,8 +43,6 @@ import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.util.HashedWheelTimer;
-import org.jboss.netty.util.Timeout;
-import org.jboss.netty.util.TimerTask;
 import org.openflow.protocol.OFMessage;
 
 /**
@@ -55,30 +51,28 @@ import org.openflow.protocol.OFMessage;
  * each switch in the physical network. Listens for LLDP packets and passes them
  * on to the appropriate SwitchDiscoveryManager. Creates and maintains links
  * after discovery, and switch ports are made discoverable here.
+ * 
  * TODO: should probably subscribe to PORT UP/DOWN events here
  * 
  */
 public class PhysicalNetwork extends
-        Network<PhysicalSwitch, PhysicalPort, PhysicalLink> implements
-        TimerTask {
+        Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 
-    private static PhysicalNetwork                      instance;
-    private ArrayList<Uplink>                           uplinkList;
-//    Map<LinkAdvertisement, Long>			latestProbes;
-    private final HashMap<Long, SwitchDiscoveryManager> discoveryManager;
-    private static HashedWheelTimer                     timer;
-    private final long 					updatePeriod = 5000; 	// milliseconds
-    private final long					timeoutPeriod = 10000;	// milliseconds
-    Logger                                              log = LogManager
-	                                                            .getLogger(PhysicalNetwork.class
-	                                                                    .getName());
+    private static PhysicalNetwork                  instance;
+    private ArrayList<Uplink>                       uplinkList;
+    // Map<LinkAdvertisement, Long> latestProbes;
+    private final Map<Long, SwitchDiscoveryManager> discoveryManager;
+    private static HashedWheelTimer                 timer;
+    Logger                                          log           = LogManager
+	                                                                  .getLogger(PhysicalNetwork.class
+	                                                                          .getName());
 
     private PhysicalNetwork() {
 	this.log.info("Starting network discovery...");
 	PhysicalNetwork.timer = new HashedWheelTimer();
 	this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
-//	this.latestProbes = new HashMap<LinkAdvertisement, Long>();
-	
+	// this.latestProbes = new HashMap<LinkAdvertisement, Long>();
+
     }
 
     public static PhysicalNetwork getInstance() {
@@ -87,7 +81,7 @@ public class PhysicalNetwork extends
 	}
 	return PhysicalNetwork.instance;
     }
-    
+
     public static HashedWheelTimer getTimer() {
 	return PhysicalNetwork.timer;
     }
@@ -132,6 +126,38 @@ public class PhysicalNetwork extends
 	if (neighbourPort == null || !neighbourPort.equals(dstPort)) {
 	    final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 	    super.addLink(link);
+	} else {
+	    this.log.debug("Tried to create invalid link");
+	}
+    }
+
+    /**
+     * Create link and add it to the topology.
+     * 
+     * @param srcPort
+     * @param dstPort
+     */
+    public synchronized void removeLink(final PhysicalPort srcPort,
+	    final PhysicalPort dstPort) {
+	final PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
+	if (neighbourPort.equals(dstPort)) {
+	    final PhysicalLink link = super.getLink(srcPort, dstPort);
+	    super.removeLink(link);
+	} else {
+	    this.log.debug("Tried to remove invalid link");
+	}
+    }
+
+    /**
+     * Acknowledge reception of discovery probe to sender port
+     * 
+     * @param port
+     */
+    public void ackProbe(final PhysicalPort port) {
+	final SwitchDiscoveryManager sdm = this.discoveryManager.get(port
+	        .getParentSwitch().getSwitchId());
+	if (sdm != null) {
+	    sdm.ackProbe(port);
 	}
     }
 
@@ -141,7 +167,7 @@ public class PhysicalNetwork extends
      */
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
-	// Pass on msg to SwitchDiscoveryManager for that switch
+	// Pass msg to appropriate SwitchDiscoveryManager
 	final SwitchDiscoveryManager sdm = this.discoveryManager.get(sw
 	        .getSwitchId());
 	if (sdm != null) {
@@ -160,26 +186,7 @@ public class PhysicalNetwork extends
     }
 
     @Override
-    public void run(Timeout t) throws Exception {
-//	log.debug("processing updates");
-//	for (Iterator<LinkAdvertisement> it = this.latestProbes.keySet()
-//			.iterator(); it.hasNext();) {
-//		LinkAdvertisement linkAdvertisement = it.next();
-//		long now = System.currentTimeMillis();
-//		long thisProbe = this.latestProbes.get(linkAdvertisement).longValue();
-//		if ((thisProbe + this.timeoutPeriod) < now) {
-//			log.debug("timeout: removing timed-out link " + linkAdvertisement);
-//			it.remove();
-//		}
-//	}
-//	// Schedule next event
-//	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
-//	
-    }
-
-    @Override
     public boolean boot() {
-	timer.newTimeout(this, updatePeriod, TimeUnit.MILLISECONDS);
 	return true;
     }
 
