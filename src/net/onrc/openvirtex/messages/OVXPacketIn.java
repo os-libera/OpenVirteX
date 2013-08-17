@@ -91,14 +91,12 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	 * Below handles packets traveling in the core.
 	 */
 
-	System.out.println(match);
 	if (match.getDataLayerType() == Ethernet.TYPE_IPv4 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
 	    PhysicalIPAddress srcIP = new PhysicalIPAddress(match.getNetworkSource());
 	    PhysicalIPAddress dstIP = new PhysicalIPAddress(match.getNetworkDestination());
 
 	    Ethernet eth = new Ethernet();
 	    eth.deserialize(this.getPacketData(), 0, this.getPacketData().length);
-	    System.err.println(eth);
 	    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 		//ARP packet
 		ARP arp = (ARP) eth.getPayload();

@@ -126,28 +126,24 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     }
 
     private void signalSlowPort(final PhysicalPort port) {
-	// Ignore ports that are not on this switch
-	if (port.getParentSwitch().equals(this.sw)) {
 	    final short portNumber = port.getPortNumber();
 
-	    synchronized (this) {
-
-		if (this.fastPorts.contains(portNumber)) {
-		    this.log.debug("Setting fast port to slow: {}:{}", port
-			    .getParentSwitch().getSwitchId(), portNumber);
-		    this.fastPorts.remove(portNumber);
-		    this.slowPorts.add(portNumber);
-		    // surprised that this could be solution?!
-		    this.slowIterator = this.slowPorts.iterator();
-		    this.portProbeCount.remove(portNumber);
-		} else {
-		    if (!this.slowPorts.contains(portNumber)) {
-			this.log.debug(
-			        "Got signalSlowPort for non-existing port: {}",
-			        portNumber);
-		    }
+	    if (this.fastPorts.contains(portNumber)) {
+		this.log.debug("Setting fast port to slow: {}:{}", port
+		        .getParentSwitch().getSwitchId(), portNumber);
+		this.fastPorts.remove(portNumber);
+		this.slowPorts.add(portNumber);
+		// surprised that this could be solution?!
+		this.slowIterator = this.slowPorts.iterator();
+		this.portProbeCount.remove(portNumber);
+	    } else {
+		if (!this.slowPorts.contains(portNumber)) {
+		    this.log.debug(
+			    "Got signalSlowPort for non-existing port: {}",
+			    portNumber);
 		}
-	    }
+	    
+
 	}
     }
 
@@ -250,15 +246,14 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 
     @Override
     public void run(final Timeout t) throws Exception {
-	// log.info("D " + this.sw.getSwitchId());
-	// log.info("F " + this.fastPorts);
-	// log.info("S " + this.slowPorts);
 	this.log.debug("sending probes");
-	// send a probe per fast port
 
 	synchronized (this) {
 
-	    for (final Short portNumber : this.fastPorts) {
+	    // send a probe per fast port
+	    Iterator<Short> fastIterator = this.fastPorts.iterator();
+	    while (fastIterator.hasNext()) {
+		Short portNumber = fastIterator.next();
 		final int probeCount = this.portProbeCount.get(portNumber)
 		        .getAndIncrement();
 		if (probeCount < SwitchDiscoveryManager.MAX_PROBE_COUNT) {
@@ -267,15 +262,20 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 			    .getPort(portNumber));
 		    this.sendMsg(pkt, this);
 		} else {
+		    // Update fast and slow ports
+		    fastIterator.remove();
+		    this.slowPorts.add(portNumber);
+		    this.slowIterator = this.slowPorts.iterator();
+		    this.portProbeCount.remove(portNumber);
+		    
+		    //this.signalSlowPort(srcPort);
 		    final PhysicalPort srcPort = this.sw.getPort(portNumber);
 		    final PhysicalPort dstPort = PhysicalNetwork.getInstance()
 			    .getNeighborPort(srcPort);
-		    this.signalSlowPort(srcPort);
 		    PhysicalNetwork.getInstance().removeLink(srcPort, dstPort);
 		}
 	    }
 
-	    // this.log.info("SP {} {}", this.sw.getSwitchId(), this.slowPorts);
 	    // send a probe for the next slow port
 	    if (this.slowPorts.size() > 0) {
 		if (!this.slowIterator.hasNext()) {
