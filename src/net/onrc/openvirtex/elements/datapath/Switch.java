@@ -237,7 +237,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 		+ this.switchName + "\n- isConnected: " + this.isConnected;
     }
 
-    public Collection<Short> getPortNumbers(){
+    protected Collection<Short> getPortNumbers(){
 	Collection<Short> portNumbers = this.portMap.keySet();
 	return portNumbers;	
     }

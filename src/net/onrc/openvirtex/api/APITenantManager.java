@@ -178,7 +178,7 @@ public class APITenantManager {
 
     public String saveConfig() {
 	// TODO Auto-generated method stub
-	String file = OVXConfig.saveConfig();
-	return file;
+	String config = OVXConfig.saveConfig();
+	return config;
     }
 }

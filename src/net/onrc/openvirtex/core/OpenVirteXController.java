@@ -56,6 +56,10 @@ public class OpenVirteXController implements Runnable {
     private static final int SEND_BUFFER_SIZE = 1024 * 1024;
     private static OpenVirteXController instance = null;
     
+    public static String HOST = "host";
+    public static String OFPORT = "openflow-port";
+    public static String APIPORT = "api-port";
+    public static String OPENVIRTEX = "openvirtex";
     
     private String configFile = null;
     private String ofHost = null;
@@ -228,9 +232,9 @@ public class OpenVirteXController implements Runnable {
 
     public void fromJson(ArrayList<HashMap<String,Object>> list) {
 	for (HashMap<String,Object> row: list){
-	    this.ofHost = (String) row.get("host");
-	    this.ofPort = (Integer) row.get("openflow-port");
-	    this.apiPort  = (Integer) row.get("api-port");
+	    this.ofHost = (String) row.get(HOST);
+	    this.ofPort = (Integer) row.get(OFPORT);
+	    this.apiPort  = (Integer) row.get(APIPORT);
 	}
     }
    
@@ -238,12 +242,12 @@ public class OpenVirteXController implements Runnable {
 	HashMap<String,Object> output = new HashMap<String,Object>();
 	LinkedList<Object> list = new LinkedList<Object>();
 	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-	ovxMap.put("api-port",this.apiPort);
-	ovxMap.put("openflow-port",this.ofPort);
-	ovxMap.put("host",this.ofHost);
+	ovxMap.put(APIPORT,this.apiPort);
+	ovxMap.put(OFPORT,this.ofPort);
+	ovxMap.put(HOST,this.ofHost);
 	
 	list.add(ovxMap);
-	output.put("openvirtex", list);
+	output.put(OPENVIRTEX, list);
 	return output; 
     }
     

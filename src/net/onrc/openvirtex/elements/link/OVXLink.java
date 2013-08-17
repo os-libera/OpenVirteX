@@ -95,10 +95,10 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		//LinkedList<Object> list = new LinkedList<Object>();
 		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
 		
-		ovxMap.put("tenant-id",this.tenantId);
-		ovxMap.put("link-id",this.getLinkId());
-		ovxMap.put("src", this.getSrcPort().toJson());
-		ovxMap.put("dst", this.getDstPort().toJson());
+		ovxMap.put(TID,this.tenantId);
+		ovxMap.put(LINKID,this.getLinkId());
+		ovxMap.put(SRC, this.getSrcPort().toJson());
+		ovxMap.put(DST, this.getDstPort().toJson());
 		
 		//list.add(ovxMap);
 		//output.put("edge", list);

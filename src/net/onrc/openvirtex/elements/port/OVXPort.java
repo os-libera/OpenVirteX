@@ -91,8 +91,8 @@ public class OVXPort extends Port<OVXSwitch> {
 
 	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
 	
-	ovxMap.put("switch-id",String.valueOf(getParentSwitch().getSwitchId()));
-	ovxMap.put("port-number",getPortNumber());
+	ovxMap.put(SWID,String.valueOf(getParentSwitch().getSwitchId()));
+	ovxMap.put(PORTNUM,getPortNumber());
 
 	return ovxMap; 
     }

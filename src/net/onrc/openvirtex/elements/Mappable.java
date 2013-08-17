@@ -22,6 +22,7 @@
 
 package net.onrc.openvirtex.elements;
 
+import java.util.HashMap;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
@@ -35,6 +36,23 @@ import net.onrc.openvirtex.util.MACAddress;
 
 public interface Mappable {
     // ADD objects to dictionary
+    
+    public static String TID = "tenant-id";
+    public static String SWMAP = "switch-map";
+    public static String VSWID = "virtual-switch-id";
+    public static String PSWID = "pswitch-id";
+    public static String PORT = "port";
+    public static String PHYPORT = "phy-port";
+    public static String VPORTNUM = "virtual-port-num";
+    public static String SWID = "switch-id";
+    public static String PORTNUM = "port-number";
+    public static String LINKMAP = "link-map";
+    public static String LINKID = "link-id";
+    public static String SRC = "src";
+    public static String DST = "dst";
+    public static String PHYLINK = "physical-link";
+    public static String MAP = "mapping";
+    
 
     /**
      * This function creates the map between the PhysicalIP and VirtualIP in
@@ -182,4 +200,13 @@ public interface Mappable {
      * 		tenantId associated with MAC address
      */
     public Integer getMAC(MACAddress mac);
+    
+    
+    /**
+     * Makes a HashMap of the OVXMap instance and returns it to the
+     * saveConfig method of the OVXConfig class.
+     * 
+     * @return A HashMap of the OVXMap instance
+     */
+    public HashMap<String,Object> toJson();
 }

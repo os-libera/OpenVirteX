@@ -449,42 +449,38 @@ public class OVXMap implements Mappable {
 	    ArrayList<HashMap<String,Object>> linkList = new ArrayList<HashMap<String,Object>>();
 	    
 	    
-	    ovxMap.put("tenant-id", tenant);
+	    ovxMap.put(TID, tenant);
 	    
 	    ArrayList<OVXSwitch> virSw = getVirtualSwitchesPerTenant(tenant);
 	    for(OVXSwitch vSwitch: virSw){
 		HashMap<String,Object> switchMap = new HashMap<String,Object>();
-		switchMap.put("virtual-switch-id",String.valueOf(vSwitch.getSwitchId()));
+		switchMap.put(VSWID,String.valueOf(vSwitch.getSwitchId()));
 		ArrayList<PhysicalSwitch> phySwitches = this.virtualSwitchMap.get(vSwitch);
 		ArrayList<Long> phySwitchIds = new ArrayList<Long>();
 		for(PhysicalSwitch phySwitch:phySwitches){
 		    phySwitchIds.add(phySwitch.getSwitchId());
 		}
-		switchMap.put("pswitch-id",phySwitchIds);
+		switchMap.put(PSWID,phySwitchIds);
 		
 		Collection<OVXPort> virPorts = vSwitch.getPorts();
 		ArrayList<HashMap<String,Object>> portList = new ArrayList<HashMap<String,Object>>();
 		for(OVXPort vPort:virPorts){
-		    //HashMap<String,Object> switchMapCopy = new HashMap<String,Object>();
-		    //switchMapCopy.putAll(switchMap);
 		    HashMap<String,Object> portMap = new HashMap<String,Object>();
-		    portMap.put("virtual-port-num", vPort.getPortNumber());
+		    portMap.put(VPORTNUM, vPort.getPortNumber());
 		    HashMap<String,Object> phyPortMap = new HashMap<String,Object>();
 		    phyPortMap = vPort.getPhysicalPort().toJson();
-		    portMap.put("phy-port", phyPortMap);
-		    portList.add(portMap);
-		    //switchMapCopy.put("port", portMap);
-		    //switchList.add(switchMapCopy);  
+		    portMap.put(PHYPORT, phyPortMap);
+		    portList.add(portMap); 
 		}
-		switchMap.put("port",portList);
+		switchMap.put(PORT,portList);
 		switchList.add(switchMap); 
 	    }
-	    ovxMap.put("switch-map", switchList);
+	    ovxMap.put(SWMAP, switchList);
 	    
 	    ArrayList<OVXLink> virLinks = getVirtualLinksPerTenant(tenant);
 	    for(OVXLink vLink: virLinks){
 		HashMap<String,Object> linkMap = new HashMap<String,Object>();
-		linkMap.put("link-id",String.valueOf(vLink.getLinkId()));
+		linkMap.put(LINKID,String.valueOf(vLink.getLinkId()));
 		ArrayList<HashMap<String,Object>> pLinks = new ArrayList<HashMap<String,Object>>();
 		ArrayList<PhysicalLink> phyLinks = virtualLinkMap.get(vLink);
 		for(PhysicalLink phyLink: phyLinks){
@@ -492,31 +488,14 @@ public class OVXMap implements Mappable {
 		    pLinks.add(phyLinkMap);
 		    
 		}
-		linkMap.put("physical-link", pLinks);
+		linkMap.put(PHYLINK, pLinks);
 		linkList.add(linkMap);
-		
-		
-		/*ArrayList<PhysicalPort> srcPorts = new ArrayList<PhysicalPort>();
-		ArrayList<PhysicalPort> dstPorts = new ArrayList<PhysicalPort>();
-		srcPorts = (ArrayList<PhysicalPort>)
-		ArrayList<HashMap<String,Object>> portList = new ArrayList<HashMap<String,Object>>();
-		for(OVXPort vPort:virPorts){
-		    HashMap<String,Object> switchMapCopy = new HashMap<String,Object>();
-		    switchMapCopy.putAll(switchMap);
-		    HashMap<String,Object> portMap = new HashMap<String,Object>();
-		    portMap.put("virtual-port-num", vPort.getPortNumber());
-		    HashMap<String,Object> phyPortMap = new HashMap<String,Object>();
-		    phyPortMap = vPort.getPhysicalPort().toJson();
-		    portMap.put("phy-port", phyPortMap);
-		    switchMapCopy.put("port", portMap);
-		    switchList.add(switchMapCopy);  
-		}*/
 	    }
-	    ovxMap.put("link-map", linkList);
+	    ovxMap.put(LINKMAP, linkList);
 	    list.add(ovxMap);
 	}
 	
-	output.put("mapping", list);
+	output.put(MAP, list);
 	return output; 
     }
 

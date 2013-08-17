@@ -74,7 +74,17 @@ import org.openflow.protocol.action.OFActionOutput;
  */
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
+    public static String VIRNET = "virtualnetwork";
+    public static String NET = "network";
+    public static String GATEWAY = "gateway";
+    public static String SWID = "switch-id";
+    public static String TID = "tenant-id";
+    public static String CON_ADDR = "controller-address";
+    public static String CON_PORT = "controller-port";
+    public static String FWD_SLASH = "/";
 
+    
+    
     private final Integer                  tenantId;
     private final String                   protocol;
     private final String                   controllerHost;
@@ -298,50 +308,34 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 			+ ipCounter.getAndIncrement();
     }
 
-	/*public void fromJson(HashMap<String, Object> map) {
-		    this.tenantId = (Integer) map.get("tenant-id");
-		    this.network = (IPAddress) map.get("network");
-		    /*for(Object ip : ((HashMap<Object,Object>) map.get("gateway")).keySet()){
-			ip = (IPAddress) ip;
-		    }
-		    for(Object mac : ((HashMap<Object,Object>) map.get("gateway")).values()){
-			mac = (MACAddress) mac;
-		    }*/
-		    /*this.gwsMap  = (HashMap<IPAddress,MACAddress>) map.get("gateway");
-		    //this.gwsMap.put(ip, mac);
-		    
-        }*/
-	
-	    public HashMap<String,Object> toJson() {
-		//HashMap<String,Object> output = new HashMap<String,Object>();
-		//LinkedList<Object> list = new LinkedList<Object>();
-		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-		ovxMap.put("tenant-id",this.tenantId);
-		String subnet = getNetworkWithMask(network,mask);
-		ovxMap.put("network",subnet);
-		ovxMap.put("gateway",this.gwsMap);
-		LinkedList<String> switches = getDpids();//new LinkedList<Long>();
-		ovxMap.put("switch-id",switches);
-		ovxMap.put("controller-address", this.controllerHost);
-		ovxMap.put("controller-port", this.controllerPort);
-		//list.add(ovxMap);
-		//output.put("virtualnetwork", list);
-		return ovxMap; 
-	    }
+    public HashMap<String,Object> toJson() {
+	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+	ovxMap.put(TID,this.tenantId);
+	String subnet = getNetworkWithMask(network,mask);
+	ovxMap.put(NET,subnet);
+	ovxMap.put(GATEWAY,this.gwsMap);
+	LinkedList<String> switches = getDpids();//new LinkedList<Long>();
+	ovxMap.put(SWID,switches);
+	ovxMap.put(CON_ADDR, this.controllerHost);
+	ovxMap.put(CON_PORT, this.controllerPort);
+	return ovxMap; 
+    }
 
-	    private LinkedList<String> getDpids() {
-		Collection<OVXSwitch> switches = getSwitches();
-		LinkedList<String> dpids = new LinkedList<String>();
-		for(OVXSwitch sw: switches){
-		    dpids.add(String.valueOf(sw.getSwitchId()));
-		}
-	        return dpids;
-            }
-	    private String getNetworkWithMask(IPAddress network, short mask) {
-	        String subnet = new String();
-	        subnet.concat(network.toString());
-	        subnet.concat("/");
-	        subnet.concat(String.valueOf(mask));
-	        return subnet;
-            }
+    private LinkedList<String> getDpids() {
+	Collection<OVXSwitch> switches = getSwitches();
+	LinkedList<String> dpids = new LinkedList<String>();
+	for(OVXSwitch sw: switches){
+	    dpids.add(String.valueOf(sw.getSwitchId()));
+	}
+        return dpids;
+    }
+	
+    private String getNetworkWithMask(IPAddress network, short mask) {
+        String subnet = new String();
+        subnet.concat(network.toString());
+        subnet.concat(FWD_SLASH);
+        subnet.concat(String.valueOf(mask));
+        return subnet;
+    }
+    
 }

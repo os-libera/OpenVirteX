@@ -62,6 +62,10 @@ import org.openflow.util.LRULinkedHashMap;
  * The Class OVXSwitch.
  */
 public abstract class OVXSwitch extends Switch<OVXPort> {
+    
+    public static String TID = "tenant-id";
+    public static String DPID = "dpid";
+    public static String PORT = "port";
 
     /**
      * Datapath description string
@@ -343,18 +347,14 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     }
 	
     public HashMap<String,Object> toJson() {
-		//HashMap<String,Object> output = new HashMap<String,Object>();
-		//LinkedList<Object> list = new LinkedList<Object>();
 		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
 		
-		ovxMap.put("tenant-id",this.tenantId);
+		ovxMap.put(TID,this.tenantId);
 		
-		ovxMap.put("dpid",String.valueOf(this.getSwitchId()));
+		ovxMap.put(DPID,String.valueOf(this.getSwitchId()));
 		Collection<Short> ports = getPortNumbers();
-		ovxMap.put("port",ports);
-		
-		//list.add(ovxMap);
-		//output.put("virtualnetwork", list);
+		ovxMap.put(PORT,ports);
+
 		return ovxMap; 
 	    }
 	

@@ -60,14 +60,14 @@ public class PhysicalLink extends Link<PhysicalPort,PhysicalSwitch> {
 	
 	HashMap<String,Object> srcMap = new HashMap<String,Object>();
 	HashMap<String,Object> dstMap = new HashMap<String,Object>();
-	srcMap.put("switch-id",String.valueOf(srcPort.getParentSwitch().getSwitchId()));
-	srcMap.put("port-number",String.valueOf(srcPort.getPortNumber()));
-	dstMap.put("switch-id",String.valueOf(dstPort.getParentSwitch().getSwitchId()));
-	dstMap.put("port-number",String.valueOf(dstPort.getPortNumber()));
+	srcMap.put(SWID,String.valueOf(srcPort.getParentSwitch().getSwitchId()));
+	srcMap.put(PORTNUM,String.valueOf(srcPort.getPortNumber()));
+	dstMap.put(SWID,String.valueOf(dstPort.getParentSwitch().getSwitchId()));
+	dstMap.put(PORTNUM,String.valueOf(dstPort.getPortNumber()));
 	
 	//list.add(ovxMap);
-	output.put("src", srcMap);
-	output.put("dst", dstMap);
+	output.put(SRC, srcMap);
+	output.put(DST, dstMap);
 	return output; 
     }
 

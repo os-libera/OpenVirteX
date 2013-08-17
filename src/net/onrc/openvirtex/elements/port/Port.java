@@ -38,6 +38,9 @@ import org.openflow.protocol.OFPhysicalPort;
  * 
  */
 public class Port<T> extends OFPhysicalPort {
+    
+    public static String SWID = "switch-id";
+    public static String PORTNUM = "port-number";
 
     protected MACAddress mac;
     protected Boolean    isEdge;
