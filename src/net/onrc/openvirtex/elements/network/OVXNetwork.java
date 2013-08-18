@@ -104,7 +104,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.dpidCounter = new AtomicLong(1);
 	// TODO: decide which value to start linkId's
 	this.linkCounter = new AtomicInteger(2);
-	this.ipCounter = new AtomicInteger();
+	this.ipCounter = new AtomicInteger(1);
     }
 
     public String getProtocol() {
@@ -278,7 +278,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     public Integer nextIP() {
-	System.err.println(OpenVirteXController.getInstance().getNumberVirtualNets());
 	return (this.tenantId<< 
 		(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
 			+ ipCounter.getAndIncrement();
