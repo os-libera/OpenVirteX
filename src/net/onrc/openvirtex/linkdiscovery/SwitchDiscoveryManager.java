@@ -33,7 +33,10 @@ import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
 
 /**
- * Run discovery process from a physical switch.
+ * Run discovery process from a physical switch. Ports are initially labeled as
+ * slow ports. When an LLDP is successfully received, label the remote port as
+ * fast. Every probeRate milliseconds, loop over all fast ports and send an
+ * LLDP, send an LLDP for a single slow port.
  * Based on FlowVisor topology discovery implementation.
  * 
  * TODO: add 'fast discovery' mode: drop LLDPs in destination switch but
@@ -43,21 +46,14 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
         TimerTask {
 
     private final PhysicalSwitch            sw;
-    // this is the safety rate: this many
+    // send 1 probe every probeRate milliseconds
     private final long                      probeRate;
     private final Set<Short>                slowPorts;
     private final Set<Short>                fastPorts;
-    private final Object                    portLock;
+    // number of unacknowledged probes per port
     private final Map<Short, AtomicInteger> portProbeCount;
-    private final static short              MAX_PROBE_COUNT   = 3;                        // number
-	                                                                                   // of
-	                                                                                   // probes
-	                                                                                   // to
-	                                                                                   // send
-	                                                                                   // before
-	                                                                                   // link
-	                                                                                   // is
-	                                                                                   // removed
+    // number of probes to send before link is removed
+    private final static short              MAX_PROBE_COUNT   = 3;
     private Iterator<Short>                 slowIterator;
     private final OVXMessageFactory         ovxMessageFactory = OVXMessageFactory
 	                                                              .getInstance();
@@ -67,10 +63,9 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 
     public SwitchDiscoveryManager(final PhysicalSwitch sw) {
 	this.sw = sw;
-	this.probeRate = 1000;		// send 1 probe every probeRate milliseconds
+	this.probeRate = 1000;
 	this.slowPorts = Collections.synchronizedSet(new HashSet<Short>());
 	this.fastPorts = Collections.synchronizedSet(new HashSet<Short>());
-	this.portLock = new Object();
 	this.portProbeCount = new HashMap<Short, AtomicInteger>();
 	PhysicalNetwork.getTimer().newTimeout(this, this.probeRate,
 	        TimeUnit.MILLISECONDS);
@@ -125,33 +120,18 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	}
     }
 
-    private void signalSlowPort(final PhysicalPort port) {
-	    final short portNumber = port.getPortNumber();
-
-	    if (this.fastPorts.contains(portNumber)) {
-		this.log.debug("Setting fast port to slow: {}:{}", port
-		        .getParentSwitch().getSwitchId(), portNumber);
-		this.fastPorts.remove(portNumber);
-		this.slowPorts.add(portNumber);
-		// surprised that this could be solution?!
-		this.slowIterator = this.slowPorts.iterator();
-		this.portProbeCount.remove(portNumber);
-	    } else {
-		if (!this.slowPorts.contains(portNumber)) {
-		    this.log.debug(
-			    "Got signalSlowPort for non-existing port: {}",
-			    portNumber);
-		}
-	    
-
-	}
-    }
-
+    /**
+     * Method called by remote port to acknowledge reception of LLDP sent by
+     * this port.
+     * If slow port, updates label to fast. If fast port, decrements number of
+     * unacknowledged probes.
+     * 
+     * @param port
+     */
     public void ackProbe(final PhysicalPort port) {
 	if (port.getParentSwitch().equals(this.sw)) {
 	    final short portNumber = port.getPortNumber();
 	    synchronized (this) {
-
 		if (this.slowPorts.contains(portNumber)) {
 		    this.log.debug("Setting slow port to fast: {}:{}", port
 			    .getParentSwitch().getSwitchId(), portNumber);
@@ -225,6 +205,10 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     }
 
     @Override
+    /*
+     * Handles an incoming LLDP packet. Creates link in topology and sends ack
+     * to port where LLDP originated.
+     */
     public void handleLLDP(final OFMessage msg, final Switch sw) {
 	final OVXPacketIn pi = (OVXPacketIn) msg;
 	final byte[] pkt = pi.getPacketData();
@@ -244,16 +228,22 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	}
     }
 
+    /**
+     * Execute this method every probeRate milliseconds. Loops over all ports
+     * labeled as fast and sends out an LLDP. Send out an LLDP on a single slow
+     * port.
+     * 
+     * @param t
+     * @throws Exception
+     */
     @Override
-    public void run(final Timeout t) throws Exception {
+    public void run(final Timeout t) {
 	this.log.debug("sending probes");
 
 	synchronized (this) {
-
-	    // send a probe per fast port
-	    Iterator<Short> fastIterator = this.fastPorts.iterator();
+	    final Iterator<Short> fastIterator = this.fastPorts.iterator();
 	    while (fastIterator.hasNext()) {
-		Short portNumber = fastIterator.next();
+		final Short portNumber = fastIterator.next();
 		final int probeCount = this.portProbeCount.get(portNumber)
 		        .getAndIncrement();
 		if (probeCount < SwitchDiscoveryManager.MAX_PROBE_COUNT) {
@@ -267,8 +257,8 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 		    this.slowPorts.add(portNumber);
 		    this.slowIterator = this.slowPorts.iterator();
 		    this.portProbeCount.remove(portNumber);
-		    
-		    //this.signalSlowPort(srcPort);
+
+		    // Remove link from topology
 		    final PhysicalPort srcPort = this.sw.getPort(portNumber);
 		    final PhysicalPort dstPort = PhysicalNetwork.getInstance()
 			    .getNeighborPort(srcPort);
@@ -289,13 +279,11 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 		    this.sendMsg(pkt, this);
 		}
 	    }
-
 	}
 
 	// reschedule timer
 	PhysicalNetwork.getTimer().newTimeout(this, this.probeRate,
 	        TimeUnit.MILLISECONDS);
-
     }
 
 }
