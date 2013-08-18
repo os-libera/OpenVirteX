@@ -60,7 +60,6 @@ public class PhysicalNetwork extends
 
     private static PhysicalNetwork                  instance;
     private ArrayList<Uplink>                       uplinkList;
-    // Map<LinkAdvertisement, Long> latestProbes;
     private final Map<Long, SwitchDiscoveryManager> discoveryManager;
     private static HashedWheelTimer                 timer;
     Logger                                          log           = LogManager
@@ -71,8 +70,6 @@ public class PhysicalNetwork extends
 	this.log.info("Starting network discovery...");
 	PhysicalNetwork.timer = new HashedWheelTimer();
 	this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
-	// this.latestProbes = new HashMap<LinkAdvertisement, Long>();
-
     }
 
     public static PhysicalNetwork getInstance() {
