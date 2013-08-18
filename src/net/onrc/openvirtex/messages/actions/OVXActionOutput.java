@@ -30,6 +30,7 @@ import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.util.U16;
 
 public class OVXActionOutput extends OFActionOutput implements VirtualizableAction {
 
@@ -40,17 +41,14 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 	short outport = this.getPort();
 	OVXPort outPort = sw.getPort(outport);
 	
-	if (outport > OFPort.OFPP_MAX.getValue())
-	    //TODO: Expand Flood message
+	if (U16.f(outport) > U16.f(OFPort.OFPP_MAX.getValue())) {
+	    //TODO: expand FLOOD ports to appropriate ports.
 	    return false;
+	}
 	
-	
-	
-	
-	
-	if (outPort != null)
+	if (outPort != null) {
 	    this.setPort(outPort.getPhysicalPortNumber());
-	else
+	} else
 	    throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
 		    " does not exist in virtual switch " + sw.getName());
 	

@@ -44,20 +44,21 @@ import org.openflow.protocol.Wildcards.Flag;
 public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
     private Logger log = LogManager.getLogger(OVXPacketIn.class.getName());
-
-
+    private PhysicalPort port = null;
+    private Integer tenantId = null;
 
     @Override
     public void virtualize(PhysicalSwitch sw) {
 
-	Integer tenantId = null;
+	
 	OVXSwitch vSwitch = null;
 	/*
 	 * Fetching port from the physical switch
 	 */
 	short inport = this.getInPort();
-	PhysicalPort port = sw.getPort(inport);
-
+	port = sw.getPort(inport);
+	
+	
 	Mappable map = OVXMap.getInstance();
 
 	OFMatch match = new OFMatch();
@@ -81,8 +82,8 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		return;
 	    }
 	    vSwitch = map.getVirtualSwitch(sw, tenantId);
-	    sendPkt(vSwitch, match, sw, tenantId);
-	    learnAddresses(match, map, tenantId);
+	    sendPkt(vSwitch, match, sw);
+	    learnAddresses(match, map);
 	    log.debug("Edge PacketIn {} sent to virtual network {}", this, tenantId);
 	    return;
 	} 
@@ -91,14 +92,14 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	 * Below handles packets traveling in the core.
 	 */
 
-	System.out.println(match);
+	
 	if (match.getDataLayerType() == Ethernet.TYPE_IPv4 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
 	    PhysicalIPAddress srcIP = new PhysicalIPAddress(match.getNetworkSource());
 	    PhysicalIPAddress dstIP = new PhysicalIPAddress(match.getNetworkDestination());
 
 	    Ethernet eth = new Ethernet();
 	    eth.deserialize(this.getPacketData(), 0, this.getPacketData().length);
-	    System.err.println(eth);
+	    
 	    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 		//ARP packet
 		ARP arp = (ARP) eth.getPayload();
@@ -119,7 +120,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    }
 	    this.setPacketData(eth.serialize());
 	    vSwitch = map.getVirtualSwitch(sw, tenantId);
-	    sendPkt(vSwitch, match, sw, tenantId);
+	    sendPkt(vSwitch, match, sw);
 	    log.debug("IPv4 PacketIn {} sent to virtual network {}", this, tenantId);
 	    return;
 	}
@@ -132,12 +133,12 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    return;
 	}
 	vSwitch = map.getVirtualSwitch(sw, tenantId);
-	sendPkt(vSwitch, match, sw, tenantId);
+	sendPkt(vSwitch, match, sw);
 	log.debug("Layer2 PacketIn {} sent to virtual network {}", this, tenantId);
     }
 
 
-    private void sendPkt(OVXSwitch vSwitch, OFMatch match, PhysicalSwitch sw, int tenantId) {
+    private void sendPkt(OVXSwitch vSwitch, OFMatch match, PhysicalSwitch sw) {
 	if (vSwitch == null || !vSwitch.isActive()) {
 	    log.warn("Controller for virtual network {} has not yet connected "
 		    + "or is down", tenantId);
@@ -145,10 +146,11 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    return;
 	}
 	this.setBufferId(vSwitch.addToBufferMap(this));
+	this.setInPort(port.getOVXPort(tenantId).getPortNumber());
 	vSwitch.sendMsg(this, sw);
     }
 
-    private void learnAddresses(OFMatch match, Mappable map, int tenantId) {
+    private void learnAddresses(OFMatch match, Mappable map) {
 	if (match.getDataLayerType() == 0x800 || match.getDataLayerType() == 0x806) {
 	    OVXNetwork vnet = map.getVirtualNetwork(tenantId);
 

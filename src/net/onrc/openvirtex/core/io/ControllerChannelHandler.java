@@ -503,7 +503,11 @@ public class ControllerChannelHandler extends OFChannelHandler {
 				    int tenantId = ((OVXSwitch) this.sw).getTenantId();
 				    OVXMap.getInstance().getVirtualNetwork(tenantId).handleLLDP(ofm, this.sw);
 				    break;
-				}
+				} else if ((data[12] == (byte) 0x89
+					&& (data[13] == (byte) 0x42)))
+				    //TODO: think about how to solve this.
+				    // probably treat it like a normal LLDP for now.
+				    break;
 			    }
 			default:
 			    // Process all non-packet-ins
