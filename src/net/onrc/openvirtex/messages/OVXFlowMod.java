@@ -71,7 +71,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	for (final OFAction act : this.getActions()) {
 	    try {
 		if (((VirtualizableAction) act).virtualize(sw)) {
-		    this.prependRewriteActions();
+		    this.prependUnRewriteActions();
 		}
 		this.acts.add(act);
 	    } catch (final ActionVirtualizationDenied e) {
@@ -81,32 +81,57 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		return;
 	    }
 	}
+	
+	
+
 
 	final OVXPort ovxInPort = sw.getPort(inport);
-	// TODO: Ali should check this
+	this.setBufferId(bufferId);
+	
 	if (ovxInPort == null) {
-	    this.getMatch().setInputPort(inport);
+	   //TODO: Send an error to the controller
+	    log.error("Unknown virtual port id {}; dropping flowmod {}", inport, this);
+	    return;
 	} else {
 	    this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
 	    if (ovxInPort.isEdge()) {
-		this.setBufferId(bufferId);
+		this.prependRewriteActions();
+		computeLength();
 		sw.sendSouth(this);
 		return;
 	    } else {
 		this.rewriteMatch();
 	    }
 	}
+	this.computeLength();
+	sw.sendSouth(this);
 
-	this.setActions(this.acts);
+    }
+    
+    
+    private void computeLength() {
+	this.setActions(this.acts);	
 	this.setLengthU(OVXFlowMod.MINIMUM_LENGTH);
 	for (final OFAction act : this.acts) {
 	    this.setLengthU(this.getLengthU() + act.getLengthU());
 	}
-	
-	this.setBufferId(bufferId);
-	sw.sendSouth(this);
-
     }
+    
+    private void prependUnRewriteActions() {
+	if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+	    final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
+	    srcAct.setNetworkAddress(this.getMatch().getNetworkSource());
+	    this.acts.add(srcAct);
+	}
+	if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+	    final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
+	    dstAct.setNetworkAddress(this.getMatch().getNetworkDestination());
+	    this.acts.add(dstAct);
+	}
+	
+    }
+
+
 
     private void prependRewriteActions() {
 	final Mappable map = OVXMap.getInstance();
@@ -126,7 +151,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    }
 	    final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
 	    srcAct.setNetworkAddress(pip.getIp());
-	    this.acts.add(srcAct);
+	    this.acts.add(0,srcAct);
 
 	}
 
@@ -145,7 +170,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    }
 	    final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
 	    dstAct.setNetworkAddress(pip.getIp());
-	    this.acts.add(dstAct);
+	    this.acts.add(0,dstAct);
 
 	}
     }

@@ -153,9 +153,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     @Override
     public String toString() {
 	
-	return Integer.toString(this.hashCode());/*"DPID : " + this.featuresReply.getDatapathId()
+	return "DPID : " + this.featuresReply.getDatapathId()
 	        + ", remoteAddr : "
-	        + this.channel.getRemoteAddress().toString();*/
+	        + this.channel.getRemoteAddress().toString();
     }
 
     /**
@@ -172,9 +172,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     
     @Override
     public boolean equals(Object other) {
-	//TODO: fix this big shit
-	if (other instanceof PhysicalSwitch)
+	if (other instanceof PhysicalSwitch) { 
 	    return this.switchId == ((PhysicalSwitch)other).switchId;
+	}
+	
 	return false;
     }
 }
