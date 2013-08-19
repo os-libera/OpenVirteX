@@ -278,7 +278,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     public Integer nextIP() {
-	System.err.println(OpenVirteXController.getInstance().getNumberVirtualNets());
 	return (this.tenantId<< 
 		(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
 			+ ipCounter.getAndIncrement();
