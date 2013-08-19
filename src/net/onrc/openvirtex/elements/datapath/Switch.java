@@ -234,5 +234,5 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     public String toString() {
 	return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
 		+ this.switchName + "\n- isConnected: " + this.isConnected;
-    }
+    }    
 }
