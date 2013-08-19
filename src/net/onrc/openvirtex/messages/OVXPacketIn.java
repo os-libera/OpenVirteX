@@ -100,7 +100,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    Ethernet eth = new Ethernet();
 	    eth.deserialize(this.getPacketData(), 0, this.getPacketData().length);
 	    
-	    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
+        if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 		//ARP packet
 		ARP arp = (ARP) eth.getPayload();
 		tenantId = fetchTenantId(match, map, true);
