@@ -68,7 +68,7 @@ def pa_vswitch(args, cmd):
 
 def do_createVSwitch(gopts, opts, args):
     if len(args) != 2:
-        print "createVSwitch : Must specify (network_id and dpid, dpid, ... - list of physical dpids which are associated with this dpid)"
+        print "createVSwitch : Must specify (network_id and dpid,dpid,... - list of physical dpids which are associated with this dpid)"
         sys.exit()
     client = create_client(gopts.host, int(gopts.port))
     dpids = [str(dpid) for dpid in args[1].split(',')]
@@ -214,6 +214,19 @@ if __name__ == '__main__':
     (parse_args, do_func) = CMDS[rargs[0]]
     (opts, args) = parse_args(rargs[1:], rargs[0])
     do_func(gopts, opts, args)
+  except ValueError, e:
+    print "the argument types being sent to the function %s are incorrect. Please double check them." % sys.argv[-1]
+    function = sys.argv[1]
+    if function=='createNetwork':
+      print "createNetwork - string, string, short, string, short"
+    elif function=='createVSwitch':
+      print "createVSwitch - int, list<string>"
+    elif function=='connectHost':
+      print "connectHost - int, string, short, string"
+    elif function=='createVLink':
+      print "createVLink - int, string"
+    elif function=='bootNetwork':
+      pass
   except IndexError, e:
     print "%s is an unknown command" % sys.argv[-1]
     printHelp(None, None, None, parser)
