@@ -109,7 +109,17 @@ def do_bootNetwork(gopts, opts, args):
     client._iprot.trans.close()
     if result:
         print "Network has been booted"
-        
+
+def pa_saveConfig(args, cmd):
+    usage = "%s <cmd>" % USAGE.format(cmd)
+    parser = OptionParser(usage=usage)
+    return parser.parse_args(args)
+
+def do_saveConfig(gopts, opts, args):
+    client = create_client(gopts.host, int(gopts.port))
+    file = client.saveConfig()
+    print file
+
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
     parser = OptionParser(usage=usage)
@@ -149,6 +159,7 @@ CMDS = {
     'createVLink': (pa_vlink, do_createVLink),
     'connectHost': (pa_connectHost, do_connectHost),
     'bootNetwork': (pa_bootNetwork, do_bootNetwork),
+    'saveConfig': (pa_saveConfig, do_saveConfig),
     'help' : (pa_help, do_help)
 }
 
@@ -163,6 +174,8 @@ DESCS = {
                      ("Connect host to edge switch. Must specify a network_id, mac, dpid and port.")),
     'bootNetwork' : ("Boot virtual network",
                      ("Boot virtual network. Must specify a network_id.")),
+    'saveConfig' : ("Saves the config",
+                     ("Saves the configuration file into the given fileName."))
 }
 
 USAGE="%prog {}"
@@ -191,7 +204,8 @@ def parse_global_args (arglist):
 
 def create_client(host, port):
     #Make socket
-    transport = TSocket.TSocket(host, port)
+    transport = TSocket.TSocket('192.168.56.1', 8080)
+    #transport = TSocket.TSocket(host, port)
 
     # Buffering is critical. Raw sockets are very slow
     transport = TTransport.TFramedTransport(transport)

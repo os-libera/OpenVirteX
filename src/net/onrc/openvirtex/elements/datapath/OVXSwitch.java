@@ -31,6 +31,10 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+
+import java.util.HashMap;
+
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -58,6 +62,10 @@ import org.openflow.util.LRULinkedHashMap;
  * The Class OVXSwitch.
  */
 public abstract class OVXSwitch extends Switch<OVXPort> {
+    
+    public static String TID = "tenant-id";
+    public static String DPID = "dpid";
+    public static String PORT = "port";
 
     /**
      * Datapath description string
@@ -337,6 +345,19 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	}
 	return false;
     }
+	
+    public HashMap<String,Object> toJson() {
+		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+		
+		ovxMap.put(TID,this.tenantId);
+		
+		ovxMap.put(DPID,String.valueOf(this.getSwitchId()));
+		Collection<Short> ports = getPortNumbers();
+		ovxMap.put(PORT,ports);
 
+		return ovxMap; 
+	    }
+	
     public abstract void sendSouth(OFMessage msg);
+
 }

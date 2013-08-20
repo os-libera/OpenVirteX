@@ -35,6 +35,7 @@ import java.util.Map;
 import org.openflow.protocol.OFPhysicalPort;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.util.MACAddress;
 
 public class PhysicalPort extends Port<PhysicalSwitch> {
 
@@ -63,4 +64,29 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
     public void setOVXPort(final OVXPort ovxPort) {
 	this.ovxPortMap.put(ovxPort.getTenantId(), ovxPort);
     }
+
+	@Override
+	public String toString() {
+		return "PORT:\n- portNumber: " + this.portNumber + "\n- portName: "
+				+ this.name + "\n- hardwareAddress: "
+				+ MACAddress.valueOf(this.hardwareAddress) + "\n- isEdge: "
+				+ this.isEdge + "\n- parentSwitch: "
+				+ this.parentSwitch.getSwitchName() + "\n- config: "
+				+ this.config + "\n- state: " + this.state
+				+ "\n- currentFeatures: " + this.currentFeatures
+				+ "\n- advertisedFeatures: " + this.advertisedFeatures
+				+ "\n- supportedFeatures: " + this.supportedFeatures
+				+ "\n- peerFeatures: " + this.peerFeatures;
+	}
+	
+	public HashMap<String,Object> toJson() {
+
+		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+		
+		ovxMap.put(SWID,String.valueOf(getParentSwitch().getSwitchId()));
+		ovxMap.put(PORTNUM,getPortNumber());
+
+		return ovxMap; 
+	    }
+
 }

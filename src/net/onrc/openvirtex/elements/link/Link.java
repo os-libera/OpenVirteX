@@ -34,6 +34,14 @@ import net.onrc.openvirtex.elements.port.Port;
  *            the generic type (Switch)
  */
 public abstract class Link<T1, T2> {
+    
+    	public static String TID = "tenant-id";
+    	public static String LINKID = "link-id";
+    	public static String SWID = "switch-id";
+    	public static String PORTNUM = "port-number";
+    	public static String DST = "dst";
+    	public static String SRC = "src";
+    	
 
 	/** The source port. */
 	protected T1 srcPort = null;

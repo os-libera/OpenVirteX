@@ -23,6 +23,9 @@
 package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.concurrent.Executors;
 
 import net.onrc.openvirtex.api.APIServer;
@@ -53,11 +56,17 @@ public class OpenVirteXController implements Runnable {
     private static final int SEND_BUFFER_SIZE = 1024 * 1024;
     private static OpenVirteXController instance = null;
     
+    public static String HOST = "host";
+    public static String OFPORT = "openflow-port";
+    public static String APIPORT = "api-port";
+    public static String OPENVIRTEX = "openvirtex";
     
     private String configFile = null;
     private String ofHost = null;
     private Integer ofPort = null;
     APIServer server;
+    
+    private Integer apiPort = null;
 
 
     private NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
@@ -78,6 +87,16 @@ public class OpenVirteXController implements Runnable {
 	this.ofPort = ofPort;
 	this.maxVirtual  = maxVirtual;
 	instance = this;
+    }
+    
+    public OpenVirteXController(String ofHost, Integer ofPort, Integer apiPort){
+	this.ofHost = ofHost;
+	this.ofPort = ofPort;
+	this.apiPort = apiPort;
+    }
+    
+    public OpenVirteXController(){
+	
     }
 
     @Override
@@ -202,6 +221,7 @@ public class OpenVirteXController implements Runnable {
 	return instance;
     }
     
+
     /*
      * return the number of bits needed to encode the tenant id
      */
@@ -209,4 +229,26 @@ public class OpenVirteXController implements Runnable {
 	return this.maxVirtual;
     }
 
+
+    public void fromJson(ArrayList<HashMap<String,Object>> list) {
+	for (HashMap<String,Object> row: list){
+	    this.ofHost = (String) row.get(HOST);
+	    this.ofPort = (Integer) row.get(OFPORT);
+	    this.apiPort  = (Integer) row.get(APIPORT);
+	}
+    }
+   
+    public HashMap<String,Object> toJson() {
+	HashMap<String,Object> output = new HashMap<String,Object>();
+	LinkedList<Object> list = new LinkedList<Object>();
+	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+	ovxMap.put(APIPORT,this.apiPort);
+	ovxMap.put(OFPORT,this.ofPort);
+	ovxMap.put(HOST,this.ofHost);
+	
+	list.add(ovxMap);
+	output.put(OPENVIRTEX, list);
+	return output; 
+    }
+    
 }

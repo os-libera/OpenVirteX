@@ -22,6 +22,7 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 import net.onrc.openvirtex.core.io.OVXEventHandler;
@@ -234,5 +235,17 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     public String toString() {
 	return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
 		+ this.switchName + "\n- isConnected: " + this.isConnected;
-    }    
+
+    }
+
+    protected Collection<Short> getPortNumbers(){
+	Collection<Short> portNumbers = this.portMap.keySet();
+	return portNumbers;	
+    }
+    
+    public Collection<T> getPorts(){
+	Collection<T> ports = this.portMap.values();
+	return ports;	
+    }
+    
 }

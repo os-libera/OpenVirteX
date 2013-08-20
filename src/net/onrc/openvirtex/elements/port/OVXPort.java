@@ -29,7 +29,11 @@
 
 package net.onrc.openvirtex.elements.port;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+
 import net.onrc.openvirtex.elements.OVXMap;
+
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 public class OVXPort extends Port<OVXSwitch> {
@@ -81,5 +85,19 @@ public class OVXPort extends Port<OVXSwitch> {
 	String result = super.toString();
 	result += "\n- tenantId: " + this.tenantId;
 	return result;
+    }
+    
+    public HashMap<String,Object> toJson() {
+
+	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
+	
+	ovxMap.put(SWID,String.valueOf(getParentSwitch().getSwitchId()));
+	ovxMap.put(PORTNUM,getPortNumber());
+
+	return ovxMap; 
+    }
+
+    public short getPortNumber(){
+	return this.portNumber;
     }
 }
