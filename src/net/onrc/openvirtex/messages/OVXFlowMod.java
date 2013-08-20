@@ -45,7 +45,10 @@ import net.onrc.openvirtex.messages.actions.VirtualizableAction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFError.OFBadRequestCode;
+import org.openflow.protocol.OFError.OFFlowModFailedCode;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
@@ -74,7 +77,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    } catch (final ActionVirtualizationDenied e) {
 		this.log.warn("Action {} could not be virtualized; error: {}",
 		        act, e.getMessage());
-		// TODO: send error to controller
+		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 		return;
 	    }
 	}
@@ -86,8 +89,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	this.setBufferId(bufferId);
 	
 	if (ovxInPort == null) {
-	   //TODO: Send an error to the controller
 	    log.error("Unknown virtual port id {}; dropping flowmod {}", inport, this);
+	    sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
 	    return;
 	} else {
 	    this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());

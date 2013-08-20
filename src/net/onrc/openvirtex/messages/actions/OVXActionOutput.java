@@ -31,6 +31,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 
+import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.Wildcards.Flag;
@@ -75,7 +76,7 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 		this.setPort(ovxPort.getPhysicalPortNumber());
 	    } else
 		throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
-			" does not exist in virtual switch " + sw.getName());
+			" does not exist in virtual switch " + sw.getName(), OFBadActionCode.OFPBAC_BAD_OUT_PORT);
 	    approvedActions.add(this);
 	} else
 	    approvedActions.add(this);

@@ -38,6 +38,7 @@ import net.onrc.openvirtex.messages.actions.VirtualizableAction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.Wildcards.Flag;
@@ -59,8 +60,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	
 	if (this.getBufferId() == -1) {
 	    if (this.getPacketData().length <= 14) {
-		//TODO: send error to controller
 		log.error("PacketOut has no buffer or data {}; dropping", this);
+		sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_LEN, this), sw);
 		return;
 	    }
 	    match = new OFMatch().loadFromPacket(this.packetData, this.inPort);
@@ -81,7 +82,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 		
 	    } catch (ActionVirtualizationDenied e) {
 		log.warn("Action {} could not be virtualized; error: {}", act, e.getMessage());
-		//TODO: send error to controller
+		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 		return;
 	    } 
 	}
