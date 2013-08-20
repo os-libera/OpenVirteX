@@ -23,7 +23,6 @@
 package net.onrc.openvirtex.messages.actions;
 
 import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -42,7 +41,7 @@ public class OVXActionNetworkLayerSource extends OFActionNetworkLayerSource
     
     @Override
     public boolean virtualize(OVXSwitch sw) throws ActionVirtualizationDenied {
-	Mappable map = OVXMap.getInstance();
+	Mappable map = sw.getMap();
 	OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(), 
 		this.networkAddress);
 	PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());

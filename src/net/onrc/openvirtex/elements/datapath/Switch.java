@@ -26,6 +26,8 @@ import java.util.HashMap;
 
 import net.onrc.openvirtex.core.io.OVXEventHandler;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.Mappable;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
@@ -56,6 +58,8 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 
     /** The switch name (converted from the DPID). */
     protected String switchName = null;
+    
+    protected Mappable map = null;
 
     /**
      * The port map. Associate all the port instances with the switch. The port
@@ -79,6 +83,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 	this.switchName = HexString.toHexString(switchId);
 	this.portMap = new HashMap<Short, T>();
 	this.featuresReply = null;
+	this.map = OVXMap.getInstance();
     }
 
     /**
@@ -105,6 +110,10 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      */
     public String getSwitchName() {
 	return this.switchName;
+    }
+    
+    public Mappable getMap() {
+	return this.map;
     }
 
     /**

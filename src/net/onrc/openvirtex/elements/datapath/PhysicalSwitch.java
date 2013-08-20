@@ -139,7 +139,6 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	// TODO: if (this.isConnected && this.channel != null) ??
 	if (this.isConnected) {
 	    this.channel.write(Collections.singletonList(msg));
 	}
@@ -172,7 +171,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     
     @Override
     public boolean equals(Object other) {
-	if (other instanceof PhysicalSwitch) { 
+	if (other instanceof PhysicalSwitch) {
 	    return this.switchId == ((PhysicalSwitch)other).switchId;
 	}
 	
