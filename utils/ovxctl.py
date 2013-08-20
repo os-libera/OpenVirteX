@@ -210,23 +210,23 @@ if __name__ == '__main__':
     (gopts, rargs, parser) = parse_global_args(sys.argv[1:])
 
     if len(rargs) < 1:
-        raise IndexError
+      printHelp(None, None, None, parser)      
     (parse_args, do_func) = CMDS[rargs[0]]
     (opts, args) = parse_args(rargs[1:], rargs[0])
     do_func(gopts, opts, args)
   except ValueError, e:
-    print "the argument types being sent to the function %s are incorrect. Please double check them." % sys.argv[-1]
+    print "the argument types being sent to the function %s are incorrect. Please double check them." % sys.argv[1]
     function = sys.argv[1]
     if function=='createNetwork':
-      print "createNetwork - string, string, short, string, short"
+      print "createNetwork: string, string, short, string, short"
     elif function=='createVSwitch':
-      print "createVSwitch - int, list<string>"
+      print "createVSwitch: int, list<string>"
     elif function=='connectHost':
-      print "connectHost - int, string, short, string"
+      print "connectHost: int, string, short, string"
     elif function=='createVLink':
-      print "createVLink - int, string"
+      print "createVLink: int, string"
     elif function=='bootNetwork':
-      pass
+      print "bootNetwork: int"
   except IndexError, e:
     print "%s is an unknown command" % sys.argv[-1]
     printHelp(None, None, None, parser)

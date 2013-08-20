@@ -764,7 +764,6 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	    ctx.getChannel().close();
 	} else if (e.getCause() instanceof RejectedExecutionException) {
 	    log.error("Could not process message: queue full", e.getCause());
-
 	} else {
 
 	    log.error("Error while processing message from switch {} state {}",
