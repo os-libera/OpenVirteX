@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -39,7 +38,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
-import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
@@ -98,7 +96,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
     
     
     private void prependRewriteActions(OVXSwitch sw) {
-   	Mappable map = OVXMap.getInstance();
+   	Mappable map = sw.getMap();
    	
    	if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
    	    OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(), 

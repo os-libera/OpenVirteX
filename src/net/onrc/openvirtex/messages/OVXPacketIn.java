@@ -23,7 +23,6 @@
 package net.onrc.openvirtex.messages;
 
 import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -58,7 +57,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	short inport = this.getInPort();
 	PhysicalPort port = sw.getPort(inport);
 
-	Mappable map = OVXMap.getInstance();
+	Mappable map = sw.getMap();
 
 	OFMatch match = new OFMatch();
 	match.loadFromPacket(this.getPacketData(), inport);
