@@ -347,6 +347,7 @@ public class OVXMap implements Mappable {
 	ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap.get(physicalSwitch);
 	if (sws == null) {
 	    log.error("No virtual switches for physical switch {}", physicalSwitch);
+	    return null;
 	}
 	log.info("looking for tid {} in {}", tenantId, sws);
 	return this.physicalSwitchMap.get(physicalSwitch).get(tenantId);
@@ -367,7 +368,10 @@ public class OVXMap implements Mappable {
     @Override
     public OVXLink getVirtualLink(final PhysicalLink physicalLink,
 	    final Integer tenantId) {
-	return this.physicalLinkMap.get(physicalLink).get(tenantId);
+	if (this.physicalLinkMap.get(physicalLink) != null) {
+	    return this.physicalLinkMap.get(physicalLink).get(tenantId);
+	}	
+	return null;
     }
 
     /**

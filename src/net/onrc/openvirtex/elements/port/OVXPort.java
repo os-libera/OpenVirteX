@@ -29,7 +29,6 @@
 
 package net.onrc.openvirtex.elements.port;
 
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 public class OVXPort extends Port<OVXSwitch> {
@@ -42,7 +41,7 @@ public class OVXPort extends Port<OVXSwitch> {
 	super(port);
 	this.tenantId = tenantId;
 	this.physicalPort = port;
-	this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(
+	this.parentSwitch = port.getParentSwitch().getMap().getVirtualSwitch(
 	        port.getParentSwitch(), tenantId);
 	this.portNumber = this.parentSwitch.getNextPortNumber();
 	this.hardwareAddress = port.getHardwareAddress();

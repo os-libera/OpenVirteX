@@ -31,7 +31,6 @@ package net.onrc.openvirtex.elements.link;
 
 import java.util.List;
 
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
@@ -90,7 +89,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
      * @param physicalLinks
      */
     public void register(final List<PhysicalLink> physicalLinks) {
-	OVXMap.getInstance().addLinks(physicalLinks, this);
+	this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
     }
 
 }
