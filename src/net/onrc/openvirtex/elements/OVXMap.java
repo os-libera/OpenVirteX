@@ -23,11 +23,17 @@
 package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
@@ -48,6 +54,8 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 
 public class OVXMap implements Mappable {
 
+    
+    Logger log = LogManager.getLogger(OVXMap.class.getName());
     private static OVXMap                                                    mapInstance;
 
     ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>                  virtualSwitchMap;
@@ -316,7 +324,7 @@ public class OVXMap implements Mappable {
     @Override
     public void addMAC(MACAddress mac, Integer tenantId) {
 	this.macMap.put(mac.toStringNoColon(), tenantId);
-    }
+    } 
 
     // Access objects from dictionary given the key
 
@@ -346,6 +354,11 @@ public class OVXMap implements Mappable {
     @Override
     public OVXSwitch getVirtualSwitch(final PhysicalSwitch physicalSwitch,
 	    final Integer tenantId) {
+	ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap.get(physicalSwitch);
+	if (sws == null) {
+	    log.error("No virtual switches for physical switch {}", physicalSwitch);
+	}
+	log.info("looking for tid {} in {}", tenantId, sws);
 	return this.physicalSwitchMap.get(physicalSwitch).get(tenantId);
     }
 

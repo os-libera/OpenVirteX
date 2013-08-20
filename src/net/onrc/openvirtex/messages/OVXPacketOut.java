@@ -30,6 +30,7 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
@@ -39,7 +40,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
-import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
@@ -52,6 +52,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
     @Override
     public void devirtualize(OVXSwitch sw) {
 
+	
+	OVXPort inport = sw.getPort(this.getInPort());
+	
+	this.setInPort(inport.getPhysicalPortNumber());
 	
 	if (this.getBufferId() == -1) {
 	    if (this.getPacketData().length <= 14) {
@@ -81,17 +85,17 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 		return;
 	    } 
 	}
-
+	
+	
 	this.prependRewriteActions(sw);
 	this.setActions(acts);
 	this.setActionsLength((short)0);
-	this.setLengthU(OVXPacketOut.MINIMUM_LENGTH);
+	this.setLengthU(OVXPacketOut.MINIMUM_LENGTH + this.packetData.length);
 	for (final OFAction act : this.acts) {
 	    this.setLengthU(this.getLengthU() + act.getLengthU());
 	    this.setActionsLength((short) (this.getActionsLength() + act.getLength()));
 	}
 	//prependRewriteActions(sw);
-	
 	sw.sendSouth(this);
 	
     }

@@ -102,6 +102,25 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     }
 
     /**
+     * Remove link to topology
+     * 
+     * @param link
+     */
+    protected void removeLink(final T3 link) {
+	this.linkSet.remove(link);
+	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
+	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
+	final Port srcPort = (Port) ((T2) ((Link) link).getSrcPort());
+	final Port dstPort = (Port) ((T2) ((Link) link).getSrcPort());
+	srcPort.isEdge(true);
+	dstPort.isEdge(true);	
+	final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
+	neighbours.remove(dstSwitch);
+	this.neighborPortMap.remove((T2) ((Link) link).getSrcPort());
+	this.log.info("Removing link " + link.toString());
+    }
+
+    /**
      * Add switch to topology
      * 
      * @param sw
@@ -111,12 +130,6 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	    this.dpidMap.put(((Switch) sw).getSwitchId(), sw);
 	    this.neighborMap.put(sw, new HashSet());
 	}
-    }
-
-    protected void removeSwitch(final T1 sw) {
-	this.dpidMap.remove(((Switch) sw).getSwitchId());
-	// TODO: remove ports
-	this.switchSet.remove(sw);
     }
 
     // Public methods to query topology information

@@ -92,7 +92,7 @@ import net.onrc.openvirtex.api.APITenantManager;
 		HashMap<String,Object> output = new HashMap<String,Object>();
 		
 		//output gets the instantiated values from OpenVirteXController
-		OpenVirteXController ovx = new OpenVirteXController(HOST,OVXPORT,APIPORT);
+		OpenVirteXController ovx = OpenVirteXController.getInstance();
 		output.putAll(ovx.toJson());
 		
 		//output gets the instantiated values from elements.network
