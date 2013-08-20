@@ -22,7 +22,9 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import net.onrc.openvirtex.core.io.OVXEventHandler;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -35,6 +37,7 @@ import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
 import org.openflow.util.HexString;
+
 
 /**
  * The Class Switch.
@@ -133,6 +136,15 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      */
     public Long getSwitchId() {
 	return this.switchId;
+    }
+    
+    /**
+     * Returns an unmodifiable copy of the
+     * port map. 
+     */
+    
+    public Map<Short, T> getPorts() {
+	return Collections.unmodifiableMap(this.portMap);
     }
 
     /**

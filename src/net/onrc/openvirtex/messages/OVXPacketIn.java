@@ -50,15 +50,15 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     @Override
     public void virtualize(PhysicalSwitch sw) {
 
-	
+
 	OVXSwitch vSwitch = null;
 	/*
 	 * Fetching port from the physical switch
 	 */
 	short inport = this.getInPort();
 	port = sw.getPort(inport);
-	
-	
+
+
 	Mappable map = OVXMap.getInstance();
 
 	OFMatch match = new OFMatch();
@@ -92,15 +92,15 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	 * Below handles packets traveling in the core.
 	 */
 
-	
+
 	if (match.getDataLayerType() == Ethernet.TYPE_IPv4 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
 	    PhysicalIPAddress srcIP = new PhysicalIPAddress(match.getNetworkSource());
 	    PhysicalIPAddress dstIP = new PhysicalIPAddress(match.getNetworkDestination());
 
 	    Ethernet eth = new Ethernet();
 	    eth.deserialize(this.getPacketData(), 0, this.getPacketData().length);
-	    
-        if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
+
+	    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 		//ARP packet
 		ARP arp = (ARP) eth.getPayload();
 		tenantId = fetchTenantId(match, map, true);

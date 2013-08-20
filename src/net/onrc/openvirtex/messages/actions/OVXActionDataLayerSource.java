@@ -22,23 +22,27 @@
 
 package net.onrc.openvirtex.messages.actions;
 
+import java.util.List;
+
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionDataLayerSource;
 
 public class OVXActionDataLayerSource extends OFActionDataLayerSource implements VirtualizableAction {
 
     @Override
-    public boolean virtualize(OVXSwitch sw) throws ActionVirtualizationDenied {
+    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
 	MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
 	Integer tid = OVXMap.getInstance().getMAC(mac);
 	if (tid != sw.getTenantId()) 
 	    throw new ActionVirtualizationDenied("Target mac " + mac + 
 		    " is not in virtual network " + sw.getTenantId());
-	return false;
+	approvedActions.add(this);
     }
     
 }
