@@ -210,7 +210,7 @@ if __name__ == '__main__':
     (gopts, rargs, parser) = parse_global_args(sys.argv[1:])
 
     if len(rargs) < 1:
-        raise IndexError
+      printHelp(None, None, None, parser)      
     (parse_args, do_func) = CMDS[rargs[0]]
     (opts, args) = parse_args(rargs[1:], rargs[0])
     do_func(gopts, opts, args)
@@ -228,5 +228,5 @@ if __name__ == '__main__':
     elif function=='bootNetwork':
       print "bootNetwork: int"
   except IndexError, e:
-    print "%s is an unknown command" % sys.argv[1]
+    print "%s is an unknown command" % sys.argv[-1]
     printHelp(None, None, None, parser)

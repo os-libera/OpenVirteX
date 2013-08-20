@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -120,7 +119,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 
     private void prependRewriteActions() {
-	final Mappable map = OVXMap.getInstance();
+	final Mappable map = this.sw.getMap();
 
 	if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
 	    final OVXIPAddress vip = new OVXIPAddress(this.sw.getTenantId(),
@@ -162,7 +161,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
     }
 
     private void rewriteMatch() {
-	final Mappable map = OVXMap.getInstance();
+	final Mappable map = this.sw.getMap();
 
 	// TODO: handle IP ranges
 	if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {

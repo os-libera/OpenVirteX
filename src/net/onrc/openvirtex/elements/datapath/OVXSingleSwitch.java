@@ -7,8 +7,6 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
-import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.Devirtualizable;
 
 import org.apache.logging.log4j.LogManager;
@@ -78,7 +76,7 @@ public class OVXSingleSwitch extends OVXSwitch {
     @Override
     // TODO: this is probably not optimal
     public void sendSouth(OFMessage msg) {
-	PhysicalSwitch sw = OVXMap.getInstance().getPhysicalSwitches(this).get(0);
+	PhysicalSwitch sw = this.map.getPhysicalSwitches(this).get(0);
 	sw.sendMsg(msg, this);
     }
 }

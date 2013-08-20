@@ -28,7 +28,6 @@ import java.util.concurrent.Executors;
 import net.onrc.openvirtex.api.APIServer;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
@@ -108,7 +107,7 @@ public class OpenVirteXController implements Runnable {
     }
 
     public void registerOVXSwitch(final OVXSwitch sw) {
-	OVXNetwork ovxNetwork = OVXMap.getInstance().getVirtualNetwork(sw.getTenantId()); 
+	OVXNetwork ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId()); 
 	String host = ovxNetwork.getControllerHost();
 	Integer port = ovxNetwork.getControllerPort();
 

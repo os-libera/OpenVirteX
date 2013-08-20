@@ -22,9 +22,11 @@
 
 package net.onrc.openvirtex.messages.actions;
 
+
 import java.util.List;
 
-import net.onrc.openvirtex.elements.OVXMap;
+
+
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.util.MACAddress;
@@ -39,7 +41,7 @@ public class OVXActionDataLayerSource extends OFActionDataLayerSource implements
     @Override
     public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
 	MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
-	Integer tid = OVXMap.getInstance().getMAC(mac);
+	Integer tid = sw.getMap().getMAC(mac);
 	if (tid != sw.getTenantId()) 
 	    throw new ActionVirtualizationDenied("Target mac " + mac + 
 		    " is not in virtual network " + sw.getTenantId(), OFBadActionCode.OFPBAC_EPERM);

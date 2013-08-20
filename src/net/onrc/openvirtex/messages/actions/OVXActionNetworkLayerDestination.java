@@ -25,7 +25,6 @@ package net.onrc.openvirtex.messages.actions;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -45,8 +44,9 @@ OFActionNetworkLayerDestination implements VirtualizableAction {
 	    LogManager.getLogger(OVXActionNetworkLayerDestination.class.getName());
 
     @Override
+
     public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
-	Mappable map = OVXMap.getInstance();
+	Mappable map = sw.getMap();
 	OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(), 
 		this.networkAddress);
 	PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());

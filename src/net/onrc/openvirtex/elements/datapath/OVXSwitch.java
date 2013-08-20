@@ -34,7 +34,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
+<<<<<<< HEAD
 import net.onrc.openvirtex.elements.OVXMap;
+=======
+>>>>>>> upstream/master
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 
@@ -233,7 +236,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     }
 
     public void register(List<PhysicalSwitch> physicalSwitches) {
-	OVXMap.getInstance().addSwitches(physicalSwitches, this);
+	this.map.addSwitches(physicalSwitches, this);
     }
 
     /**

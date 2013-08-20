@@ -367,7 +367,10 @@ public class OVXMap implements Mappable {
     @Override
     public OVXLink getVirtualLink(final PhysicalLink physicalLink,
 	    final Integer tenantId) {
-	return this.physicalLinkMap.get(physicalLink).get(tenantId);
+	if (this.physicalLinkMap.get(physicalLink) != null) {
+	    return this.physicalLinkMap.get(physicalLink).get(tenantId);
+	}	
+	return null;
     }
 
     /**
