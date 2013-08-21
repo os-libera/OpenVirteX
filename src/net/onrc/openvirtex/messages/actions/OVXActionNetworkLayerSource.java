@@ -22,6 +22,8 @@
 
 package net.onrc.openvirtex.messages.actions;
 
+import java.util.List;
+
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
@@ -30,6 +32,8 @@ import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionNetworkLayerSource;
 
 public class OVXActionNetworkLayerSource extends OFActionNetworkLayerSource 
@@ -40,7 +44,8 @@ public class OVXActionNetworkLayerSource extends OFActionNetworkLayerSource
 
     
     @Override
-    public boolean virtualize(OVXSwitch sw) throws ActionVirtualizationDenied {
+
+    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
 	Mappable map = sw.getMap();
 	OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(), 
 		this.networkAddress);
@@ -52,7 +57,7 @@ public class OVXActionNetworkLayerSource extends OFActionNetworkLayerSource
 	    map.addIP(pip, vip);
 	}
 	this.networkAddress = pip.getIp();
-	return false;
+	approvedActions.add(this);
     }
 
 }
