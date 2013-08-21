@@ -157,6 +157,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	}
 	// Add switch to topology and register it in the map
 	this.addSwitch(virtualSwitch);
+	
+	
 	virtualSwitch.register(switches);
 	return virtualSwitch;
     }

@@ -104,6 +104,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 	this.switchId = switchId;
 	this.portMap = new HashMap<Short, T>();
 	this.featuresReply = null;
+	this.map = OVXMap.getInstance();
     }
 
     /**
