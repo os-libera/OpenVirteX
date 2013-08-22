@@ -28,19 +28,26 @@
  */
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.Devirtualizable;
+import net.onrc.openvirtex.routing.ManualRoute;
+import net.onrc.openvirtex.routing.Routable;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
+import net.onrc.openvirtex.routing.SwitchRoute;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPhysicalPort;
 
 /**
  * The Class OVXBigSwitch.
@@ -49,20 +56,29 @@ import org.openflow.protocol.OFMessage;
 
 public class OVXBigSwitch extends OVXSwitch {
 
-    private static Logger                                                      log = LogManager
+    private static Logger                                                      	log = LogManager
 	                                                                                   .getLogger(OVXBigSwitch.class
 	                                                                                           .getName());
 
     /** The alg. */
-    private RoutingAlgorithms                                                  alg;
+    private RoutingAlgorithms                                                  	alg;
 
     /** The path map. */
-    private final HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>> pathMap;
+    private final HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>> 	pathMap;
 
+    /** The routing mechanism */
+    private Routable 								routing;
+    
+    /**The calculated routes*/
+    private final HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> routeMap;
+    
+    
     public OVXBigSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
 	this.alg = RoutingAlgorithms.NONE;
 	this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
+	this.routing = new ManualRoute();
+	this.routeMap = new HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>();
     }
 
     /**
@@ -82,8 +98,29 @@ public class OVXBigSwitch extends OVXSwitch {
      */
     public void setAlg(final RoutingAlgorithms alg) {
 	this.alg = alg;
+	this.routing = alg.getRoutable();
+    }
+    
+    /**
+     * @return The routable for this Big Switch
+     */
+    public Routable getRoutable() {
+	return this.routing;
     }
 
+    /**
+     * @param srcPort the ingress port on the Big Switch
+     * @param dstPort the egress port on the Big Switch 
+     * @return list of physical links
+     */
+    public ArrayList<PhysicalLink> getRoute(OVXPort srcPort, OVXPort dstPort) {
+	return this.routing.getRoute(this, srcPort, dstPort);    
+    }
+    
+    public HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> getRouteMap() {
+	return this.routeMap;
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -177,5 +214,37 @@ public class OVXBigSwitch extends OVXSwitch {
 	// TODO Auto-generated method stub
 	
     }
-
+    
+    
+    public static void main(String [] args) {
+	OVXBigSwitch obsw = new OVXBigSwitch(20,1);
+	System.out.println(obsw.getAlg().toString());
+	System.out.println(obsw.getRoutable().getName());	
+	
+	SwitchRoute a, b, c;
+		a = new SwitchRoute(obsw.switchId, 0);
+		b = new SwitchRoute(obsw.switchId, 1);
+		c = new SwitchRoute(obsw.switchId, 2);
+	OFPhysicalPort p1, p2, p3, p4;
+		p1 = new OFPhysicalPort();
+		p2 = new OFPhysicalPort();
+		p3 = new OFPhysicalPort();
+		p4 = new OFPhysicalPort();
+	OVXPort op1, op2, op3, op4;
+		
+		PhysicalSwitch psw1 = new PhysicalSwitch(10);
+		PhysicalSwitch psw2 = new PhysicalSwitch(15);
+		
+		ArrayList<PhysicalSwitch> psl = new ArrayList<PhysicalSwitch>();
+		psl.add(psw1);
+		psl.add(psw2);
+		
+		OVXMap map = OVXMap.getInstance();
+		map.addSwitches(psl, obsw);
+		
+		op1 = new OVXPort(1, new PhysicalPort(p1, psw1, false), false);
+		op2 = new OVXPort(1, new PhysicalPort(p2, psw2, false), false);
+		op3 = new OVXPort(1, new PhysicalPort(p3, psw1, false), false);
+		op4 = new OVXPort(1, new PhysicalPort(p4, psw2, false), false);
+    }
 }
