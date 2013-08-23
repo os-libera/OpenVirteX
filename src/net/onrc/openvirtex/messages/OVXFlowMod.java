@@ -44,7 +44,10 @@ import net.onrc.openvirtex.messages.actions.VirtualizableAction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFError.OFBadRequestCode;
+import org.openflow.protocol.OFError.OFFlowModFailedCode;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
@@ -54,7 +57,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	                                      .getName());
 
     private OVXSwitch            sw   = null;
-    private final List<OFAction> acts = new LinkedList<OFAction>();
+    private final List<OFAction> approvedActions = new LinkedList<OFAction>();
 
     @Override
     public void devirtualize(final OVXSwitch sw) {
@@ -69,14 +72,11 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 	for (final OFAction act : this.getActions()) {
 	    try {
-		if (((VirtualizableAction) act).virtualize(sw)) {
-		    this.prependUnRewriteActions();
-		}
-		this.acts.add(act);
+		((VirtualizableAction) act).virtualize(sw, approvedActions, this.match);
 	    } catch (final ActionVirtualizationDenied e) {
 		this.log.warn("Action {} could not be virtualized; error: {}",
 		        act, e.getMessage());
-		// TODO: send error to controller
+		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 		return;
 	    }
 	}
@@ -88,8 +88,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	this.setBufferId(bufferId);
 	
 	if (ovxInPort == null) {
-	   //TODO: Send an error to the controller
 	    log.error("Unknown virtual port id {}; dropping flowmod {}", inport, this);
+	    sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
 	    return;
 	} else {
 	    this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
@@ -102,32 +102,18 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		this.rewriteMatch();
 	    }
 	}
-	this.computeLength();
+	computeLength();
 	sw.sendSouth(this);
 
     }
     
     
     private void computeLength() {
-	this.setActions(this.acts);	
+	this.setActions(this.approvedActions);	
 	this.setLengthU(OVXFlowMod.MINIMUM_LENGTH);
-	for (final OFAction act : this.acts) {
+	for (final OFAction act : this.approvedActions) {
 	    this.setLengthU(this.getLengthU() + act.getLengthU());
 	}
-    }
-    
-    private void prependUnRewriteActions() {
-	if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-	    final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-	    srcAct.setNetworkAddress(this.getMatch().getNetworkSource());
-	    this.acts.add(srcAct);
-	}
-	if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-	    final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-	    dstAct.setNetworkAddress(this.getMatch().getNetworkDestination());
-	    this.acts.add(dstAct);
-	}
-	
     }
 
 
@@ -150,7 +136,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    }
 	    final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
 	    srcAct.setNetworkAddress(pip.getIp());
-	    this.acts.add(0,srcAct);
+	    this.approvedActions.add(0,srcAct);
 
 	}
 
@@ -169,7 +155,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    }
 	    final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
 	    dstAct.setNetworkAddress(pip.getIp());
-	    this.acts.add(0,dstAct);
+	    this.approvedActions.add(0,dstAct);
 
 	}
     }

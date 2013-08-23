@@ -24,35 +24,76 @@ package net.onrc.openvirtex.messages.actions;
 
 
 
+import java.util.List;
+import java.util.Map;
+
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 
+import org.openflow.protocol.OFError.OFBadActionCode;
+import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.Wildcards.Flag;
+import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.util.U16;
 
 public class OVXActionOutput extends OFActionOutput implements VirtualizableAction {
 
     @Override
-    public boolean virtualize(OVXSwitch sw)
-            throws ActionVirtualizationDenied {
-	
-	short outport = this.getPort();
-	OVXPort outPort = sw.getPort(outport);
-	
-	if (U16.f(outport) > U16.f(OFPort.OFPP_MAX.getValue())) {
-	    //TODO: expand FLOOD ports to appropriate ports.
-	    return false;
-	}
-	
-	if (outPort != null) {
-	    this.setPort(outPort.getPhysicalPortNumber());
+    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match)
+	    throws ActionVirtualizationDenied {
+
+	int outport = U16.f(this.getPort());
+
+
+	/*
+	 * If we have a flood or all action then expand the 
+	 * action list to include all the ports on the virtual 
+	 * switch (minus the inport if it's a flood)
+	 */
+	if (outport == U16.f(OFPort.OFPP_ALL.getValue()) || 
+		outport == U16.f(OFPort.OFPP_FLOOD.getValue())) {
+	    Map<Short, OVXPort> ports = sw.getPorts();
+	    for (OVXPort port : ports.values()) {
+		if (port.getPortNumber() != match.getInputPort()) {
+		    if (port.isEdge())
+			prependUnRewriteActions(approvedActions, match);
+		    approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
+		}
+	    }
+
+	    if (outport == U16.f(OFPort.OFPP_ALL.getValue())) 
+		approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
+
+
+	} else if (outport < U16.f(OFPort.OFPP_MAX.getValue())) {
+	    OVXPort ovxPort = sw.getPort(this.getPort());
+	    if (ovxPort != null) {
+		if (ovxPort.isEdge()) 
+		    prependUnRewriteActions(approvedActions, match);
+		this.setPort(ovxPort.getPhysicalPortNumber());
+	    } else
+		throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
+			" does not exist in virtual switch " + sw.getName(), OFBadActionCode.OFPBAC_BAD_OUT_PORT);
+	    approvedActions.add(this);
 	} else
-	    throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
-		    " does not exist in virtual switch " + sw.getName());
+	    approvedActions.add(this);
 	
-	return outPort.isEdge();
+    }
+
+    private void prependUnRewriteActions(List<OFAction> approvedActions, final OFMatch match) {
+	if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+	    final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
+	    srcAct.setNetworkAddress(match.getNetworkSource());
+	    approvedActions.add(srcAct);
+	}
+	if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
+	    final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
+	    dstAct.setNetworkAddress(match.getNetworkDestination());
+	    approvedActions.add(dstAct);
+	}
     }
 
 }
