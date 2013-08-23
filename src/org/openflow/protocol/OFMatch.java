@@ -547,7 +547,7 @@ public class OFMatch implements Cloneable, Serializable {
 	this.dataLayerType = packetDataBB.getShort();
 
 	if (this.getDataLayerType() != (short) 0x8100) { // need cast to avoid
-							 // signed
+		                                         // signed
 	    // bug
 	    this.setDataLayerVirtualLan((short) 0xffff);
 	    this.setDataLayerVirtualLanPriorityCodePoint((byte) 0);

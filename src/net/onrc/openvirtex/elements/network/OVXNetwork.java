@@ -306,7 +306,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	ovxMap.put(OVXNetwork.NET, subnet);
 	ovxMap.put(OVXNetwork.GATEWAY, this.gwsMap);
 	final LinkedList<String> switches = this.getDpids();// new
-							    // LinkedList<Long>();
+	                                                    // LinkedList<Long>();
 	ovxMap.put(OVXNetwork.SWID, switches);
 	ovxMap.put(OVXNetwork.CON_ADDR, this.controllerHost);
 	ovxMap.put(OVXNetwork.CON_PORT, this.controllerPort);

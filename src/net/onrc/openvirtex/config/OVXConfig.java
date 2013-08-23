@@ -80,8 +80,8 @@ public class OVXConfig {
 	                                                                                .getLogger(OVXConfig.class
 	                                                                                        .getName());
 
-    private static APITenantManager                                    manager;                              // =
-													     // APITenantManager.getInstance();
+    private static APITenantManager                                    manager;                             // =
+	                                                                                                     // APITenantManager.getInstance();
 
     /**
      * Makes a serialized json string by obtaining the instantiated values

@@ -35,7 +35,7 @@ import net.onrc.openvirtex.util.OVXUtil;
 import org.kohsuke.args4j.Option;
 
 public class CmdLineSettings {
-    public static final String  DEFAULT_CONFIG_FILE      = null;                                     // "config/Config.json";
+    public static final String  DEFAULT_CONFIG_FILE      = null;                                    // "config/Config.json";
     public static final String  DEFAULT_OF_HOST          = "0.0.0.0";
     public static final Integer DEFAULT_OF_PORT          = 6633;
     public static final Integer DEFAULT_NUMBER_VIRT_NETS = 255;
