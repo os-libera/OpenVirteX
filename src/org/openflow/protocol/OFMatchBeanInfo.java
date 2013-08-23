@@ -1,18 +1,18 @@
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
- *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol;
@@ -41,61 +41,63 @@ import java.util.List;
 
 public class OFMatchBeanInfo extends SimpleBeanInfo {
 
-	@Override
-	public PropertyDescriptor[] getPropertyDescriptors() {
-		List<PropertyDescriptor> descs = new LinkedList<PropertyDescriptor>();
-		Field[] fields = OFMatch.class.getDeclaredFields();
-		String name;
-		for (int i = 0; i < fields.length; i++) {
-			int mod = fields[i].getModifiers();
-			if (Modifier.isFinal(mod) || // don't expose static or final fields
-					Modifier.isStatic(mod))
-				continue;
+    @Override
+    public PropertyDescriptor[] getPropertyDescriptors() {
+	final List<PropertyDescriptor> descs = new LinkedList<PropertyDescriptor>();
+	final Field[] fields = OFMatch.class.getDeclaredFields();
+	String name;
+	for (final Field field : fields) {
+	    final int mod = field.getModifiers();
+	    if (Modifier.isFinal(mod) || // don't expose static or final fields
+		    Modifier.isStatic(mod)) {
+		continue;
+	    }
 
-			name = fields[i].getName();
-			Class<?> type = fields[i].getType();
+	    name = field.getName();
+	    final Class<?> type = field.getType();
 
-			try {
-				descs.add(new PropertyDescriptor(name, name2getter(
-						OFMatch.class, name), name2setter(OFMatch.class, name,
-						type)));
-			} catch (IntrospectionException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		return descs.toArray(new PropertyDescriptor[0]);
+	    try {
+		descs.add(new PropertyDescriptor(name, this.name2getter(
+		        OFMatch.class, name), this.name2setter(OFMatch.class,
+		        name, type)));
+	    } catch (final IntrospectionException e) {
+		throw new RuntimeException(e);
+	    }
 	}
 
-	private Method name2setter(Class<OFMatch> c, String name, Class<?> type) {
-		String mName = "set" + toLeadingCaps(name);
-		Method m = null;
-		try {
-			m = c.getMethod(mName, new Class[] { type });
-		} catch (SecurityException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		}
-		return m;
-	}
+	return descs.toArray(new PropertyDescriptor[0]);
+    }
 
-	private Method name2getter(Class<OFMatch> c, String name) {
-		String mName = "get" + toLeadingCaps(name);
-		Method m = null;
-		try {
-			m = c.getMethod(mName, new Class[] {});
-		} catch (SecurityException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		}
-		return m;
+    private Method name2setter(final Class<OFMatch> c, final String name,
+	    final Class<?> type) {
+	final String mName = "set" + this.toLeadingCaps(name);
+	Method m = null;
+	try {
+	    m = c.getMethod(mName, new Class[] { type });
+	} catch (final SecurityException e) {
+	    throw new RuntimeException(e);
+	} catch (final NoSuchMethodException e) {
+	    throw new RuntimeException(e);
 	}
+	return m;
+    }
 
-	private String toLeadingCaps(String s) {
-		char[] array = s.toCharArray();
-		array[0] = Character.toUpperCase(array[0]);
-		return String.valueOf(array, 0, array.length);
+    private Method name2getter(final Class<OFMatch> c, final String name) {
+	final String mName = "get" + this.toLeadingCaps(name);
+	Method m = null;
+	try {
+	    m = c.getMethod(mName, new Class[] {});
+	} catch (final SecurityException e) {
+	    throw new RuntimeException(e);
+	} catch (final NoSuchMethodException e) {
+	    throw new RuntimeException(e);
 	}
+	return m;
+    }
+
+    private String toLeadingCaps(final String s) {
+	final char[] array = s.toCharArray();
+	array[0] = Character.toUpperCase(array[0]);
+	return String.valueOf(array, 0, array.length);
+    }
 }

@@ -103,8 +103,8 @@ public class LLDPUtil {
 	bb.putLong(((Switch) port.getParentSwitch()).getSwitchId());
 
 	// OUI TLV
-	//final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN
-	//        + LLDPUtil.FLOWNAMELEN_NULL;
+	// final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN
+	// + LLDPUtil.FLOWNAMELEN_NULL;
 	final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN;
 	// 4 - length of OUI Id + it's subtype
 	final int ouiHeader = ouiLen & 0x1ff
@@ -121,8 +121,8 @@ public class LLDPUtil {
 	// ovxName.length() + 1, ovxName);
 	// TODO: this is probably not the most portable code
 	bb.put(ovxName.getBytes());
-	//bb.put((byte) 0);
-	bb.put((byte) (ovxName.length()));
+	// bb.put((byte) 0);
+	bb.put((byte) ovxName.length());
 
 	// EndOfLLDPDU TLV
 	final byte endType[] = { 0x00 };
@@ -133,7 +133,7 @@ public class LLDPUtil {
 	while (bb.position() <= size - 4) {
 	    bb.putInt(0xcafebabe); // fill with well known padding
 	}
-	
+
 	return buf;
     }
 

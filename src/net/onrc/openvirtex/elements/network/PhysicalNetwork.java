@@ -62,9 +62,9 @@ public class PhysicalNetwork extends
     private ArrayList<Uplink>                       uplinkList;
     private final Map<Long, SwitchDiscoveryManager> discoveryManager;
     private static HashedWheelTimer                 timer;
-    Logger                                          log           = LogManager
-	                                                                  .getLogger(PhysicalNetwork.class
-	                                                                          .getName());
+    Logger                                          log = LogManager
+	                                                        .getLogger(PhysicalNetwork.class
+	                                                                .getName());
 
     private PhysicalNetwork() {
 	this.log.info("Starting network discovery...");

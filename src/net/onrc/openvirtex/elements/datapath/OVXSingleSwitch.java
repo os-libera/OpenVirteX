@@ -3,24 +3,21 @@
  */
 package net.onrc.openvirtex.elements.datapath;
 
-
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.Devirtualizable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
-
 public class OVXSingleSwitch extends OVXSwitch {
 
-    
-    private static Logger log = LogManager.getLogger(OVXSingleSwitch.class.getName());
-    
+    private static Logger log = LogManager.getLogger(OVXSingleSwitch.class
+	                              .getName());
+
     public OVXSingleSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
     }
@@ -43,9 +40,10 @@ public class OVXSingleSwitch extends OVXSwitch {
      * OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
      */
     @Override
-    public void sendMsg(OFMessage msg, OVXSendMsg from) {
-	if (this.isConnected)
-	    channel.write(Collections.singletonList(msg));
+    public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+	if (this.isConnected) {
+	    this.channel.write(Collections.singletonList(msg));
+	}
     }
 
     /*
@@ -56,11 +54,11 @@ public class OVXSingleSwitch extends OVXSwitch {
      * .OFMessage)
      */
     @Override
-    public void handleIO(OFMessage msg) {
+    public void handleIO(final OFMessage msg) {
 	try {
 	    ((Devirtualizable) msg).devirtualize(this);
-	} catch (ClassCastException e) {
-	    log.error("Received illegal message : " + msg);
+	} catch (final ClassCastException e) {
+	    OVXSingleSwitch.log.error("Received illegal message : " + msg);
 	}
     }
 
@@ -72,13 +70,15 @@ public class OVXSingleSwitch extends OVXSwitch {
     @Override
     public void tearDown() {
 	// TODO: Release any acquired resources
-	channel.disconnect();
+	this.channel.disconnect();
 
     }
+
     @Override
     // TODO: this is probably not optimal
-    public void sendSouth(OFMessage msg) {
-	PhysicalSwitch sw = OVXMap.getInstance().getPhysicalSwitches(this).get(0);
+    public void sendSouth(final OFMessage msg) {
+	final PhysicalSwitch sw = OVXMap.getInstance()
+	        .getPhysicalSwitches(this).get(0);
 	sw.sendMsg(msg, this);
     }
 }

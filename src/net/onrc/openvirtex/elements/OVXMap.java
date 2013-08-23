@@ -1,39 +1,42 @@
 /**
- *  Copyright (c) 2013 Open Networking Laboratory
+ * Copyright (c) 2013 Open Networking Laboratory
  * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of
+ * the Software, and to permit persons to whom the Software is furnished to do
+ * so,
  * subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
 
 package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
-
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
-
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
@@ -42,11 +45,11 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.util.MACAddress;
 
-import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
@@ -54,8 +57,9 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 
 public class OVXMap implements Mappable {
 
-    
-    Logger log = LogManager.getLogger(OVXMap.class.getName());
+    Logger                                                                   log = LogManager
+	                                                                                 .getLogger(OVXMap.class
+	                                                                                         .getName());
     private static OVXMap                                                    mapInstance;
 
     ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>                  virtualSwitchMap;
@@ -66,8 +70,7 @@ public class OVXMap implements Mappable {
     RadixTree<OVXIPAddress>                                                  physicalIPMap;
 
     RadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>                 virtualIPMap;
-    RadixTree<Integer>							     macMap;
-
+    RadixTree<Integer>                                                       macMap;
 
     /**
      * constructor for OVXMap will be an empty constructor
@@ -82,7 +85,8 @@ public class OVXMap implements Mappable {
 	        new DefaultCharArrayNodeFactory());
 	this.virtualIPMap = new ConcurrentRadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>(
 	        new DefaultCharArrayNodeFactory());
-	this.macMap = new ConcurrentRadixTree<Integer>(new DefaultCharArrayNodeFactory());
+	this.macMap = new ConcurrentRadixTree<Integer>(
+	        new DefaultCharArrayNodeFactory());
     }
 
     /**
@@ -109,9 +113,10 @@ public class OVXMap implements Mappable {
      * @param physicalSwitches
      * @param virtualSwitch
      */
+    @Override
     public void addSwitches(final List<PhysicalSwitch> physicalSwitches,
 	    final OVXSwitch virtualSwitch) {
-	
+
 	for (final PhysicalSwitch physicalSwitch : physicalSwitches) {
 	    this.addSwitch(physicalSwitch, virtualSwitch);
 	}
@@ -143,6 +148,7 @@ public class OVXMap implements Mappable {
      * @param physicalLinks
      * @param virtualLink
      */
+    @Override
     public void addLinks(final List<PhysicalLink> physicalLinks,
 	    final OVXLink virtualLink) {
 	for (final PhysicalLink physicalLink : physicalLinks) {
@@ -235,7 +241,9 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalSwitch(final PhysicalSwitch physicalSwitch,
 	    final OVXSwitch virtualSwitch) {
-	ConcurrentHashMap<Integer, OVXSwitch> switchMap = this.physicalSwitchMap.get(physicalSwitch);
+	System.out.println("physicalSwitchMap:" + this.physicalSwitchMap);
+	ConcurrentHashMap<Integer, OVXSwitch> switchMap = this.physicalSwitchMap
+	        .get(physicalSwitch);
 	if (switchMap == null) {
 	    switchMap = new ConcurrentHashMap<Integer, OVXSwitch>();
 	    this.physicalSwitchMap.put(physicalSwitch, switchMap);
@@ -256,7 +264,8 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalLink(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
-	ConcurrentHashMap<Integer, OVXLink> linkMap = this.physicalLinkMap.get(physicalLink);
+	ConcurrentHashMap<Integer, OVXLink> linkMap = this.physicalLinkMap
+	        .get(physicalLink);
 	if (linkMap == null) {
 	    linkMap = new ConcurrentHashMap<Integer, OVXLink>();
 	    this.physicalLinkMap.put(physicalLink, linkMap);
@@ -278,7 +287,8 @@ public class OVXMap implements Mappable {
      */
     private void addVirtualSwitch(final OVXSwitch virtualSwitch,
 	    final PhysicalSwitch physicalSwitch) {
-	ArrayList<PhysicalSwitch> switchList = this.virtualSwitchMap.get(virtualSwitch);
+	ArrayList<PhysicalSwitch> switchList = this.virtualSwitchMap
+	        .get(virtualSwitch);
 	if (switchList == null) {
 	    switchList = new ArrayList<PhysicalSwitch>();
 	    this.virtualSwitchMap.put(virtualSwitch, switchList);
@@ -301,7 +311,7 @@ public class OVXMap implements Mappable {
 	ArrayList<PhysicalLink> linkList = this.virtualLinkMap.get(virtualLink);
 	if (linkList == null) {
 	    linkList = new ArrayList<PhysicalLink>();
-	    this.virtualLinkMap.put(virtualLink,  linkList);
+	    this.virtualLinkMap.put(virtualLink, linkList);
 	}
 	linkList.add(physicalLink);
     }
@@ -320,26 +330,29 @@ public class OVXMap implements Mappable {
 	this.networkMap.put(virtualNetwork.getTenantId(), virtualNetwork);
     }
 
-
     @Override
-    public void addMAC(MACAddress mac, Integer tenantId) {
+    public void addMAC(final MACAddress mac, final Integer tenantId) {
 	this.macMap.put(mac.toStringNoColon(), tenantId);
-    } 
+    }
 
     // Access objects from dictionary given the key
 
-    public PhysicalIPAddress getPhysicalIP(OVXIPAddress ip, Integer tenantId) {
-	ConcurrentHashMap<Integer, PhysicalIPAddress> ips = 
-		this.virtualIPMap.getValueForExactKey(ip.toString());
-	if (ips == null)
+    @Override
+    public PhysicalIPAddress getPhysicalIP(final OVXIPAddress ip,
+	    final Integer tenantId) {
+	final ConcurrentHashMap<Integer, PhysicalIPAddress> ips = this.virtualIPMap
+	        .getValueForExactKey(ip.toString());
+	if (ips == null) {
 	    return null;
+	}
 	return ips.get(tenantId);
     }
-    
-    public OVXIPAddress getVirtualIP(PhysicalIPAddress ip) {
+
+    @Override
+    public OVXIPAddress getVirtualIP(final PhysicalIPAddress ip) {
 	return this.physicalIPMap.getValueForExactKey(ip.toString());
     }
-    
+
     /**
      * get the OVXSwitch which has been specified by the physicalSwitch
      * and tenantId
@@ -354,11 +367,13 @@ public class OVXMap implements Mappable {
     @Override
     public OVXSwitch getVirtualSwitch(final PhysicalSwitch physicalSwitch,
 	    final Integer tenantId) {
-	ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap.get(physicalSwitch);
+	final ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap
+	        .get(physicalSwitch);
 	if (sws == null) {
-	    log.error("No virtual switches for physical switch {}", physicalSwitch);
+	    this.log.error("No virtual switches for physical switch {}",
+		    physicalSwitch);
 	}
-	log.info("looking for tid {} in {}", tenantId, sws);
+	this.log.info("looking for tid {} in {}", tenantId, sws);
 	return this.physicalSwitchMap.get(physicalSwitch).get(tenantId);
     }
 
@@ -429,112 +444,151 @@ public class OVXMap implements Mappable {
 	return this.networkMap.get(tenantId);
     }
 
+    @Override
     public Integer getMAC(final MACAddress mac) {
 	return this.macMap.getValueForExactKey(mac.toStringNoColon());
     }
 
     // Remove objects from dictionary
-    
-    public Collection<OVXNetwork> getVirtualNetworks(){
-	Collection<OVXNetwork> networks = this.networkMap.values();	
+
+    public Collection<OVXNetwork> getVirtualNetworks() {
+	final Collection<OVXNetwork> networks = this.networkMap.values();
 	return networks;
     }
-    
-    public Collection<OVXSwitch> getVirtualSwitches(){
-	Collection<OVXSwitch> switches = this.virtualSwitchMap.keySet();
+
+    public Collection<OVXSwitch> getVirtualSwitches() {
+	final Collection<OVXSwitch> switches = this.virtualSwitchMap.keySet();
 	return switches;
     }
-    
-    public Collection<OVXLink> getVirtualLinks(){
-	Collection<OVXLink> links = this.virtualLinkMap.keySet();
-	return links;
-    }
-    
-    public HashMap<String,Object> toJson() {
-	HashMap<String,Object> output = new HashMap<String,Object>();
-	LinkedList<Object> list = new LinkedList<Object>();
-	
-	Collection<Integer> tenants = getTenantIds();
-	for(Integer tenant: tenants){
-	    HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-	    ArrayList<HashMap<String,Object>> switchList = new ArrayList<HashMap<String,Object>>();
-	    
-	    ArrayList<HashMap<String,Object>> linkList = new ArrayList<HashMap<String,Object>>();
-	    
-	    
-	    ovxMap.put(TID, tenant);
-	    
-	    ArrayList<OVXSwitch> virSw = getVirtualSwitchesPerTenant(tenant);
-	    for(OVXSwitch vSwitch: virSw){
-		HashMap<String,Object> switchMap = new HashMap<String,Object>();
-		switchMap.put(VSWID,String.valueOf(vSwitch.getSwitchId()));
-		ArrayList<PhysicalSwitch> phySwitches = this.virtualSwitchMap.get(vSwitch);
-		ArrayList<Long> phySwitchIds = new ArrayList<Long>();
-		for(PhysicalSwitch phySwitch:phySwitches){
-		    phySwitchIds.add(phySwitch.getSwitchId());
+
+    public Set<OVXLink> getVirtualLinks() {
+	final Collection<OVXLink> links = this.virtualLinkMap.keySet();
+	System.out.println("VIRTUALLINKS:" + links);
+	final Set<OVXLink> linkSet = new HashSet<OVXLink>();
+	final HashMap<Integer, ArrayList<Integer>> tMap = new HashMap<Integer, ArrayList<Integer>>();
+	for (final OVXLink link : links) {
+	    System.out.println("LINK:" + link.getLinkId());
+	    System.out.println("TENANT:" + link.getTenantId());
+	    ArrayList<Integer> tList = new ArrayList<Integer>();
+	    tList = tMap.get(link.getTenantId());
+	    if (tList != null) {
+		if (tList.contains(link.getLinkId())) {
+		    continue;
+		} else {
+		    linkSet.add(link);
+		    tList.add(link.getLinkId());
+		    tMap.put(link.getTenantId(), tList);
 		}
-		switchMap.put(PSWID,phySwitchIds);
-		
-		Collection<OVXPort> virPorts = vSwitch.getPorts();
-		ArrayList<HashMap<String,Object>> portList = new ArrayList<HashMap<String,Object>>();
-		for(OVXPort vPort:virPorts){
-		    HashMap<String,Object> portMap = new HashMap<String,Object>();
-		    portMap.put(VPORTNUM, vPort.getPortNumber());
-		    HashMap<String,Object> phyPortMap = new HashMap<String,Object>();
-		    phyPortMap = vPort.getPhysicalPort().toJson();
-		    portMap.put(PHYPORT, phyPortMap);
-		    portList.add(portMap); 
-		}
-		switchMap.put(PORT,portList);
-		switchList.add(switchMap); 
+	    } else {
+		tList = new ArrayList<Integer>();
+		linkSet.add(link);
+		tList.add(link.getLinkId());
+		tMap.put(link.getTenantId(), tList);
 	    }
-	    ovxMap.put(SWMAP, switchList);
-	    
-	    ArrayList<OVXLink> virLinks = getVirtualLinksPerTenant(tenant);
-	    for(OVXLink vLink: virLinks){
-		HashMap<String,Object> linkMap = new HashMap<String,Object>();
-		linkMap.put(LINKID,String.valueOf(vLink.getLinkId()));
-		ArrayList<HashMap<String,Object>> pLinks = new ArrayList<HashMap<String,Object>>();
-		ArrayList<PhysicalLink> phyLinks = virtualLinkMap.get(vLink);
-		for(PhysicalLink phyLink: phyLinks){
-		    HashMap<String,Object> phyLinkMap = phyLink.toJson();
-		    pLinks.add(phyLinkMap);
-		    
-		}
-		linkMap.put(PHYLINK, pLinks);
-		linkList.add(linkMap);
-	    }
-	    ovxMap.put(LINKMAP, linkList);
-	    list.add(ovxMap);
+
+	    System.out.println(tMap.toString());
 	}
-	
-	output.put(MAP, list);
-	return output; 
+	System.out.println("linkSet: " + linkSet.toString());
+	return linkSet;
     }
 
-    private ArrayList<OVXLink> getVirtualLinksPerTenant(Integer tenant) {
-	ArrayList<OVXLink> vLinks = new ArrayList<OVXLink>();
-	Collection<ConcurrentHashMap<Integer, OVXLink>> virLinkMap = this.physicalLinkMap.values();
-	for(ConcurrentHashMap<Integer, OVXLink> vLink: virLinkMap){
-	    if(vLink.containsKey(tenant))
+    @Override
+    public HashMap<String, Object> toJson() {
+	final HashMap<String, Object> output = new HashMap<String, Object>();
+	final LinkedList<Object> list = new LinkedList<Object>();
+
+	final Collection<Integer> tenants = this.getTenantIds();
+	for (final Integer tenant : tenants) {
+	    final HashMap<String, Object> ovxMap = new HashMap<String, Object>();
+	    final ArrayList<HashMap<String, Object>> switchList = new ArrayList<HashMap<String, Object>>();
+
+	    final ArrayList<HashMap<String, Object>> linkList = new ArrayList<HashMap<String, Object>>();
+
+	    ovxMap.put(Mappable.TID, tenant);
+
+	    final ArrayList<OVXSwitch> virSw = this
+		    .getVirtualSwitchesPerTenant(tenant);
+	    for (final OVXSwitch vSwitch : virSw) {
+		final HashMap<String, Object> switchMap = new HashMap<String, Object>();
+		switchMap.put(Mappable.VSWID,
+		        String.valueOf(vSwitch.getSwitchId()));
+		final ArrayList<PhysicalSwitch> phySwitches = this.virtualSwitchMap
+		        .get(vSwitch);
+		final ArrayList<Long> phySwitchIds = new ArrayList<Long>();
+		for (final PhysicalSwitch phySwitch : phySwitches) {
+		    phySwitchIds.add(phySwitch.getSwitchId());
+		}
+		switchMap.put(Mappable.PSWID, phySwitchIds);
+		final Collection<OVXPort> virPorts = vSwitch.getPorts();
+		final ArrayList<HashMap<String, Object>> portList = new ArrayList<HashMap<String, Object>>();
+		for (final OVXPort vPort : virPorts) {
+		    final HashMap<String, Object> portMap = new HashMap<String, Object>();
+		    portMap.put(Mappable.VPORTNUM, vPort.getPortNumber());
+		    HashMap<String, Object> phyPortMap = new HashMap<String, Object>();
+		    phyPortMap = vPort.getPhysicalPort().toJson();
+		    portMap.put(Mappable.PHYPORT, phyPortMap);
+		    portList.add(portMap);
+		}
+		switchMap.put(Mappable.PORT, portList);
+		switchList.add(switchMap);
+	    }
+	    ovxMap.put(Mappable.SWMAP, switchList);
+
+	    final ArrayList<OVXLink> virLinks = this
+		    .getVirtualLinksPerTenant(tenant);
+	    for (final OVXLink vLink : virLinks) {
+		final HashMap<String, Object> linkMap = new HashMap<String, Object>();
+		linkMap.put(Mappable.LINKID, String.valueOf(vLink.getLinkId()));
+		final ArrayList<HashMap<String, Object>> pLinks = new ArrayList<HashMap<String, Object>>();
+		final ArrayList<PhysicalLink> phyLinks = this.virtualLinkMap
+		        .get(vLink);
+		for (final PhysicalLink phyLink : phyLinks) {
+		    final HashMap<String, Object> phyLinkMap = phyLink.toJson();
+		    pLinks.add(phyLinkMap);
+
+		}
+		linkMap.put(Mappable.PHYLINK, pLinks);
+		linkList.add(linkMap);
+	    }
+	    ovxMap.put(Mappable.LINKMAP, linkList);
+	    list.add(ovxMap);
+	}
+
+	output.put(Mappable.MAP, list);
+	return output;
+    }
+
+    private ArrayList<OVXLink> getVirtualLinksPerTenant(final Integer tenant) {
+	final ArrayList<OVXLink> vLinks = new ArrayList<OVXLink>();
+	final Collection<ConcurrentHashMap<Integer, OVXLink>> virLinkMap = this.physicalLinkMap
+	        .values();
+	for (final ConcurrentHashMap<Integer, OVXLink> vLink : virLinkMap) {
+	    if (vLink.containsKey(tenant)) {
 		vLinks.add(vLink.get(tenant));
+	    }
 	}
 	return vLinks;
     }
 
-    private ArrayList<OVXSwitch> getVirtualSwitchesPerTenant(Integer tenant) {
-	ArrayList<OVXSwitch> vSwitches = new ArrayList<OVXSwitch>();
-	Collection<ConcurrentHashMap<Integer, OVXSwitch>> virSwitchMap = this.physicalSwitchMap.values();
-	for(ConcurrentHashMap<Integer, OVXSwitch> vSwitch: virSwitchMap){
-	    if(vSwitch.containsKey(tenant))
+    private ArrayList<OVXSwitch> getVirtualSwitchesPerTenant(
+	    final Integer tenant) {
+	final ArrayList<OVXSwitch> vSwitches = new ArrayList<OVXSwitch>();
+	final Collection<ConcurrentHashMap<Integer, OVXSwitch>> virSwitchMap = this.physicalSwitchMap
+	        .values();
+	System.out.println("virSwitchMap:" + virSwitchMap);
+	for (final ConcurrentHashMap<Integer, OVXSwitch> vSwitch : virSwitchMap) {
+	    System.out.println("vSwitch:" + vSwitch);
+	    if (vSwitch.containsKey(tenant)
+		    && vSwitches.contains(vSwitch.get(tenant)) == false) {
 		vSwitches.add(vSwitch.get(tenant));
+	    }
 	}
+	System.out.println("vSwitches:" + vSwitches);
 	return vSwitches;
     }
 
     private Collection<Integer> getTenantIds() {
-	Collection<Integer> tenants = this.networkMap.keySet();
+	final Collection<Integer> tenants = this.networkMap.keySet();
 	return tenants;
     }
-    
 }

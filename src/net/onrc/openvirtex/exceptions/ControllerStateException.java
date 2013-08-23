@@ -11,11 +11,11 @@ public class ControllerStateException extends IllegalArgumentException {
 	super();
     }
 
-    public ControllerStateException(String msg) {
+    public ControllerStateException(final String msg) {
 	super(msg);
     }
 
-    public ControllerStateException(Throwable msg) {
+    public ControllerStateException(final Throwable msg) {
 	super(msg);
     }
 }

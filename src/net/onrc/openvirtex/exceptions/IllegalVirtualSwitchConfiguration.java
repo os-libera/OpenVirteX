@@ -2,7 +2,7 @@ package net.onrc.openvirtex.exceptions;
 
 public class IllegalVirtualSwitchConfiguration extends Exception {
 
-    public IllegalVirtualSwitchConfiguration(String msg) {
+    public IllegalVirtualSwitchConfiguration(final String msg) {
 	super(msg);
     }
 

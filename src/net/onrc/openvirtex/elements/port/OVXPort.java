@@ -30,10 +30,8 @@
 package net.onrc.openvirtex.elements.port;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import net.onrc.openvirtex.elements.OVXMap;
-
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 public class OVXPort extends Port<OVXSwitch> {
@@ -86,18 +84,20 @@ public class OVXPort extends Port<OVXSwitch> {
 	result += "\n- tenantId: " + this.tenantId;
 	return result;
     }
-    
-    public HashMap<String,Object> toJson() {
 
-	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-	
-	ovxMap.put(SWID,String.valueOf(getParentSwitch().getSwitchId()));
-	ovxMap.put(PORTNUM,getPortNumber());
+    public HashMap<String, Object> toJson() {
 
-	return ovxMap; 
+	final HashMap<String, Object> ovxMap = new HashMap<String, Object>();
+
+	ovxMap.put(Port.SWID,
+	        String.valueOf(this.getParentSwitch().getSwitchId()));
+	ovxMap.put(Port.PORTNUM, this.getPortNumber());
+
+	return ovxMap;
     }
 
-    public short getPortNumber(){
+    @Override
+    public short getPortNumber() {
 	return this.portNumber;
     }
 }

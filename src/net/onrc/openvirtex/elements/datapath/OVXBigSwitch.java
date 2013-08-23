@@ -173,9 +173,9 @@ public class OVXBigSwitch extends OVXSwitch {
     }
 
     @Override
-    public void sendSouth(OFMessage msg) {
+    public void sendSouth(final OFMessage msg) {
 	// TODO Auto-generated method stub
-	
+
     }
 
 }

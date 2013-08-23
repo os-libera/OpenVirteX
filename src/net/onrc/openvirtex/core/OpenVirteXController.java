@@ -1,22 +1,29 @@
 /**
- *  Copyright (c) 2013 Open Networking Laboratory
+ * Copyright (c) 2013 Open Networking Laboratory
  * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of
+ * the Software, and to permit persons to whom the Software is furnished to do
+ * so,
  * subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
 
@@ -29,6 +36,7 @@ import java.util.LinkedList;
 import java.util.concurrent.Executors;
 
 import net.onrc.openvirtex.api.APIServer;
+import net.onrc.openvirtex.config.OVXConfig;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.elements.OVXMap;
@@ -48,179 +56,208 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
-
 public class OpenVirteXController implements Runnable {
 
-    Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
+    Logger                                      log              = LogManager
+	                                                                 .getLogger(OpenVirteXController.class
+	                                                                         .getName());
 
-    private static final int SEND_BUFFER_SIZE = 1024 * 1024;
-    private static OpenVirteXController instance = null;
-    
-    public static String HOST = "host";
-    public static String OFPORT = "openflow-port";
-    public static String APIPORT = "api-port";
-    public static String OPENVIRTEX = "openvirtex";
-    
-    private String configFile = null;
-    private String ofHost = null;
-    private Integer ofPort = null;
-    APIServer server;
-    
-    private Integer apiPort = null;
+    private static final int                    SEND_BUFFER_SIZE = 1024 * 1024;
+    private static OpenVirteXController         instance         = null;
 
+    public static String                        HOST             = "host";
+    public static String                        OFPORT           = "openflow-port";
+    public static String                        APIPORT          = "api-port";
+    public static String                        OPENVIRTEX       = "openvirtex";
 
-    private NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
-	    Executors.newCachedThreadPool(), 
-	    Executors.newCachedThreadPool());
+    private String                              configFile       = null;
+    private String                              ofHost           = null;
+    private Integer                             ofPort           = null;
+    APIServer                                   server;
 
-    private final ChannelGroup sg = new DefaultChannelGroup();
-    private final ChannelGroup cg = new DefaultChannelGroup();
-    
-    private SwitchChannelPipeline pfact = null;
-    private ClientChannelPipeline cfact = null;
+    public static Integer                       apiPort          = 8080;
 
-    private int maxVirtual = 0;
+    private final NioClientSocketChannelFactory clientSockets    = new NioClientSocketChannelFactory(
+	                                                                 Executors
+	                                                                         .newCachedThreadPool(),
+	                                                                 Executors
+	                                                                         .newCachedThreadPool());
 
-    public OpenVirteXController(String configFile, String ofHost, Integer ofPort, int maxVirtual) {
+    private final ChannelGroup                  sg               = new DefaultChannelGroup();
+    private final ChannelGroup                  cg               = new DefaultChannelGroup();
+
+    private SwitchChannelPipeline               pfact            = null;
+    private ClientChannelPipeline               cfact            = null;
+
+    private int                                 maxVirtual       = 0;
+
+    public OpenVirteXController(final String configFile, final String ofHost,
+	    final Integer ofPort, final int maxVirtual) {
 	this.configFile = configFile;
 	this.ofHost = ofHost;
 	this.ofPort = ofPort;
-	this.maxVirtual  = maxVirtual;
-	instance = this;
+	this.maxVirtual = maxVirtual;
+	OpenVirteXController.instance = this;
     }
-    
-    public OpenVirteXController(String ofHost, Integer ofPort, Integer apiPort){
+
+    public OpenVirteXController(final String ofHost, final Integer ofPort,
+	    final Integer apiPort) {
 	this.ofHost = ofHost;
 	this.ofPort = ofPort;
 	this.apiPort = apiPort;
     }
-    
-    public OpenVirteXController(){
-	
+
+    public OpenVirteXController() {
+
     }
 
     @Override
     public void run() {
 	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
 	PhysicalNetwork.getInstance().boot();
-	
-//	OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
-//	sw.init();
-//	this.registerOVXSwitch(sw, "192.168.2.136", 6633);
-	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
-	this.startServer();
+
+	// OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
+	// sw.init();
+	// this.registerOVXSwitch(sw, "192.168.2.136", 6633);
+	// this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1,
+	// (short)100), "192.168.2.136", 6633);
+
 	try {
-	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
+	    final ServerBootstrap switchServerBootStrap = this
+		    .createServerBootStrap();
 
-	    setServerBootStrapParams(switchServerBootStrap);
+	    this.setServerBootStrapParams(switchServerBootStrap);
 
-	    pfact = new SwitchChannelPipeline(this, null);
-	    switchServerBootStrap.setPipelineFactory(pfact);
-	    InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
-		    ofPort) : new InetSocketAddress(ofHost, ofPort);
-		    sg.add(switchServerBootStrap.bind(sa));
-		    
-	} catch (Exception e) {
+	    this.pfact = new SwitchChannelPipeline(this, null);
+	    switchServerBootStrap.setPipelineFactory(this.pfact);
+	    final InetSocketAddress sa = this.ofHost == null ? new InetSocketAddress(
+		    this.ofPort) : new InetSocketAddress(this.ofHost,
+		    this.ofPort);
+	    this.sg.add(switchServerBootStrap.bind(sa));
+
+	    if (this.configFile != null) {
+		OVXConfig.loadConfig(this.configFile);
+	    }
+	    /*
+	     * System.out.println("Before starting server1"+this.configFile);
+	     * this.startServer();
+	     * System.out.println("After starting server");
+	     * }
+	     * else{
+	     */
+	    System.out.println("Before starting server2");
+	    this.startServer();
+	    System.out.println("After starting server");
+	    // }
+
+	} catch (final Exception e) {
 	    throw new RuntimeException(e);
 	}
 
     }
 
     public void registerOVXSwitch(final OVXSwitch sw) {
-	OVXNetwork ovxNetwork = OVXMap.getInstance().getVirtualNetwork(sw.getTenantId()); 
-	String host = ovxNetwork.getControllerHost();
-	Integer port = ovxNetwork.getControllerPort();
+	final OVXNetwork ovxNetwork = OVXMap.getInstance().getVirtualNetwork(
+	        sw.getTenantId());
+	final String host = ovxNetwork.getControllerHost();
+	final Integer port = ovxNetwork.getControllerPort();
 
-	ClientBootstrap clientBootStrap = createClientBootStrap();
-	setClientBootStrapParams(clientBootStrap);
+	final ClientBootstrap clientBootStrap = this.createClientBootStrap();
+	this.setClientBootStrapParams(clientBootStrap);
 	final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
 	clientBootStrap.setOption("remoteAddress", remoteAddr);
 
-	cfact = new ClientChannelPipeline(this, cg, null,
-		clientBootStrap, sw);
-	clientBootStrap.setPipelineFactory(cfact);
+	this.cfact = new ClientChannelPipeline(this, this.cg, null,
+	        clientBootStrap, sw);
+	clientBootStrap.setPipelineFactory(this.cfact);
 
-	ChannelFuture cf = clientBootStrap.connect();
+	final ChannelFuture cf = clientBootStrap.connect();
 
 	cf.addListener(new ChannelFutureListener() {
 
 	    @Override
-	    public void operationComplete(ChannelFuture e) throws Exception {
+	    public void operationComplete(final ChannelFuture e)
+		    throws Exception {
 		if (e.isSuccess()) {
-		    Channel chan = e.getChannel();
+		    final Channel chan = e.getChannel();
 		    sw.setChannel(chan);
-		    cg.add(chan);
-		} else
-		    log.error("Failed to connect to controller {} for switch {}", remoteAddr, sw.getSwitchId());
+		    OpenVirteXController.this.cg.add(chan);
+		} else {
+		    OpenVirteXController.this.log.error(
+			    "Failed to connect to controller {} for switch {}",
+			    remoteAddr, sw.getSwitchId());
+		}
 	    }
 	});
     }
 
-
-    private void setServerBootStrapParams(ServerBootstrap bootstrap) {
+    private void setServerBootStrapParams(final ServerBootstrap bootstrap) {
 	bootstrap.setOption("reuseAddr", true);
 	bootstrap.setOption("child.keepAlive", true);
 	bootstrap.setOption("child.tcpNoDelay", true);
 	bootstrap.setOption("child.sendBufferSize",
-		OpenVirteXController.SEND_BUFFER_SIZE);
+	        OpenVirteXController.SEND_BUFFER_SIZE);
 
     }
 
-    private void setClientBootStrapParams(ClientBootstrap bootstrap) {
+    private void setClientBootStrapParams(final ClientBootstrap bootstrap) {
 	bootstrap.setOption("reuseAddr", true);
 	bootstrap.setOption("child.keepAlive", true);
 	bootstrap.setOption("child.tcpNoDelay", true);
 	bootstrap.setOption("child.sendBufferSize",
-		OpenVirteXController.SEND_BUFFER_SIZE);
+	        OpenVirteXController.SEND_BUFFER_SIZE);
 
     }
 
     private ClientBootstrap createClientBootStrap() {
-	return new ClientBootstrap(clientSockets);
+	return new ClientBootstrap(this.clientSockets);
     }
 
     private ServerBootstrap createServerBootStrap() {
 	return new ServerBootstrap(new NioServerSocketChannelFactory(
-		Executors.newCachedThreadPool(),
-		Executors.newCachedThreadPool()));
+	        Executors.newCachedThreadPool(),
+	        Executors.newCachedThreadPool()));
     }
-    
+
     private void startServer() {
 	this.server = new APIServer();
-	new Thread(server).start();
+	new Thread(this.server).start();
     }
 
     private void stopServer() {
 	this.server.stop();
     }
-    
+
     public void terminate() {
-	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
-	    log.info("Shut down all controller connections. Quitting...");
+	if (this.cg != null && this.cg.close().awaitUninterruptibly(1000)) {
+	    this.log.info("Shut down all controller connections. Quitting...");
 	} else {
-	    log.error("Error shutting down all controller connections. Quitting anyway.");
+	    this.log.error("Error shutting down all controller connections. Quitting anyway.");
 	}
-	
-	if (sg != null && sg.close().awaitUninterruptibly(1000)) {
-	    log.info("Shut down all switch connections. Quitting...");
+
+	if (this.sg != null && this.sg.close().awaitUninterruptibly(1000)) {
+	    this.log.info("Shut down all switch connections. Quitting...");
 	} else {
-	    log.error("Error shutting down all switch connections. Quitting anyway.");
+	    this.log.error("Error shutting down all switch connections. Quitting anyway.");
 	}
-	
-	if (pfact != null)
-	    pfact.releaseExternalResources();
-	if (cfact != null)
-	    cfact.releaseExternalResources();
-	
-	stopServer();
+
+	if (this.pfact != null) {
+	    this.pfact.releaseExternalResources();
+	}
+	if (this.cfact != null) {
+	    this.cfact.releaseExternalResources();
+	}
+
+	this.stopServer();
     }
-    
+
     public static OpenVirteXController getInstance() {
-	if (instance == null)
-	    throw new RuntimeException("The OpenVirtexController has not been initialized; quitting.");
-	return instance;
+	if (OpenVirteXController.instance == null) {
+	    throw new RuntimeException(
+		    "The OpenVirtexController has not been initialized; quitting.");
+	}
+	return OpenVirteXController.instance;
     }
-    
 
     /*
      * return the number of bits needed to encode the tenant id
@@ -229,26 +266,32 @@ public class OpenVirteXController implements Runnable {
 	return this.maxVirtual;
     }
 
-
-    public void fromJson(ArrayList<HashMap<String,Object>> list) {
-	for (HashMap<String,Object> row: list){
-	    this.ofHost = (String) row.get(HOST);
-	    this.ofPort = (Integer) row.get(OFPORT);
-	    this.apiPort  = (Integer) row.get(APIPORT);
+    public void fromJson(final ArrayList<HashMap<String, Object>> list) {
+	for (final HashMap<String, Object> row : list) {
+	    this.ofHost = (String) row.get(OpenVirteXController.HOST);
+	    this.ofPort = ((Double) row.get(OpenVirteXController.OFPORT))
+		    .intValue();
+	    this.apiPort = ((Double) row.get(OpenVirteXController.APIPORT))
+		    .intValue();
 	}
     }
-   
-    public HashMap<String,Object> toJson() {
-	HashMap<String,Object> output = new HashMap<String,Object>();
-	LinkedList<Object> list = new LinkedList<Object>();
-	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-	ovxMap.put(APIPORT,this.apiPort);
-	ovxMap.put(OFPORT,this.ofPort);
-	ovxMap.put(HOST,this.ofHost);
-	
+
+    public HashMap<String, Object> toJson() {
+	final HashMap<String, Object> output = new HashMap<String, Object>();
+	final LinkedList<Object> list = new LinkedList<Object>();
+	final HashMap<String, Object> ovxMap = new HashMap<String, Object>();
+	ovxMap.put(OpenVirteXController.APIPORT, this.apiPort);
+	ovxMap.put(OpenVirteXController.OFPORT, this.ofPort);
+	ovxMap.put(OpenVirteXController.HOST, this.ofHost);
+
 	list.add(ovxMap);
-	output.put(OPENVIRTEX, list);
-	return output; 
+	output.put(OpenVirteXController.OPENVIRTEX, list);
+	return output;
     }
-    
+
+    public static int getApiPort() {
+	System.out.println("The port is:" + OpenVirteXController.apiPort);
+	return OpenVirteXController.apiPort;
+    }
+
 }

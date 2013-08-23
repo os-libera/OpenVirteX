@@ -116,9 +116,17 @@ def pa_saveConfig(args, cmd):
     return parser.parse_args(args)
 
 def do_saveConfig(gopts, opts, args):
+    if len(args) != 1:
+        print "save-config : Need a config-file to save config to."
+        sys.exit()
     client = create_client(gopts.host, int(gopts.port))
     file = client.saveConfig()
-    print file
+    #print file
+    output = open(args[0], 'w')
+    print>>output, file
+    output.close()
+    print "Config file written to %s." % args[0]
+
 
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
@@ -204,8 +212,7 @@ def parse_global_args (arglist):
 
 def create_client(host, port):
     #Make socket
-    transport = TSocket.TSocket('192.168.56.1', 8080)
-    #transport = TSocket.TSocket(host, port)
+    transport = TSocket.TSocket(host, port)
 
     # Buffering is critical. Raw sockets are very slow
     transport = TTransport.TFramedTransport(transport)

@@ -152,7 +152,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     @Override
     public String toString() {
-	
+
 	return "DPID : " + this.featuresReply.getDatapathId()
 	        + ", remoteAddr : "
 	        + this.channel.getRemoteAddress().toString();
@@ -169,13 +169,13 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public PhysicalPort getPort(final Short portNumber) {
 	return this.portMap.get(portNumber);
     }
-    
+
     @Override
-    public boolean equals(Object other) {
-	if (other instanceof PhysicalSwitch) { 
-	    return this.switchId == ((PhysicalSwitch)other).switchId;
+    public boolean equals(final Object other) {
+	if (other instanceof PhysicalSwitch) {
+	    return this.switchId == ((PhysicalSwitch) other).switchId;
 	}
-	
+
 	return false;
     }
 }

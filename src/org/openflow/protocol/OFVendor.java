@@ -1,18 +1,18 @@
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  * 
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol;
@@ -29,110 +29,118 @@ import org.openflow.util.U16;
  * @author David Erickson (daviderickson@cs.stanford.edu)
  */
 public class OFVendor extends OFMessage implements OFVendorDataFactoryAware {
-	public static int MINIMUM_LENGTH = 12;
+    public static int             MINIMUM_LENGTH = 12;
 
-	protected int vendor;
-	protected OFVendorData vendorData;
-	protected OFVendorDataFactory vendorDataFactory;
+    protected int                 vendor;
+    protected OFVendorData        vendorData;
+    protected OFVendorDataFactory vendorDataFactory;
 
-	public OFVendor() {
-		super();
-		this.type = OFType.VENDOR;
-		this.length = U16.t(MINIMUM_LENGTH);
+    public OFVendor() {
+	super();
+	this.type = OFType.VENDOR;
+	this.length = U16.t(OFVendor.MINIMUM_LENGTH);
+    }
+
+    /**
+     * @return the vendor
+     */
+    public int getVendor() {
+	return this.vendor;
+    }
+
+    /**
+     * @param vendor
+     *            the vendor to set
+     */
+    public void setVendor(final int vendor) {
+	this.vendor = vendor;
+    }
+
+    /**
+     * @return the data
+     */
+    public OFVendorData getVendorData() {
+	return this.vendorData;
+    }
+
+    /**
+     * @param data
+     *            the data to set
+     */
+    public void setVendorData(final OFVendorData vendorData) {
+	this.vendorData = vendorData;
+    }
+
+    @Override
+    public void setVendorDataFactory(final OFVendorDataFactory vendorDataFactory) {
+	this.vendorDataFactory = vendorDataFactory;
+    }
+
+    @Override
+    public void readFrom(final ChannelBuffer data) {
+	super.readFrom(data);
+	this.vendor = data.readInt();
+	if (this.vendorDataFactory == null) {
+	    throw new RuntimeException("OFVendorDataFactory not set");
 	}
 
-	/**
-	 * @return the vendor
-	 */
-	public int getVendor() {
-		return vendor;
-	}
+	this.vendorData = this.vendorDataFactory.parseVendorData(this.vendor,
+	        data, super.getLengthU() - OFVendor.MINIMUM_LENGTH);
+    }
 
-	/**
-	 * @param vendor
-	 *            the vendor to set
-	 */
-	public void setVendor(int vendor) {
-		this.vendor = vendor;
+    @Override
+    public void writeTo(final ChannelBuffer data) {
+	super.writeTo(data);
+	data.writeInt(this.vendor);
+	if (this.vendorData != null) {
+	    this.vendorData.writeTo(data);
 	}
+    }
 
-	/**
-	 * @return the data
-	 */
-	public OFVendorData getVendorData() {
-		return vendorData;
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+	final int prime = 337;
+	int result = super.hashCode();
+	result = prime * result + this.vendor;
+	if (this.vendorData != null) {
+	    result = prime * result + this.vendorData.hashCode();
 	}
+	return result;
+    }
 
-	/**
-	 * @param data
-	 *            the data to set
-	 */
-	public void setVendorData(OFVendorData vendorData) {
-		this.vendorData = vendorData;
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(final Object obj) {
+	if (this == obj) {
+	    return true;
 	}
-
-	@Override
-	public void setVendorDataFactory(OFVendorDataFactory vendorDataFactory) {
-		this.vendorDataFactory = vendorDataFactory;
+	if (!super.equals(obj)) {
+	    return false;
 	}
-
-	@Override
-	public void readFrom(ChannelBuffer data) {
-		super.readFrom(data);
-		this.vendor = data.readInt();
-		if (vendorDataFactory == null)
-			throw new RuntimeException("OFVendorDataFactory not set");
-
-		this.vendorData = vendorDataFactory.parseVendorData(vendor, data,
-				super.getLengthU() - MINIMUM_LENGTH);
+	if (this.getClass() != obj.getClass()) {
+	    return false;
 	}
-
-	@Override
-	public void writeTo(ChannelBuffer data) {
-		super.writeTo(data);
-		data.writeInt(this.vendor);
-		if (vendorData != null)
-			vendorData.writeTo(data);
+	final OFVendor other = (OFVendor) obj;
+	if (this.vendor != other.vendor) {
+	    return false;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 337;
-		int result = super.hashCode();
-		result = prime * result + vendor;
-		if (vendorData != null)
-			result = prime * result + vendorData.hashCode();
-		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		OFVendor other = (OFVendor) obj;
-		if (vendor != other.vendor)
-			return false;
-		if (vendorData == null) {
-			if (other.vendorData != null) {
-				return false;
-			}
-		} else if (!vendorData.equals(other.vendorData)) {
-			return false;
-		}
-		return true;
-	}
+	if (this.vendorData == null) {
+	    if (other.vendorData != null) {
+		return false;
+	    }
+	} else
+	    if (!this.vendorData.equals(other.vendorData)) {
+		return false;
+	    }
+	return true;
+    }
 }

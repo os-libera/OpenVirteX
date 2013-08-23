@@ -38,8 +38,8 @@ import org.openflow.protocol.OFPhysicalPort;
  * 
  */
 public class Port<T> extends OFPhysicalPort {
-    
-    public static String SWID = "switch-id";
+
+    public static String SWID    = "switch-id";
     public static String PORTNUM = "port-number";
 
     protected MACAddress mac;
@@ -51,7 +51,7 @@ public class Port<T> extends OFPhysicalPort {
     /**
      * Instantiates a new port.
      */
-    protected Port(OFPhysicalPort ofPort) {
+    protected Port(final OFPhysicalPort ofPort) {
 	super();
 	this.portNumber = ofPort.getPortNumber();
 	this.hardwareAddress = ofPort.getHardwareAddress();
@@ -61,18 +61,19 @@ public class Port<T> extends OFPhysicalPort {
 	this.currentFeatures = ofPort.getCurrentFeatures();
 	this.advertisedFeatures = ofPort.getAdvertisedFeatures();
 	this.supportedFeatures = ofPort.getSupportedFeatures();
-	this.peerFeatures = ofPort.getPeerFeatures();	
+	this.peerFeatures = ofPort.getPeerFeatures();
 	this.mac = null;
 	this.isEdge = false;
 	this.parentSwitch = null;
     }
-    
-    public void setHardwareAddress(byte[] hardwareAddress) {
+
+    @Override
+    public void setHardwareAddress(final byte[] hardwareAddress) {
 	super.setHardwareAddress(hardwareAddress);
 	// no way to update MACAddress instances
 	this.mac = new MACAddress(hardwareAddress);
     }
-    
+
     /**
      * Gets the checks if is edge.
      * 
@@ -81,7 +82,6 @@ public class Port<T> extends OFPhysicalPort {
     public Boolean isEdge() {
 	return this.isEdge;
     }
-
 
     /**
      * Sets the checks if is edge.
@@ -99,15 +99,14 @@ public class Port<T> extends OFPhysicalPort {
 
     @Override
     public String toString() {
-	return "PORT:\n- portNumber: " + this.portNumber +
-		"\n- hardwareAddress: " + this.hardwareAddress.toString() +
-		"\n- config: " + this.config +
-		"\n- state: " + this.state +
-		"\n- currentFeatures: " + this.currentFeatures +
-	        "\n- advertisedFeatures: " + this.advertisedFeatures +
-	        "\n- supportedFeatures: " + this.supportedFeatures +
-	        "\n- peerFeatures: " + this.peerFeatures +
-		"\n- isEdge: " + this.isEdge;
+	return "PORT:\n- portNumber: " + this.portNumber
+	        + "\n- hardwareAddress: " + this.hardwareAddress.toString()
+	        + "\n- config: " + this.config + "\n- state: " + this.state
+	        + "\n- currentFeatures: " + this.currentFeatures
+	        + "\n- advertisedFeatures: " + this.advertisedFeatures
+	        + "\n- supportedFeatures: " + this.supportedFeatures
+	        + "\n- peerFeatures: " + this.peerFeatures + "\n- isEdge: "
+	        + this.isEdge;
     }
 
 }

@@ -22,7 +22,15 @@ import org.apache.logging.log4j.Logger;
 
 public class APITenantManager {
 
-    Logger log = LogManager.getLogger(APITenantManager.class.getName());
+    Logger                          log      = LogManager
+	                                             .getLogger(APITenantManager.class
+	                                                     .getName());
+
+    private static APITenantManager instance = null;
+
+    public APITenantManager() {
+	APITenantManager.instance = this;
+    }
 
     /**
      * Creates a new OVXNetwork object that is registered in the OVXMap.
@@ -43,9 +51,9 @@ public class APITenantManager {
     public Integer createOVXNetwork(final String protocol,
 	    final String controllerAddress, final int controllerPort,
 	    final String networkAddress, final short mask) {
-	final IPAddress addr = new OVXIPAddress(networkAddress, -1); 
-	final OVXNetwork virtualNetwork = new OVXNetwork(protocol, controllerAddress,
-	        controllerPort, addr, mask);
+	final IPAddress addr = new OVXIPAddress(networkAddress, -1);
+	final OVXNetwork virtualNetwork = new OVXNetwork(protocol,
+	        controllerAddress, controllerPort, addr, mask);
 	virtualNetwork.register();
 	this.log.info("Created virtual network {}",
 	        virtualNetwork.getTenantId());
@@ -155,8 +163,8 @@ public class APITenantManager {
 	if (virtualLink == null) {
 	    return -1;
 	} else {
-	    this.log.info("Created virtual link {} in virtual network {}", virtualLink.getLinkId(),
-		    virtualNetwork.getTenantId());
+	    this.log.info("Created virtual link {} in virtual network {}",
+		    virtualLink.getLinkId(), virtualNetwork.getTenantId());
 	    return virtualLink.getLinkId();
 	}
     }
@@ -178,7 +186,17 @@ public class APITenantManager {
 
     public String saveConfig() {
 	// TODO Auto-generated method stub
-	String config = OVXConfig.saveConfig();
+	final String config = OVXConfig.saveConfig();
 	return config;
     }
+
+    public static APITenantManager getInstance() {
+	if (APITenantManager.instance == null) {
+	    APITenantManager.instance = new APITenantManager();
+	}
+	// throw new
+	// RuntimeException("The APITenantManager has not been initialized; quitting.");
+	return APITenantManager.instance;
+    }
+
 }

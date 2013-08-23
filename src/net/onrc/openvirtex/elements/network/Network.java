@@ -42,7 +42,6 @@ import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openflow.protocol.OFMessage;
 
 /**
  * 
@@ -90,8 +89,8 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	this.linkSet.add(link);
 	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
-	final Port srcPort = (Port) ((T2) ((Link) link).getSrcPort());
-	final Port dstPort = (Port) ((T2) ((Link) link).getSrcPort());
+	final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
+	final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
 	srcPort.isEdge(false);
 	dstPort.isEdge(false);
 	final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
@@ -110,13 +109,13 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	this.linkSet.remove(link);
 	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
-	final Port srcPort = (Port) ((T2) ((Link) link).getSrcPort());
-	final Port dstPort = (Port) ((T2) ((Link) link).getSrcPort());
+	final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
+	final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
 	srcPort.isEdge(true);
-	dstPort.isEdge(true);	
+	dstPort.isEdge(true);
 	final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 	neighbours.remove(dstSwitch);
-	this.neighborPortMap.remove((T2) ((Link) link).getSrcPort());
+	this.neighborPortMap.remove(((Link) link).getSrcPort());
 	this.log.info("Removing link " + link.toString());
     }
 
@@ -133,7 +132,6 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     }
 
     // Public methods to query topology information
-
 
     /**
      * Return neighbor switches of switch.
@@ -155,7 +153,6 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
     public T2 getNeighborPort(final T2 port) {
 	return this.neighborPortMap.get(port);
     }
-
 
     /**
      * Return switch instance based on its dpid

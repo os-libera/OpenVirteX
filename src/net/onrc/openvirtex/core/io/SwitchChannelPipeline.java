@@ -1,22 +1,29 @@
 /**
- *  Copyright (c) 2013 Open Networking Laboratory
+ * Copyright (c) 2013 Open Networking Laboratory
  * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of
+ * the Software, and to permit persons to whom the Software is furnished to do
+ * so,
  * subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
 
@@ -36,31 +43,34 @@ import org.jboss.netty.util.HashedWheelTimer;
 
 public class SwitchChannelPipeline extends OpenflowChannelPipeline {
 
-    public SwitchChannelPipeline(OpenVirteXController openVirteXController,
-	    ThreadPoolExecutor pipelineExecutor) {
+    public SwitchChannelPipeline(
+	    final OpenVirteXController openVirteXController,
+	    final ThreadPoolExecutor pipelineExecutor) {
 	super();
 	this.ctrl = openVirteXController;
 	this.pipelineExecutor = pipelineExecutor;
 	this.timer = new HashedWheelTimer();
-	this.idleHandler = new IdleStateHandler(timer, 20, 25, 0);
-	this.readTimeoutHandler = new ReadTimeoutHandler(timer, 30);
+	this.idleHandler = new IdleStateHandler(this.timer, 20, 25, 0);
+	this.readTimeoutHandler = new ReadTimeoutHandler(this.timer, 30);
     }
 
     @Override
     public ChannelPipeline getPipeline() throws Exception {
-	SwitchChannelHandler handler = new SwitchChannelHandler(ctrl);
+	final SwitchChannelHandler handler = new SwitchChannelHandler(this.ctrl);
 
-	ChannelPipeline pipeline = Channels.pipeline();
+	final ChannelPipeline pipeline = Channels.pipeline();
 	pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
 	pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
-	pipeline.addLast("idle", idleHandler);
-	pipeline.addLast("timeout", readTimeoutHandler);
+	pipeline.addLast("idle", this.idleHandler);
+	pipeline.addLast("timeout", this.readTimeoutHandler);
 	pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
-		handler, timer, 15));
-	if (pipelineExecutor == null)
-	    pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576);
+	        handler, this.timer, 15));
+	if (this.pipelineExecutor == null) {
+	    this.pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
+		    16, 1048576, 1048576);
+	}
 	pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-		pipelineExecutor));
+	        this.pipelineExecutor));
 	pipeline.addLast("handler", handler);
 	return pipeline;
     }

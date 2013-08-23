@@ -1,22 +1,29 @@
 /**
- *  Copyright (c) 2013 Open Networking Laboratory
+ * Copyright (c) 2013 Open Networking Laboratory
  * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of
+ * the Software, and to permit persons to whom the Software is furnished to do
+ * so,
  * subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
 
@@ -36,23 +43,22 @@ import net.onrc.openvirtex.util.MACAddress;
 
 public interface Mappable {
     // ADD objects to dictionary
-    
-    public static String TID = "tenant-id";
-    public static String SWMAP = "switch-map";
-    public static String VSWID = "virtual-switch-id";
-    public static String PSWID = "pswitch-id";
-    public static String PORT = "port";
-    public static String PHYPORT = "phy-port";
+
+    public static String TID      = "tenant-id";
+    public static String SWMAP    = "switch-map";
+    public static String VSWID    = "virtual-switch-id";
+    public static String PSWID    = "pswitch-id";
+    public static String PORT     = "port";
+    public static String PHYPORT  = "phy-port";
     public static String VPORTNUM = "virtual-port-num";
-    public static String SWID = "switch-id";
-    public static String PORTNUM = "port-number";
-    public static String LINKMAP = "link-map";
-    public static String LINKID = "link-id";
-    public static String SRC = "src";
-    public static String DST = "dst";
-    public static String PHYLINK = "physical-link";
-    public static String MAP = "mapping";
-    
+    public static String SWID     = "switch-id";
+    public static String PORTNUM  = "port-number";
+    public static String LINKMAP  = "link-map";
+    public static String LINKID   = "link-id";
+    public static String SRC      = "src";
+    public static String DST      = "dst";
+    public static String PHYLINK  = "physical-link";
+    public static String MAP      = "mapping";
 
     /**
      * This function creates the map between the PhysicalIP and VirtualIP in
@@ -108,7 +114,7 @@ public interface Mappable {
      * @param tenantId
      */
     public void addMAC(MACAddress mac, Integer tenantId);
-    
+
     // Access objects from dictionary given the key
 
     /**
@@ -116,18 +122,18 @@ public interface Mappable {
      * @param ip
      * @param tenantId
      * @return
-     * 		Physical IP address associated with virtual IP and tenant ID
+     *         Physical IP address associated with virtual IP and tenant ID
      */
     public PhysicalIPAddress getPhysicalIP(OVXIPAddress ip, Integer tenantId);
-    
+
     /**
      * 
      * @param ip
      * @return
-     * 		Virtual IP address associated with physical IP
+     *         Virtual IP address associated with physical IP
      */
     public OVXIPAddress getVirtualIP(PhysicalIPAddress ip);
-    
+
     /**
      * get the virtualSwitch which has been specified by the physicalSwitch
      * and tenantId
@@ -139,7 +145,8 @@ public interface Mappable {
      * @return virtualSwitch A OVXSwitch object which represents a single switch
      *         in the OVXNetwork
      */
-    public OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch, Integer tenantId);
+    public OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch,
+	    Integer tenantId);
 
     /**
      * get the virtualLink which has been specified by the physicalLink and
@@ -197,16 +204,15 @@ public interface Mappable {
      * 
      * @param mac
      * @return
-     * 		tenantId associated with MAC address
+     *         tenantId associated with MAC address
      */
     public Integer getMAC(MACAddress mac);
-    
-    
+
     /**
      * Makes a HashMap of the OVXMap instance and returns it to the
      * saveConfig method of the OVXConfig class.
      * 
      * @return A HashMap of the OVXMap instance
      */
-    public HashMap<String,Object> toJson();
+    public HashMap<String, Object> toJson();
 }

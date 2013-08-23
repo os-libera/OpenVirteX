@@ -1,22 +1,29 @@
 /**
- *  Copyright (c) 2013 Open Networking Laboratory
+ * Copyright (c) 2013 Open Networking Laboratory
  * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of
+ * the Software, and to permit persons to whom the Software is furnished to do
+ * so,
  * subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
 
@@ -38,27 +45,28 @@ import org.openflow.protocol.OFMessage;
  */
 public class OVXMessageEncoder extends OneToOneEncoder {
 
-	@Override
-	protected Object encode(ChannelHandlerContext ctx, Channel channel,
-			Object msg) throws Exception {
-		if (!(msg instanceof List))
-			return msg;
-
-		@SuppressWarnings("unchecked")
-		List<OFMessage> msglist = (List<OFMessage>) msg;
-		int size = 0;
-		for (OFMessage ofm : msglist) {
-			size += ofm.getLengthU();
-		}
-
-		ChannelBuffer buf = ChannelBuffers.buffer(size);
-		
-		for (OFMessage ofm : msglist) {
-		    
-			ofm.writeTo(buf);
-		    
-		}
-		return buf;
+    @Override
+    protected Object encode(final ChannelHandlerContext ctx,
+	    final Channel channel, final Object msg) throws Exception {
+	if (!(msg instanceof List)) {
+	    return msg;
 	}
+
+	@SuppressWarnings("unchecked")
+	final List<OFMessage> msglist = (List<OFMessage>) msg;
+	int size = 0;
+	for (final OFMessage ofm : msglist) {
+	    size += ofm.getLengthU();
+	}
+
+	final ChannelBuffer buf = ChannelBuffers.buffer(size);
+
+	for (final OFMessage ofm : msglist) {
+
+	    ofm.writeTo(buf);
+
+	}
+	return buf;
+    }
 
 }

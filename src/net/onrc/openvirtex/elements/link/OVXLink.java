@@ -29,15 +29,11 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import java.util.HashMap;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-
 import net.onrc.openvirtex.elements.port.OVXPort;
 
 /**
@@ -89,21 +85,20 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	return this.tenantId;
     }
 
-	
-	public HashMap<String,Object> toJson() {
-		//HashMap<String,Object> output = new HashMap<String,Object>();
-		//LinkedList<Object> list = new LinkedList<Object>();
-		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-		
-		ovxMap.put(TID,this.tenantId);
-		ovxMap.put(LINKID,this.getLinkId());
-		ovxMap.put(SRC, this.getSrcPort().toJson());
-		ovxMap.put(DST, this.getDstPort().toJson());
-		
-		//list.add(ovxMap);
-		//output.put("edge", list);
-		return ovxMap; 
-	    }
+    public HashMap<String, Object> toJson() {
+	// HashMap<String,Object> output = new HashMap<String,Object>();
+	// LinkedList<Object> list = new LinkedList<Object>();
+	final HashMap<String, Object> ovxMap = new HashMap<String, Object>();
+
+	ovxMap.put(Link.TID, this.tenantId);
+	ovxMap.put(Link.LINKID, this.getLinkId());
+	ovxMap.put(Link.SRC, this.getSrcPort().toJson());
+	ovxMap.put(Link.DST, this.getDstPort().toJson());
+
+	// list.add(ovxMap);
+	// output.put("edge", list);
+	return ovxMap;
+    }
 
     /**
      * Register mapping between virtual link and physical path

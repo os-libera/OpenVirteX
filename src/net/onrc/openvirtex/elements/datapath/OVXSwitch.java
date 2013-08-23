@@ -29,29 +29,17 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-
-import java.util.HashMap;
-
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
-import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.exceptions.IllegalVirtualSwitchConfiguration;
 import net.onrc.openvirtex.messages.OVXPacketIn;
-import net.onrc.openvirtex.util.MACAddress;
 
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.ChannelFutureListener;
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
@@ -62,46 +50,46 @@ import org.openflow.util.LRULinkedHashMap;
  * The Class OVXSwitch.
  */
 public abstract class OVXSwitch extends Switch<OVXPort> {
-    
-    public static String TID = "tenant-id";
-    public static String DPID = "dpid";
-    public static String PORT = "port";
+
+    public static String                             TID              = "tenant-id";
+    public static String                             DPID             = "dpid";
+    public static String                             PORT             = "port";
 
     /**
      * Datapath description string
      * should this be made specific per type of virtual switch
      */
-    public static final String      DPDESCSTRING     = "OpenVirteX Virtual Switch";
+    public static final String                       DPDESCSTRING     = "OpenVirteX Virtual Switch";
 
     /** The supported actions. */
-    protected static int            supportedActions = 0xFFF;
+    protected static int                             supportedActions = 0xFFF;
 
     /** The buffer dimension. */
-    protected static int            bufferDimension  = 4096;
+    protected static int                             bufferDimension  = 4096;
 
     /** The tenant id. */
-    protected Integer tenantId = 0;
+    protected Integer                                tenantId         = 0;
 
     /** The miss send len. */
-    protected Short missSendLen = 0;
+    protected Short                                  missSendLen      = 0;
 
     /** The is active. */
-    protected boolean isActive = false;
+    protected boolean                                isActive         = false;
 
     /** The capabilities. */
-    protected OVXSwitchCapabilities capabilities;
+    protected OVXSwitchCapabilities                  capabilities;
 
     /** The backoff counter for this switch when unconnected */
-    private AtomicInteger backOffCounter = null;
+    private AtomicInteger                            backOffCounter   = null;
 
     /**
      * The buffer map
      */
     protected LRULinkedHashMap<Integer, OVXPacketIn> bufferMap;
 
-    private AtomicInteger bufferId = null;
+    private AtomicInteger                            bufferId         = null;
 
-    private AtomicInteger		portCounter;
+    private final AtomicInteger                      portCounter;
 
     /**
      * Instantiates a new OVX switch.
@@ -111,7 +99,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	this.capabilities = new OVXSwitchCapabilities();
 	this.backOffCounter = new AtomicInteger();
 	this.resetBackOff();
-	this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(bufferDimension);
+	this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(
+	        OVXSwitch.bufferDimension);
 	this.portCounter = new AtomicInteger(1);
 	this.bufferId = new AtomicInteger(1);
     }
@@ -201,33 +190,33 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	return this.backOffCounter.incrementAndGet();
     }
 
-    //    /**
-    //     * Gets the new port number.
-    //     * 
-    //     * @return the new port number
-    //     */
-    //    private Short getNewPortNumber() {
-    //	short portNumber = 1;
-    //	final Set<Short> keys = this.portMap.keySet();
+    // /**
+    // * Gets the new port number.
+    // *
+    // * @return the new port number
+    // */
+    // private Short getNewPortNumber() {
+    // short portNumber = 1;
+    // final Set<Short> keys = this.portMap.keySet();
     //
-    //	if (keys.isEmpty()) {
-    //	    return portNumber;
-    //	} else {
-    //	    boolean solved = false;
-    //	    while (solved == false && portNumber < 256) {
-    //		if (!keys.contains(portNumber)) {
-    //		    solved = true;
-    //		} else {
-    //		    portNumber += 1;
-    //		}
-    //	    }
-    //	    if (solved == true) {
-    //		return portNumber;
-    //	    } else {
-    //		return 0;
-    //	    }
-    //	}
-    //    }
+    // if (keys.isEmpty()) {
+    // return portNumber;
+    // } else {
+    // boolean solved = false;
+    // while (solved == false && portNumber < 256) {
+    // if (!keys.contains(portNumber)) {
+    // solved = true;
+    // } else {
+    // portNumber += 1;
+    // }
+    // }
+    // if (solved == true) {
+    // return portNumber;
+    // } else {
+    // return 0;
+    // }
+    // }
+    // }
 
     // TODO: add check for maximum value
     // TODO: use bitmap to keep track of released port numbers
@@ -241,7 +230,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	port.setName("OpenFlow Local Port");
 	port.setConfig(1);
 	final byte[] addr = { (byte) 0xA4, (byte) 0x23, (byte) 0x05,
-		(byte) 0x00, (byte) 0x00, (byte) 0x00 };
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00 };
 	port.setHardwareAddress(addr);
 	port.setState(1);
 	port.setAdvertisedFeatures(0);
@@ -250,7 +239,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	ports.add(port);
     }
 
-    public void register(List<PhysicalSwitch> physicalSwitches) {
+    public void register(final List<PhysicalSwitch> physicalSwitches) {
 	OVXMap.getInstance().addSwitches(physicalSwitches, this);
     }
 
@@ -261,7 +250,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	final OFFeaturesReply ofReply = new OFFeaturesReply();
 	ofReply.setDatapathId(this.switchId);
 	final LinkedList<OFPhysicalPort> portList = new LinkedList<OFPhysicalPort>();
-	for (final OVXPort ovxPort: this.portMap.values()) {
+	for (final OVXPort ovxPort : this.portMap.values()) {
 	    final OFPhysicalPort ofPort = new OFPhysicalPort();
 	    ofPort.setPortNumber(ovxPort.getPortNumber());
 	    ofPort.setName(ovxPort.getName());
@@ -289,21 +278,23 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	ofReply.setActions(OVXSwitch.supportedActions);
 	ofReply.setXid(0);
 	ofReply.setLengthU(OFFeaturesReply.MINIMUM_LENGTH
-		+ OFPhysicalPort.MINIMUM_LENGTH * portList.size());
+	        + OFPhysicalPort.MINIMUM_LENGTH * portList.size());
 
 	this.setFeaturesReply(ofReply);
     }
 
     /**
      * Boots virtual switch by connecting it to the controller
-     * TODO: should 
+     * TODO: should
      * 
      * @return
-     * 		True if successful, false otherwise
+     *         True if successful, false otherwise
      */
+    @Override
     public boolean boot() {
 	this.generateFeaturesReply();
-	OpenVirteXController ovxController = OpenVirteXController.getInstance();
+	final OpenVirteXController ovxController = OpenVirteXController
+	        .getInstance();
 	ovxController.registerOVXSwitch(this);
 	this.setActive(true);
 	return true;
@@ -317,47 +308,47 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     @Override
     public String toString() {
 	return "SWITCH: switchId: " + this.switchId + " - switchName: "
-		+ this.switchName + " - isConnected: " + this.isConnected
-		+ " - tenantId: " + this.tenantId + " - missSendLength: "
-		+ this.missSendLen + " - isActive: " + this.isActive
-		+ " - capabilities: "
-		+ this.capabilities.getOVXSwitchCapabilities();
-    }	
-
-    public synchronized int addToBufferMap(OVXPacketIn pktIn) {
-	//TODO: this isn't thread safe... fix it
-	bufferId.compareAndSet(OVXSwitch.bufferDimension, 0);
-	this.bufferMap.put(bufferId.get(), new OVXPacketIn(pktIn));
-	return bufferId.getAndIncrement();
+	        + this.switchName + " - isConnected: " + this.isConnected
+	        + " - tenantId: " + this.tenantId + " - missSendLength: "
+	        + this.missSendLen + " - isActive: " + this.isActive
+	        + " - capabilities: "
+	        + this.capabilities.getOVXSwitchCapabilities();
     }
 
-    public OVXPacketIn getFromBufferMap(Integer bufId) {
+    public synchronized int addToBufferMap(final OVXPacketIn pktIn) {
+	// TODO: this isn't thread safe... fix it
+	this.bufferId.compareAndSet(OVXSwitch.bufferDimension, 0);
+	this.bufferMap.put(this.bufferId.get(), new OVXPacketIn(pktIn));
+	return this.bufferId.getAndIncrement();
+    }
+
+    public OVXPacketIn getFromBufferMap(final Integer bufId) {
 	return this.bufferMap.get(bufId);
     }
 
-    
     @Override
-    public boolean equals(Object other) {
-	//TODO: fix this big shit
+    public boolean equals(final Object other) {
+	// TODO: fix this big shit
 	if (other instanceof OVXSwitch) {
-	    OVXSwitch that = (OVXSwitch) other;
-	    return (this.switchId == that.switchId && this.tenantId == that.tenantId);
+	    final OVXSwitch that = (OVXSwitch) other;
+	    return this.switchId == that.switchId
+		    && this.tenantId == that.tenantId;
 	}
 	return false;
     }
-	
-    public HashMap<String,Object> toJson() {
-		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-		
-		ovxMap.put(TID,this.tenantId);
-		
-		ovxMap.put(DPID,String.valueOf(this.getSwitchId()));
-		Collection<Short> ports = getPortNumbers();
-		ovxMap.put(PORT,ports);
 
-		return ovxMap; 
-	    }
-	
+    public HashMap<String, Object> toJson() {
+	final HashMap<String, Object> ovxMap = new HashMap<String, Object>();
+
+	ovxMap.put(OVXSwitch.TID, this.tenantId);
+
+	ovxMap.put(OVXSwitch.DPID, String.valueOf(this.getSwitchId()));
+	final Collection<Short> ports = this.getPortNumbers();
+	ovxMap.put(OVXSwitch.PORT, ports);
+
+	return ovxMap;
+    }
+
     public abstract void sendSouth(OFMessage msg);
 
 }

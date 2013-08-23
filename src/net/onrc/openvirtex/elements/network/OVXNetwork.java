@@ -32,13 +32,10 @@ package net.onrc.openvirtex.elements.network;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import java.util.HashSet;
-import java.util.LinkedList;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -74,17 +71,15 @@ import org.openflow.protocol.action.OFActionOutput;
  */
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
-    public static String VIRNET = "virtualnetwork";
-    public static String NET = "network";
-    public static String GATEWAY = "gateway";
-    public static String SWID = "switch-id";
-    public static String TID = "tenant-id";
-    public static String CON_ADDR = "controller-address";
-    public static String CON_PORT = "controller-port";
-    public static String FWD_SLASH = "/";
+    public static String                   VIRNET          = "virtualnetwork";
+    public static String                   NET             = "network";
+    public static String                   GATEWAY         = "gateway";
+    public static String                   SWID            = "switch-id";
+    public static String                   TID             = "tenant-id";
+    public static String                   CON_ADDR        = "controller-address";
+    public static String                   CON_PORT        = "controller-port";
+    public static String                   FWD_SLASH       = "/";
 
-    
-    
     private final Integer                  tenantId;
     private final String                   protocol;
     private final String                   controllerHost;
@@ -97,13 +92,14 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	                                                           1);
     private final AtomicLong               dpidCounter;
     private final AtomicInteger            linkCounter;
-    private final AtomicInteger		   ipCounter;
-    
+    private final AtomicInteger            ipCounter;
+
     // TODO: implement vlink flow pusher
     // public VLinkManager vLinkMgmt;
 
-    Logger log = LogManager.getLogger(OVXNetwork.class.getName());
-
+    Logger                                 log             = LogManager
+	                                                           .getLogger(OVXNetwork.class
+	                                                                   .getName());
 
     public OVXNetwork(final String protocol, final String controllerHost,
 	    final Integer controllerPort, final IPAddress network,
@@ -177,11 +173,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	return virtualSwitch;
     }
 
-	public HashMap<IPAddress, MACAddress> getGwsMap() {
-		return this.gwsMap;
-	}
-
-
+    public HashMap<IPAddress, MACAddress> getGwsMap() {
+	return this.gwsMap;
+    }
 
     /**
      * Create link and add it to the topology. Returns linkId when successful,
@@ -233,7 +227,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     public void createGateway(final IPAddress ip) {
 
     }
-
 
     /**
      * Boots the virtual network by booting each virtual switch.
@@ -302,39 +295,39 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     }
 
     public Integer nextIP() {
-	return (this.tenantId<< 
-		(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
-			+ ipCounter.getAndIncrement();
+	return (this.tenantId << 32 - OpenVirteXController.getInstance()
+	        .getNumberVirtualNets()) + this.ipCounter.getAndIncrement();
     }
 
-    public HashMap<String,Object> toJson() {
-	HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-	ovxMap.put(TID,this.tenantId);
-	String subnet = getNetworkWithMask(network,mask);
-	ovxMap.put(NET,subnet);
-	ovxMap.put(GATEWAY,this.gwsMap);
-	LinkedList<String> switches = getDpids();//new LinkedList<Long>();
-	ovxMap.put(SWID,switches);
-	ovxMap.put(CON_ADDR, this.controllerHost);
-	ovxMap.put(CON_PORT, this.controllerPort);
-	return ovxMap; 
+    public HashMap<String, Object> toJson() {
+	final HashMap<String, Object> ovxMap = new HashMap<String, Object>();
+	ovxMap.put(OVXNetwork.TID, this.tenantId);
+	final String subnet = this.getNetworkWithMask(this.network, this.mask);
+	ovxMap.put(OVXNetwork.NET, subnet);
+	ovxMap.put(OVXNetwork.GATEWAY, this.gwsMap);
+	final LinkedList<String> switches = this.getDpids();// new
+							    // LinkedList<Long>();
+	ovxMap.put(OVXNetwork.SWID, switches);
+	ovxMap.put(OVXNetwork.CON_ADDR, this.controllerHost);
+	ovxMap.put(OVXNetwork.CON_PORT, this.controllerPort);
+	return ovxMap;
     }
 
     private LinkedList<String> getDpids() {
-	Collection<OVXSwitch> switches = getSwitches();
-	LinkedList<String> dpids = new LinkedList<String>();
-	for(OVXSwitch sw: switches){
+	final Collection<OVXSwitch> switches = this.getSwitches();
+	final LinkedList<String> dpids = new LinkedList<String>();
+	for (final OVXSwitch sw : switches) {
 	    dpids.add(String.valueOf(sw.getSwitchId()));
 	}
-        return dpids;
+	return dpids;
     }
-	
-    private String getNetworkWithMask(IPAddress network, short mask) {
-        String subnet = new String();
-        subnet.concat(network.toString());
-        subnet.concat(FWD_SLASH);
-        subnet.concat(String.valueOf(mask));
-        return subnet;
+
+    private String getNetworkWithMask(final IPAddress network, final short mask) {
+	final String subnet = new String();
+	subnet.concat(network.toString());
+	subnet.concat(OVXNetwork.FWD_SLASH);
+	subnet.concat(String.valueOf(mask));
+	return subnet;
     }
-    
+
 }

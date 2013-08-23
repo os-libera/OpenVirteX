@@ -32,31 +32,33 @@ package net.onrc.openvirtex.elements.port;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openflow.protocol.OFPhysicalPort;
-
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.util.MACAddress;
+
+import org.openflow.protocol.OFPhysicalPort;
 
 public class PhysicalPort extends Port<PhysicalSwitch> {
 
     private final Map<Integer, OVXPort> ovxPortMap;
 
-    private PhysicalPort(OFPhysicalPort port) {
+    private PhysicalPort(final OFPhysicalPort port) {
 	super(port);
 	this.ovxPortMap = new HashMap<Integer, OVXPort>();
     }
-    
+
     /**
      * Instantiate PhysicalPort based on an OpenFlow physical port
+     * 
      * @param port
      * @param sw
      */
-    public PhysicalPort(OFPhysicalPort port, PhysicalSwitch sw, boolean isEdge) {
+    public PhysicalPort(final OFPhysicalPort port, final PhysicalSwitch sw,
+	    final boolean isEdge) {
 	this(port);
 	this.parentSwitch = sw;
 	this.isEdge = isEdge;
     }
-    
+
     public OVXPort getOVXPort(final Integer tenantId) {
 	return this.ovxPortMap.get(tenantId);
     }
@@ -65,28 +67,29 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
 	this.ovxPortMap.put(ovxPort.getTenantId(), ovxPort);
     }
 
-	@Override
-	public String toString() {
-		return "PORT:\n- portNumber: " + this.portNumber + "\n- portName: "
-				+ this.name + "\n- hardwareAddress: "
-				+ MACAddress.valueOf(this.hardwareAddress) + "\n- isEdge: "
-				+ this.isEdge + "\n- parentSwitch: "
-				+ this.parentSwitch.getSwitchName() + "\n- config: "
-				+ this.config + "\n- state: " + this.state
-				+ "\n- currentFeatures: " + this.currentFeatures
-				+ "\n- advertisedFeatures: " + this.advertisedFeatures
-				+ "\n- supportedFeatures: " + this.supportedFeatures
-				+ "\n- peerFeatures: " + this.peerFeatures;
-	}
-	
-	public HashMap<String,Object> toJson() {
+    @Override
+    public String toString() {
+	return "PORT:\n- portNumber: " + this.portNumber + "\n- portName: "
+	        + this.name + "\n- hardwareAddress: "
+	        + MACAddress.valueOf(this.hardwareAddress) + "\n- isEdge: "
+	        + this.isEdge + "\n- parentSwitch: "
+	        + this.parentSwitch.getSwitchName() + "\n- config: "
+	        + this.config + "\n- state: " + this.state
+	        + "\n- currentFeatures: " + this.currentFeatures
+	        + "\n- advertisedFeatures: " + this.advertisedFeatures
+	        + "\n- supportedFeatures: " + this.supportedFeatures
+	        + "\n- peerFeatures: " + this.peerFeatures;
+    }
 
-		HashMap<String,Object> ovxMap = new HashMap<String,Object>();
-		
-		ovxMap.put(SWID,String.valueOf(getParentSwitch().getSwitchId()));
-		ovxMap.put(PORTNUM,getPortNumber());
+    public HashMap<String, Object> toJson() {
 
-		return ovxMap; 
-	    }
+	final HashMap<String, Object> ovxMap = new HashMap<String, Object>();
+
+	ovxMap.put(Port.SWID,
+	        String.valueOf(this.getParentSwitch().getSwitchId()));
+	ovxMap.put(Port.PORTNUM, this.getPortNumber());
+
+	return ovxMap;
+    }
 
 }
