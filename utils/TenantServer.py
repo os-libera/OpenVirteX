@@ -65,6 +65,15 @@ class Iface:
   def saveConfig(self, ):
     pass
 
+  def createSwitchRoute(self, tenantId, dpid, routeString):
+    """
+    Parameters:
+     - tenantId
+     - dpid
+     - routeString
+    """
+    pass
+
 
 class Client(Iface):
   def __init__(self, iprot, oprot=None):
@@ -266,6 +275,40 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "saveConfig failed: unknown result");
 
+  def createSwitchRoute(self, tenantId, dpid, routeString):
+    """
+    Parameters:
+     - tenantId
+     - dpid
+     - routeString
+    """
+    self.send_createSwitchRoute(tenantId, dpid, routeString)
+    return self.recv_createSwitchRoute()
+
+  def send_createSwitchRoute(self, tenantId, dpid, routeString):
+    self._oprot.writeMessageBegin('createSwitchRoute', TMessageType.CALL, self._seqid)
+    args = createSwitchRoute_args()
+    args.tenantId = tenantId
+    args.dpid = dpid
+    args.routeString = routeString
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_createSwitchRoute(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = createSwitchRoute_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success is not None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "createSwitchRoute failed: unknown result");
+
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
@@ -277,6 +320,7 @@ class Processor(Iface, TProcessor):
     self._processMap["createVirtualLink"] = Processor.process_createVirtualLink
     self._processMap["startNetwork"] = Processor.process_startNetwork
     self._processMap["saveConfig"] = Processor.process_saveConfig
+    self._processMap["createSwitchRoute"] = Processor.process_createSwitchRoute
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -355,6 +399,17 @@ class Processor(Iface, TProcessor):
     result = saveConfig_result()
     result.success = self._handler.saveConfig()
     oprot.writeMessageBegin("saveConfig", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_createSwitchRoute(self, seqid, iprot, oprot):
+    args = createSwitchRoute_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = createSwitchRoute_result()
+    result.success = self._handler.createSwitchRoute(args.tenantId, args.dpid, args.routeString)
+    oprot.writeMessageBegin("createSwitchRoute", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -1155,6 +1210,149 @@ class saveConfig_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.STRING, 0)
       oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class createSwitchRoute_args:
+  """
+  Attributes:
+   - tenantId
+   - dpid
+   - routeString
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'tenantId', None, None, ), # 1
+    (2, TType.STRING, 'dpid', None, None, ), # 2
+    (3, TType.STRING, 'routeString', None, None, ), # 3
+  )
+
+  def __init__(self, tenantId=None, dpid=None, routeString=None,):
+    self.tenantId = tenantId
+    self.dpid = dpid
+    self.routeString = routeString
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.tenantId = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.dpid = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.routeString = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('createSwitchRoute_args')
+    if self.tenantId is not None:
+      oprot.writeFieldBegin('tenantId', TType.I32, 1)
+      oprot.writeI32(self.tenantId)
+      oprot.writeFieldEnd()
+    if self.dpid is not None:
+      oprot.writeFieldBegin('dpid', TType.STRING, 2)
+      oprot.writeString(self.dpid)
+      oprot.writeFieldEnd()
+    if self.routeString is not None:
+      oprot.writeFieldBegin('routeString', TType.STRING, 3)
+      oprot.writeString(self.routeString)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class createSwitchRoute_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.I32, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.I32:
+          self.success = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('createSwitchRoute_result')
+    if self.success is not None:
+      oprot.writeFieldBegin('success', TType.I32, 0)
+      oprot.writeI32(self.success)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

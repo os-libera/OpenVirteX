@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.OVXMap;
@@ -70,8 +72,10 @@ public class OVXBigSwitch extends OVXSwitch {
     private Routable 								routing;
     
     /**The calculated routes*/
-    private final HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> routeMap;
+    private final HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> 		routeMap;
     
+    /**For assigning route IDs*/
+    private final AtomicInteger 						routeCounter;
     
     public OVXBigSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
@@ -79,6 +83,7 @@ public class OVXBigSwitch extends OVXSwitch {
 	this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
 	this.routing = new ManualRoute();
 	this.routeMap = new HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>();
+	this.routeCounter = new AtomicInteger(0);
     }
 
     /**
@@ -215,36 +220,42 @@ public class OVXBigSwitch extends OVXSwitch {
 	
     }
     
-    
-    public static void main(String [] args) {
-	OVXBigSwitch obsw = new OVXBigSwitch(20,1);
-	System.out.println(obsw.getAlg().toString());
-	System.out.println(obsw.getRoutable().getName());	
+    /**
+     * Adds a path between two edge ports on the big switch 
+     * @param path
+     * @return the route ID of the new route
+     */
+    public int createRoute(final List<PhysicalLink> path) {
+	//assumes list is in correct order
+	final PhysicalPort srcPhyPort = path.get(0).getSrcPort();
+	final PhysicalPort dstPhyPort = path.get(path.size() - 1).getDstPort();
+	final OVXPort srcPort = new OVXPort(this.getTenantId(), srcPhyPort, false);
+	final OVXPort dstPort = new OVXPort(this.getTenantId(), dstPhyPort, false);
 	
-	SwitchRoute a, b, c;
-		a = new SwitchRoute(obsw.switchId, 0);
-		b = new SwitchRoute(obsw.switchId, 1);
-		c = new SwitchRoute(obsw.switchId, 2);
-	OFPhysicalPort p1, p2, p3, p4;
-		p1 = new OFPhysicalPort();
-		p2 = new OFPhysicalPort();
-		p3 = new OFPhysicalPort();
-		p4 = new OFPhysicalPort();
-	OVXPort op1, op2, op3, op4;
-		
-		PhysicalSwitch psw1 = new PhysicalSwitch(10);
-		PhysicalSwitch psw2 = new PhysicalSwitch(15);
-		
-		ArrayList<PhysicalSwitch> psl = new ArrayList<PhysicalSwitch>();
-		psl.add(psw1);
-		psl.add(psw2);
-		
-		OVXMap map = OVXMap.getInstance();
-		map.addSwitches(psl, obsw);
-		
-		op1 = new OVXPort(1, new PhysicalPort(p1, psw1, false), false);
-		op2 = new OVXPort(1, new PhysicalPort(p2, psw2, false), false);
-		op3 = new OVXPort(1, new PhysicalPort(p3, psw1, false), false);
-		op4 = new OVXPort(1, new PhysicalPort(p4, psw2, false), false);
+	final int routeId = this.routeCounter.getAndIncrement();
+	SwitchRoute routeEntry = new SwitchRoute(this.switchId, routeId);
+	routeEntry.addRoute(path);
+	
+	synchronized(routeMap) {
+	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(srcPort);
+	    if (rtmap == null) {
+		rtmap = new HashMap<OVXPort, SwitchRoute>();
+		this.routeMap.put(srcPort, rtmap);
+	    }
+	    rtmap.put(dstPort, routeEntry);
+	}
+	
+	//add reverse path dst->src
+	synchronized(routeMap) {
+	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(dstPort);
+	    if (rtmap == null) {
+		rtmap = new HashMap<OVXPort, SwitchRoute>();
+		this.routeMap.put(dstPort, rtmap);
+	    }
+	    rtmap.put(srcPort, routeEntry);
+	}
+	this.log.info("Added route {}", routeEntry);
+	
+	return routeId;
     }
 }

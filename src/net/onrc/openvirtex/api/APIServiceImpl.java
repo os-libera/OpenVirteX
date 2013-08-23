@@ -49,4 +49,10 @@ public class APIServiceImpl implements TenantServer.Iface {
 	return this.tenantManager.saveConfig();
     }
 
+    @Override
+    public int createSwitchRoute(final int tenantId, final String dpid, 
+	    final String routeString) throws TException {
+	return this.tenantManager.createOVXSwitchRoute(tenantId, dpid, routeString);
+    }
+
 }

@@ -21,5 +21,8 @@ public interface Routable {
     public ArrayList<PhysicalLink> getRoute(OVXBigSwitch vSwitch, 
 	    OVXPort srcPort, OVXPort dstPort);
     
+    /**
+     * @return The name of the routing policy
+     */
     public String getName();
 }

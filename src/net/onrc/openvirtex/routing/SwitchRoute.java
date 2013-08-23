@@ -1,6 +1,7 @@
 package net.onrc.openvirtex.routing;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 
@@ -36,6 +37,10 @@ public class SwitchRoute {
 	return this.routeId;
     }
     
+    public void setSwitchId(long dpid) {
+	this.dpid = dpid;
+    }
+    
     /**
      * @return the DPID of the virtual switch 
      */
@@ -44,9 +49,30 @@ public class SwitchRoute {
     }
     
     /**
+     * associates this route with a set of links 
+     * @param path 
+     */
+    public void addRoute(List<PhysicalLink> path) {
+	for (final PhysicalLink hop : path) {
+	    this.routeList.add(hop);
+	}
+    }
+    
+    /**
      * @return the links in this route
      */
     public ArrayList<PhysicalLink> getRoute() {
 	return this.routeList;
+    }
+    
+    @Override
+    public String toString() {
+	String sroute = "routeId: "+ this.routeId
+		+ " dpid: " + this.dpid
+		+ " route: ";
+	for (PhysicalLink pl : this.routeList) {
+	    sroute += pl.toString() + " ";
+	}
+	return sroute;
     }
 }
