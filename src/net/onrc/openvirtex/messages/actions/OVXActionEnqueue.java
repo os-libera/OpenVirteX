@@ -22,16 +22,20 @@
 
 package net.onrc.openvirtex.messages.actions;
 
+import java.util.List;
+
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionEnqueue;
 
 public class OVXActionEnqueue extends OFActionEnqueue implements VirtualizableAction {
 
     @Override
-    public boolean virtualize(OVXSwitch sw) throws ActionVirtualizationDenied {
-	return false;
+    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
+	approvedActions.add(this);
     }
 
 }
