@@ -65,11 +65,13 @@ class Iface:
   def saveConfig(self, ):
     pass
 
-  def createSwitchRoute(self, tenantId, dpid, routeString):
+  def createSwitchRoute(self, tenantId, dpid, inPort, outPort, routeString):
     """
     Parameters:
      - tenantId
      - dpid
+     - inPort
+     - outPort
      - routeString
     """
     pass
@@ -275,21 +277,25 @@ class Client(Iface):
       return result.success
     raise TApplicationException(TApplicationException.MISSING_RESULT, "saveConfig failed: unknown result");
 
-  def createSwitchRoute(self, tenantId, dpid, routeString):
+  def createSwitchRoute(self, tenantId, dpid, inPort, outPort, routeString):
     """
     Parameters:
      - tenantId
      - dpid
+     - inPort
+     - outPort
      - routeString
     """
-    self.send_createSwitchRoute(tenantId, dpid, routeString)
+    self.send_createSwitchRoute(tenantId, dpid, inPort, outPort, routeString)
     return self.recv_createSwitchRoute()
 
-  def send_createSwitchRoute(self, tenantId, dpid, routeString):
+  def send_createSwitchRoute(self, tenantId, dpid, inPort, outPort, routeString):
     self._oprot.writeMessageBegin('createSwitchRoute', TMessageType.CALL, self._seqid)
     args = createSwitchRoute_args()
     args.tenantId = tenantId
     args.dpid = dpid
+    args.inPort = inPort
+    args.outPort = outPort
     args.routeString = routeString
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
@@ -408,7 +414,7 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createSwitchRoute_result()
-    result.success = self._handler.createSwitchRoute(args.tenantId, args.dpid, args.routeString)
+    result.success = self._handler.createSwitchRoute(args.tenantId, args.dpid, args.inPort, args.outPort, args.routeString)
     oprot.writeMessageBegin("createSwitchRoute", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -1234,6 +1240,8 @@ class createSwitchRoute_args:
   Attributes:
    - tenantId
    - dpid
+   - inPort
+   - outPort
    - routeString
   """
 
@@ -1241,12 +1249,16 @@ class createSwitchRoute_args:
     None, # 0
     (1, TType.I32, 'tenantId', None, None, ), # 1
     (2, TType.STRING, 'dpid', None, None, ), # 2
-    (3, TType.STRING, 'routeString', None, None, ), # 3
+    (3, TType.STRING, 'inPort', None, None, ), # 3
+    (4, TType.STRING, 'outPort', None, None, ), # 4
+    (5, TType.STRING, 'routeString', None, None, ), # 5
   )
 
-  def __init__(self, tenantId=None, dpid=None, routeString=None,):
+  def __init__(self, tenantId=None, dpid=None, inPort=None, outPort=None, routeString=None,):
     self.tenantId = tenantId
     self.dpid = dpid
+    self.inPort = inPort
+    self.outPort = outPort
     self.routeString = routeString
 
   def read(self, iprot):
@@ -1270,6 +1282,16 @@ class createSwitchRoute_args:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
+          self.inPort = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.outPort = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
           self.routeString = iprot.readString();
         else:
           iprot.skip(ftype)
@@ -1291,8 +1313,16 @@ class createSwitchRoute_args:
       oprot.writeFieldBegin('dpid', TType.STRING, 2)
       oprot.writeString(self.dpid)
       oprot.writeFieldEnd()
+    if self.inPort is not None:
+      oprot.writeFieldBegin('inPort', TType.STRING, 3)
+      oprot.writeString(self.inPort)
+      oprot.writeFieldEnd()
+    if self.outPort is not None:
+      oprot.writeFieldBegin('outPort', TType.STRING, 4)
+      oprot.writeString(self.outPort)
+      oprot.writeFieldEnd()
     if self.routeString is not None:
-      oprot.writeFieldBegin('routeString', TType.STRING, 3)
+      oprot.writeFieldBegin('routeString', TType.STRING, 5)
       oprot.writeString(self.routeString)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

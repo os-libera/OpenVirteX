@@ -46,7 +46,7 @@ public class TenantServer {
 
     public String saveConfig() throws org.apache.thrift.TException;
 
-    public int createSwitchRoute(int tenantId, String dpid, String routeString) throws org.apache.thrift.TException;
+    public int createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString) throws org.apache.thrift.TException;
 
   }
 
@@ -64,7 +64,7 @@ public class TenantServer {
 
     public void saveConfig(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.saveConfig_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void createSwitchRoute(int tenantId, String dpid, String routeString, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createSwitchRoute_call> resultHandler) throws org.apache.thrift.TException;
+    public void createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createSwitchRoute_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -234,17 +234,19 @@ public class TenantServer {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "saveConfig failed: unknown result");
     }
 
-    public int createSwitchRoute(int tenantId, String dpid, String routeString) throws org.apache.thrift.TException
+    public int createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString) throws org.apache.thrift.TException
     {
-      send_createSwitchRoute(tenantId, dpid, routeString);
+      send_createSwitchRoute(tenantId, dpid, inPort, outPort, routeString);
       return recv_createSwitchRoute();
     }
 
-    public void send_createSwitchRoute(int tenantId, String dpid, String routeString) throws org.apache.thrift.TException
+    public void send_createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString) throws org.apache.thrift.TException
     {
       createSwitchRoute_args args = new createSwitchRoute_args();
       args.setTenantId(tenantId);
       args.setDpid(dpid);
+      args.setInPort(inPort);
+      args.setOutPort(outPort);
       args.setRouteString(routeString);
       sendBase("createSwitchRoute", args);
     }
@@ -493,9 +495,9 @@ public class TenantServer {
       }
     }
 
-    public void createSwitchRoute(int tenantId, String dpid, String routeString, org.apache.thrift.async.AsyncMethodCallback<createSwitchRoute_call> resultHandler) throws org.apache.thrift.TException {
+    public void createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString, org.apache.thrift.async.AsyncMethodCallback<createSwitchRoute_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      createSwitchRoute_call method_call = new createSwitchRoute_call(tenantId, dpid, routeString, resultHandler, this, ___protocolFactory, ___transport);
+      createSwitchRoute_call method_call = new createSwitchRoute_call(tenantId, dpid, inPort, outPort, routeString, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -503,11 +505,15 @@ public class TenantServer {
     public static class createSwitchRoute_call extends org.apache.thrift.async.TAsyncMethodCall {
       private int tenantId;
       private String dpid;
+      private String inPort;
+      private String outPort;
       private String routeString;
-      public createSwitchRoute_call(int tenantId, String dpid, String routeString, org.apache.thrift.async.AsyncMethodCallback<createSwitchRoute_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public createSwitchRoute_call(int tenantId, String dpid, String inPort, String outPort, String routeString, org.apache.thrift.async.AsyncMethodCallback<createSwitchRoute_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.tenantId = tenantId;
         this.dpid = dpid;
+        this.inPort = inPort;
+        this.outPort = outPort;
         this.routeString = routeString;
       }
 
@@ -516,6 +522,8 @@ public class TenantServer {
         createSwitchRoute_args args = new createSwitchRoute_args();
         args.setTenantId(tenantId);
         args.setDpid(dpid);
+        args.setInPort(inPort);
+        args.setOutPort(outPort);
         args.setRouteString(routeString);
         args.write(prot);
         prot.writeMessageEnd();
@@ -694,7 +702,7 @@ public class TenantServer {
 
       public createSwitchRoute_result getResult(I iface, createSwitchRoute_args args) throws org.apache.thrift.TException {
         createSwitchRoute_result result = new createSwitchRoute_result();
-        result.success = iface.createSwitchRoute(args.tenantId, args.dpid, args.routeString);
+        result.success = iface.createSwitchRoute(args.tenantId, args.dpid, args.inPort, args.outPort, args.routeString);
         result.setSuccessIsSet(true);
         return result;
       }
@@ -5777,7 +5785,9 @@ public class TenantServer {
 
     private static final org.apache.thrift.protocol.TField TENANT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tenantId", org.apache.thrift.protocol.TType.I32, (short)1);
     private static final org.apache.thrift.protocol.TField DPID_FIELD_DESC = new org.apache.thrift.protocol.TField("dpid", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField ROUTE_STRING_FIELD_DESC = new org.apache.thrift.protocol.TField("routeString", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField IN_PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("inPort", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField OUT_PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("outPort", org.apache.thrift.protocol.TType.STRING, (short)4);
+    private static final org.apache.thrift.protocol.TField ROUTE_STRING_FIELD_DESC = new org.apache.thrift.protocol.TField("routeString", org.apache.thrift.protocol.TType.STRING, (short)5);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -5787,13 +5797,17 @@ public class TenantServer {
 
     public int tenantId; // required
     public String dpid; // required
+    public String inPort; // required
+    public String outPort; // required
     public String routeString; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TENANT_ID((short)1, "tenantId"),
       DPID((short)2, "dpid"),
-      ROUTE_STRING((short)3, "routeString");
+      IN_PORT((short)3, "inPort"),
+      OUT_PORT((short)4, "outPort"),
+      ROUTE_STRING((short)5, "routeString");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5812,7 +5826,11 @@ public class TenantServer {
             return TENANT_ID;
           case 2: // DPID
             return DPID;
-          case 3: // ROUTE_STRING
+          case 3: // IN_PORT
+            return IN_PORT;
+          case 4: // OUT_PORT
+            return OUT_PORT;
+          case 5: // ROUTE_STRING
             return ROUTE_STRING;
           default:
             return null;
@@ -5863,6 +5881,10 @@ public class TenantServer {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
       tmpMap.put(_Fields.DPID, new org.apache.thrift.meta_data.FieldMetaData("dpid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.IN_PORT, new org.apache.thrift.meta_data.FieldMetaData("inPort", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.OUT_PORT, new org.apache.thrift.meta_data.FieldMetaData("outPort", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.ROUTE_STRING, new org.apache.thrift.meta_data.FieldMetaData("routeString", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -5875,12 +5897,16 @@ public class TenantServer {
     public createSwitchRoute_args(
       int tenantId,
       String dpid,
+      String inPort,
+      String outPort,
       String routeString)
     {
       this();
       this.tenantId = tenantId;
       setTenantIdIsSet(true);
       this.dpid = dpid;
+      this.inPort = inPort;
+      this.outPort = outPort;
       this.routeString = routeString;
     }
 
@@ -5892,6 +5918,12 @@ public class TenantServer {
       this.tenantId = other.tenantId;
       if (other.isSetDpid()) {
         this.dpid = other.dpid;
+      }
+      if (other.isSetInPort()) {
+        this.inPort = other.inPort;
+      }
+      if (other.isSetOutPort()) {
+        this.outPort = other.outPort;
       }
       if (other.isSetRouteString()) {
         this.routeString = other.routeString;
@@ -5907,6 +5939,8 @@ public class TenantServer {
       setTenantIdIsSet(false);
       this.tenantId = 0;
       this.dpid = null;
+      this.inPort = null;
+      this.outPort = null;
       this.routeString = null;
     }
 
@@ -5957,6 +5991,54 @@ public class TenantServer {
       }
     }
 
+    public String getInPort() {
+      return this.inPort;
+    }
+
+    public createSwitchRoute_args setInPort(String inPort) {
+      this.inPort = inPort;
+      return this;
+    }
+
+    public void unsetInPort() {
+      this.inPort = null;
+    }
+
+    /** Returns true if field inPort is set (has been assigned a value) and false otherwise */
+    public boolean isSetInPort() {
+      return this.inPort != null;
+    }
+
+    public void setInPortIsSet(boolean value) {
+      if (!value) {
+        this.inPort = null;
+      }
+    }
+
+    public String getOutPort() {
+      return this.outPort;
+    }
+
+    public createSwitchRoute_args setOutPort(String outPort) {
+      this.outPort = outPort;
+      return this;
+    }
+
+    public void unsetOutPort() {
+      this.outPort = null;
+    }
+
+    /** Returns true if field outPort is set (has been assigned a value) and false otherwise */
+    public boolean isSetOutPort() {
+      return this.outPort != null;
+    }
+
+    public void setOutPortIsSet(boolean value) {
+      if (!value) {
+        this.outPort = null;
+      }
+    }
+
     public String getRouteString() {
       return this.routeString;
     }
@@ -5999,6 +6081,22 @@ public class TenantServer {
         }
         break;
 
+      case IN_PORT:
+        if (value == null) {
+          unsetInPort();
+        } else {
+          setInPort((String)value);
+        }
+        break;
+
+      case OUT_PORT:
+        if (value == null) {
+          unsetOutPort();
+        } else {
+          setOutPort((String)value);
+        }
+        break;
+
       case ROUTE_STRING:
         if (value == null) {
           unsetRouteString();
@@ -6018,6 +6116,12 @@ public class TenantServer {
       case DPID:
         return getDpid();
 
+      case IN_PORT:
+        return getInPort();
+
+      case OUT_PORT:
+        return getOutPort();
+
       case ROUTE_STRING:
         return getRouteString();
 
@@ -6036,6 +6140,10 @@ public class TenantServer {
         return isSetTenantId();
       case DPID:
         return isSetDpid();
+      case IN_PORT:
+        return isSetInPort();
+      case OUT_PORT:
+        return isSetOutPort();
       case ROUTE_STRING:
         return isSetRouteString();
       }
@@ -6070,6 +6178,24 @@ public class TenantServer {
         if (!(this_present_dpid && that_present_dpid))
           return false;
         if (!this.dpid.equals(that.dpid))
+          return false;
+      }
+
+      boolean this_present_inPort = true && this.isSetInPort();
+      boolean that_present_inPort = true && that.isSetInPort();
+      if (this_present_inPort || that_present_inPort) {
+        if (!(this_present_inPort && that_present_inPort))
+          return false;
+        if (!this.inPort.equals(that.inPort))
+          return false;
+      }
+
+      boolean this_present_outPort = true && this.isSetOutPort();
+      boolean that_present_outPort = true && that.isSetOutPort();
+      if (this_present_outPort || that_present_outPort) {
+        if (!(this_present_outPort && that_present_outPort))
+          return false;
+        if (!this.outPort.equals(that.outPort))
           return false;
       }
 
@@ -6118,6 +6244,26 @@ public class TenantServer {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetInPort()).compareTo(typedOther.isSetInPort());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInPort()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.inPort, typedOther.inPort);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetOutPort()).compareTo(typedOther.isSetOutPort());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetOutPort()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.outPort, typedOther.outPort);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetRouteString()).compareTo(typedOther.isSetRouteString());
       if (lastComparison != 0) {
         return lastComparison;
@@ -6157,6 +6303,22 @@ public class TenantServer {
         sb.append("null");
       } else {
         sb.append(this.dpid);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("inPort:");
+      if (this.inPort == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.inPort);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("outPort:");
+      if (this.outPort == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.outPort);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -6228,7 +6390,23 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // ROUTE_STRING
+            case 3: // IN_PORT
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.inPort = iprot.readString();
+                struct.setInPortIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // OUT_PORT
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.outPort = iprot.readString();
+                struct.setOutPortIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 5: // ROUTE_STRING
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.routeString = iprot.readString();
                 struct.setRouteStringIsSet(true);
@@ -6257,6 +6435,16 @@ public class TenantServer {
         if (struct.dpid != null) {
           oprot.writeFieldBegin(DPID_FIELD_DESC);
           oprot.writeString(struct.dpid);
+          oprot.writeFieldEnd();
+        }
+        if (struct.inPort != null) {
+          oprot.writeFieldBegin(IN_PORT_FIELD_DESC);
+          oprot.writeString(struct.inPort);
+          oprot.writeFieldEnd();
+        }
+        if (struct.outPort != null) {
+          oprot.writeFieldBegin(OUT_PORT_FIELD_DESC);
+          oprot.writeString(struct.outPort);
           oprot.writeFieldEnd();
         }
         if (struct.routeString != null) {
@@ -6288,15 +6476,27 @@ public class TenantServer {
         if (struct.isSetDpid()) {
           optionals.set(1);
         }
-        if (struct.isSetRouteString()) {
+        if (struct.isSetInPort()) {
           optionals.set(2);
         }
-        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetOutPort()) {
+          optionals.set(3);
+        }
+        if (struct.isSetRouteString()) {
+          optionals.set(4);
+        }
+        oprot.writeBitSet(optionals, 5);
         if (struct.isSetTenantId()) {
           oprot.writeI32(struct.tenantId);
         }
         if (struct.isSetDpid()) {
           oprot.writeString(struct.dpid);
+        }
+        if (struct.isSetInPort()) {
+          oprot.writeString(struct.inPort);
+        }
+        if (struct.isSetOutPort()) {
+          oprot.writeString(struct.outPort);
         }
         if (struct.isSetRouteString()) {
           oprot.writeString(struct.routeString);
@@ -6306,7 +6506,7 @@ public class TenantServer {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createSwitchRoute_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(5);
         if (incoming.get(0)) {
           struct.tenantId = iprot.readI32();
           struct.setTenantIdIsSet(true);
@@ -6316,6 +6516,14 @@ public class TenantServer {
           struct.setDpidIsSet(true);
         }
         if (incoming.get(2)) {
+          struct.inPort = iprot.readString();
+          struct.setInPortIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.outPort = iprot.readString();
+          struct.setOutPortIsSet(true);
+        }
+        if (incoming.get(4)) {
           struct.routeString = iprot.readString();
           struct.setRouteStringIsSet(true);
         }

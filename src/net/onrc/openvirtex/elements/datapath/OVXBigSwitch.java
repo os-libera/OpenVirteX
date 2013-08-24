@@ -222,40 +222,38 @@ public class OVXBigSwitch extends OVXSwitch {
     
     /**
      * Adds a path between two edge ports on the big switch 
-     * @param path
+     * @param ingress  
+     * @param egress
+     * @param path list of links 
+     * @param revpath the corresponding reverse path from egress to ingress
      * @return the route ID of the new route
      */
-    public int createRoute(final List<PhysicalLink> path) {
-	//assumes list is in correct order
-	final PhysicalPort srcPhyPort = path.get(0).getSrcPort();
-	final PhysicalPort dstPhyPort = path.get(path.size() - 1).getDstPort();
-	final OVXPort srcPort = new OVXPort(this.getTenantId(), srcPhyPort, false);
-	final OVXPort dstPort = new OVXPort(this.getTenantId(), dstPhyPort, false);
-	
+    public int createRoute(OVXPort ingress, OVXPort egress, 
+	    final List<PhysicalLink> path, List<PhysicalLink> revpath) {
 	final int routeId = this.routeCounter.getAndIncrement();
-	SwitchRoute routeEntry = new SwitchRoute(this.switchId, routeId);
-	routeEntry.addRoute(path);
+	SwitchRoute rtEntry = new SwitchRoute(this.switchId, routeId);
+	SwitchRoute revRtEntry = new SwitchRoute(this.switchId, routeId);
+	rtEntry.addRoute(path);
+	revRtEntry.addRoute(revpath);
 	
 	synchronized(routeMap) {
-	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(srcPort);
+	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(ingress);
 	    if (rtmap == null) {
 		rtmap = new HashMap<OVXPort, SwitchRoute>();
-		this.routeMap.put(srcPort, rtmap);
+		this.routeMap.put(ingress, rtmap);
 	    }
-	    rtmap.put(dstPort, routeEntry);
+	    rtmap.put(egress, rtEntry);
 	}
-	
 	//add reverse path dst->src
 	synchronized(routeMap) {
-	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(dstPort);
+	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(egress);
 	    if (rtmap == null) {
 		rtmap = new HashMap<OVXPort, SwitchRoute>();
-		this.routeMap.put(dstPort, rtmap);
+		this.routeMap.put(egress, rtmap);
 	    }
-	    rtmap.put(srcPort, routeEntry);
+	    rtmap.put(ingress, revRtEntry);
 	}
-	this.log.info("Added route {}", routeEntry);
-	
+	this.log.info("Added route {}", rtEntry);
 	return routeId;
     }
 }
