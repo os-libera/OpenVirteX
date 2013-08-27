@@ -192,7 +192,7 @@ public class APITenantManager {
      * @param tenantId
      * @param dpid
      * @param routeString
-     * @return the route identifier 
+     * @return the route identifier or -1 for failed route creation
      */
     public int createOVXSwitchRoute(int tenantId, String dpid, String inPort, 
             String outPort, String routeString) {
@@ -210,9 +210,8 @@ public class APITenantManager {
 		return -1;
 	    } 
 	    final HashSet<PhysicalSwitch> switchSet = new HashSet<PhysicalSwitch>(
-		    bigSwitch.getMap().getPhysicalSwitches(bigSwitch));
-	    
-	    //find in/out physical ports  
+		    bigSwitch.getMap().getPhysicalSwitches(bigSwitch)); 
+	    //find ingress/egress ports to Big Switch  
 	    final String[] inPortPair = inPort.split("/");
 	    final String[] outPortPair = outPort.split("/");
 	    final PhysicalPort inPhyPort = phyNetwork
@@ -224,7 +223,7 @@ public class APITenantManager {
 	    
 	    final List<PhysicalLink> pathLinks = new ArrayList<PhysicalLink>();
 	    final List<PhysicalLink> reverseLinks = new ArrayList<PhysicalLink>();
-	    
+	    //handle route string 
 	    for (final String link : routeString.split(",")) {
 		final String srcString = link.split("-")[0];
 		final String dstString = link.split("-")[1];
@@ -234,15 +233,17 @@ public class APITenantManager {
 			phyNetwork.getSwitch(Long.parseLong(srcDpidPort[0])); 
 		final PhysicalSwitch dstSwitch = 
 			phyNetwork.getSwitch(Long.parseLong(dstDpidPort[0]));
-		
+		//if either source or dst switch don't exist, quit
+		if ((srcSwitch == null) || (dstSwitch == null)) {
+		    return -1;
+		}
 		//for each link, check if switch is part of big switch
 		if ((switchSet.contains(srcSwitch)) && (switchSet.contains(dstSwitch))) {
-		    final PhysicalPort srcPort = phyNetwork
-			    .getSwitch(Long.valueOf(srcDpidPort[0]))
-			    .getPort(Short.valueOf(srcDpidPort[1]));
-		    final PhysicalPort dstPort = phyNetwork
-			    .getSwitch(Long.valueOf(dstDpidPort[0]))
-			    .getPort(Short.valueOf(dstDpidPort[1]));
+		    final PhysicalPort srcPort = srcSwitch.getPort(Short.valueOf(srcDpidPort[1]));
+		    final PhysicalPort dstPort = dstSwitch.getPort(Short.valueOf(dstDpidPort[1]));
+		    if ((srcPort == null) || (dstPort == null)) {
+			return -1;
+		    }
 		    final PhysicalLink hop = phyNetwork.getLink(srcPort, dstPort);
 		    final PhysicalLink revhop = phyNetwork.getLink(dstPort, srcPort);
 		    pathLinks.add(hop);

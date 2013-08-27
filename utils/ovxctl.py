@@ -124,7 +124,7 @@ def do_createVSwitchRoute(gopts, opts, args):
     client = create_client(gopts.host, int(gopts.port))
     route_id = client.createSwitchRoute(int(args[0]), args[1], args[2], args[3], args[4])
     client._iprot.trans.close()
-    if route_id:
+    if route_id > 0:
         print "Switch route has been created (route_id %s)." % str(route_id)
 
 def pa_help(args, cmd):

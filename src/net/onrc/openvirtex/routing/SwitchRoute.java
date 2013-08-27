@@ -14,7 +14,7 @@ public class SwitchRoute {
     /** unique route identifier*/
     int routeId;
     
-    /** DPID of virtual switch */
+    /** DPID of parent virtual switch */
     long dpid;
     
     /** list of links making up route */
