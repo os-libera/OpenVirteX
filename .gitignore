@@ -9,5 +9,5 @@
 
 *.pyc
 
-.settings/
-target/
+/.settings/
+/target
