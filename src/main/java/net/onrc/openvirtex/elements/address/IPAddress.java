@@ -23,11 +23,20 @@ public abstract class IPAddress {
 		this.ip = ip;
 	}
 	
+	
+	
 
 	@Override
 	public String toString() {
 	    return this.getClass().getName() + "[" + (ip >> 24) + "." + ((ip >> 16) & 0xFF) +
 		    "." + ((ip >> 8) & 0xFF) +  "." + (ip & 0xFF) + "]";  
+	}
+	
+	@Override
+	public boolean equals(Object that) {
+	    if (that instanceof IPAddress)
+		return ip == ((IPAddress)that).ip;
+	    return false;
 	}
 
 }
