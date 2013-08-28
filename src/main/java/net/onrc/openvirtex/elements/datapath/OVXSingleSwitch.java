@@ -28,6 +28,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 	if (!this.portMap.containsKey(portNumber)) {
 	    return false;
 	} else {
+	    // TODO: this should generate a portstatus message to the ctrl
 	    this.portMap.remove(portNumber);
 	    return true;
 	}
