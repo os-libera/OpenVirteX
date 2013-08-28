@@ -44,10 +44,8 @@ import net.onrc.openvirtex.messages.actions.VirtualizableAction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.OFError.OFFlowModFailedCode;
 import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
