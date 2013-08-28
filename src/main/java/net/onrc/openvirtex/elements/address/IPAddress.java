@@ -13,7 +13,7 @@ public abstract class IPAddress {
 	    this.ip = IPv4.toIPv4Address(ipAddress);
 	}
 	
-	public IPAddress() {}
+	protected IPAddress() {}
 
 	public int getIp() {
 		return this.ip;
@@ -28,7 +28,7 @@ public abstract class IPAddress {
 
 	@Override
 	public String toString() {
-	    return this.getClass().getName() + "[" + (ip >> 24) + "." + ((ip >> 16) & 0xFF) +
+	    return this.getClass().getSimpleName() + "[" + (ip >> 24) + "." + ((ip >> 16) & 0xFF) +
 		    "." + ((ip >> 8) & 0xFF) +  "." + (ip & 0xFF) + "]";  
 	}
 	

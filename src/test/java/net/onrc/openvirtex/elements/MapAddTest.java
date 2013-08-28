@@ -3,14 +3,14 @@ package net.onrc.openvirtex.elements;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.util.MACAddress;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 public class MapAddTest extends TestCase {
 
@@ -77,7 +77,12 @@ public class MapAddTest extends TestCase {
 	
 	for (int i = 0 ; i < MAXPSW ; i++)
 	    assertEquals((int) map.getMAC(MACAddress.valueOf(i)), (int) (i %  MAXTIDS));
+	
     }
+    
+    
+    
+    
     
 
     protected void setUp() throws Exception {
