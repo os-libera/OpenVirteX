@@ -82,4 +82,13 @@ public class OVXPort extends Port<OVXSwitch> {
 	result += "\n- tenantId: " + this.tenantId;
 	return result;
     }
+    
+    public boolean equals(OVXPort port) {
+	if (this.portNumber==port.portNumber 
+		&& this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId()) {
+	    return true;
+	} else {
+	    return false;
+	}
+    }
 }
