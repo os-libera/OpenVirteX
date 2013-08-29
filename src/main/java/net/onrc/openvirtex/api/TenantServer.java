@@ -6,15 +6,24 @@
  */
 package net.onrc.openvirtex.api;
 
+import net.onrc.openvirtex.exceptions.ControllerUnavailableException;
+import net.onrc.openvirtex.exceptions.IPOutOfRangeException;
+import net.onrc.openvirtex.exceptions.InternalException;
+import net.onrc.openvirtex.exceptions.InvalidDPIDException;
+import net.onrc.openvirtex.exceptions.InvalidLinkException;
+import net.onrc.openvirtex.exceptions.InvalidPortException;
+import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
+import net.onrc.openvirtex.exceptions.VirtualLinkException;
+
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
-
 import org.apache.thrift.scheme.TupleScheme;
 import org.apache.thrift.protocol.TTupleProtocol;
 import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.EncodingUtils;
 import org.apache.thrift.TException;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -27,6 +36,7 @@ import java.util.Collections;
 import java.util.BitSet;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,15 +44,15 @@ public class TenantServer {
 
   public interface Iface {
 
-    public int createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException;
+    public int createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws ControllerUnavailableException, IPOutOfRangeException, InternalException, org.apache.thrift.TException;
 
-    public long createVirtualSwitch(int tenantId, List<String> dpids) throws org.apache.thrift.TException;
+    public long createVirtualSwitch(int tenantId, List<String> dpids) throws InvalidDPIDException, InvalidTenantIdException, InternalException, org.apache.thrift.TException;
 
-    public int createHost(int tenantId, String dpid, short portNumber, String mac) throws org.apache.thrift.TException;
+    public int createHost(int tenantId, String dpid, short portNumber, String mac) throws InvalidPortException, InvalidTenantIdException, InvalidDPIDException, InternalException, org.apache.thrift.TException;
 
-    public int createVirtualLink(int tenantId, String pathString) throws org.apache.thrift.TException;
+    public int createVirtualLink(int tenantId, String pathString) throws InvalidTenantIdException, InvalidPortException, InvalidDPIDException, InternalException, VirtualLinkException, InvalidLinkException, org.apache.thrift.TException;
 
-    public boolean startNetwork(int tenantId) throws org.apache.thrift.TException;
+    public boolean startNetwork(int tenantId) throws InvalidTenantIdException, InternalException, org.apache.thrift.TException;
 
     public String saveConfig() throws org.apache.thrift.TException;
 
@@ -84,7 +94,7 @@ public class TenantServer {
       super(iprot, oprot);
     }
 
-    public int createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws org.apache.thrift.TException
+    public int createVirtualNetwork(String protocol, String controllerAddress, short controllerPort, String networkAddress, short mask) throws ControllerUnavailableException, IPOutOfRangeException, InternalException, org.apache.thrift.TException
     {
       send_createVirtualNetwork(protocol, controllerAddress, controllerPort, networkAddress, mask);
       return recv_createVirtualNetwork();
@@ -101,17 +111,26 @@ public class TenantServer {
       sendBase("createVirtualNetwork", args);
     }
 
-    public int recv_createVirtualNetwork() throws org.apache.thrift.TException
+    public int recv_createVirtualNetwork() throws ControllerUnavailableException, IPOutOfRangeException, InternalException, org.apache.thrift.TException
     {
       createVirtualNetwork_result result = new createVirtualNetwork_result();
       receiveBase(result, "createVirtualNetwork");
       if (result.isSetSuccess()) {
         return result.success;
       }
+      if (result.controllerError != null) {
+        throw result.controllerError;
+      }
+      if (result.ipError != null) {
+        throw result.ipError;
+      }
+      if (result.internalError != null) {
+        throw result.internalError;
+      }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "createVirtualNetwork failed: unknown result");
     }
 
-    public long createVirtualSwitch(int tenantId, List<String> dpids) throws org.apache.thrift.TException
+    public long createVirtualSwitch(int tenantId, List<String> dpids) throws InvalidDPIDException, InvalidTenantIdException, InternalException, org.apache.thrift.TException
     {
       send_createVirtualSwitch(tenantId, dpids);
       return recv_createVirtualSwitch();
@@ -125,17 +144,26 @@ public class TenantServer {
       sendBase("createVirtualSwitch", args);
     }
 
-    public long recv_createVirtualSwitch() throws org.apache.thrift.TException
+    public long recv_createVirtualSwitch() throws InvalidDPIDException, InvalidTenantIdException, InternalException, org.apache.thrift.TException
     {
       createVirtualSwitch_result result = new createVirtualSwitch_result();
       receiveBase(result, "createVirtualSwitch");
       if (result.isSetSuccess()) {
         return result.success;
       }
+      if (result.dpidError != null) {
+        throw result.dpidError;
+      }
+      if (result.tenantError != null) {
+        throw result.tenantError;
+      }
+      if (result.internalError != null) {
+        throw result.internalError;
+      }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "createVirtualSwitch failed: unknown result");
     }
 
-    public int createHost(int tenantId, String dpid, short portNumber, String mac) throws org.apache.thrift.TException
+    public int createHost(int tenantId, String dpid, short portNumber, String mac) throws InvalidPortException, InvalidTenantIdException, InvalidDPIDException, InternalException, org.apache.thrift.TException
     {
       send_createHost(tenantId, dpid, portNumber, mac);
       return recv_createHost();
@@ -151,17 +179,29 @@ public class TenantServer {
       sendBase("createHost", args);
     }
 
-    public int recv_createHost() throws org.apache.thrift.TException
+    public int recv_createHost() throws InvalidPortException, InvalidTenantIdException, InvalidDPIDException, InternalException, org.apache.thrift.TException
     {
       createHost_result result = new createHost_result();
       receiveBase(result, "createHost");
       if (result.isSetSuccess()) {
         return result.success;
       }
+      if (result.portError != null) {
+        throw result.portError;
+      }
+      if (result.tenantError != null) {
+        throw result.tenantError;
+      }
+      if (result.dpidError != null) {
+        throw result.dpidError;
+      }
+      if (result.internalError != null) {
+        throw result.internalError;
+      }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "createHost failed: unknown result");
     }
 
-    public int createVirtualLink(int tenantId, String pathString) throws org.apache.thrift.TException
+    public int createVirtualLink(int tenantId, String pathString) throws InvalidTenantIdException, InvalidPortException, InvalidDPIDException, InternalException, VirtualLinkException, InvalidLinkException, org.apache.thrift.TException
     {
       send_createVirtualLink(tenantId, pathString);
       return recv_createVirtualLink();
@@ -175,17 +215,35 @@ public class TenantServer {
       sendBase("createVirtualLink", args);
     }
 
-    public int recv_createVirtualLink() throws org.apache.thrift.TException
+    public int recv_createVirtualLink() throws InvalidTenantIdException, InvalidPortException, InvalidDPIDException, InternalException, VirtualLinkException, InvalidLinkException, org.apache.thrift.TException
     {
       createVirtualLink_result result = new createVirtualLink_result();
       receiveBase(result, "createVirtualLink");
       if (result.isSetSuccess()) {
         return result.success;
       }
+      if (result.tenantError != null) {
+        throw result.tenantError;
+      }
+      if (result.portError != null) {
+        throw result.portError;
+      }
+      if (result.dpidError != null) {
+        throw result.dpidError;
+      }
+      if (result.internalError != null) {
+        throw result.internalError;
+      }
+      if (result.duplicateLinkError != null) {
+        throw result.duplicateLinkError;
+      }
+      if (result.invalidLinkError != null) {
+        throw result.invalidLinkError;
+      }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "createVirtualLink failed: unknown result");
     }
 
-    public boolean startNetwork(int tenantId) throws org.apache.thrift.TException
+    public boolean startNetwork(int tenantId) throws InvalidTenantIdException, InternalException, org.apache.thrift.TException
     {
       send_startNetwork(tenantId);
       return recv_startNetwork();
@@ -198,12 +256,18 @@ public class TenantServer {
       sendBase("startNetwork", args);
     }
 
-    public boolean recv_startNetwork() throws org.apache.thrift.TException
+    public boolean recv_startNetwork() throws InvalidTenantIdException, InternalException, org.apache.thrift.TException
     {
       startNetwork_result result = new startNetwork_result();
       receiveBase(result, "startNetwork");
       if (result.isSetSuccess()) {
         return result.success;
+      }
+      if (result.tenantError != null) {
+        throw result.tenantError;
+      }
+      if (result.internalError != null) {
+        throw result.internalError;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "startNetwork failed: unknown result");
     }
@@ -282,7 +346,7 @@ public class TenantServer {
         prot.writeMessageEnd();
       }
 
-      public int getResult() throws org.apache.thrift.TException {
+      public int getResult() throws ControllerUnavailableException, IPOutOfRangeException, InternalException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -317,7 +381,7 @@ public class TenantServer {
         prot.writeMessageEnd();
       }
 
-      public long getResult() throws org.apache.thrift.TException {
+      public long getResult() throws InvalidDPIDException, InvalidTenantIdException, InternalException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -358,7 +422,7 @@ public class TenantServer {
         prot.writeMessageEnd();
       }
 
-      public int getResult() throws org.apache.thrift.TException {
+      public int getResult() throws InvalidPortException, InvalidTenantIdException, InvalidDPIDException, InternalException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -393,7 +457,7 @@ public class TenantServer {
         prot.writeMessageEnd();
       }
 
-      public int getResult() throws org.apache.thrift.TException {
+      public int getResult() throws InvalidTenantIdException, InvalidPortException, InvalidDPIDException, InternalException, VirtualLinkException, InvalidLinkException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -425,7 +489,7 @@ public class TenantServer {
         prot.writeMessageEnd();
       }
 
-      public boolean getResult() throws org.apache.thrift.TException {
+      public boolean getResult() throws InvalidTenantIdException, InternalException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -501,8 +565,16 @@ public class TenantServer {
 
       public createVirtualNetwork_result getResult(I iface, createVirtualNetwork_args args) throws org.apache.thrift.TException {
         createVirtualNetwork_result result = new createVirtualNetwork_result();
-        result.success = iface.createVirtualNetwork(args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask);
-        result.setSuccessIsSet(true);
+        try {
+          result.success = iface.createVirtualNetwork(args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask);
+          result.setSuccessIsSet(true);
+        } catch (ControllerUnavailableException controllerError) {
+          result.controllerError = controllerError;
+        } catch (IPOutOfRangeException ipError) {
+          result.ipError = ipError;
+        } catch (InternalException internalError) {
+          result.internalError = internalError;
+        }
         return result;
       }
     }
@@ -522,8 +594,16 @@ public class TenantServer {
 
       public createVirtualSwitch_result getResult(I iface, createVirtualSwitch_args args) throws org.apache.thrift.TException {
         createVirtualSwitch_result result = new createVirtualSwitch_result();
-        result.success = iface.createVirtualSwitch(args.tenantId, args.dpids);
-        result.setSuccessIsSet(true);
+        try {
+          result.success = iface.createVirtualSwitch(args.tenantId, args.dpids);
+          result.setSuccessIsSet(true);
+        } catch (InvalidDPIDException dpidError) {
+          result.dpidError = dpidError;
+        } catch (InvalidTenantIdException tenantError) {
+          result.tenantError = tenantError;
+        } catch (InternalException internalError) {
+          result.internalError = internalError;
+        }
         return result;
       }
     }
@@ -543,8 +623,18 @@ public class TenantServer {
 
       public createHost_result getResult(I iface, createHost_args args) throws org.apache.thrift.TException {
         createHost_result result = new createHost_result();
-        result.success = iface.createHost(args.tenantId, args.dpid, args.portNumber, args.mac);
-        result.setSuccessIsSet(true);
+        try {
+          result.success = iface.createHost(args.tenantId, args.dpid, args.portNumber, args.mac);
+          result.setSuccessIsSet(true);
+        } catch (InvalidPortException portError) {
+          result.portError = portError;
+        } catch (InvalidTenantIdException tenantError) {
+          result.tenantError = tenantError;
+        } catch (InvalidDPIDException dpidError) {
+          result.dpidError = dpidError;
+        } catch (InternalException internalError) {
+          result.internalError = internalError;
+        }
         return result;
       }
     }
@@ -564,8 +654,22 @@ public class TenantServer {
 
       public createVirtualLink_result getResult(I iface, createVirtualLink_args args) throws org.apache.thrift.TException {
         createVirtualLink_result result = new createVirtualLink_result();
-        result.success = iface.createVirtualLink(args.tenantId, args.pathString);
-        result.setSuccessIsSet(true);
+        try {
+          result.success = iface.createVirtualLink(args.tenantId, args.pathString);
+          result.setSuccessIsSet(true);
+        } catch (InvalidTenantIdException tenantError) {
+          result.tenantError = tenantError;
+        } catch (InvalidPortException portError) {
+          result.portError = portError;
+        } catch (InvalidDPIDException dpidError) {
+          result.dpidError = dpidError;
+        } catch (InternalException internalError) {
+          result.internalError = internalError;
+        } catch (VirtualLinkException duplicateLinkError) {
+          result.duplicateLinkError = duplicateLinkError;
+        } catch (InvalidLinkException invalidLinkError) {
+          result.invalidLinkError = invalidLinkError;
+        }
         return result;
       }
     }
@@ -585,8 +689,14 @@ public class TenantServer {
 
       public startNetwork_result getResult(I iface, startNetwork_args args) throws org.apache.thrift.TException {
         startNetwork_result result = new startNetwork_result();
-        result.success = iface.startNetwork(args.tenantId);
-        result.setSuccessIsSet(true);
+        try {
+          result.success = iface.startNetwork(args.tenantId);
+          result.setSuccessIsSet(true);
+        } catch (InvalidTenantIdException tenantError) {
+          result.tenantError = tenantError;
+        } catch (InternalException internalError) {
+          result.internalError = internalError;
+        }
         return result;
       }
     }
@@ -1363,6 +1473,9 @@ public class TenantServer {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createVirtualNetwork_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField CONTROLLER_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("controllerError", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField IP_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("ipError", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField INTERNAL_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("internalError", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -1371,10 +1484,16 @@ public class TenantServer {
     }
 
     public int success; // required
+    public ControllerUnavailableException controllerError; // required
+    public IPOutOfRangeException ipError; // required
+    public InternalException internalError; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+      SUCCESS((short)0, "success"),
+      CONTROLLER_ERROR((short)1, "controllerError"),
+      IP_ERROR((short)2, "ipError"),
+      INTERNAL_ERROR((short)3, "internalError");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -1391,6 +1510,12 @@ public class TenantServer {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
+          case 1: // CONTROLLER_ERROR
+            return CONTROLLER_ERROR;
+          case 2: // IP_ERROR
+            return IP_ERROR;
+          case 3: // INTERNAL_ERROR
+            return INTERNAL_ERROR;
           default:
             return null;
         }
@@ -1438,6 +1563,12 @@ public class TenantServer {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      tmpMap.put(_Fields.CONTROLLER_ERROR, new org.apache.thrift.meta_data.FieldMetaData("controllerError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.IP_ERROR, new org.apache.thrift.meta_data.FieldMetaData("ipError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.INTERNAL_ERROR, new org.apache.thrift.meta_data.FieldMetaData("internalError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createVirtualNetwork_result.class, metaDataMap);
     }
@@ -1446,11 +1577,17 @@ public class TenantServer {
     }
 
     public createVirtualNetwork_result(
-      int success)
+      int success,
+      ControllerUnavailableException controllerError,
+      IPOutOfRangeException ipError,
+      InternalException internalError)
     {
       this();
       this.success = success;
       setSuccessIsSet(true);
+      this.controllerError = controllerError;
+      this.ipError = ipError;
+      this.internalError = internalError;
     }
 
     /**
@@ -1459,6 +1596,15 @@ public class TenantServer {
     public createVirtualNetwork_result(createVirtualNetwork_result other) {
       __isset_bitfield = other.__isset_bitfield;
       this.success = other.success;
+      if (other.isSetControllerError()) {
+        this.controllerError = new ControllerUnavailableException(other.controllerError);
+      }
+      if (other.isSetIpError()) {
+        this.ipError = new IPOutOfRangeException(other.ipError);
+      }
+      if (other.isSetInternalError()) {
+        this.internalError = new InternalException(other.internalError);
+      }
     }
 
     public createVirtualNetwork_result deepCopy() {
@@ -1469,6 +1615,9 @@ public class TenantServer {
     public void clear() {
       setSuccessIsSet(false);
       this.success = 0;
+      this.controllerError = null;
+      this.ipError = null;
+      this.internalError = null;
     }
 
     public int getSuccess() {
@@ -1494,6 +1643,78 @@ public class TenantServer {
       __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
+    public ControllerUnavailableException getControllerError() {
+      return this.controllerError;
+    }
+
+    public createVirtualNetwork_result setControllerError(ControllerUnavailableException controllerError) {
+      this.controllerError = controllerError;
+      return this;
+    }
+
+    public void unsetControllerError() {
+      this.controllerError = null;
+    }
+
+    /** Returns true if field controllerError is set (has been assigned a value) and false otherwise */
+    public boolean isSetControllerError() {
+      return this.controllerError != null;
+    }
+
+    public void setControllerErrorIsSet(boolean value) {
+      if (!value) {
+        this.controllerError = null;
+      }
+    }
+
+    public IPOutOfRangeException getIpError() {
+      return this.ipError;
+    }
+
+    public createVirtualNetwork_result setIpError(IPOutOfRangeException ipError) {
+      this.ipError = ipError;
+      return this;
+    }
+
+    public void unsetIpError() {
+      this.ipError = null;
+    }
+
+    /** Returns true if field ipError is set (has been assigned a value) and false otherwise */
+    public boolean isSetIpError() {
+      return this.ipError != null;
+    }
+
+    public void setIpErrorIsSet(boolean value) {
+      if (!value) {
+        this.ipError = null;
+      }
+    }
+
+    public InternalException getInternalError() {
+      return this.internalError;
+    }
+
+    public createVirtualNetwork_result setInternalError(InternalException internalError) {
+      this.internalError = internalError;
+      return this;
+    }
+
+    public void unsetInternalError() {
+      this.internalError = null;
+    }
+
+    /** Returns true if field internalError is set (has been assigned a value) and false otherwise */
+    public boolean isSetInternalError() {
+      return this.internalError != null;
+    }
+
+    public void setInternalErrorIsSet(boolean value) {
+      if (!value) {
+        this.internalError = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -1504,6 +1725,30 @@ public class TenantServer {
         }
         break;
 
+      case CONTROLLER_ERROR:
+        if (value == null) {
+          unsetControllerError();
+        } else {
+          setControllerError((ControllerUnavailableException)value);
+        }
+        break;
+
+      case IP_ERROR:
+        if (value == null) {
+          unsetIpError();
+        } else {
+          setIpError((IPOutOfRangeException)value);
+        }
+        break;
+
+      case INTERNAL_ERROR:
+        if (value == null) {
+          unsetInternalError();
+        } else {
+          setInternalError((InternalException)value);
+        }
+        break;
+
       }
     }
 
@@ -1511,6 +1756,15 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return Integer.valueOf(getSuccess());
+
+      case CONTROLLER_ERROR:
+        return getControllerError();
+
+      case IP_ERROR:
+        return getIpError();
+
+      case INTERNAL_ERROR:
+        return getInternalError();
 
       }
       throw new IllegalStateException();
@@ -1525,6 +1779,12 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
+      case CONTROLLER_ERROR:
+        return isSetControllerError();
+      case IP_ERROR:
+        return isSetIpError();
+      case INTERNAL_ERROR:
+        return isSetInternalError();
       }
       throw new IllegalStateException();
     }
@@ -1548,6 +1808,33 @@ public class TenantServer {
         if (!(this_present_success && that_present_success))
           return false;
         if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_controllerError = true && this.isSetControllerError();
+      boolean that_present_controllerError = true && that.isSetControllerError();
+      if (this_present_controllerError || that_present_controllerError) {
+        if (!(this_present_controllerError && that_present_controllerError))
+          return false;
+        if (!this.controllerError.equals(that.controllerError))
+          return false;
+      }
+
+      boolean this_present_ipError = true && this.isSetIpError();
+      boolean that_present_ipError = true && that.isSetIpError();
+      if (this_present_ipError || that_present_ipError) {
+        if (!(this_present_ipError && that_present_ipError))
+          return false;
+        if (!this.ipError.equals(that.ipError))
+          return false;
+      }
+
+      boolean this_present_internalError = true && this.isSetInternalError();
+      boolean that_present_internalError = true && that.isSetInternalError();
+      if (this_present_internalError || that_present_internalError) {
+        if (!(this_present_internalError && that_present_internalError))
+          return false;
+        if (!this.internalError.equals(that.internalError))
           return false;
       }
 
@@ -1577,6 +1864,36 @@ public class TenantServer {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetControllerError()).compareTo(typedOther.isSetControllerError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetControllerError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.controllerError, typedOther.controllerError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetIpError()).compareTo(typedOther.isSetIpError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetIpError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ipError, typedOther.ipError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInternalError()).compareTo(typedOther.isSetInternalError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInternalError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.internalError, typedOther.internalError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -1599,6 +1916,30 @@ public class TenantServer {
 
       sb.append("success:");
       sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("controllerError:");
+      if (this.controllerError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.controllerError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ipError:");
+      if (this.ipError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ipError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("internalError:");
+      if (this.internalError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.internalError);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -1653,6 +1994,33 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 1: // CONTROLLER_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.controllerError = new ControllerUnavailableException();
+                struct.controllerError.read(iprot);
+                struct.setControllerErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // IP_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.ipError = new IPOutOfRangeException();
+                struct.ipError.read(iprot);
+                struct.setIpErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // INTERNAL_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.internalError = new InternalException();
+                struct.internalError.read(iprot);
+                struct.setInternalErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -1671,6 +2039,21 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           oprot.writeI32(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.controllerError != null) {
+          oprot.writeFieldBegin(CONTROLLER_ERROR_FIELD_DESC);
+          struct.controllerError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.ipError != null) {
+          oprot.writeFieldBegin(IP_ERROR_FIELD_DESC);
+          struct.ipError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.internalError != null) {
+          oprot.writeFieldBegin(INTERNAL_ERROR_FIELD_DESC);
+          struct.internalError.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -1694,19 +2077,52 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetControllerError()) {
+          optionals.set(1);
+        }
+        if (struct.isSetIpError()) {
+          optionals.set(2);
+        }
+        if (struct.isSetInternalError()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
         if (struct.isSetSuccess()) {
           oprot.writeI32(struct.success);
+        }
+        if (struct.isSetControllerError()) {
+          struct.controllerError.write(oprot);
+        }
+        if (struct.isSetIpError()) {
+          struct.ipError.write(oprot);
+        }
+        if (struct.isSetInternalError()) {
+          struct.internalError.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createVirtualNetwork_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
           struct.success = iprot.readI32();
           struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.controllerError = new ControllerUnavailableException();
+          struct.controllerError.read(iprot);
+          struct.setControllerErrorIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.ipError = new IPOutOfRangeException();
+          struct.ipError.read(iprot);
+          struct.setIpErrorIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.internalError = new InternalException();
+          struct.internalError.read(iprot);
+          struct.setInternalErrorIsSet(true);
         }
       }
     }
@@ -2221,6 +2637,9 @@ public class TenantServer {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createVirtualSwitch_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I64, (short)0);
+    private static final org.apache.thrift.protocol.TField DPID_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("dpidError", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField TENANT_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("tenantError", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField INTERNAL_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("internalError", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -2229,10 +2648,16 @@ public class TenantServer {
     }
 
     public long success; // required
+    public InvalidDPIDException dpidError; // required
+    public InvalidTenantIdException tenantError; // required
+    public InternalException internalError; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+      SUCCESS((short)0, "success"),
+      DPID_ERROR((short)1, "dpidError"),
+      TENANT_ERROR((short)2, "tenantError"),
+      INTERNAL_ERROR((short)3, "internalError");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -2249,6 +2674,12 @@ public class TenantServer {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
+          case 1: // DPID_ERROR
+            return DPID_ERROR;
+          case 2: // TENANT_ERROR
+            return TENANT_ERROR;
+          case 3: // INTERNAL_ERROR
+            return INTERNAL_ERROR;
           default:
             return null;
         }
@@ -2296,6 +2727,12 @@ public class TenantServer {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+      tmpMap.put(_Fields.DPID_ERROR, new org.apache.thrift.meta_data.FieldMetaData("dpidError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.TENANT_ERROR, new org.apache.thrift.meta_data.FieldMetaData("tenantError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.INTERNAL_ERROR, new org.apache.thrift.meta_data.FieldMetaData("internalError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createVirtualSwitch_result.class, metaDataMap);
     }
@@ -2304,11 +2741,17 @@ public class TenantServer {
     }
 
     public createVirtualSwitch_result(
-      long success)
+      long success,
+      InvalidDPIDException dpidError,
+      InvalidTenantIdException tenantError,
+      InternalException internalError)
     {
       this();
       this.success = success;
       setSuccessIsSet(true);
+      this.dpidError = dpidError;
+      this.tenantError = tenantError;
+      this.internalError = internalError;
     }
 
     /**
@@ -2317,6 +2760,15 @@ public class TenantServer {
     public createVirtualSwitch_result(createVirtualSwitch_result other) {
       __isset_bitfield = other.__isset_bitfield;
       this.success = other.success;
+      if (other.isSetDpidError()) {
+        this.dpidError = new InvalidDPIDException(other.dpidError);
+      }
+      if (other.isSetTenantError()) {
+        this.tenantError = new InvalidTenantIdException(other.tenantError);
+      }
+      if (other.isSetInternalError()) {
+        this.internalError = new InternalException(other.internalError);
+      }
     }
 
     public createVirtualSwitch_result deepCopy() {
@@ -2327,6 +2779,9 @@ public class TenantServer {
     public void clear() {
       setSuccessIsSet(false);
       this.success = 0;
+      this.dpidError = null;
+      this.tenantError = null;
+      this.internalError = null;
     }
 
     public long getSuccess() {
@@ -2352,6 +2807,78 @@ public class TenantServer {
       __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
+    public InvalidDPIDException getDpidError() {
+      return this.dpidError;
+    }
+
+    public createVirtualSwitch_result setDpidError(InvalidDPIDException dpidError) {
+      this.dpidError = dpidError;
+      return this;
+    }
+
+    public void unsetDpidError() {
+      this.dpidError = null;
+    }
+
+    /** Returns true if field dpidError is set (has been assigned a value) and false otherwise */
+    public boolean isSetDpidError() {
+      return this.dpidError != null;
+    }
+
+    public void setDpidErrorIsSet(boolean value) {
+      if (!value) {
+        this.dpidError = null;
+      }
+    }
+
+    public InvalidTenantIdException getTenantError() {
+      return this.tenantError;
+    }
+
+    public createVirtualSwitch_result setTenantError(InvalidTenantIdException tenantError) {
+      this.tenantError = tenantError;
+      return this;
+    }
+
+    public void unsetTenantError() {
+      this.tenantError = null;
+    }
+
+    /** Returns true if field tenantError is set (has been assigned a value) and false otherwise */
+    public boolean isSetTenantError() {
+      return this.tenantError != null;
+    }
+
+    public void setTenantErrorIsSet(boolean value) {
+      if (!value) {
+        this.tenantError = null;
+      }
+    }
+
+    public InternalException getInternalError() {
+      return this.internalError;
+    }
+
+    public createVirtualSwitch_result setInternalError(InternalException internalError) {
+      this.internalError = internalError;
+      return this;
+    }
+
+    public void unsetInternalError() {
+      this.internalError = null;
+    }
+
+    /** Returns true if field internalError is set (has been assigned a value) and false otherwise */
+    public boolean isSetInternalError() {
+      return this.internalError != null;
+    }
+
+    public void setInternalErrorIsSet(boolean value) {
+      if (!value) {
+        this.internalError = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -2362,6 +2889,30 @@ public class TenantServer {
         }
         break;
 
+      case DPID_ERROR:
+        if (value == null) {
+          unsetDpidError();
+        } else {
+          setDpidError((InvalidDPIDException)value);
+        }
+        break;
+
+      case TENANT_ERROR:
+        if (value == null) {
+          unsetTenantError();
+        } else {
+          setTenantError((InvalidTenantIdException)value);
+        }
+        break;
+
+      case INTERNAL_ERROR:
+        if (value == null) {
+          unsetInternalError();
+        } else {
+          setInternalError((InternalException)value);
+        }
+        break;
+
       }
     }
 
@@ -2369,6 +2920,15 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return Long.valueOf(getSuccess());
+
+      case DPID_ERROR:
+        return getDpidError();
+
+      case TENANT_ERROR:
+        return getTenantError();
+
+      case INTERNAL_ERROR:
+        return getInternalError();
 
       }
       throw new IllegalStateException();
@@ -2383,6 +2943,12 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
+      case DPID_ERROR:
+        return isSetDpidError();
+      case TENANT_ERROR:
+        return isSetTenantError();
+      case INTERNAL_ERROR:
+        return isSetInternalError();
       }
       throw new IllegalStateException();
     }
@@ -2406,6 +2972,33 @@ public class TenantServer {
         if (!(this_present_success && that_present_success))
           return false;
         if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_dpidError = true && this.isSetDpidError();
+      boolean that_present_dpidError = true && that.isSetDpidError();
+      if (this_present_dpidError || that_present_dpidError) {
+        if (!(this_present_dpidError && that_present_dpidError))
+          return false;
+        if (!this.dpidError.equals(that.dpidError))
+          return false;
+      }
+
+      boolean this_present_tenantError = true && this.isSetTenantError();
+      boolean that_present_tenantError = true && that.isSetTenantError();
+      if (this_present_tenantError || that_present_tenantError) {
+        if (!(this_present_tenantError && that_present_tenantError))
+          return false;
+        if (!this.tenantError.equals(that.tenantError))
+          return false;
+      }
+
+      boolean this_present_internalError = true && this.isSetInternalError();
+      boolean that_present_internalError = true && that.isSetInternalError();
+      if (this_present_internalError || that_present_internalError) {
+        if (!(this_present_internalError && that_present_internalError))
+          return false;
+        if (!this.internalError.equals(that.internalError))
           return false;
       }
 
@@ -2435,6 +3028,36 @@ public class TenantServer {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetDpidError()).compareTo(typedOther.isSetDpidError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDpidError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dpidError, typedOther.dpidError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTenantError()).compareTo(typedOther.isSetTenantError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTenantError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tenantError, typedOther.tenantError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInternalError()).compareTo(typedOther.isSetInternalError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInternalError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.internalError, typedOther.internalError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -2457,6 +3080,30 @@ public class TenantServer {
 
       sb.append("success:");
       sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("dpidError:");
+      if (this.dpidError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dpidError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tenantError:");
+      if (this.tenantError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tenantError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("internalError:");
+      if (this.internalError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.internalError);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -2511,6 +3158,33 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 1: // DPID_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.dpidError = new InvalidDPIDException();
+                struct.dpidError.read(iprot);
+                struct.setDpidErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // TENANT_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.tenantError = new InvalidTenantIdException();
+                struct.tenantError.read(iprot);
+                struct.setTenantErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // INTERNAL_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.internalError = new InternalException();
+                struct.internalError.read(iprot);
+                struct.setInternalErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -2529,6 +3203,21 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           oprot.writeI64(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.dpidError != null) {
+          oprot.writeFieldBegin(DPID_ERROR_FIELD_DESC);
+          struct.dpidError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.tenantError != null) {
+          oprot.writeFieldBegin(TENANT_ERROR_FIELD_DESC);
+          struct.tenantError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.internalError != null) {
+          oprot.writeFieldBegin(INTERNAL_ERROR_FIELD_DESC);
+          struct.internalError.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -2552,19 +3241,52 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetDpidError()) {
+          optionals.set(1);
+        }
+        if (struct.isSetTenantError()) {
+          optionals.set(2);
+        }
+        if (struct.isSetInternalError()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
         if (struct.isSetSuccess()) {
           oprot.writeI64(struct.success);
+        }
+        if (struct.isSetDpidError()) {
+          struct.dpidError.write(oprot);
+        }
+        if (struct.isSetTenantError()) {
+          struct.tenantError.write(oprot);
+        }
+        if (struct.isSetInternalError()) {
+          struct.internalError.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createVirtualSwitch_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
           struct.success = iprot.readI64();
           struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.dpidError = new InvalidDPIDException();
+          struct.dpidError.read(iprot);
+          struct.setDpidErrorIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.tenantError = new InvalidTenantIdException();
+          struct.tenantError.read(iprot);
+          struct.setTenantErrorIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.internalError = new InternalException();
+          struct.internalError.read(iprot);
+          struct.setInternalErrorIsSet(true);
         }
       }
     }
@@ -3221,6 +3943,10 @@ public class TenantServer {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createHost_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField PORT_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("portError", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField TENANT_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("tenantError", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField DPID_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("dpidError", org.apache.thrift.protocol.TType.STRUCT, (short)3);
+    private static final org.apache.thrift.protocol.TField INTERNAL_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("internalError", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -3229,10 +3955,18 @@ public class TenantServer {
     }
 
     public int success; // required
+    public InvalidPortException portError; // required
+    public InvalidTenantIdException tenantError; // required
+    public InvalidDPIDException dpidError; // required
+    public InternalException internalError; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+      SUCCESS((short)0, "success"),
+      PORT_ERROR((short)1, "portError"),
+      TENANT_ERROR((short)2, "tenantError"),
+      DPID_ERROR((short)3, "dpidError"),
+      INTERNAL_ERROR((short)4, "internalError");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3249,6 +3983,14 @@ public class TenantServer {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
+          case 1: // PORT_ERROR
+            return PORT_ERROR;
+          case 2: // TENANT_ERROR
+            return TENANT_ERROR;
+          case 3: // DPID_ERROR
+            return DPID_ERROR;
+          case 4: // INTERNAL_ERROR
+            return INTERNAL_ERROR;
           default:
             return null;
         }
@@ -3296,6 +4038,14 @@ public class TenantServer {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      tmpMap.put(_Fields.PORT_ERROR, new org.apache.thrift.meta_data.FieldMetaData("portError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.TENANT_ERROR, new org.apache.thrift.meta_data.FieldMetaData("tenantError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.DPID_ERROR, new org.apache.thrift.meta_data.FieldMetaData("dpidError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.INTERNAL_ERROR, new org.apache.thrift.meta_data.FieldMetaData("internalError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createHost_result.class, metaDataMap);
     }
@@ -3304,11 +4054,19 @@ public class TenantServer {
     }
 
     public createHost_result(
-      int success)
+      int success,
+      InvalidPortException portError,
+      InvalidTenantIdException tenantError,
+      InvalidDPIDException dpidError,
+      InternalException internalError)
     {
       this();
       this.success = success;
       setSuccessIsSet(true);
+      this.portError = portError;
+      this.tenantError = tenantError;
+      this.dpidError = dpidError;
+      this.internalError = internalError;
     }
 
     /**
@@ -3317,6 +4075,18 @@ public class TenantServer {
     public createHost_result(createHost_result other) {
       __isset_bitfield = other.__isset_bitfield;
       this.success = other.success;
+      if (other.isSetPortError()) {
+        this.portError = new InvalidPortException(other.portError);
+      }
+      if (other.isSetTenantError()) {
+        this.tenantError = new InvalidTenantIdException(other.tenantError);
+      }
+      if (other.isSetDpidError()) {
+        this.dpidError = new InvalidDPIDException(other.dpidError);
+      }
+      if (other.isSetInternalError()) {
+        this.internalError = new InternalException(other.internalError);
+      }
     }
 
     public createHost_result deepCopy() {
@@ -3327,6 +4097,10 @@ public class TenantServer {
     public void clear() {
       setSuccessIsSet(false);
       this.success = 0;
+      this.portError = null;
+      this.tenantError = null;
+      this.dpidError = null;
+      this.internalError = null;
     }
 
     public int getSuccess() {
@@ -3352,6 +4126,102 @@ public class TenantServer {
       __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
+    public InvalidPortException getPortError() {
+      return this.portError;
+    }
+
+    public createHost_result setPortError(InvalidPortException portError) {
+      this.portError = portError;
+      return this;
+    }
+
+    public void unsetPortError() {
+      this.portError = null;
+    }
+
+    /** Returns true if field portError is set (has been assigned a value) and false otherwise */
+    public boolean isSetPortError() {
+      return this.portError != null;
+    }
+
+    public void setPortErrorIsSet(boolean value) {
+      if (!value) {
+        this.portError = null;
+      }
+    }
+
+    public InvalidTenantIdException getTenantError() {
+      return this.tenantError;
+    }
+
+    public createHost_result setTenantError(InvalidTenantIdException tenantError) {
+      this.tenantError = tenantError;
+      return this;
+    }
+
+    public void unsetTenantError() {
+      this.tenantError = null;
+    }
+
+    /** Returns true if field tenantError is set (has been assigned a value) and false otherwise */
+    public boolean isSetTenantError() {
+      return this.tenantError != null;
+    }
+
+    public void setTenantErrorIsSet(boolean value) {
+      if (!value) {
+        this.tenantError = null;
+      }
+    }
+
+    public InvalidDPIDException getDpidError() {
+      return this.dpidError;
+    }
+
+    public createHost_result setDpidError(InvalidDPIDException dpidError) {
+      this.dpidError = dpidError;
+      return this;
+    }
+
+    public void unsetDpidError() {
+      this.dpidError = null;
+    }
+
+    /** Returns true if field dpidError is set (has been assigned a value) and false otherwise */
+    public boolean isSetDpidError() {
+      return this.dpidError != null;
+    }
+
+    public void setDpidErrorIsSet(boolean value) {
+      if (!value) {
+        this.dpidError = null;
+      }
+    }
+
+    public InternalException getInternalError() {
+      return this.internalError;
+    }
+
+    public createHost_result setInternalError(InternalException internalError) {
+      this.internalError = internalError;
+      return this;
+    }
+
+    public void unsetInternalError() {
+      this.internalError = null;
+    }
+
+    /** Returns true if field internalError is set (has been assigned a value) and false otherwise */
+    public boolean isSetInternalError() {
+      return this.internalError != null;
+    }
+
+    public void setInternalErrorIsSet(boolean value) {
+      if (!value) {
+        this.internalError = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -3362,6 +4232,38 @@ public class TenantServer {
         }
         break;
 
+      case PORT_ERROR:
+        if (value == null) {
+          unsetPortError();
+        } else {
+          setPortError((InvalidPortException)value);
+        }
+        break;
+
+      case TENANT_ERROR:
+        if (value == null) {
+          unsetTenantError();
+        } else {
+          setTenantError((InvalidTenantIdException)value);
+        }
+        break;
+
+      case DPID_ERROR:
+        if (value == null) {
+          unsetDpidError();
+        } else {
+          setDpidError((InvalidDPIDException)value);
+        }
+        break;
+
+      case INTERNAL_ERROR:
+        if (value == null) {
+          unsetInternalError();
+        } else {
+          setInternalError((InternalException)value);
+        }
+        break;
+
       }
     }
 
@@ -3369,6 +4271,18 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return Integer.valueOf(getSuccess());
+
+      case PORT_ERROR:
+        return getPortError();
+
+      case TENANT_ERROR:
+        return getTenantError();
+
+      case DPID_ERROR:
+        return getDpidError();
+
+      case INTERNAL_ERROR:
+        return getInternalError();
 
       }
       throw new IllegalStateException();
@@ -3383,6 +4297,14 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
+      case PORT_ERROR:
+        return isSetPortError();
+      case TENANT_ERROR:
+        return isSetTenantError();
+      case DPID_ERROR:
+        return isSetDpidError();
+      case INTERNAL_ERROR:
+        return isSetInternalError();
       }
       throw new IllegalStateException();
     }
@@ -3406,6 +4328,42 @@ public class TenantServer {
         if (!(this_present_success && that_present_success))
           return false;
         if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_portError = true && this.isSetPortError();
+      boolean that_present_portError = true && that.isSetPortError();
+      if (this_present_portError || that_present_portError) {
+        if (!(this_present_portError && that_present_portError))
+          return false;
+        if (!this.portError.equals(that.portError))
+          return false;
+      }
+
+      boolean this_present_tenantError = true && this.isSetTenantError();
+      boolean that_present_tenantError = true && that.isSetTenantError();
+      if (this_present_tenantError || that_present_tenantError) {
+        if (!(this_present_tenantError && that_present_tenantError))
+          return false;
+        if (!this.tenantError.equals(that.tenantError))
+          return false;
+      }
+
+      boolean this_present_dpidError = true && this.isSetDpidError();
+      boolean that_present_dpidError = true && that.isSetDpidError();
+      if (this_present_dpidError || that_present_dpidError) {
+        if (!(this_present_dpidError && that_present_dpidError))
+          return false;
+        if (!this.dpidError.equals(that.dpidError))
+          return false;
+      }
+
+      boolean this_present_internalError = true && this.isSetInternalError();
+      boolean that_present_internalError = true && that.isSetInternalError();
+      if (this_present_internalError || that_present_internalError) {
+        if (!(this_present_internalError && that_present_internalError))
+          return false;
+        if (!this.internalError.equals(that.internalError))
           return false;
       }
 
@@ -3435,6 +4393,46 @@ public class TenantServer {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetPortError()).compareTo(typedOther.isSetPortError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPortError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.portError, typedOther.portError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTenantError()).compareTo(typedOther.isSetTenantError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTenantError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tenantError, typedOther.tenantError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetDpidError()).compareTo(typedOther.isSetDpidError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDpidError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dpidError, typedOther.dpidError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInternalError()).compareTo(typedOther.isSetInternalError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInternalError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.internalError, typedOther.internalError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -3457,6 +4455,38 @@ public class TenantServer {
 
       sb.append("success:");
       sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("portError:");
+      if (this.portError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.portError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tenantError:");
+      if (this.tenantError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tenantError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("dpidError:");
+      if (this.dpidError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dpidError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("internalError:");
+      if (this.internalError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.internalError);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -3511,6 +4541,42 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 1: // PORT_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.portError = new InvalidPortException();
+                struct.portError.read(iprot);
+                struct.setPortErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // TENANT_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.tenantError = new InvalidTenantIdException();
+                struct.tenantError.read(iprot);
+                struct.setTenantErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // DPID_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.dpidError = new InvalidDPIDException();
+                struct.dpidError.read(iprot);
+                struct.setDpidErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // INTERNAL_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.internalError = new InternalException();
+                struct.internalError.read(iprot);
+                struct.setInternalErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -3529,6 +4595,26 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           oprot.writeI32(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.portError != null) {
+          oprot.writeFieldBegin(PORT_ERROR_FIELD_DESC);
+          struct.portError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.tenantError != null) {
+          oprot.writeFieldBegin(TENANT_ERROR_FIELD_DESC);
+          struct.tenantError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.dpidError != null) {
+          oprot.writeFieldBegin(DPID_ERROR_FIELD_DESC);
+          struct.dpidError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.internalError != null) {
+          oprot.writeFieldBegin(INTERNAL_ERROR_FIELD_DESC);
+          struct.internalError.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -3552,19 +4638,63 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetPortError()) {
+          optionals.set(1);
+        }
+        if (struct.isSetTenantError()) {
+          optionals.set(2);
+        }
+        if (struct.isSetDpidError()) {
+          optionals.set(3);
+        }
+        if (struct.isSetInternalError()) {
+          optionals.set(4);
+        }
+        oprot.writeBitSet(optionals, 5);
         if (struct.isSetSuccess()) {
           oprot.writeI32(struct.success);
+        }
+        if (struct.isSetPortError()) {
+          struct.portError.write(oprot);
+        }
+        if (struct.isSetTenantError()) {
+          struct.tenantError.write(oprot);
+        }
+        if (struct.isSetDpidError()) {
+          struct.dpidError.write(oprot);
+        }
+        if (struct.isSetInternalError()) {
+          struct.internalError.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createHost_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(5);
         if (incoming.get(0)) {
           struct.success = iprot.readI32();
           struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.portError = new InvalidPortException();
+          struct.portError.read(iprot);
+          struct.setPortErrorIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.tenantError = new InvalidTenantIdException();
+          struct.tenantError.read(iprot);
+          struct.setTenantErrorIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.dpidError = new InvalidDPIDException();
+          struct.dpidError.read(iprot);
+          struct.setDpidErrorIsSet(true);
+        }
+        if (incoming.get(4)) {
+          struct.internalError = new InternalException();
+          struct.internalError.read(iprot);
+          struct.setInternalErrorIsSet(true);
         }
       }
     }
@@ -4027,6 +5157,12 @@ public class TenantServer {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createVirtualLink_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField TENANT_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("tenantError", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField PORT_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("portError", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField DPID_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("dpidError", org.apache.thrift.protocol.TType.STRUCT, (short)3);
+    private static final org.apache.thrift.protocol.TField INTERNAL_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("internalError", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+    private static final org.apache.thrift.protocol.TField DUPLICATE_LINK_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("duplicateLinkError", org.apache.thrift.protocol.TType.STRUCT, (short)5);
+    private static final org.apache.thrift.protocol.TField INVALID_LINK_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("invalidLinkError", org.apache.thrift.protocol.TType.STRUCT, (short)6);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -4035,10 +5171,22 @@ public class TenantServer {
     }
 
     public int success; // required
+    public InvalidTenantIdException tenantError; // required
+    public InvalidPortException portError; // required
+    public InvalidDPIDException dpidError; // required
+    public InternalException internalError; // required
+    public VirtualLinkException duplicateLinkError; // required
+    public InvalidLinkException invalidLinkError; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+      SUCCESS((short)0, "success"),
+      TENANT_ERROR((short)1, "tenantError"),
+      PORT_ERROR((short)2, "portError"),
+      DPID_ERROR((short)3, "dpidError"),
+      INTERNAL_ERROR((short)4, "internalError"),
+      DUPLICATE_LINK_ERROR((short)5, "duplicateLinkError"),
+      INVALID_LINK_ERROR((short)6, "invalidLinkError");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4055,6 +5203,18 @@ public class TenantServer {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
+          case 1: // TENANT_ERROR
+            return TENANT_ERROR;
+          case 2: // PORT_ERROR
+            return PORT_ERROR;
+          case 3: // DPID_ERROR
+            return DPID_ERROR;
+          case 4: // INTERNAL_ERROR
+            return INTERNAL_ERROR;
+          case 5: // DUPLICATE_LINK_ERROR
+            return DUPLICATE_LINK_ERROR;
+          case 6: // INVALID_LINK_ERROR
+            return INVALID_LINK_ERROR;
           default:
             return null;
         }
@@ -4102,6 +5262,18 @@ public class TenantServer {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      tmpMap.put(_Fields.TENANT_ERROR, new org.apache.thrift.meta_data.FieldMetaData("tenantError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.PORT_ERROR, new org.apache.thrift.meta_data.FieldMetaData("portError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.DPID_ERROR, new org.apache.thrift.meta_data.FieldMetaData("dpidError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.INTERNAL_ERROR, new org.apache.thrift.meta_data.FieldMetaData("internalError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.DUPLICATE_LINK_ERROR, new org.apache.thrift.meta_data.FieldMetaData("duplicateLinkError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.INVALID_LINK_ERROR, new org.apache.thrift.meta_data.FieldMetaData("invalidLinkError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createVirtualLink_result.class, metaDataMap);
     }
@@ -4110,11 +5282,23 @@ public class TenantServer {
     }
 
     public createVirtualLink_result(
-      int success)
+      int success,
+      InvalidTenantIdException tenantError,
+      InvalidPortException portError,
+      InvalidDPIDException dpidError,
+      InternalException internalError,
+      VirtualLinkException duplicateLinkError,
+      InvalidLinkException invalidLinkError)
     {
       this();
       this.success = success;
       setSuccessIsSet(true);
+      this.tenantError = tenantError;
+      this.portError = portError;
+      this.dpidError = dpidError;
+      this.internalError = internalError;
+      this.duplicateLinkError = duplicateLinkError;
+      this.invalidLinkError = invalidLinkError;
     }
 
     /**
@@ -4123,6 +5307,24 @@ public class TenantServer {
     public createVirtualLink_result(createVirtualLink_result other) {
       __isset_bitfield = other.__isset_bitfield;
       this.success = other.success;
+      if (other.isSetTenantError()) {
+        this.tenantError = new InvalidTenantIdException(other.tenantError);
+      }
+      if (other.isSetPortError()) {
+        this.portError = new InvalidPortException(other.portError);
+      }
+      if (other.isSetDpidError()) {
+        this.dpidError = new InvalidDPIDException(other.dpidError);
+      }
+      if (other.isSetInternalError()) {
+        this.internalError = new InternalException(other.internalError);
+      }
+      if (other.isSetDuplicateLinkError()) {
+        this.duplicateLinkError = new VirtualLinkException(other.duplicateLinkError);
+      }
+      if (other.isSetInvalidLinkError()) {
+        this.invalidLinkError = new InvalidLinkException(other.invalidLinkError);
+      }
     }
 
     public createVirtualLink_result deepCopy() {
@@ -4133,6 +5335,12 @@ public class TenantServer {
     public void clear() {
       setSuccessIsSet(false);
       this.success = 0;
+      this.tenantError = null;
+      this.portError = null;
+      this.dpidError = null;
+      this.internalError = null;
+      this.duplicateLinkError = null;
+      this.invalidLinkError = null;
     }
 
     public int getSuccess() {
@@ -4158,6 +5366,150 @@ public class TenantServer {
       __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
+    public InvalidTenantIdException getTenantError() {
+      return this.tenantError;
+    }
+
+    public createVirtualLink_result setTenantError(InvalidTenantIdException tenantError) {
+      this.tenantError = tenantError;
+      return this;
+    }
+
+    public void unsetTenantError() {
+      this.tenantError = null;
+    }
+
+    /** Returns true if field tenantError is set (has been assigned a value) and false otherwise */
+    public boolean isSetTenantError() {
+      return this.tenantError != null;
+    }
+
+    public void setTenantErrorIsSet(boolean value) {
+      if (!value) {
+        this.tenantError = null;
+      }
+    }
+
+    public InvalidPortException getPortError() {
+      return this.portError;
+    }
+
+    public createVirtualLink_result setPortError(InvalidPortException portError) {
+      this.portError = portError;
+      return this;
+    }
+
+    public void unsetPortError() {
+      this.portError = null;
+    }
+
+    /** Returns true if field portError is set (has been assigned a value) and false otherwise */
+    public boolean isSetPortError() {
+      return this.portError != null;
+    }
+
+    public void setPortErrorIsSet(boolean value) {
+      if (!value) {
+        this.portError = null;
+      }
+    }
+
+    public InvalidDPIDException getDpidError() {
+      return this.dpidError;
+    }
+
+    public createVirtualLink_result setDpidError(InvalidDPIDException dpidError) {
+      this.dpidError = dpidError;
+      return this;
+    }
+
+    public void unsetDpidError() {
+      this.dpidError = null;
+    }
+
+    /** Returns true if field dpidError is set (has been assigned a value) and false otherwise */
+    public boolean isSetDpidError() {
+      return this.dpidError != null;
+    }
+
+    public void setDpidErrorIsSet(boolean value) {
+      if (!value) {
+        this.dpidError = null;
+      }
+    }
+
+    public InternalException getInternalError() {
+      return this.internalError;
+    }
+
+    public createVirtualLink_result setInternalError(InternalException internalError) {
+      this.internalError = internalError;
+      return this;
+    }
+
+    public void unsetInternalError() {
+      this.internalError = null;
+    }
+
+    /** Returns true if field internalError is set (has been assigned a value) and false otherwise */
+    public boolean isSetInternalError() {
+      return this.internalError != null;
+    }
+
+    public void setInternalErrorIsSet(boolean value) {
+      if (!value) {
+        this.internalError = null;
+      }
+    }
+
+    public VirtualLinkException getDuplicateLinkError() {
+      return this.duplicateLinkError;
+    }
+
+    public createVirtualLink_result setDuplicateLinkError(VirtualLinkException duplicateLinkError) {
+      this.duplicateLinkError = duplicateLinkError;
+      return this;
+    }
+
+    public void unsetDuplicateLinkError() {
+      this.duplicateLinkError = null;
+    }
+
+    /** Returns true if field duplicateLinkError is set (has been assigned a value) and false otherwise */
+    public boolean isSetDuplicateLinkError() {
+      return this.duplicateLinkError != null;
+    }
+
+    public void setDuplicateLinkErrorIsSet(boolean value) {
+      if (!value) {
+        this.duplicateLinkError = null;
+      }
+    }
+
+    public InvalidLinkException getInvalidLinkError() {
+      return this.invalidLinkError;
+    }
+
+    public createVirtualLink_result setInvalidLinkError(InvalidLinkException invalidLinkError) {
+      this.invalidLinkError = invalidLinkError;
+      return this;
+    }
+
+    public void unsetInvalidLinkError() {
+      this.invalidLinkError = null;
+    }
+
+    /** Returns true if field invalidLinkError is set (has been assigned a value) and false otherwise */
+    public boolean isSetInvalidLinkError() {
+      return this.invalidLinkError != null;
+    }
+
+    public void setInvalidLinkErrorIsSet(boolean value) {
+      if (!value) {
+        this.invalidLinkError = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -4168,6 +5520,54 @@ public class TenantServer {
         }
         break;
 
+      case TENANT_ERROR:
+        if (value == null) {
+          unsetTenantError();
+        } else {
+          setTenantError((InvalidTenantIdException)value);
+        }
+        break;
+
+      case PORT_ERROR:
+        if (value == null) {
+          unsetPortError();
+        } else {
+          setPortError((InvalidPortException)value);
+        }
+        break;
+
+      case DPID_ERROR:
+        if (value == null) {
+          unsetDpidError();
+        } else {
+          setDpidError((InvalidDPIDException)value);
+        }
+        break;
+
+      case INTERNAL_ERROR:
+        if (value == null) {
+          unsetInternalError();
+        } else {
+          setInternalError((InternalException)value);
+        }
+        break;
+
+      case DUPLICATE_LINK_ERROR:
+        if (value == null) {
+          unsetDuplicateLinkError();
+        } else {
+          setDuplicateLinkError((VirtualLinkException)value);
+        }
+        break;
+
+      case INVALID_LINK_ERROR:
+        if (value == null) {
+          unsetInvalidLinkError();
+        } else {
+          setInvalidLinkError((InvalidLinkException)value);
+        }
+        break;
+
       }
     }
 
@@ -4175,6 +5575,24 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return Integer.valueOf(getSuccess());
+
+      case TENANT_ERROR:
+        return getTenantError();
+
+      case PORT_ERROR:
+        return getPortError();
+
+      case DPID_ERROR:
+        return getDpidError();
+
+      case INTERNAL_ERROR:
+        return getInternalError();
+
+      case DUPLICATE_LINK_ERROR:
+        return getDuplicateLinkError();
+
+      case INVALID_LINK_ERROR:
+        return getInvalidLinkError();
 
       }
       throw new IllegalStateException();
@@ -4189,6 +5607,18 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
+      case TENANT_ERROR:
+        return isSetTenantError();
+      case PORT_ERROR:
+        return isSetPortError();
+      case DPID_ERROR:
+        return isSetDpidError();
+      case INTERNAL_ERROR:
+        return isSetInternalError();
+      case DUPLICATE_LINK_ERROR:
+        return isSetDuplicateLinkError();
+      case INVALID_LINK_ERROR:
+        return isSetInvalidLinkError();
       }
       throw new IllegalStateException();
     }
@@ -4212,6 +5642,60 @@ public class TenantServer {
         if (!(this_present_success && that_present_success))
           return false;
         if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_tenantError = true && this.isSetTenantError();
+      boolean that_present_tenantError = true && that.isSetTenantError();
+      if (this_present_tenantError || that_present_tenantError) {
+        if (!(this_present_tenantError && that_present_tenantError))
+          return false;
+        if (!this.tenantError.equals(that.tenantError))
+          return false;
+      }
+
+      boolean this_present_portError = true && this.isSetPortError();
+      boolean that_present_portError = true && that.isSetPortError();
+      if (this_present_portError || that_present_portError) {
+        if (!(this_present_portError && that_present_portError))
+          return false;
+        if (!this.portError.equals(that.portError))
+          return false;
+      }
+
+      boolean this_present_dpidError = true && this.isSetDpidError();
+      boolean that_present_dpidError = true && that.isSetDpidError();
+      if (this_present_dpidError || that_present_dpidError) {
+        if (!(this_present_dpidError && that_present_dpidError))
+          return false;
+        if (!this.dpidError.equals(that.dpidError))
+          return false;
+      }
+
+      boolean this_present_internalError = true && this.isSetInternalError();
+      boolean that_present_internalError = true && that.isSetInternalError();
+      if (this_present_internalError || that_present_internalError) {
+        if (!(this_present_internalError && that_present_internalError))
+          return false;
+        if (!this.internalError.equals(that.internalError))
+          return false;
+      }
+
+      boolean this_present_duplicateLinkError = true && this.isSetDuplicateLinkError();
+      boolean that_present_duplicateLinkError = true && that.isSetDuplicateLinkError();
+      if (this_present_duplicateLinkError || that_present_duplicateLinkError) {
+        if (!(this_present_duplicateLinkError && that_present_duplicateLinkError))
+          return false;
+        if (!this.duplicateLinkError.equals(that.duplicateLinkError))
+          return false;
+      }
+
+      boolean this_present_invalidLinkError = true && this.isSetInvalidLinkError();
+      boolean that_present_invalidLinkError = true && that.isSetInvalidLinkError();
+      if (this_present_invalidLinkError || that_present_invalidLinkError) {
+        if (!(this_present_invalidLinkError && that_present_invalidLinkError))
+          return false;
+        if (!this.invalidLinkError.equals(that.invalidLinkError))
           return false;
       }
 
@@ -4241,6 +5725,66 @@ public class TenantServer {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetTenantError()).compareTo(typedOther.isSetTenantError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTenantError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tenantError, typedOther.tenantError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPortError()).compareTo(typedOther.isSetPortError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPortError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.portError, typedOther.portError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetDpidError()).compareTo(typedOther.isSetDpidError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDpidError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dpidError, typedOther.dpidError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInternalError()).compareTo(typedOther.isSetInternalError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInternalError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.internalError, typedOther.internalError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetDuplicateLinkError()).compareTo(typedOther.isSetDuplicateLinkError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDuplicateLinkError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.duplicateLinkError, typedOther.duplicateLinkError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInvalidLinkError()).compareTo(typedOther.isSetInvalidLinkError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInvalidLinkError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.invalidLinkError, typedOther.invalidLinkError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -4263,6 +5807,54 @@ public class TenantServer {
 
       sb.append("success:");
       sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tenantError:");
+      if (this.tenantError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tenantError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("portError:");
+      if (this.portError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.portError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("dpidError:");
+      if (this.dpidError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dpidError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("internalError:");
+      if (this.internalError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.internalError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("duplicateLinkError:");
+      if (this.duplicateLinkError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.duplicateLinkError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("invalidLinkError:");
+      if (this.invalidLinkError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.invalidLinkError);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -4317,6 +5909,60 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 1: // TENANT_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.tenantError = new InvalidTenantIdException();
+                struct.tenantError.read(iprot);
+                struct.setTenantErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // PORT_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.portError = new InvalidPortException();
+                struct.portError.read(iprot);
+                struct.setPortErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // DPID_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.dpidError = new InvalidDPIDException();
+                struct.dpidError.read(iprot);
+                struct.setDpidErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // INTERNAL_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.internalError = new InternalException();
+                struct.internalError.read(iprot);
+                struct.setInternalErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 5: // DUPLICATE_LINK_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.duplicateLinkError = new VirtualLinkException();
+                struct.duplicateLinkError.read(iprot);
+                struct.setDuplicateLinkErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 6: // INVALID_LINK_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.invalidLinkError = new InvalidLinkException();
+                struct.invalidLinkError.read(iprot);
+                struct.setInvalidLinkErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -4335,6 +5981,36 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           oprot.writeI32(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.tenantError != null) {
+          oprot.writeFieldBegin(TENANT_ERROR_FIELD_DESC);
+          struct.tenantError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.portError != null) {
+          oprot.writeFieldBegin(PORT_ERROR_FIELD_DESC);
+          struct.portError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.dpidError != null) {
+          oprot.writeFieldBegin(DPID_ERROR_FIELD_DESC);
+          struct.dpidError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.internalError != null) {
+          oprot.writeFieldBegin(INTERNAL_ERROR_FIELD_DESC);
+          struct.internalError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.duplicateLinkError != null) {
+          oprot.writeFieldBegin(DUPLICATE_LINK_ERROR_FIELD_DESC);
+          struct.duplicateLinkError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.invalidLinkError != null) {
+          oprot.writeFieldBegin(INVALID_LINK_ERROR_FIELD_DESC);
+          struct.invalidLinkError.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -4358,19 +6034,85 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetTenantError()) {
+          optionals.set(1);
+        }
+        if (struct.isSetPortError()) {
+          optionals.set(2);
+        }
+        if (struct.isSetDpidError()) {
+          optionals.set(3);
+        }
+        if (struct.isSetInternalError()) {
+          optionals.set(4);
+        }
+        if (struct.isSetDuplicateLinkError()) {
+          optionals.set(5);
+        }
+        if (struct.isSetInvalidLinkError()) {
+          optionals.set(6);
+        }
+        oprot.writeBitSet(optionals, 7);
         if (struct.isSetSuccess()) {
           oprot.writeI32(struct.success);
+        }
+        if (struct.isSetTenantError()) {
+          struct.tenantError.write(oprot);
+        }
+        if (struct.isSetPortError()) {
+          struct.portError.write(oprot);
+        }
+        if (struct.isSetDpidError()) {
+          struct.dpidError.write(oprot);
+        }
+        if (struct.isSetInternalError()) {
+          struct.internalError.write(oprot);
+        }
+        if (struct.isSetDuplicateLinkError()) {
+          struct.duplicateLinkError.write(oprot);
+        }
+        if (struct.isSetInvalidLinkError()) {
+          struct.invalidLinkError.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createVirtualLink_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(7);
         if (incoming.get(0)) {
           struct.success = iprot.readI32();
           struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.tenantError = new InvalidTenantIdException();
+          struct.tenantError.read(iprot);
+          struct.setTenantErrorIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.portError = new InvalidPortException();
+          struct.portError.read(iprot);
+          struct.setPortErrorIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.dpidError = new InvalidDPIDException();
+          struct.dpidError.read(iprot);
+          struct.setDpidErrorIsSet(true);
+        }
+        if (incoming.get(4)) {
+          struct.internalError = new InternalException();
+          struct.internalError.read(iprot);
+          struct.setInternalErrorIsSet(true);
+        }
+        if (incoming.get(5)) {
+          struct.duplicateLinkError = new VirtualLinkException();
+          struct.duplicateLinkError.read(iprot);
+          struct.setDuplicateLinkErrorIsSet(true);
+        }
+        if (incoming.get(6)) {
+          struct.invalidLinkError = new InvalidLinkException();
+          struct.invalidLinkError.read(iprot);
+          struct.setInvalidLinkErrorIsSet(true);
         }
       }
     }
@@ -4733,6 +6475,8 @@ public class TenantServer {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startNetwork_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.BOOL, (short)0);
+    private static final org.apache.thrift.protocol.TField TENANT_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("tenantError", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField INTERNAL_ERROR_FIELD_DESC = new org.apache.thrift.protocol.TField("internalError", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -4741,10 +6485,14 @@ public class TenantServer {
     }
 
     public boolean success; // required
+    public InvalidTenantIdException tenantError; // required
+    public InternalException internalError; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+      SUCCESS((short)0, "success"),
+      TENANT_ERROR((short)1, "tenantError"),
+      INTERNAL_ERROR((short)2, "internalError");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4761,6 +6509,10 @@ public class TenantServer {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
+          case 1: // TENANT_ERROR
+            return TENANT_ERROR;
+          case 2: // INTERNAL_ERROR
+            return INTERNAL_ERROR;
           default:
             return null;
         }
@@ -4808,6 +6560,10 @@ public class TenantServer {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+      tmpMap.put(_Fields.TENANT_ERROR, new org.apache.thrift.meta_data.FieldMetaData("tenantError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.INTERNAL_ERROR, new org.apache.thrift.meta_data.FieldMetaData("internalError", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(startNetwork_result.class, metaDataMap);
     }
@@ -4816,11 +6572,15 @@ public class TenantServer {
     }
 
     public startNetwork_result(
-      boolean success)
+      boolean success,
+      InvalidTenantIdException tenantError,
+      InternalException internalError)
     {
       this();
       this.success = success;
       setSuccessIsSet(true);
+      this.tenantError = tenantError;
+      this.internalError = internalError;
     }
 
     /**
@@ -4829,6 +6589,12 @@ public class TenantServer {
     public startNetwork_result(startNetwork_result other) {
       __isset_bitfield = other.__isset_bitfield;
       this.success = other.success;
+      if (other.isSetTenantError()) {
+        this.tenantError = new InvalidTenantIdException(other.tenantError);
+      }
+      if (other.isSetInternalError()) {
+        this.internalError = new InternalException(other.internalError);
+      }
     }
 
     public startNetwork_result deepCopy() {
@@ -4839,6 +6605,8 @@ public class TenantServer {
     public void clear() {
       setSuccessIsSet(false);
       this.success = false;
+      this.tenantError = null;
+      this.internalError = null;
     }
 
     public boolean isSuccess() {
@@ -4864,6 +6632,54 @@ public class TenantServer {
       __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
+    public InvalidTenantIdException getTenantError() {
+      return this.tenantError;
+    }
+
+    public startNetwork_result setTenantError(InvalidTenantIdException tenantError) {
+      this.tenantError = tenantError;
+      return this;
+    }
+
+    public void unsetTenantError() {
+      this.tenantError = null;
+    }
+
+    /** Returns true if field tenantError is set (has been assigned a value) and false otherwise */
+    public boolean isSetTenantError() {
+      return this.tenantError != null;
+    }
+
+    public void setTenantErrorIsSet(boolean value) {
+      if (!value) {
+        this.tenantError = null;
+      }
+    }
+
+    public InternalException getInternalError() {
+      return this.internalError;
+    }
+
+    public startNetwork_result setInternalError(InternalException internalError) {
+      this.internalError = internalError;
+      return this;
+    }
+
+    public void unsetInternalError() {
+      this.internalError = null;
+    }
+
+    /** Returns true if field internalError is set (has been assigned a value) and false otherwise */
+    public boolean isSetInternalError() {
+      return this.internalError != null;
+    }
+
+    public void setInternalErrorIsSet(boolean value) {
+      if (!value) {
+        this.internalError = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -4874,6 +6690,22 @@ public class TenantServer {
         }
         break;
 
+      case TENANT_ERROR:
+        if (value == null) {
+          unsetTenantError();
+        } else {
+          setTenantError((InvalidTenantIdException)value);
+        }
+        break;
+
+      case INTERNAL_ERROR:
+        if (value == null) {
+          unsetInternalError();
+        } else {
+          setInternalError((InternalException)value);
+        }
+        break;
+
       }
     }
 
@@ -4881,6 +6713,12 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return Boolean.valueOf(isSuccess());
+
+      case TENANT_ERROR:
+        return getTenantError();
+
+      case INTERNAL_ERROR:
+        return getInternalError();
 
       }
       throw new IllegalStateException();
@@ -4895,6 +6733,10 @@ public class TenantServer {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
+      case TENANT_ERROR:
+        return isSetTenantError();
+      case INTERNAL_ERROR:
+        return isSetInternalError();
       }
       throw new IllegalStateException();
     }
@@ -4918,6 +6760,24 @@ public class TenantServer {
         if (!(this_present_success && that_present_success))
           return false;
         if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_tenantError = true && this.isSetTenantError();
+      boolean that_present_tenantError = true && that.isSetTenantError();
+      if (this_present_tenantError || that_present_tenantError) {
+        if (!(this_present_tenantError && that_present_tenantError))
+          return false;
+        if (!this.tenantError.equals(that.tenantError))
+          return false;
+      }
+
+      boolean this_present_internalError = true && this.isSetInternalError();
+      boolean that_present_internalError = true && that.isSetInternalError();
+      if (this_present_internalError || that_present_internalError) {
+        if (!(this_present_internalError && that_present_internalError))
+          return false;
+        if (!this.internalError.equals(that.internalError))
           return false;
       }
 
@@ -4947,6 +6807,26 @@ public class TenantServer {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetTenantError()).compareTo(typedOther.isSetTenantError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTenantError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tenantError, typedOther.tenantError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInternalError()).compareTo(typedOther.isSetInternalError());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInternalError()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.internalError, typedOther.internalError);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -4969,6 +6849,22 @@ public class TenantServer {
 
       sb.append("success:");
       sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tenantError:");
+      if (this.tenantError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tenantError);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("internalError:");
+      if (this.internalError == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.internalError);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -5023,6 +6919,24 @@ public class TenantServer {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 1: // TENANT_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.tenantError = new InvalidTenantIdException();
+                struct.tenantError.read(iprot);
+                struct.setTenantErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // INTERNAL_ERROR
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.internalError = new InternalException();
+                struct.internalError.read(iprot);
+                struct.setInternalErrorIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -5041,6 +6955,16 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           oprot.writeBool(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.tenantError != null) {
+          oprot.writeFieldBegin(TENANT_ERROR_FIELD_DESC);
+          struct.tenantError.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.internalError != null) {
+          oprot.writeFieldBegin(INTERNAL_ERROR_FIELD_DESC);
+          struct.internalError.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -5064,19 +6988,41 @@ public class TenantServer {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetTenantError()) {
+          optionals.set(1);
+        }
+        if (struct.isSetInternalError()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetSuccess()) {
           oprot.writeBool(struct.success);
+        }
+        if (struct.isSetTenantError()) {
+          struct.tenantError.write(oprot);
+        }
+        if (struct.isSetInternalError()) {
+          struct.internalError.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, startNetwork_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           struct.success = iprot.readBool();
           struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.tenantError = new InvalidTenantIdException();
+          struct.tenantError.read(iprot);
+          struct.setTenantErrorIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.internalError = new InternalException();
+          struct.internalError.read(iprot);
+          struct.setInternalErrorIsSet(true);
         }
       }
     }
