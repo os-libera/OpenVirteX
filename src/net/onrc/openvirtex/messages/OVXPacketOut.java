@@ -57,7 +57,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	
 	
 	
-	if (this.getBufferId() == -1) {
+	if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
 	    if (this.getPacketData().length <= 14) {
 		log.error("PacketOut has no buffer or data {}; dropping", this);
 		sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_LEN, this), sw);
@@ -73,6 +73,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	
 	    match = new OFMatch().loadFromPacket(cause.getPacketData(), this.inPort);
 	    this.setBufferId(cause.getBufferId());
+	    if (cause.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
+		this.setPacketData(cause.getPacketData());
+		this.setLengthU(this.getLengthU() + this.packetData.length);
+	    }
 	}
 	
 	for (OFAction act : this.getActions()) {

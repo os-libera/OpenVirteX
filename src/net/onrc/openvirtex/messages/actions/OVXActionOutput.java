@@ -30,13 +30,20 @@ import java.util.Map;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.messages.OVXPacketIn;
+import net.onrc.openvirtex.packet.ARP;
+import net.onrc.openvirtex.packet.Ethernet;
 
 import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.action.OFActionStripVirtualLan;
+import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
 import org.openflow.util.U16;
 
 public class OVXActionOutput extends OFActionOutput implements VirtualizableAction {
@@ -47,7 +54,11 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 
 	int outport = U16.f(this.getPort());
 
-
+	//Set the vlanId field if the packet is coming from a link port
+	
+	if (!sw.getPort(match.getInputPort()).isEdge() && match.getDataLayerType() != net.onrc.openvirtex.packet.Ethernet.TYPE_ARP)
+	    match.setDataLayerVirtualLan(sw.getPort(match.getInputPort()).getLinkId().shortValue());
+	
 	/*
 	 * If we have a flood or all action then expand the 
 	 * action list to include all the ports on the virtual 
@@ -58,9 +69,31 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 	    Map<Short, OVXPort> ports = sw.getPorts();
 	    for (OVXPort port : ports.values()) {
 		if (port.getPortNumber() != match.getInputPort()) {
-		    if (port.isEdge())
+		    if (port.isEdge()) {
 			prependUnRewriteActions(approvedActions, match);
-		    approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
+			//check if inPort is a vLink port. If yes, remove VLAN tag
+			if (!sw.getPort(match.getInputPort()).isEdge())
+			    approvedActions.add(new OFActionStripVirtualLan());
+			approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
+		    }
+		    else if (port.getLinkId() != 0) {
+			System.out.println(match.toString());
+			System.out.println("pacchetto per porta virtual link " + sw.getName() +" virtuale "+ port.getPortNumber() + " fisica " + port.getPhysicalPortNumber() + " link id "+ port.getLinkId());
+			if (match.getDataLayerType() == net.onrc.openvirtex.packet.Ethernet.TYPE_ARP) {
+			    OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(port);
+			    System.out.println("mando ARP da questo switch e porta " + dstPort.getParentSwitch().getName() +" " + dstPort.getPortNumber());
+			    dstPort.getParentSwitch().sendMsg(createARPPacket(match, dstPort.getPortNumber(), ARP.OP_REQUEST), null);
+			}
+			else {
+			    approvedActions.add(new OFActionVirtualLanIdentifier(port.getLinkId().shortValue()));
+			    if (sw.getPort(match.getInputPort()).getPhysicalPortNumber() != port.getPhysicalPortNumber())
+				approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
+			    else
+				approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
+			}
+			    
+		    }
+		    
 		}
 	    }
 
@@ -71,13 +104,39 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 	} else if (outport < U16.f(OFPort.OFPP_MAX.getValue())) {
 	    OVXPort ovxPort = sw.getPort(this.getPort());
 	    if (ovxPort != null) {
-		if (ovxPort.isEdge()) 
+		if (ovxPort.isEdge()) {
 		    prependUnRewriteActions(approvedActions, match);
-		this.setPort(ovxPort.getPhysicalPortNumber());
+		    //check if inPort is a vLink port. If yes, remove VLAN tag
+		    if (!sw.getPort(match.getInputPort()).isEdge())
+			approvedActions.add(new OFActionStripVirtualLan());
+			
+		    this.setPort(ovxPort.getPhysicalPortNumber());
+		    approvedActions.add(this);
+		}
+    		else if (ovxPort.getLinkId() != 0) {
+    		    System.out.println("unicast per porta virtual link" + sw.getName() +" porta virtual "+ ovxPort.getPortNumber() + " porta fisica " +  ovxPort.getPhysicalPortNumber() + " link id "+ ovxPort.getLinkId());
+    		    if (match.getDataLayerType() == net.onrc.openvirtex.packet.Ethernet.TYPE_ARP) {
+    			OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(ovxPort);
+    			System.out.println("mando ARP da questo switch e porta " + dstPort.getParentSwitch().getName() +" " + dstPort.getPortNumber());
+    			dstPort.getParentSwitch().sendMsg(createARPPacket(match, dstPort.getPortNumber(), ARP.OP_REPLY), null);
+    		    }
+    		   
+    		    {
+    			approvedActions.add(new OFActionVirtualLanIdentifier(ovxPort.getLinkId().shortValue()));
+    			if (sw.getPort(match.getInputPort()).getPhysicalPortNumber() != ovxPort.getPhysicalPortNumber()) {
+    			    this.setPort(ovxPort.getPhysicalPortNumber());
+    			    approvedActions.add(this);
+    			}
+    			else {
+    			    this.setPort(OFPort.OFPP_IN_PORT.getValue());
+    			    approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
+    			}
+    		    }
+    		    
+    		}
 	    } else
 		throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
 			" does not exist in virtual switch " + sw.getName(), OFBadActionCode.OFPBAC_BAD_OUT_PORT);
-	    approvedActions.add(this);
 	} else
 	    approvedActions.add(this);
 	
@@ -94,6 +153,33 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 	    dstAct.setNetworkAddress(match.getNetworkDestination());
 	    approvedActions.add(dstAct);
 	}
+    }
+    
+    private OVXPacketIn createARPPacket(OFMatch match, short portNumber, short opCode) {
+	ARP arp = new ARP();
+	arp.setHardwareType(ARP.HW_TYPE_ETHERNET);
+	arp.setProtocolType(ARP.PROTO_TYPE_IP);
+	//TODO: Verify if this is always valid (if broadcast request, if unicast reply)
+	arp.setOpCode(opCode);
+	arp.setHardwareAddressLength((byte) 6);
+	arp.setProtocolAddressLength((byte) 4);
+	arp.setSenderHardwareAddress(match.getDataLayerSource());
+	arp.setTargetHardwareAddress(match.getDataLayerDestination());
+	arp.setSenderProtocolAddress(match.getNetworkSource());
+	arp.setTargetProtocolAddress(match.getNetworkDestination());
+	Ethernet eth = new Ethernet();
+	eth.setEtherType(net.onrc.openvirtex.packet.Ethernet.TYPE_ARP);
+	eth.setSourceMACAddress(match.getDataLayerSource());
+	eth.setDestinationMACAddress(match.getDataLayerDestination());
+	eth.setPayload(arp);
+	//TODO: Implement getLenght for Ethernet
+	OVXPacketIn msg = new OVXPacketIn();
+	msg.setInPort(portNumber);
+	msg.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+	msg.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
+	msg.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + eth.serialize().length));
+	msg.setPacketData(eth.serialize());
+	return msg;
     }
 
 }
