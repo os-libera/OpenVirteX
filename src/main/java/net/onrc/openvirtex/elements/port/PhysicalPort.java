@@ -61,7 +61,6 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
     }
 
     public void setOVXPort(final OVXPort ovxPort) {
-	System.out.println("Registro la porta virtuale "+ ovxPort.getPortNumber() + " con questo link id "+ ovxPort.getLinkId() +" su questa porta fisica " + this.getPortNumber() ) ;
 	if (this.ovxPortMap.get(ovxPort.getTenantId()) != null)
 	    this.ovxPortMap.get(ovxPort.getTenantId()).put(ovxPort.getLinkId(), ovxPort);
 	else {
@@ -69,6 +68,5 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
 	    portMap.put(ovxPort.getLinkId(), ovxPort);
 	    this.ovxPortMap.put(ovxPort.getTenantId(), portMap);
 	}
-	System.out.println();
     }
 }

@@ -85,7 +85,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    if (this.tenantId == null) {
 		this.log.warn(
 		        "PacketIn {} does not belong to any virtual network; "
-		                + "dropping and installing a temporary drop rule",
+		                + "dropping and intalling a temporary drop rule",
 		        this);
 		this.installDropRule(sw, match);
 		return;
@@ -97,7 +97,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		    this.tenantId);
 	    return;
 	}
-	
+
 	/*
 	 * Below handles packets traveling in the core.
 	 */
@@ -172,7 +172,6 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	int vLinkId = 0;
 	if (match.getDataLayerVirtualLan() != -1)
 	    vLinkId = match.getDataLayerVirtualLan();
-	System.out.println(">>>>>>>>>>>>>> VLAN " + vLinkId);
 	this.setInPort(this.port.getOVXPort(this.tenantId, vLinkId).getPortNumber());
 	vSwitch.sendMsg(this, sw);
     }

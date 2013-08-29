@@ -86,7 +86,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private final AtomicLong               dpidCounter;
     private final AtomicInteger            linkCounter;
     private final AtomicInteger		   ipCounter;
-    
+
     public OVXLinkManager vLinkMgmt;
 
     Logger                                 log             = LogManager
