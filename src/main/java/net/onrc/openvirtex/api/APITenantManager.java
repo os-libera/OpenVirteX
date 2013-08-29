@@ -217,7 +217,7 @@ public class APITenantManager {
     public void isValidTenantId(int tenantId) throws InvalidTenantIdException {
 	final OVXMap map = OVXMap.getInstance();
 	if (map.getVirtualNetwork(tenantId) == null) {
-	    throw new InvalidTenantIdException("the tenant id you have provided does not refer to a virtual network. tenant id: " + String.valueOf(tenantId));
+	    throw new InvalidTenantIdException("The tenant id you have provided does not refer to a virtual network. TenantId: " + String.valueOf(tenantId));
 	}
     }
     
@@ -267,7 +267,7 @@ public class APITenantManager {
 		}
 	    }
 	    if (counter == links.size()) {
-		throw new VirtualLinkException("virtual link already exists. cannot create the same virtual link in the same virtual network. physical hops: " + pathString);
+		throw new VirtualLinkException("Virtual link already exists. cannot create the same virtual link in the same virtual network. physical hops: " + pathString);
 	    }
 	}
     }
@@ -286,7 +286,7 @@ public class APITenantManager {
 	    int port = network.getControllerPort();
 	    String host = network.getControllerHost();
 	    if (port == controllerPort && host.equals(controllerAddress)) {
-		throw new ControllerUnavailableException("the controller we are trying to connect is already in use: " + String.valueOf(controllerPort) + " " + controllerAddress);
+		throw new ControllerUnavailableException("The controller we are trying to connect is already in use: " + String.valueOf(controllerPort) + " " + controllerAddress);
 	    }
 	}
     }
@@ -320,6 +320,6 @@ public class APITenantManager {
      */
     public void isValidLink(List <PhysicalLink> links, String pathString) throws InvalidLinkException {
 	// TODO: implement the condition on when to throw this exception
-	throw new InvalidLinkException("The physical links given are not actually connected in phsyical plane");
+	throw new InvalidLinkException("The physical links given are not actually connected in physical plane");
     }
 }
