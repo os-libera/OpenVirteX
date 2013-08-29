@@ -16,3 +16,775 @@ except:
   fastbinary = None
 
 
+
+class MethodNotFound(TException):
+  """
+  If the admin attempts to call a function which is not defined this exception is thrown.
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('MethodNotFound')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class InvalidParams(TException):
+  """
+  If parameters sent to the function are not properly formatted or if the types is not what we are expecting
+  then an InvalidParams exception will be thrown.
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('InvalidParams')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class InternalException(TException):
+  """
+  An unexpected internal error happens. This is not related to the format of the request or the params. This
+  is related to the internal system when it tries to provide a response to the API call.
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('InternalException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class InvalidTenantIdException(TException):
+  """
+  Admin tries to create a new virtual switches in a virtual network but the tenantId that has been provided does not correspond to any
+  tenantId that has been created.
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('InvalidTenantIdException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ControllerUnavailableException(TException):
+  """
+  Each virtual network should talk to a different controller. If the admin tries to make to virtual networks talk to the same controller
+  then this exception will be thrown.
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ControllerUnavailableException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class VirtualLinkException(TException):
+  """
+  This exception is thrown when the admin tries to create the same virtualLink multiple times. Each virtual Link can only be create once per virtual network
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('VirtualLinkException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class InvalidLinkException(TException):
+  """
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('InvalidLinkException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class InvalidDPIDException(TException):
+  """
+  The physical dpid specified by the admin is not a valid dpid.
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('InvalidDPIDException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class InvalidPortException(TException):
+  """
+  The port number specified by the client is not valid and available in the physical switch plane.
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('InvalidPortException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class IPOutOfRangeException(TException):
+  """
+  The IPAddress is outside the range which is allowed given the mask
+
+  Attributes:
+   - errorCode
+   - msg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'errorCode', None, None, ), # 1
+    (2, TType.STRING, 'msg', None, None, ), # 2
+  )
+
+  def __init__(self, errorCode=None, msg=None,):
+    self.errorCode = errorCode
+    self.msg = msg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.msg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('IPOutOfRangeException')
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 1)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.msg is not None:
+      oprot.writeFieldBegin('msg', TType.STRING, 2)
+      oprot.writeString(self.msg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __str__(self):
+    return repr(self)
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
