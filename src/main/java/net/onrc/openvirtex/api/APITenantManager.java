@@ -205,24 +205,26 @@ public class APITenantManager {
 	if (virtSwitch instanceof OVXBigSwitch) {	    
 	    final OVXBigSwitch bigSwitch = (OVXBigSwitch) virtSwitch;
 	    
-	    //only allow if algo is NONE
+	    //only allow if algorithm is NONE
 	    if (!bigSwitch.getAlg().equals(RoutingAlgorithms.NONE)) {
 		return -1;
 	    } 
 	    final HashSet<PhysicalSwitch> switchSet = new HashSet<PhysicalSwitch>(
 		    bigSwitch.getMap().getPhysicalSwitches(bigSwitch)); 
-	    //find ingress/egress ports to Big Switch  
+	    
+	    //find ingress/egress virtual ports to Big Switch  
 	    final String[] inPortPair = inPort.split("/");
 	    final String[] outPortPair = outPort.split("/");
 	    final PhysicalPort inPhyPort = phyNetwork
 		    .getSwitch(Long.valueOf(inPortPair[0])).getPort(Short.valueOf(inPortPair[1]));
 	    final PhysicalPort outPhyPort = phyNetwork
 		    .getSwitch(Long.valueOf(outPortPair[0])).getPort(Short.valueOf(outPortPair[1]));
-	    final OVXPort ingress = new OVXPort(bigSwitch.getTenantId(), inPhyPort, true);
-	    final OVXPort egress = new OVXPort(bigSwitch.getTenantId(), outPhyPort, true);
+	    final OVXPort ingress = inPhyPort.getOVXPort(tenantId);
+	    final OVXPort egress = outPhyPort.getOVXPort(tenantId);
 	    
 	    final List<PhysicalLink> pathLinks = new ArrayList<PhysicalLink>();
 	    final List<PhysicalLink> reverseLinks = new ArrayList<PhysicalLink>();
+	    
 	    //handle route string 
 	    for (final String link : routeString.split(",")) {
 		final String srcString = link.split("-")[0];
@@ -233,10 +235,12 @@ public class APITenantManager {
 			phyNetwork.getSwitch(Long.parseLong(srcDpidPort[0])); 
 		final PhysicalSwitch dstSwitch = 
 			phyNetwork.getSwitch(Long.parseLong(dstDpidPort[0]));
+		
 		//if either source or dst switch don't exist, quit
 		if ((srcSwitch == null) || (dstSwitch == null)) {
 		    return -1;
 		}
+		
 		//for each link, check if switch is part of big switch
 		if ((switchSet.contains(srcSwitch)) && (switchSet.contains(dstSwitch))) {
 		    final PhysicalPort srcPort = srcSwitch.getPort(Short.valueOf(srcDpidPort[1]));

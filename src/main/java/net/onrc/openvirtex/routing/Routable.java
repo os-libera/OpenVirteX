@@ -1,6 +1,5 @@
 package net.onrc.openvirtex.routing;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
@@ -18,7 +17,7 @@ public interface Routable {
      * @param egress The egress port on the big switch
      * @return A list of links (tentative) representing the route across the big switch
      */
-    public ArrayList<PhysicalLink> getRoute(OVXBigSwitch vSwitch, 
+    public SwitchRoute getRoute(OVXBigSwitch vSwitch, 
 	    OVXPort srcPort, OVXPort dstPort);
     
     /**
