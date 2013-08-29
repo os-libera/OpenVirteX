@@ -1,19 +1,24 @@
 package net.onrc.openvirtex.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.apache.logging.log4j.LogManager;
@@ -178,5 +183,78 @@ public class APITenantManager {
     public String saveConfig() {
 	// TODO Auto-generated method stub
 	return null;
+    }
+
+    /**
+     * Creates a single route between two edge ports of a big switch, as 
+     * specified by a list of physical links. 
+     * 
+     * @param tenantId
+     * @param dpid
+     * @param routeString
+     * @return the route identifier or -1 for failed route creation
+     */
+    public int createOVXSwitchRoute(int tenantId, String dpid, String inPort, 
+            String outPort, String routeString) {
+	final OVXMap map = OVXMap.getInstance();
+	final OVXNetwork virtNetwork = map.getVirtualNetwork(tenantId);
+	final PhysicalNetwork phyNetwork = PhysicalNetwork.getInstance();
+	final OVXSwitch virtSwitch = virtNetwork.getSwitch(Long.parseLong(dpid));
+	
+	//only try route setup if it's a BigSwitch
+	if (virtSwitch instanceof OVXBigSwitch) {	    
+	    final OVXBigSwitch bigSwitch = (OVXBigSwitch) virtSwitch;
+	    
+	    //only allow if algo is NONE
+	    if (!bigSwitch.getAlg().equals(RoutingAlgorithms.NONE)) {
+		return -1;
+	    } 
+	    final HashSet<PhysicalSwitch> switchSet = new HashSet<PhysicalSwitch>(
+		    bigSwitch.getMap().getPhysicalSwitches(bigSwitch)); 
+	    //find ingress/egress ports to Big Switch  
+	    final String[] inPortPair = inPort.split("/");
+	    final String[] outPortPair = outPort.split("/");
+	    final PhysicalPort inPhyPort = phyNetwork
+		    .getSwitch(Long.valueOf(inPortPair[0])).getPort(Short.valueOf(inPortPair[1]));
+	    final PhysicalPort outPhyPort = phyNetwork
+		    .getSwitch(Long.valueOf(outPortPair[0])).getPort(Short.valueOf(outPortPair[1]));
+	    final OVXPort ingress = new OVXPort(bigSwitch.getTenantId(), inPhyPort, true);
+	    final OVXPort egress = new OVXPort(bigSwitch.getTenantId(), outPhyPort, true);
+	    
+	    final List<PhysicalLink> pathLinks = new ArrayList<PhysicalLink>();
+	    final List<PhysicalLink> reverseLinks = new ArrayList<PhysicalLink>();
+	    //handle route string 
+	    for (final String link : routeString.split(",")) {
+		final String srcString = link.split("-")[0];
+		final String dstString = link.split("-")[1];
+		final String[] srcDpidPort = srcString.split("/");
+		final String[] dstDpidPort = dstString.split("/");
+		final PhysicalSwitch srcSwitch = 
+			phyNetwork.getSwitch(Long.parseLong(srcDpidPort[0])); 
+		final PhysicalSwitch dstSwitch = 
+			phyNetwork.getSwitch(Long.parseLong(dstDpidPort[0]));
+		//if either source or dst switch don't exist, quit
+		if ((srcSwitch == null) || (dstSwitch == null)) {
+		    return -1;
+		}
+		//for each link, check if switch is part of big switch
+		if ((switchSet.contains(srcSwitch)) && (switchSet.contains(dstSwitch))) {
+		    final PhysicalPort srcPort = srcSwitch.getPort(Short.valueOf(srcDpidPort[1]));
+		    final PhysicalPort dstPort = dstSwitch.getPort(Short.valueOf(dstDpidPort[1]));
+		    if ((srcPort == null) || (dstPort == null)) {
+			return -1;
+		    }
+		    final PhysicalLink hop = phyNetwork.getLink(srcPort, dstPort);
+		    final PhysicalLink revhop = phyNetwork.getLink(dstPort, srcPort);
+		    pathLinks.add(hop);
+		    reverseLinks.add(revhop);
+		} else {
+		    return -1;
+		}
+	    }
+	    Collections.reverse(reverseLinks);
+	    return bigSwitch.createRoute(ingress, egress, pathLinks, reverseLinks);
+	}
+	return -1;
     }
 }
