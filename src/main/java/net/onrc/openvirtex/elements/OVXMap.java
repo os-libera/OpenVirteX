@@ -47,7 +47,7 @@ public class OVXMap implements Mappable {
 
     
     Logger log = LogManager.getLogger(OVXMap.class.getName());
-    private static AtomicReference<OVXMap>         			     mapInstance = new AtomicReference<>();
+    private static AtomicReference<OVXMap>         			     mapInstance = new AtomicReference<OVXMap>();
 
     ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>                  virtualSwitchMap;
     ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
@@ -85,6 +85,14 @@ public class OVXMap implements Mappable {
 	return mapInstance.get();
     }
 
+    public ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>> getVirtualLinkMap() {
+	return this.virtualLinkMap;
+    }
+    
+    public ConcurrentHashMap<Integer, OVXNetwork> getNetworkMap() {
+	return this.networkMap;
+    }
+    
     // ADD objects to dictionary
 
     /**

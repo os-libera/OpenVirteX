@@ -90,4 +90,12 @@ public abstract class Link<T1, T2> {
 	    short dstPort = ((Port) this.dstPort).getPortNumber();
 	    return srcSwitch + ":" + srcPort + "-" + dstSwitch + ":" + dstPort;
 	}
+	
+	public boolean equals(Link link) {
+	    if (link.dstPort.equals(this.dstPort) && link.srcPort.equals(this.srcPort)){
+		return true;
+	    } else {
+		return false;
+	    }
+	}
 }

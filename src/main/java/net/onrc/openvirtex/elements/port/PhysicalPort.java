@@ -35,6 +35,7 @@ import java.util.Map;
 import org.openflow.protocol.OFPhysicalPort;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.datapath.Switch;
 
 public class PhysicalPort extends Port<PhysicalSwitch> {
 
@@ -62,5 +63,14 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
 
     public void setOVXPort(final OVXPort ovxPort) {
 	this.ovxPortMap.put(ovxPort.getTenantId(), ovxPort);
+    }
+    
+    public boolean equals(PhysicalPort port) {
+	if (this.portNumber==port.portNumber 
+		&& this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId()) {
+	    return true;
+	} else {
+	    return false;
+	}
     }
 }

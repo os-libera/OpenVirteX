@@ -48,8 +48,8 @@ public class MapAddTest extends TestCase {
     
     
     public void testAddSwitches() {
-	ArrayList<PhysicalSwitch> p_sw = new ArrayList<>();
-	ArrayList<OVXSwitch> v_sw = new ArrayList<>();
+	ArrayList<PhysicalSwitch> p_sw = new ArrayList<PhysicalSwitch>();
+	ArrayList<OVXSwitch> v_sw = new ArrayList<OVXSwitch>();
 	PhysicalSwitch sw = null;
 	OVXSwitch vsw = null;
 	for (int i = 0 ; i < MAXPSW ; i++) {

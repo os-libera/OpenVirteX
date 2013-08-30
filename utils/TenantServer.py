@@ -109,6 +109,12 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.controllerError is not None:
+      raise result.controllerError
+    if result.ipError is not None:
+      raise result.ipError
+    if result.internalError is not None:
+      raise result.internalError
     raise TApplicationException(TApplicationException.MISSING_RESULT, "createVirtualNetwork failed: unknown result");
 
   def createVirtualSwitch(self, tenantId, dpids):
@@ -141,6 +147,12 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.dpidError is not None:
+      raise result.dpidError
+    if result.tenantError is not None:
+      raise result.tenantError
+    if result.internalError is not None:
+      raise result.internalError
     raise TApplicationException(TApplicationException.MISSING_RESULT, "createVirtualSwitch failed: unknown result");
 
   def createHost(self, tenantId, dpid, portNumber, mac):
@@ -177,6 +189,14 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.portError is not None:
+      raise result.portError
+    if result.tenantError is not None:
+      raise result.tenantError
+    if result.dpidError is not None:
+      raise result.dpidError
+    if result.internalError is not None:
+      raise result.internalError
     raise TApplicationException(TApplicationException.MISSING_RESULT, "createHost failed: unknown result");
 
   def createVirtualLink(self, tenantId, pathString):
@@ -209,6 +229,18 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.tenantError is not None:
+      raise result.tenantError
+    if result.portError is not None:
+      raise result.portError
+    if result.dpidError is not None:
+      raise result.dpidError
+    if result.internalError is not None:
+      raise result.internalError
+    if result.duplicateLinkError is not None:
+      raise result.duplicateLinkError
+    if result.invalidLinkError is not None:
+      raise result.invalidLinkError
     raise TApplicationException(TApplicationException.MISSING_RESULT, "createVirtualLink failed: unknown result");
 
   def startNetwork(self, tenantId):
@@ -239,6 +271,10 @@ class Client(Iface):
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.tenantError is not None:
+      raise result.tenantError
+    if result.internalError is not None:
+      raise result.internalError
     raise TApplicationException(TApplicationException.MISSING_RESULT, "startNetwork failed: unknown result");
 
   def saveConfig(self, ):
@@ -298,7 +334,14 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createVirtualNetwork_result()
-    result.success = self._handler.createVirtualNetwork(args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask)
+    try:
+      result.success = self._handler.createVirtualNetwork(args.protocol, args.controllerAddress, args.controllerPort, args.networkAddress, args.mask)
+    except ControllerUnavailableException as controllerError:
+      result.controllerError = controllerError
+    except IPOutOfRangeException as ipError:
+      result.ipError = ipError
+    except InternalException as internalError:
+      result.internalError = internalError
     oprot.writeMessageBegin("createVirtualNetwork", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -309,7 +352,14 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createVirtualSwitch_result()
-    result.success = self._handler.createVirtualSwitch(args.tenantId, args.dpids)
+    try:
+      result.success = self._handler.createVirtualSwitch(args.tenantId, args.dpids)
+    except InvalidDPIDException as dpidError:
+      result.dpidError = dpidError
+    except InvalidTenantIdException as tenantError:
+      result.tenantError = tenantError
+    except InternalException as internalError:
+      result.internalError = internalError
     oprot.writeMessageBegin("createVirtualSwitch", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -320,7 +370,16 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createHost_result()
-    result.success = self._handler.createHost(args.tenantId, args.dpid, args.portNumber, args.mac)
+    try:
+      result.success = self._handler.createHost(args.tenantId, args.dpid, args.portNumber, args.mac)
+    except InvalidPortException as portError:
+      result.portError = portError
+    except InvalidTenantIdException as tenantError:
+      result.tenantError = tenantError
+    except InvalidDPIDException as dpidError:
+      result.dpidError = dpidError
+    except InternalException as internalError:
+      result.internalError = internalError
     oprot.writeMessageBegin("createHost", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -331,7 +390,20 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createVirtualLink_result()
-    result.success = self._handler.createVirtualLink(args.tenantId, args.pathString)
+    try:
+      result.success = self._handler.createVirtualLink(args.tenantId, args.pathString)
+    except InvalidTenantIdException as tenantError:
+      result.tenantError = tenantError
+    except InvalidPortException as portError:
+      result.portError = portError
+    except InvalidDPIDException as dpidError:
+      result.dpidError = dpidError
+    except InternalException as internalError:
+      result.internalError = internalError
+    except VirtualLinkException as duplicateLinkError:
+      result.duplicateLinkError = duplicateLinkError
+    except InvalidLinkException as invalidLinkError:
+      result.invalidLinkError = invalidLinkError
     oprot.writeMessageBegin("createVirtualLink", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -342,7 +414,12 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = startNetwork_result()
-    result.success = self._handler.startNetwork(args.tenantId)
+    try:
+      result.success = self._handler.startNetwork(args.tenantId)
+    except InvalidTenantIdException as tenantError:
+      result.tenantError = tenantError
+    except InternalException as internalError:
+      result.internalError = internalError
     oprot.writeMessageBegin("startNetwork", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -474,14 +551,23 @@ class createVirtualNetwork_result:
   """
   Attributes:
    - success
+   - controllerError
+   - ipError
+   - internalError
   """
 
   thrift_spec = (
     (0, TType.I32, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'controllerError', (ControllerUnavailableException, ControllerUnavailableException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'ipError', (IPOutOfRangeException, IPOutOfRangeException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'internalError', (InternalException, InternalException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, controllerError=None, ipError=None, internalError=None,):
     self.success = success
+    self.controllerError = controllerError
+    self.ipError = ipError
+    self.internalError = internalError
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -497,6 +583,24 @@ class createVirtualNetwork_result:
           self.success = iprot.readI32();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.controllerError = ControllerUnavailableException()
+          self.controllerError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.ipError = IPOutOfRangeException()
+          self.ipError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.internalError = InternalException()
+          self.internalError.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -510,6 +614,18 @@ class createVirtualNetwork_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.I32, 0)
       oprot.writeI32(self.success)
+      oprot.writeFieldEnd()
+    if self.controllerError is not None:
+      oprot.writeFieldBegin('controllerError', TType.STRUCT, 1)
+      self.controllerError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.ipError is not None:
+      oprot.writeFieldBegin('ipError', TType.STRUCT, 2)
+      self.ipError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.internalError is not None:
+      oprot.writeFieldBegin('internalError', TType.STRUCT, 3)
+      self.internalError.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -613,14 +729,23 @@ class createVirtualSwitch_result:
   """
   Attributes:
    - success
+   - dpidError
+   - tenantError
+   - internalError
   """
 
   thrift_spec = (
     (0, TType.I64, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'dpidError', (InvalidDPIDException, InvalidDPIDException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'tenantError', (InvalidTenantIdException, InvalidTenantIdException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'internalError', (InternalException, InternalException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, dpidError=None, tenantError=None, internalError=None,):
     self.success = success
+    self.dpidError = dpidError
+    self.tenantError = tenantError
+    self.internalError = internalError
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -636,6 +761,24 @@ class createVirtualSwitch_result:
           self.success = iprot.readI64();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.dpidError = InvalidDPIDException()
+          self.dpidError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.tenantError = InvalidTenantIdException()
+          self.tenantError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.internalError = InternalException()
+          self.internalError.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -649,6 +792,18 @@ class createVirtualSwitch_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.I64, 0)
       oprot.writeI64(self.success)
+      oprot.writeFieldEnd()
+    if self.dpidError is not None:
+      oprot.writeFieldBegin('dpidError', TType.STRUCT, 1)
+      self.dpidError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.tenantError is not None:
+      oprot.writeFieldBegin('tenantError', TType.STRUCT, 2)
+      self.tenantError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.internalError is not None:
+      oprot.writeFieldBegin('internalError', TType.STRUCT, 3)
+      self.internalError.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -768,14 +923,26 @@ class createHost_result:
   """
   Attributes:
    - success
+   - portError
+   - tenantError
+   - dpidError
+   - internalError
   """
 
   thrift_spec = (
     (0, TType.I32, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'portError', (InvalidPortException, InvalidPortException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'tenantError', (InvalidTenantIdException, InvalidTenantIdException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'dpidError', (InvalidDPIDException, InvalidDPIDException.thrift_spec), None, ), # 3
+    (4, TType.STRUCT, 'internalError', (InternalException, InternalException.thrift_spec), None, ), # 4
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, portError=None, tenantError=None, dpidError=None, internalError=None,):
     self.success = success
+    self.portError = portError
+    self.tenantError = tenantError
+    self.dpidError = dpidError
+    self.internalError = internalError
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -791,6 +958,30 @@ class createHost_result:
           self.success = iprot.readI32();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.portError = InvalidPortException()
+          self.portError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.tenantError = InvalidTenantIdException()
+          self.tenantError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.dpidError = InvalidDPIDException()
+          self.dpidError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.internalError = InternalException()
+          self.internalError.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -804,6 +995,22 @@ class createHost_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.I32, 0)
       oprot.writeI32(self.success)
+      oprot.writeFieldEnd()
+    if self.portError is not None:
+      oprot.writeFieldBegin('portError', TType.STRUCT, 1)
+      self.portError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.tenantError is not None:
+      oprot.writeFieldBegin('tenantError', TType.STRUCT, 2)
+      self.tenantError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.dpidError is not None:
+      oprot.writeFieldBegin('dpidError', TType.STRUCT, 3)
+      self.dpidError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.internalError is not None:
+      oprot.writeFieldBegin('internalError', TType.STRUCT, 4)
+      self.internalError.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -899,14 +1106,32 @@ class createVirtualLink_result:
   """
   Attributes:
    - success
+   - tenantError
+   - portError
+   - dpidError
+   - internalError
+   - duplicateLinkError
+   - invalidLinkError
   """
 
   thrift_spec = (
     (0, TType.I32, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'tenantError', (InvalidTenantIdException, InvalidTenantIdException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'portError', (InvalidPortException, InvalidPortException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'dpidError', (InvalidDPIDException, InvalidDPIDException.thrift_spec), None, ), # 3
+    (4, TType.STRUCT, 'internalError', (InternalException, InternalException.thrift_spec), None, ), # 4
+    (5, TType.STRUCT, 'duplicateLinkError', (VirtualLinkException, VirtualLinkException.thrift_spec), None, ), # 5
+    (6, TType.STRUCT, 'invalidLinkError', (InvalidLinkException, InvalidLinkException.thrift_spec), None, ), # 6
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, tenantError=None, portError=None, dpidError=None, internalError=None, duplicateLinkError=None, invalidLinkError=None,):
     self.success = success
+    self.tenantError = tenantError
+    self.portError = portError
+    self.dpidError = dpidError
+    self.internalError = internalError
+    self.duplicateLinkError = duplicateLinkError
+    self.invalidLinkError = invalidLinkError
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -922,6 +1147,42 @@ class createVirtualLink_result:
           self.success = iprot.readI32();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.tenantError = InvalidTenantIdException()
+          self.tenantError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.portError = InvalidPortException()
+          self.portError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRUCT:
+          self.dpidError = InvalidDPIDException()
+          self.dpidError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRUCT:
+          self.internalError = InternalException()
+          self.internalError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRUCT:
+          self.duplicateLinkError = VirtualLinkException()
+          self.duplicateLinkError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRUCT:
+          self.invalidLinkError = InvalidLinkException()
+          self.invalidLinkError.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -935,6 +1196,30 @@ class createVirtualLink_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.I32, 0)
       oprot.writeI32(self.success)
+      oprot.writeFieldEnd()
+    if self.tenantError is not None:
+      oprot.writeFieldBegin('tenantError', TType.STRUCT, 1)
+      self.tenantError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.portError is not None:
+      oprot.writeFieldBegin('portError', TType.STRUCT, 2)
+      self.portError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.dpidError is not None:
+      oprot.writeFieldBegin('dpidError', TType.STRUCT, 3)
+      self.dpidError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.internalError is not None:
+      oprot.writeFieldBegin('internalError', TType.STRUCT, 4)
+      self.internalError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.duplicateLinkError is not None:
+      oprot.writeFieldBegin('duplicateLinkError', TType.STRUCT, 5)
+      self.duplicateLinkError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.invalidLinkError is not None:
+      oprot.writeFieldBegin('invalidLinkError', TType.STRUCT, 6)
+      self.invalidLinkError.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1018,14 +1303,20 @@ class startNetwork_result:
   """
   Attributes:
    - success
+   - tenantError
+   - internalError
   """
 
   thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'tenantError', (InvalidTenantIdException, InvalidTenantIdException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'internalError', (InternalException, InternalException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, tenantError=None, internalError=None,):
     self.success = success
+    self.tenantError = tenantError
+    self.internalError = internalError
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1041,6 +1332,18 @@ class startNetwork_result:
           self.success = iprot.readBool();
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.tenantError = InvalidTenantIdException()
+          self.tenantError.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.internalError = InternalException()
+          self.internalError.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1054,6 +1357,14 @@ class startNetwork_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.BOOL, 0)
       oprot.writeBool(self.success)
+      oprot.writeFieldEnd()
+    if self.tenantError is not None:
+      oprot.writeFieldBegin('tenantError', TType.STRUCT, 1)
+      self.tenantError.write(oprot)
+      oprot.writeFieldEnd()
+    if self.internalError is not None:
+      oprot.writeFieldBegin('internalError', TType.STRUCT, 2)
+      self.internalError.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
