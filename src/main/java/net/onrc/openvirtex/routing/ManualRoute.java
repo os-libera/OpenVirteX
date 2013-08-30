@@ -1,6 +1,5 @@
 package net.onrc.openvirtex.routing;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
@@ -16,10 +15,10 @@ public class ManualRoute implements Routable {
     }
 
     @Override
-    public ArrayList<PhysicalLink> getRoute(OVXBigSwitch vSwitch,
+    public SwitchRoute getRoute(OVXBigSwitch vSwitch,
 	    OVXPort srcPort, OVXPort dstPort) {
 	//return route that was set manually 
-	return vSwitch.getRouteMap().get(srcPort).get(dstPort).getRoute();
+	return vSwitch.getRouteMap().get(srcPort).get(dstPort);
     }
 
     public String getName() {

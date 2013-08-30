@@ -218,8 +218,9 @@ public class APITenantManager {
 		    .getSwitch(Long.valueOf(inPortPair[0])).getPort(Short.valueOf(inPortPair[1]));
 	    final PhysicalPort outPhyPort = phyNetwork
 		    .getSwitch(Long.valueOf(outPortPair[0])).getPort(Short.valueOf(outPortPair[1]));
-	    final OVXPort ingress = new OVXPort(bigSwitch.getTenantId(), inPhyPort, true);
-	    final OVXPort egress = new OVXPort(bigSwitch.getTenantId(), outPhyPort, true);
+	    
+	    final OVXPort ingress = virtSwitch.getPort(Short.valueOf(inPortPair[0]));
+	    final OVXPort egress = virtSwitch.getPort(Short.valueOf(outPortPair[0]));
 	    
 	    final List<PhysicalLink> pathLinks = new ArrayList<PhysicalLink>();
 	    final List<PhysicalLink> reverseLinks = new ArrayList<PhysicalLink>();

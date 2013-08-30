@@ -57,6 +57,8 @@ public class PhysicalPort extends Port<PhysicalSwitch> {
     }
     
     public OVXPort getOVXPort(final Integer tenantId, final Integer vLinkId) {
+	if (this.ovxPortMap.get(tenantId) == null)
+	    return null;
 	return this.ovxPortMap.get(tenantId).get(vLinkId);
     }
 

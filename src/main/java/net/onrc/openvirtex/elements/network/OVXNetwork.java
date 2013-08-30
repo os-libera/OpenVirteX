@@ -142,6 +142,14 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     public void register() {
 	OVXMap.getInstance().addNetwork(this);
     }
+    
+    public AtomicInteger getLinkCounter() {
+        return linkCounter;
+    }
+    
+    public OVXLinkManager getvLinkMgmt() {
+        return vLinkMgmt;
+    }
 
     // API-facing methods
 

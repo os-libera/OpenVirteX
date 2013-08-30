@@ -172,8 +172,10 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	int vLinkId = 0;
 	if (match.getDataLayerVirtualLan() != -1)
 	    vLinkId = match.getDataLayerVirtualLan();
-	this.setInPort(this.port.getOVXPort(this.tenantId, vLinkId).getPortNumber());
-	vSwitch.sendMsg(this, sw);
+	if (this.port != null && this.port.getOVXPort(this.tenantId, vLinkId) != null) {
+	    this.setInPort(this.port.getOVXPort(this.tenantId, vLinkId).getPortNumber());
+	    vSwitch.sendMsg(this, sw);
+	}
     }
 
     private void learnAddresses(final OFMatch match, final Mappable map) {

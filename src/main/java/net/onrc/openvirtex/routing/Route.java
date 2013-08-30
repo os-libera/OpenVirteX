@@ -3,7 +3,6 @@
  */
 package net.onrc.openvirtex.routing;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import net.onrc.openvirtex.elements.OVXMap;
@@ -21,6 +20,6 @@ public abstract class Route implements Routable {
 	public abstract LinkedList<PhysicalLink> computePath(OVXPort srcPort,
 			OVXPort dstPort);
 	
-	public abstract ArrayList<PhysicalLink> getRoute(OVXBigSwitch vSwitch, 
+	public abstract SwitchRoute getRoute(OVXBigSwitch vSwitch, 
 		    OVXPort srcPort, OVXPort dstPort);
 }

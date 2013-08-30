@@ -17,6 +17,7 @@ import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
 import net.onrc.openvirtex.messages.actions.OVXActionStripVirtualLan;
+import net.onrc.openvirtex.routing.SwitchRoute;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +52,7 @@ public class OVXLinkManager implements OVXSendMsg,
     private final long                      fmRate = 25000;
     private HashMap<OVXLink,HashMap<PhysicalSwitch,OVXFlowMod>>		flowMap = null;
     private HashMap<OVXPort,HashMap<PhysicalSwitch,OVXFlowMod>>		portFlowMap = null;
+    private HashMap<SwitchRoute,HashMap<PhysicalSwitch,OVXFlowMod>>		routeFlowMap = null;
     protected Mappable map = null;
     
     Logger                                  log               = LogManager
@@ -61,6 +63,7 @@ public class OVXLinkManager implements OVXSendMsg,
     	this.tenantId = tenantId;
     	this.flowMap = new HashMap<OVXLink, HashMap<PhysicalSwitch,OVXFlowMod>>();
     	this.portFlowMap = new HashMap<OVXPort,HashMap<PhysicalSwitch,OVXFlowMod>>();
+    	this.routeFlowMap = new HashMap<SwitchRoute,HashMap<PhysicalSwitch,OVXFlowMod>>();
     	this.map = OVXMap.getInstance();
     	this.log.debug("Initializing virtual link manager for virtual network {}", this.tenantId);
     }
@@ -151,6 +154,61 @@ public class OVXLinkManager implements OVXSendMsg,
 			return false;
     }
     
+    public boolean registerOVXRoute(SwitchRoute route) {
+    	Short inPort = 0;
+    	HashMap<PhysicalSwitch,OVXFlowMod> linkMap = new HashMap<PhysicalSwitch, OVXFlowMod>();
+	int vNets = OpenVirteXController.getInstance().getNumberVirtualNets();
+	
+	/*
+	 * generate the flowMod, using the previous physical link dst port id as input port, 
+	 * and this physical link src port as output port
+	 */
+	OFMatch match = new OFMatch();
+	Wildcards wild = match.getWildcardObj();
+	wild = wild.withNwDstMask(vNets).withNwSrcMask(vNets).matchOn(Flag.DL_TYPE).matchOn(Flag.DL_VLAN).matchOn(Flag.IN_PORT);
+	match.setWildcards(wild.getInt());
+	match.setInputPort(inPort);
+	match.setDataLayerType(net.onrc.openvirtex.packet.Ethernet.TYPE_IPv4);
+	match.setDataLayerVirtualLan((short)route.getRouteId());
+	//need to check with Ali how the tenantId will be splitted between the addresses
+	match.setNetworkSource(new PhysicalIPAddress(this.tenantId<<(32-vNets)).getIp());
+	match.setNetworkDestination(new PhysicalIPAddress(this.tenantId<<(32-vNets)).getIp());
+    	
+	for (PhysicalLink phyLink : route.getRoute()) {
+	    if (inPort != 0) {
+		/*
+		 * generate the flowMod, using the previous physical link dst port id as input port, 
+		 * and this physical link src port as output port
+		 */
+		OFMatch curMatch = match.clone();
+		curMatch.setInputPort(inPort);
+		OVXFlowMod fm = new OVXFlowMod();
+		fm.setMatch(curMatch);
+		fm.setCommand(OFFlowMod.OFPFC_MODIFY);
+		fm.setHardTimeout((short) 30);
+		fm.setIdleTimeout((short) 0);
+		fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+		fm.setOutPort(OFPort.OFPP_NONE.getValue());
+
+		fm.setActions(Arrays.asList((OFAction) new OFActionOutput(phyLink.getSrcPort().getPortNumber(), (short) 0xffff)));
+		fm.setLength((short) (OVXFlowMod.MINIMUM_LENGTH + OFActionOutput.MINIMUM_LENGTH));
+
+		/*
+		 * Save the FlowMod in the Map
+		 */
+		linkMap.put(phyLink.getSrcPort().getParentSwitch(), fm);
+
+	    }
+	    inPort = phyLink.getDstPort().getPortNumber();
+    	}
+    	if (!linkMap.isEmpty()) {
+    		this.routeFlowMap.put(route, linkMap);
+			return true;
+    	}
+		else
+			return false;
+    }
+    
     
     public boolean unregisterOVXLink(OVXLink ovxLink) {
     	HashMap<PhysicalSwitch,OVXFlowMod> linkMap = this.flowMap.get(ovxLink);
@@ -201,6 +259,13 @@ public class OVXLinkManager implements OVXSendMsg,
 			for (PhysicalSwitch phySwitch : this.portFlowMap.get(ovxPort).keySet()) {
 			    this.log.trace("Sending flow-mod to sw {} , {}", phySwitch.getName(), this.portFlowMap.get(ovxPort).get(phySwitch).toString());
 			    phySwitch.sendMsg(this.portFlowMap.get(ovxPort).get(phySwitch), this);
+			}		
+		}
+		
+		for (SwitchRoute route : this.routeFlowMap.keySet()) {
+			for (PhysicalSwitch phySwitch : this.routeFlowMap.get(route).keySet()) {
+			    this.log.trace("Sending flow-mod to sw {} , {}", phySwitch.getName(), this.routeFlowMap.get(route).get(phySwitch).toString());
+			    phySwitch.sendMsg(this.routeFlowMap.get(route).get(phySwitch), this);
 			}		
 		}
 	}
