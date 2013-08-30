@@ -90,7 +90,7 @@ public class OVXPort extends Port<OVXSwitch> {
     @Override
     public String toString() {
 	String result = super.toString();
-	result += "\n- tenantId: " + this.tenantId;
+	result += "\n- tenantId: " + this.tenantId + "\n- linkId: " + this.linkId;
 	return result;
     }
 }

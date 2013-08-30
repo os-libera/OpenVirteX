@@ -30,11 +30,9 @@ import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
-import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
@@ -55,7 +53,6 @@ import org.openflow.protocol.OFPort;
 import org.openflow.protocol.Wildcards;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
-import org.openflow.protocol.action.OFActionNetworkLayerAddress;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionStripVirtualLan;
 import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
@@ -63,178 +60,183 @@ import org.openflow.util.U16;
 
 public class OVXActionOutput extends OFActionOutput implements VirtualizableAction {
 
-    @Override
-    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match)
-	    throws ActionVirtualizationDenied, DroppedMessageException {
+	@Override
+	public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match)
+			throws ActionVirtualizationDenied, DroppedMessageException {
 
-	int outport = U16.f(this.getPort());
-	
-	//Set the vlanId field if the packet is coming from a link port
-	
-	if (!sw.getPort(match.getInputPort()).isEdge() && match.getDataLayerType() != net.onrc.openvirtex.packet.Ethernet.TYPE_ARP)
-	    match.setDataLayerVirtualLan(sw.getPort(match.getInputPort()).getLinkId().shortValue());
-	
-	/*
-	 * If we have a flood or all action then expand the 
-	 * action list to include all the ports on the virtual 
-	 * switch (minus the inport if it's a flood)
-	 */
-	if (outport == U16.f(OFPort.OFPP_ALL.getValue()) || 
-		outport == U16.f(OFPort.OFPP_FLOOD.getValue())) {
-	    Map<Short, OVXPort> ports = sw.getPorts();
-	    for (OVXPort port : ports.values()) {
-		if (port.getPortNumber() != match.getInputPort()) {
-		    if (port.isEdge()) {
-			if (sw instanceof OVXBigSwitch) {
-			    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
-				PhysicalPort phyPort = port.getPhysicalPort();
-				//phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), null);
-				OVXBigSwitch bigSwitch = (OVXBigSwitch) port.getParentSwitch();
-				SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), port);
-				PhysicalPort srcPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
-				//maybe I can put CONTROLLER as input port for packetOut
-				phyPort.getParentSwitch().sendMsg(createARPPacketOut(match, srcPort.getPortNumber(), phyPort.getPortNumber(), 
-						match.getNetworkProtocol()), null);
-				
-				throw new DroppedMessageException();
-			    }
-			    else {
-				OVXBigSwitch bigSwitch = (OVXBigSwitch) port.getParentSwitch();
-				SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), port);
-				PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
-				approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
-				this.setPort(srcPort.getPortNumber());
-				approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
+		int outport = U16.f(this.getPort());
 
-				//Generate the fm for the end point of the link
-				PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
-				sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, port, (short) route.getRouteId(), bigSwitch.getTenantId());
-			    }
-			} else {
-			    prependUnRewriteActions(approvedActions, match);
-			    //check if inPort is a vLink port. If yes, remove VLAN tag
-			    if (!sw.getPort(match.getInputPort()).isEdge())
-				approvedActions.add(new OFActionStripVirtualLan());
-			    approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
+		//Set the vlanId field if the packet is coming from a link port
+
+		if (!sw.getPort(match.getInputPort()).isEdge() && match.getDataLayerType() != net.onrc.openvirtex.packet.Ethernet.TYPE_ARP)
+			match.setDataLayerVirtualLan(sw.getPort(match.getInputPort()).getLinkId().shortValue());
+
+		boolean exceptionThrown = false;
+
+		/*
+		 * If we have a flood or all action then expand the 
+		 * action list to include all the ports on the virtual 
+		 * switch (minus the inport if it's a flood)
+		 */
+		if (outport == U16.f(OFPort.OFPP_ALL.getValue()) || 
+				outport == U16.f(OFPort.OFPP_FLOOD.getValue())) {
+			Map<Short, OVXPort> ports = sw.getPorts();
+			for (OVXPort port : ports.values()) {
+				if (port.getPortNumber() != match.getInputPort()) {
+					if (port.isEdge()) {
+						if (sw instanceof OVXBigSwitch) {
+							if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
+								PhysicalPort phyPort = port.getPhysicalPort();
+								//phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), null);
+								OVXBigSwitch bigSwitch = (OVXBigSwitch) port.getParentSwitch();
+								SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), port);
+								PhysicalPort srcPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+								//maybe I can put CONTROLLER as input port for packetOut
+								phyPort.getParentSwitch().sendMsg(createARPPacketOut(match, srcPort.getPortNumber(), phyPort.getPortNumber(), 
+										match.getNetworkProtocol()), null);
+
+								exceptionThrown = true;
+							}
+							else {
+								OVXBigSwitch bigSwitch = (OVXBigSwitch) port.getParentSwitch();
+								SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), port);
+								PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
+								approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
+								this.setPort(srcPort.getPortNumber());
+								approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
+
+								//Generate the fm for the end point of the link
+								PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+								sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, port, (short) route.getRouteId(), bigSwitch.getTenantId());
+							}
+						} else {
+							prependUnRewriteActions(approvedActions, match);
+							//check if inPort is a vLink port. If yes, remove VLAN tag
+							if (!sw.getPort(match.getInputPort()).isEdge())
+								approvedActions.add(new OFActionStripVirtualLan());
+							approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
+						}
+					} else if (port.getLinkId() != 0) {
+						if (match.getDataLayerType() == Ethernet.TYPE_ARP) {	
+							OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(port);
+							dstPort.getParentSwitch().sendMsg(createARPPacket(match, dstPort.getPortNumber(), match.getNetworkProtocol()), null);
+							//throw new DroppedMessageException();
+						}
+						else {
+							if (sw instanceof OVXBigSwitch) {
+								OVXBigSwitch bigSwitch = (OVXBigSwitch) port.getParentSwitch();
+								SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), port);
+								PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
+								approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
+								this.setPort(srcPort.getPortNumber());
+								approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
+
+								//Generate the fm for the end point of the link
+								PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+								sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, port, (short) route.getRouteId(), bigSwitch.getTenantId());
+							}
+							else {
+
+								approvedActions.add(new OFActionVirtualLanIdentifier(port.getLinkId().shortValue()));
+								if (sw.getPort(match.getInputPort()).getPhysicalPortNumber() != port.getPhysicalPortNumber())
+									approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
+								else
+									approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
+							}
+						}
+
+					}
+
+				}
 			}
-		    } else if (port.getLinkId() != 0) {
-			if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
-			    OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(port);
-			    dstPort.getParentSwitch().sendMsg(createARPPacket(match, dstPort.getPortNumber(), match.getNetworkProtocol()), null);
-			    //throw new DroppedMessageException();
-			}
-			else {
-			    if (sw instanceof OVXBigSwitch) {
-				OVXBigSwitch bigSwitch = (OVXBigSwitch) port.getParentSwitch();
-				SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), port);
-				PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
-				approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
-				this.setPort(srcPort.getPortNumber());
-				approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
 
-				//Generate the fm for the end point of the link
-				PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
-				sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, port, (short) route.getRouteId(), bigSwitch.getTenantId());
-			    }
-			    else {
-			    
-				approvedActions.add(new OFActionVirtualLanIdentifier(port.getLinkId().shortValue()));
-				if (sw.getPort(match.getInputPort()).getPhysicalPortNumber() != port.getPhysicalPortNumber())
-				    approvedActions.add(new OFActionOutput(port.getPhysicalPortNumber()));
-				else
-				    approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
-			    }
-			}
-
-		    }
-
-		}
-	    }
-
-	    if (outport == U16.f(OFPort.OFPP_ALL.getValue())) 
-		approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
+			if (outport == U16.f(OFPort.OFPP_ALL.getValue())) 
+				approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
 
 
-	} else if (outport < U16.f(OFPort.OFPP_MAX.getValue())) {
-	    OVXPort ovxPort = sw.getPort(this.getPort());
-	    if (ovxPort != null) {
-		if (ovxPort.isEdge()) {
-		    if (sw instanceof OVXBigSwitch) {
-			if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
-			    PhysicalPort phyPort = ovxPort.getPhysicalPort();
-			    //phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), sw);
-			    OVXBigSwitch bigSwitch = (OVXBigSwitch) ovxPort.getParentSwitch();
-				SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), ovxPort);
-				PhysicalPort srcPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
-				//maybe I can put CONTROLLER as input port for packetOut
-				phyPort.getParentSwitch().sendMsg(createARPPacketOut(match, srcPort.getPortNumber(), phyPort.getPortNumber(), 
-						match.getNetworkProtocol()), null);
-			    throw new DroppedMessageException();
-			}
-			else {
-			    OVXBigSwitch bigSwitch = (OVXBigSwitch) ovxPort.getParentSwitch();
-			    SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), ovxPort);
-			    PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
-			    approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
-			    this.setPort(srcPort.getPortNumber());
-			    approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
-			    
-			    //Generate the fm for the end point of the link
-			    PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
-			    sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, ovxPort, (short) route.getRouteId(), bigSwitch.getTenantId());
-			    
-			}
-		    }
-		    else {
-			prependUnRewriteActions(approvedActions, match);
-			//check if inPort is a vLink port. If yes, remove VLAN tag
-			if (!sw.getPort(match.getInputPort()).isEdge())
-			    approvedActions.add(new OFActionStripVirtualLan());
+		} else if (outport < U16.f(OFPort.OFPP_MAX.getValue())) {
+			OVXPort ovxPort = sw.getPort(this.getPort());
+			if (ovxPort != null) {
+				if (ovxPort.isEdge()) {
+					if (sw instanceof OVXBigSwitch) {
+						if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
+							PhysicalPort phyPort = ovxPort.getPhysicalPort();
+							//phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), sw);
+							OVXBigSwitch bigSwitch = (OVXBigSwitch) ovxPort.getParentSwitch();
+							SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), ovxPort);
+							PhysicalPort srcPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+							//maybe I can put CONTROLLER as input port for packetOut
+							phyPort.getParentSwitch().sendMsg(createARPPacketOut(match, srcPort.getPortNumber(), phyPort.getPortNumber(), 
+									match.getNetworkProtocol()), null);
+							exceptionThrown = true;
+						}
+						else {
+							OVXBigSwitch bigSwitch = (OVXBigSwitch) ovxPort.getParentSwitch();
+							SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), ovxPort);
+							PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
+							approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
+							this.setPort(srcPort.getPortNumber());
+							approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
 
-			this.setPort(ovxPort.getPhysicalPortNumber());
+							//Generate the fm for the end point of the link
+							PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+							sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, ovxPort, (short) route.getRouteId(), bigSwitch.getTenantId());
+
+						}
+					}
+					else {
+						prependUnRewriteActions(approvedActions, match);
+						//check if inPort is a vLink port. If yes, remove VLAN tag
+						if (!sw.getPort(match.getInputPort()).isEdge())
+							approvedActions.add(new OFActionStripVirtualLan());
+
+						this.setPort(ovxPort.getPhysicalPortNumber());
+						approvedActions.add(this);
+					}
+				}
+				else if (ovxPort.getLinkId() != 0) {
+					if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
+						OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(ovxPort);
+						dstPort.getParentSwitch().sendMsg(createARPPacket(match, dstPort.getPortNumber(), match.getNetworkProtocol()), null);
+						//throw new DroppedMessageException();
+					}
+
+					if (sw instanceof OVXBigSwitch) {
+						OVXBigSwitch bigSwitch = (OVXBigSwitch) ovxPort.getParentSwitch();
+						SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), ovxPort);
+						PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
+						approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
+						this.setPort(srcPort.getPortNumber());
+						approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
+
+						//Generate the fm for the end point of the link
+						PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+						sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, ovxPort, (short) route.getRouteId(), bigSwitch.getTenantId());
+
+					}
+					else {
+						approvedActions.add(new OFActionVirtualLanIdentifier(ovxPort.getLinkId().shortValue()));
+						if (sw.getPort(match.getInputPort()).getPhysicalPortNumber() != ovxPort.getPhysicalPortNumber()) {
+							this.setPort(ovxPort.getPhysicalPortNumber());
+							approvedActions.add(this);
+						}
+						else {
+							this.setPort(OFPort.OFPP_IN_PORT.getValue());
+							approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
+						}
+					}
+
+				}
+			} else
+				throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
+						" does not exist in virtual switch " + sw.getName(), OFBadActionCode.OFPBAC_BAD_OUT_PORT);
+		} else
 			approvedActions.add(this);
-		    }
-		}
-    		else if (ovxPort.getLinkId() != 0) {
-    		    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
-    			OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(ovxPort);
-    			dstPort.getParentSwitch().sendMsg(createARPPacket(match, dstPort.getPortNumber(), match.getNetworkProtocol()), null);
-    			//throw new DroppedMessageException();
-    		    }
-    		   
-    		    if (sw instanceof OVXBigSwitch) {
-    			OVXBigSwitch bigSwitch = (OVXBigSwitch) ovxPort.getParentSwitch();
-    			SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), ovxPort);
-    			PhysicalPort srcPort = route.getRoute().get(0).getSrcPort();
-    			approvedActions.add(new OFActionVirtualLanIdentifier((short) route.getRouteId()));
-    			this.setPort(srcPort.getPortNumber());
-    			approvedActions.add(new OFActionOutput(srcPort.getPortNumber()));
 
-    			//Generate the fm for the end point of the link
-    			PhysicalPort dstPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
-    			sendFlowMod(match.clone(), dstPort.getParentSwitch(), dstPort, ovxPort, (short) route.getRouteId(), bigSwitch.getTenantId());
-			 
-    		    }
-    		    else {
-    			approvedActions.add(new OFActionVirtualLanIdentifier(ovxPort.getLinkId().shortValue()));
-    			if (sw.getPort(match.getInputPort()).getPhysicalPortNumber() != ovxPort.getPhysicalPortNumber()) {
-    			    this.setPort(ovxPort.getPhysicalPortNumber());
-    			    approvedActions.add(this);
-    			}
-    			else {
-    			    this.setPort(OFPort.OFPP_IN_PORT.getValue());
-    			    approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
-    			}
-    		    }
-    		    
-    		}
-	    } else
-		throw new ActionVirtualizationDenied("Virtual Port " + this.getPort() + 
-			" does not exist in virtual switch " + sw.getName(), OFBadActionCode.OFPBAC_BAD_OUT_PORT);
-	} else
-	    approvedActions.add(this);
-	
-    }
+		if (exceptionThrown)
+			throw new DroppedMessageException();
+
+	}
 
     private void prependUnRewriteActions(List<OFAction> approvedActions, final OFMatch match) {
 	if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
