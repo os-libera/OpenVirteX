@@ -109,7 +109,24 @@ def do_bootNetwork(gopts, opts, args):
     client._iprot.trans.close()
     if result:
         print "Network has been booted"
-        
+       
+def pa_createVSwitchRoute(args, cmd):
+    usage = "%s <network_id> <dpid> <route>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]          
+    parser = OptionParser(usage=usage, description=ldesc)
+
+    return parser.parse_args(args)
+
+def do_createVSwitchRoute(gopts, opts, args):
+    if len(args) != 5:
+        print "createVSwitchRoute : Must specify a tenantID, dpid, ingress switch/port, egress switch/port, and a string of links"
+        sys.exit()
+    client = create_client(gopts.host, int(gopts.port))
+    route_id = client.createSwitchRoute(int(args[0]), args[1], args[2], args[3], args[4])
+    client._iprot.trans.close()
+    if route_id > 0:
+        print "Switch route has been created (route_id %s)." % str(route_id)
+
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
     parser = OptionParser(usage=usage)
@@ -149,6 +166,7 @@ CMDS = {
     'createVLink': (pa_vlink, do_createVLink),
     'connectHost': (pa_connectHost, do_connectHost),
     'bootNetwork': (pa_bootNetwork, do_bootNetwork),
+    'createVSwitchRoute':(pa_createVSwitchRoute, do_createVSwitchRoute),
     'help' : (pa_help, do_help)
 }
 
@@ -163,6 +181,8 @@ DESCS = {
                      ("Connect host to edge switch. Must specify a network_id, mac, dpid and port.")),
     'bootNetwork' : ("Boot virtual network",
                      ("Boot virtual network. Must specify a network_id.")),
+    'createVSwitchRoute' : ("Create a route through a virtual switch",
+                     ("Create a route through a virtual switch. Must specify a network_id, dpid, in_port, out_port, and path between the two ports. Format of port: DPID/port. Format of path: srcDPID/port-dstDPID/port,srcDPID/port-dstDPID/port")),
 }
 
 USAGE="%prog {}"
@@ -227,6 +247,8 @@ if __name__ == '__main__':
       print "createVLink: int, string"
     elif function=='bootNetwork':
       print "bootNetwork: int"
+    elif function=='createSwitchRoute':
+      print "createVSwitchRoute: int, string, string, string, string"
   except IndexError, e:
     print "%s is an unknown command" % sys.argv[-1]
     printHelp(None, None, None, parser)

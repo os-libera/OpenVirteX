@@ -110,7 +110,7 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 	final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
 	final Port srcPort = (Port) ((T2) ((Link) link).getSrcPort());
-	final Port dstPort = (Port) ((T2) ((Link) link).getSrcPort());
+	final Port dstPort = (Port) ((T2) ((Link) link).getDstPort());
 	srcPort.isEdge(true);
 	dstPort.isEdge(true);	
 	final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);

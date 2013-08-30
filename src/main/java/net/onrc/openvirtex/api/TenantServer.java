@@ -46,6 +46,8 @@ public class TenantServer {
 
     public String saveConfig() throws org.apache.thrift.TException;
 
+    public int createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString) throws org.apache.thrift.TException;
+
   }
 
   public interface AsyncIface {
@@ -61,6 +63,8 @@ public class TenantServer {
     public void startNetwork(int tenantId, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startNetwork_call> resultHandler) throws org.apache.thrift.TException;
 
     public void saveConfig(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.saveConfig_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createSwitchRoute_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -228,6 +232,33 @@ public class TenantServer {
         return result.success;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "saveConfig failed: unknown result");
+    }
+
+    public int createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString) throws org.apache.thrift.TException
+    {
+      send_createSwitchRoute(tenantId, dpid, inPort, outPort, routeString);
+      return recv_createSwitchRoute();
+    }
+
+    public void send_createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString) throws org.apache.thrift.TException
+    {
+      createSwitchRoute_args args = new createSwitchRoute_args();
+      args.setTenantId(tenantId);
+      args.setDpid(dpid);
+      args.setInPort(inPort);
+      args.setOutPort(outPort);
+      args.setRouteString(routeString);
+      sendBase("createSwitchRoute", args);
+    }
+
+    public int recv_createSwitchRoute() throws org.apache.thrift.TException
+    {
+      createSwitchRoute_result result = new createSwitchRoute_result();
+      receiveBase(result, "createSwitchRoute");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "createSwitchRoute failed: unknown result");
     }
 
   }
@@ -464,6 +495,50 @@ public class TenantServer {
       }
     }
 
+    public void createSwitchRoute(int tenantId, String dpid, String inPort, String outPort, String routeString, org.apache.thrift.async.AsyncMethodCallback<createSwitchRoute_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      createSwitchRoute_call method_call = new createSwitchRoute_call(tenantId, dpid, inPort, outPort, routeString, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class createSwitchRoute_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private int tenantId;
+      private String dpid;
+      private String inPort;
+      private String outPort;
+      private String routeString;
+      public createSwitchRoute_call(int tenantId, String dpid, String inPort, String outPort, String routeString, org.apache.thrift.async.AsyncMethodCallback<createSwitchRoute_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.tenantId = tenantId;
+        this.dpid = dpid;
+        this.inPort = inPort;
+        this.outPort = outPort;
+        this.routeString = routeString;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("createSwitchRoute", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        createSwitchRoute_args args = new createSwitchRoute_args();
+        args.setTenantId(tenantId);
+        args.setDpid(dpid);
+        args.setInPort(inPort);
+        args.setOutPort(outPort);
+        args.setRouteString(routeString);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public int getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_createSwitchRoute();
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends org.apache.thrift.TBaseProcessor<I> implements org.apache.thrift.TProcessor {
@@ -483,6 +558,7 @@ public class TenantServer {
       processMap.put("createVirtualLink", new createVirtualLink());
       processMap.put("startNetwork", new startNetwork());
       processMap.put("saveConfig", new saveConfig());
+      processMap.put("createSwitchRoute", new createSwitchRoute());
       return processMap;
     }
 
@@ -607,6 +683,27 @@ public class TenantServer {
       public saveConfig_result getResult(I iface, saveConfig_args args) throws org.apache.thrift.TException {
         saveConfig_result result = new saveConfig_result();
         result.success = iface.saveConfig();
+        return result;
+      }
+    }
+
+    public static class createSwitchRoute<I extends Iface> extends org.apache.thrift.ProcessFunction<I, createSwitchRoute_args> {
+      public createSwitchRoute() {
+        super("createSwitchRoute");
+      }
+
+      public createSwitchRoute_args getEmptyArgsInstance() {
+        return new createSwitchRoute_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public createSwitchRoute_result getResult(I iface, createSwitchRoute_args args) throws org.apache.thrift.TException {
+        createSwitchRoute_result result = new createSwitchRoute_result();
+        result.success = iface.createSwitchRoute(args.tenantId, args.dpid, args.inPort, args.outPort, args.routeString);
+        result.setSuccessIsSet(true);
         return result;
       }
     }
@@ -2111,7 +2208,7 @@ public class TenantServer {
                   struct.dpids = new ArrayList<String>(_list0.size);
                   for (int _i1 = 0; _i1 < _list0.size; ++_i1)
                   {
-                    String _elem2; // required
+                    String _elem2; // optional
                     _elem2 = iprot.readString();
                     struct.dpids.add(_elem2);
                   }
@@ -2205,7 +2302,7 @@ public class TenantServer {
             struct.dpids = new ArrayList<String>(_list5.size);
             for (int _i6 = 0; _i6 < _list5.size; ++_i6)
             {
-              String _elem7; // required
+              String _elem7; // optional
               _elem7 = iprot.readString();
               struct.dpids.add(_elem7);
             }
@@ -5676,6 +5773,1112 @@ public class TenantServer {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           struct.success = iprot.readString();
+          struct.setSuccessIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class createSwitchRoute_args implements org.apache.thrift.TBase<createSwitchRoute_args, createSwitchRoute_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createSwitchRoute_args");
+
+    private static final org.apache.thrift.protocol.TField TENANT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tenantId", org.apache.thrift.protocol.TType.I32, (short)1);
+    private static final org.apache.thrift.protocol.TField DPID_FIELD_DESC = new org.apache.thrift.protocol.TField("dpid", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField IN_PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("inPort", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField OUT_PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("outPort", org.apache.thrift.protocol.TType.STRING, (short)4);
+    private static final org.apache.thrift.protocol.TField ROUTE_STRING_FIELD_DESC = new org.apache.thrift.protocol.TField("routeString", org.apache.thrift.protocol.TType.STRING, (short)5);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new createSwitchRoute_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new createSwitchRoute_argsTupleSchemeFactory());
+    }
+
+    public int tenantId; // required
+    public String dpid; // required
+    public String inPort; // required
+    public String outPort; // required
+    public String routeString; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      TENANT_ID((short)1, "tenantId"),
+      DPID((short)2, "dpid"),
+      IN_PORT((short)3, "inPort"),
+      OUT_PORT((short)4, "outPort"),
+      ROUTE_STRING((short)5, "routeString");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TENANT_ID
+            return TENANT_ID;
+          case 2: // DPID
+            return DPID;
+          case 3: // IN_PORT
+            return IN_PORT;
+          case 4: // OUT_PORT
+            return OUT_PORT;
+          case 5: // ROUTE_STRING
+            return ROUTE_STRING;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __TENANTID_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TENANT_ID, new org.apache.thrift.meta_data.FieldMetaData("tenantId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      tmpMap.put(_Fields.DPID, new org.apache.thrift.meta_data.FieldMetaData("dpid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.IN_PORT, new org.apache.thrift.meta_data.FieldMetaData("inPort", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.OUT_PORT, new org.apache.thrift.meta_data.FieldMetaData("outPort", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.ROUTE_STRING, new org.apache.thrift.meta_data.FieldMetaData("routeString", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createSwitchRoute_args.class, metaDataMap);
+    }
+
+    public createSwitchRoute_args() {
+    }
+
+    public createSwitchRoute_args(
+      int tenantId,
+      String dpid,
+      String inPort,
+      String outPort,
+      String routeString)
+    {
+      this();
+      this.tenantId = tenantId;
+      setTenantIdIsSet(true);
+      this.dpid = dpid;
+      this.inPort = inPort;
+      this.outPort = outPort;
+      this.routeString = routeString;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public createSwitchRoute_args(createSwitchRoute_args other) {
+      __isset_bitfield = other.__isset_bitfield;
+      this.tenantId = other.tenantId;
+      if (other.isSetDpid()) {
+        this.dpid = other.dpid;
+      }
+      if (other.isSetInPort()) {
+        this.inPort = other.inPort;
+      }
+      if (other.isSetOutPort()) {
+        this.outPort = other.outPort;
+      }
+      if (other.isSetRouteString()) {
+        this.routeString = other.routeString;
+      }
+    }
+
+    public createSwitchRoute_args deepCopy() {
+      return new createSwitchRoute_args(this);
+    }
+
+    @Override
+    public void clear() {
+      setTenantIdIsSet(false);
+      this.tenantId = 0;
+      this.dpid = null;
+      this.inPort = null;
+      this.outPort = null;
+      this.routeString = null;
+    }
+
+    public int getTenantId() {
+      return this.tenantId;
+    }
+
+    public createSwitchRoute_args setTenantId(int tenantId) {
+      this.tenantId = tenantId;
+      setTenantIdIsSet(true);
+      return this;
+    }
+
+    public void unsetTenantId() {
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TENANTID_ISSET_ID);
+    }
+
+    /** Returns true if field tenantId is set (has been assigned a value) and false otherwise */
+    public boolean isSetTenantId() {
+      return EncodingUtils.testBit(__isset_bitfield, __TENANTID_ISSET_ID);
+    }
+
+    public void setTenantIdIsSet(boolean value) {
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TENANTID_ISSET_ID, value);
+    }
+
+    public String getDpid() {
+      return this.dpid;
+    }
+
+    public createSwitchRoute_args setDpid(String dpid) {
+      this.dpid = dpid;
+      return this;
+    }
+
+    public void unsetDpid() {
+      this.dpid = null;
+    }
+
+    /** Returns true if field dpid is set (has been assigned a value) and false otherwise */
+    public boolean isSetDpid() {
+      return this.dpid != null;
+    }
+
+    public void setDpidIsSet(boolean value) {
+      if (!value) {
+        this.dpid = null;
+      }
+    }
+
+    public String getInPort() {
+      return this.inPort;
+    }
+
+    public createSwitchRoute_args setInPort(String inPort) {
+      this.inPort = inPort;
+      return this;
+    }
+
+    public void unsetInPort() {
+      this.inPort = null;
+    }
+
+    /** Returns true if field inPort is set (has been assigned a value) and false otherwise */
+    public boolean isSetInPort() {
+      return this.inPort != null;
+    }
+
+    public void setInPortIsSet(boolean value) {
+      if (!value) {
+        this.inPort = null;
+      }
+    }
+
+    public String getOutPort() {
+      return this.outPort;
+    }
+
+    public createSwitchRoute_args setOutPort(String outPort) {
+      this.outPort = outPort;
+      return this;
+    }
+
+    public void unsetOutPort() {
+      this.outPort = null;
+    }
+
+    /** Returns true if field outPort is set (has been assigned a value) and false otherwise */
+    public boolean isSetOutPort() {
+      return this.outPort != null;
+    }
+
+    public void setOutPortIsSet(boolean value) {
+      if (!value) {
+        this.outPort = null;
+      }
+    }
+
+    public String getRouteString() {
+      return this.routeString;
+    }
+
+    public createSwitchRoute_args setRouteString(String routeString) {
+      this.routeString = routeString;
+      return this;
+    }
+
+    public void unsetRouteString() {
+      this.routeString = null;
+    }
+
+    /** Returns true if field routeString is set (has been assigned a value) and false otherwise */
+    public boolean isSetRouteString() {
+      return this.routeString != null;
+    }
+
+    public void setRouteStringIsSet(boolean value) {
+      if (!value) {
+        this.routeString = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TENANT_ID:
+        if (value == null) {
+          unsetTenantId();
+        } else {
+          setTenantId((Integer)value);
+        }
+        break;
+
+      case DPID:
+        if (value == null) {
+          unsetDpid();
+        } else {
+          setDpid((String)value);
+        }
+        break;
+
+      case IN_PORT:
+        if (value == null) {
+          unsetInPort();
+        } else {
+          setInPort((String)value);
+        }
+        break;
+
+      case OUT_PORT:
+        if (value == null) {
+          unsetOutPort();
+        } else {
+          setOutPort((String)value);
+        }
+        break;
+
+      case ROUTE_STRING:
+        if (value == null) {
+          unsetRouteString();
+        } else {
+          setRouteString((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TENANT_ID:
+        return Integer.valueOf(getTenantId());
+
+      case DPID:
+        return getDpid();
+
+      case IN_PORT:
+        return getInPort();
+
+      case OUT_PORT:
+        return getOutPort();
+
+      case ROUTE_STRING:
+        return getRouteString();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TENANT_ID:
+        return isSetTenantId();
+      case DPID:
+        return isSetDpid();
+      case IN_PORT:
+        return isSetInPort();
+      case OUT_PORT:
+        return isSetOutPort();
+      case ROUTE_STRING:
+        return isSetRouteString();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof createSwitchRoute_args)
+        return this.equals((createSwitchRoute_args)that);
+      return false;
+    }
+
+    public boolean equals(createSwitchRoute_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_tenantId = true;
+      boolean that_present_tenantId = true;
+      if (this_present_tenantId || that_present_tenantId) {
+        if (!(this_present_tenantId && that_present_tenantId))
+          return false;
+        if (this.tenantId != that.tenantId)
+          return false;
+      }
+
+      boolean this_present_dpid = true && this.isSetDpid();
+      boolean that_present_dpid = true && that.isSetDpid();
+      if (this_present_dpid || that_present_dpid) {
+        if (!(this_present_dpid && that_present_dpid))
+          return false;
+        if (!this.dpid.equals(that.dpid))
+          return false;
+      }
+
+      boolean this_present_inPort = true && this.isSetInPort();
+      boolean that_present_inPort = true && that.isSetInPort();
+      if (this_present_inPort || that_present_inPort) {
+        if (!(this_present_inPort && that_present_inPort))
+          return false;
+        if (!this.inPort.equals(that.inPort))
+          return false;
+      }
+
+      boolean this_present_outPort = true && this.isSetOutPort();
+      boolean that_present_outPort = true && that.isSetOutPort();
+      if (this_present_outPort || that_present_outPort) {
+        if (!(this_present_outPort && that_present_outPort))
+          return false;
+        if (!this.outPort.equals(that.outPort))
+          return false;
+      }
+
+      boolean this_present_routeString = true && this.isSetRouteString();
+      boolean that_present_routeString = true && that.isSetRouteString();
+      if (this_present_routeString || that_present_routeString) {
+        if (!(this_present_routeString && that_present_routeString))
+          return false;
+        if (!this.routeString.equals(that.routeString))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(createSwitchRoute_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      createSwitchRoute_args typedOther = (createSwitchRoute_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTenantId()).compareTo(typedOther.isSetTenantId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTenantId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tenantId, typedOther.tenantId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetDpid()).compareTo(typedOther.isSetDpid());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDpid()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dpid, typedOther.dpid);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetInPort()).compareTo(typedOther.isSetInPort());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetInPort()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.inPort, typedOther.inPort);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetOutPort()).compareTo(typedOther.isSetOutPort());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetOutPort()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.outPort, typedOther.outPort);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetRouteString()).compareTo(typedOther.isSetRouteString());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRouteString()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.routeString, typedOther.routeString);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("createSwitchRoute_args(");
+      boolean first = true;
+
+      sb.append("tenantId:");
+      sb.append(this.tenantId);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("dpid:");
+      if (this.dpid == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dpid);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("inPort:");
+      if (this.inPort == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.inPort);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("outPort:");
+      if (this.outPort == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.outPort);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("routeString:");
+      if (this.routeString == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.routeString);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class createSwitchRoute_argsStandardSchemeFactory implements SchemeFactory {
+      public createSwitchRoute_argsStandardScheme getScheme() {
+        return new createSwitchRoute_argsStandardScheme();
+      }
+    }
+
+    private static class createSwitchRoute_argsStandardScheme extends StandardScheme<createSwitchRoute_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, createSwitchRoute_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // TENANT_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+                struct.tenantId = iprot.readI32();
+                struct.setTenantIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // DPID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.dpid = iprot.readString();
+                struct.setDpidIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // IN_PORT
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.inPort = iprot.readString();
+                struct.setInPortIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // OUT_PORT
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.outPort = iprot.readString();
+                struct.setOutPortIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 5: // ROUTE_STRING
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.routeString = iprot.readString();
+                struct.setRouteStringIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, createSwitchRoute_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldBegin(TENANT_ID_FIELD_DESC);
+        oprot.writeI32(struct.tenantId);
+        oprot.writeFieldEnd();
+        if (struct.dpid != null) {
+          oprot.writeFieldBegin(DPID_FIELD_DESC);
+          oprot.writeString(struct.dpid);
+          oprot.writeFieldEnd();
+        }
+        if (struct.inPort != null) {
+          oprot.writeFieldBegin(IN_PORT_FIELD_DESC);
+          oprot.writeString(struct.inPort);
+          oprot.writeFieldEnd();
+        }
+        if (struct.outPort != null) {
+          oprot.writeFieldBegin(OUT_PORT_FIELD_DESC);
+          oprot.writeString(struct.outPort);
+          oprot.writeFieldEnd();
+        }
+        if (struct.routeString != null) {
+          oprot.writeFieldBegin(ROUTE_STRING_FIELD_DESC);
+          oprot.writeString(struct.routeString);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class createSwitchRoute_argsTupleSchemeFactory implements SchemeFactory {
+      public createSwitchRoute_argsTupleScheme getScheme() {
+        return new createSwitchRoute_argsTupleScheme();
+      }
+    }
+
+    private static class createSwitchRoute_argsTupleScheme extends TupleScheme<createSwitchRoute_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, createSwitchRoute_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetTenantId()) {
+          optionals.set(0);
+        }
+        if (struct.isSetDpid()) {
+          optionals.set(1);
+        }
+        if (struct.isSetInPort()) {
+          optionals.set(2);
+        }
+        if (struct.isSetOutPort()) {
+          optionals.set(3);
+        }
+        if (struct.isSetRouteString()) {
+          optionals.set(4);
+        }
+        oprot.writeBitSet(optionals, 5);
+        if (struct.isSetTenantId()) {
+          oprot.writeI32(struct.tenantId);
+        }
+        if (struct.isSetDpid()) {
+          oprot.writeString(struct.dpid);
+        }
+        if (struct.isSetInPort()) {
+          oprot.writeString(struct.inPort);
+        }
+        if (struct.isSetOutPort()) {
+          oprot.writeString(struct.outPort);
+        }
+        if (struct.isSetRouteString()) {
+          oprot.writeString(struct.routeString);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, createSwitchRoute_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(5);
+        if (incoming.get(0)) {
+          struct.tenantId = iprot.readI32();
+          struct.setTenantIdIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.dpid = iprot.readString();
+          struct.setDpidIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.inPort = iprot.readString();
+          struct.setInPortIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.outPort = iprot.readString();
+          struct.setOutPortIsSet(true);
+        }
+        if (incoming.get(4)) {
+          struct.routeString = iprot.readString();
+          struct.setRouteStringIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class createSwitchRoute_result implements org.apache.thrift.TBase<createSwitchRoute_result, createSwitchRoute_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createSwitchRoute_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new createSwitchRoute_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new createSwitchRoute_resultTupleSchemeFactory());
+    }
+
+    public int success; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createSwitchRoute_result.class, metaDataMap);
+    }
+
+    public createSwitchRoute_result() {
+    }
+
+    public createSwitchRoute_result(
+      int success)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public createSwitchRoute_result(createSwitchRoute_result other) {
+      __isset_bitfield = other.__isset_bitfield;
+      this.success = other.success;
+    }
+
+    public createSwitchRoute_result deepCopy() {
+      return new createSwitchRoute_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = 0;
+    }
+
+    public int getSuccess() {
+      return this.success;
+    }
+
+    public createSwitchRoute_result setSuccess(int success) {
+      this.success = success;
+      setSuccessIsSet(true);
+      return this;
+    }
+
+    public void unsetSuccess() {
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return EncodingUtils.testBit(__isset_bitfield, __SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Integer)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return Integer.valueOf(getSuccess());
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof createSwitchRoute_result)
+        return this.equals((createSwitchRoute_result)that);
+      return false;
+    }
+
+    public boolean equals(createSwitchRoute_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(createSwitchRoute_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      createSwitchRoute_result typedOther = (createSwitchRoute_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("createSwitchRoute_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class createSwitchRoute_resultStandardSchemeFactory implements SchemeFactory {
+      public createSwitchRoute_resultStandardScheme getScheme() {
+        return new createSwitchRoute_resultStandardScheme();
+      }
+    }
+
+    private static class createSwitchRoute_resultStandardScheme extends StandardScheme<createSwitchRoute_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, createSwitchRoute_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+                struct.success = iprot.readI32();
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, createSwitchRoute_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.isSetSuccess()) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          oprot.writeI32(struct.success);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class createSwitchRoute_resultTupleSchemeFactory implements SchemeFactory {
+      public createSwitchRoute_resultTupleScheme getScheme() {
+        return new createSwitchRoute_resultTupleScheme();
+      }
+    }
+
+    private static class createSwitchRoute_resultTupleScheme extends TupleScheme<createSwitchRoute_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, createSwitchRoute_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetSuccess()) {
+          oprot.writeI32(struct.success);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, createSwitchRoute_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.success = iprot.readI32();
           struct.setSuccessIsSet(true);
         }
       }

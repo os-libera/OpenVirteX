@@ -330,4 +330,5 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     }
 
     public abstract void sendSouth(OFMessage msg);
+
 }
