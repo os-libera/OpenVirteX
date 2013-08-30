@@ -88,7 +88,14 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 			if (sw instanceof OVXBigSwitch) {
 			    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 				PhysicalPort phyPort = port.getPhysicalPort();
-				phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), null);
+				//phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), null);
+				OVXBigSwitch bigSwitch = (OVXBigSwitch) port.getParentSwitch();
+				SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), port);
+				PhysicalPort srcPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+				//maybe I can put CONTROLLER as input port for packetOut
+				phyPort.getParentSwitch().sendMsg(createARPPacketOut(match, srcPort.getPortNumber(), phyPort.getPortNumber(), 
+						match.getNetworkProtocol()), null);
+				
 				throw new DroppedMessageException();
 			    }
 			    else {
@@ -155,7 +162,13 @@ public class OVXActionOutput extends OFActionOutput implements VirtualizableActi
 		    if (sw instanceof OVXBigSwitch) {
 			if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 			    PhysicalPort phyPort = ovxPort.getPhysicalPort();
-			    phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), sw);
+			    //phyPort.getParentSwitch().sendMsg(createARPPacketOut(match,(short) 2, phyPort.getPortNumber(), match.getNetworkProtocol()), sw);
+			    OVXBigSwitch bigSwitch = (OVXBigSwitch) ovxPort.getParentSwitch();
+				SwitchRoute route = bigSwitch.getRoute(sw.getPort(match.getInputPort()), ovxPort);
+				PhysicalPort srcPort = route.getRoute().get(route.getRoute().size()-1).getDstPort();
+				//maybe I can put CONTROLLER as input port for packetOut
+				phyPort.getParentSwitch().sendMsg(createARPPacketOut(match, srcPort.getPortNumber(), phyPort.getPortNumber(), 
+						match.getNetworkProtocol()), null);
 			    throw new DroppedMessageException();
 			}
 			else {
