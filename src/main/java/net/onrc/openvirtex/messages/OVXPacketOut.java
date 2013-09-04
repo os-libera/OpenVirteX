@@ -95,6 +95,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	    this.setLengthU(this.getLengthU() + act.getLengthU());
 	    this.setActionsLength((short) (this.getActionsLength() + act.getLength()));
 	}
+
+	OVXMessageUtil.translateXid(this, inport);
 	sw.sendSouth(this);
 	
     }
