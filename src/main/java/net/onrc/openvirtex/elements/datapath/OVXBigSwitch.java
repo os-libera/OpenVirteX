@@ -118,7 +118,7 @@ public class OVXBigSwitch extends OVXSwitch {
      * @param dstPort the egress port on the Big Switch 
      * @return list of physical links
      */
-    public ArrayList<PhysicalLink> getRoute(OVXPort srcPort, OVXPort dstPort) {
+    public SwitchRoute getRoute(OVXPort srcPort, OVXPort dstPort) {
 	return this.routing.getRoute(this, srcPort, dstPort);    
     }
     
