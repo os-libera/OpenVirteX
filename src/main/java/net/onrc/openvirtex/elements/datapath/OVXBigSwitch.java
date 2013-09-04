@@ -236,24 +236,32 @@ public class OVXBigSwitch extends OVXSwitch {
 	rtEntry.addRoute(path);
 	revRtEntry.addRoute(revpath);
 	
-	synchronized(routeMap) {
-	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(ingress);
-	    if (rtmap == null) {
-		rtmap = new HashMap<OVXPort, SwitchRoute>();
-		this.routeMap.put(ingress, rtmap);
-	    }
-	    rtmap.put(egress, rtEntry);
-	}
-	//add reverse path dst->src
-	synchronized(routeMap) {
-	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(egress);
-	    if (rtmap == null) {
-		rtmap = new HashMap<OVXPort, SwitchRoute>();
-		this.routeMap.put(egress, rtmap);
-	    }
-	    rtmap.put(ingress, revRtEntry);
-	}
+	this.addToRouteMap(ingress, egress, rtEntry);
+	this.addToRouteMap(egress, ingress, revRtEntry);
+	
 	this.log.info("Added route {}", rtEntry);
 	return routeId;
     }
+    
+    private void addToRouteMap(OVXPort in, OVXPort out, SwitchRoute entry) {
+        HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(in);
+        if (rtmap == null) {
+            rtmap = new HashMap<OVXPort, SwitchRoute>();
+            this.routeMap.put(in, rtmap);
+        }
+        rtmap.put(out, entry);
+    }
+
+    @Override
+    public int translate(OFMessage ofm, OVXPort inPort) {
+        if (inPort == null) {
+            //don't know the PhysicalSwitch, for now return original XID.
+            return ofm.getXid();
+        } else {
+            //we know the PhysicalSwitch
+            PhysicalSwitch psw = inPort.getPhysicalPort().getParentSwitch();
+            return psw.translate(ofm, this);
+        }
+    }
+   
 }
