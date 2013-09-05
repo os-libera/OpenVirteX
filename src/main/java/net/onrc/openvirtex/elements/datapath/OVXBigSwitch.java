@@ -220,6 +220,13 @@ public class OVXBigSwitch extends OVXSwitch {
 	
     }
     
+    public void sendSouthBS(OFMessage msg, OVXPort inPort) {
+	if (inPort != null) {
+	    PhysicalSwitch sw = inPort.getPhysicalPort().getParentSwitch();
+	    sw.sendMsg(msg, this);
+	}
+    }
+    
     /**
      * Adds a path between two edge ports on the big switch 
      * @param ingress  
