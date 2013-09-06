@@ -111,7 +111,7 @@ def do_bootNetwork(gopts, opts, args):
         print "Network has been booted"
        
 def pa_createVSwitchRoute(args, cmd):
-    usage = "%s <network_id> <dpid> <route>" % USAGE.format(cmd)
+    usage = "%s <network_id> <dpid> <inPort> <outPort> <route>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]          
     parser = OptionParser(usage=usage, description=ldesc)
 
@@ -119,7 +119,7 @@ def pa_createVSwitchRoute(args, cmd):
 
 def do_createVSwitchRoute(gopts, opts, args):
     if len(args) != 5:
-        print "createVSwitchRoute : Must specify a tenantID, dpid, ingress switch/port, egress switch/port, and a string of links"
+        print "createVSwitchRoute : Must specify a tenantID, dpid, ingress virt port, egress virt port, and a string of links"
         sys.exit()
     client = create_client(gopts.host, int(gopts.port))
     route_id = client.createSwitchRoute(int(args[0]), args[1], args[2], args[3], args[4])
@@ -182,7 +182,7 @@ DESCS = {
     'bootNetwork' : ("Boot virtual network",
                      ("Boot virtual network. Must specify a network_id.")),
     'createVSwitchRoute' : ("Create a route through a virtual switch",
-                     ("Create a route through a virtual switch. Must specify a network_id, dpid, in_port, out_port, and path between the two ports. Format of port: DPID/port. Format of path: srcDPID/port-dstDPID/port,srcDPID/port-dstDPID/port")),
+                     ("Create a route through a virtual switch. Must specify a network_id, dpid, in_port, out_port, and physical link path between the two ports. DPID, and ingress/egress ports are those of the virtual switch. Format of port: DPID/port. Format of path: srcDPID/port-dstDPID/port,srcDPID/port-dstDPID/port")),
 }
 
 USAGE="%prog {}"
