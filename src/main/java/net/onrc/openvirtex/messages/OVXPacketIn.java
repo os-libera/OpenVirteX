@@ -58,7 +58,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     public void virtualize(final PhysicalSwitch sw) {
 
 
-	OVXSwitch vSwitch = null;
+	OVXSwitch vSwitch = OVXMessageUtil.untranslateXid(this, sw);//null;
 	/*
 	 * Fetching port from the physical switch
 	 */
@@ -90,7 +90,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		this.installDropRule(sw, match);
 		return;
 	    }
-	    vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    if (vSwitch == null) {
+		vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    }
 	    this.sendPkt(vSwitch, match, sw);
 	    this.learnAddresses(match, map);
 	    this.log.debug("Edge PacketIn {} sent to virtual network {}", this,
@@ -134,7 +136,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		    return;
 		}
 	    this.setPacketData(eth.serialize());
-	    vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    if (vSwitch == null)  {
+		vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    }
 	    this.sendPkt(vSwitch, match, sw);
 	    this.log.debug("IPv4 PacketIn {} sent to virtual network {}", this,
 		    this.tenantId);
@@ -150,7 +154,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    this.installDropRule(sw, match);
 	    return;
 	}
-	vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	if (vSwitch == null) {
+	    vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	}
 	this.sendPkt(vSwitch, match, sw);
 	this.log.debug("Layer2 PacketIn {} sent to virtual network {}", this,
 	        this.tenantId);

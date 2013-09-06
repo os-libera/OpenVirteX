@@ -90,6 +90,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
 	    return;
 	} else {
+	    OVXMessageUtil.translateXid(this, ovxInPort);
 	    this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
 	    if (ovxInPort.isEdge()) {
 		this.prependRewriteActions();
@@ -100,6 +101,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		this.rewriteMatch();
 	    }
 	}
+	OVXMessageUtil.translateXid(this, ovxInPort);
 	computeLength();
 	sw.sendSouth(this);
 
