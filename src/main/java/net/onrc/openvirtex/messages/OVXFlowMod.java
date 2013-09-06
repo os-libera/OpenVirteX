@@ -35,9 +35,11 @@ import java.util.List;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
@@ -76,6 +78,9 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		        act, e.getMessage());
 		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 		return;
+	    } catch (DroppedMessageException e) {
+		log.debug("Dropping flowmod {}", this);
+		return;
 	    }
 	}
 	
@@ -95,7 +100,10 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    if (ovxInPort.isEdge()) {
 		this.prependRewriteActions();
 		computeLength();
-		sw.sendSouth(this);
+		if (sw instanceof OVXBigSwitch)
+		    ((OVXBigSwitch) sw).sendSouthBS(this, ovxInPort);
+		else
+		    sw.sendSouth(this);
 		return;
 	    } else {
 		this.rewriteMatch();
@@ -103,7 +111,10 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	}
 	OVXMessageUtil.translateXid(this, ovxInPort);
 	computeLength();
-	sw.sendSouth(this);
+	if (sw instanceof OVXBigSwitch)
+	    ((OVXBigSwitch) sw).sendSouthBS(this, ovxInPort);
+	else
+	    sw.sendSouth(this);
 
     }
     

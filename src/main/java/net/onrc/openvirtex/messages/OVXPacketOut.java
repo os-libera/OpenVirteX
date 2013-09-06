@@ -22,15 +22,18 @@
 
 package net.onrc.openvirtex.messages;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
@@ -38,10 +41,13 @@ import net.onrc.openvirtex.messages.actions.VirtualizableAction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFError.OFBadRequestCode;
+import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
+import org.openflow.protocol.OFPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
 
 public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
@@ -57,7 +63,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	
 	
 	
-	if (this.getBufferId() == -1) {
+	if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
 	    if (this.getPacketData().length <= 14) {
 		log.error("PacketOut has no buffer or data {}; dropping", this);
 		sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_LEN, this), sw);
@@ -73,6 +79,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	
 	    match = new OFMatch().loadFromPacket(cause.getPacketData(), this.inPort);
 	    this.setBufferId(cause.getBufferId());
+	    if (cause.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
+		this.setPacketData(cause.getPacketData());
+		this.setLengthU(this.getLengthU() + this.packetData.length);
+	    }
 	}
 	
 	for (OFAction act : this.getActions()) {
@@ -83,7 +93,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 		log.warn("Action {} could not be virtualized; error: {}", act, e.getMessage());
 		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 		return;
-	    } 
+	    } catch (DroppedMessageException e) {
+		log.debug("Dropping flowmod {}", this);
+		return;
+	    }
 	}
 	
 	this.setInPort(inport.getPhysicalPortNumber());
@@ -97,8 +110,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	}
 
 	OVXMessageUtil.translateXid(this, inport);
-	sw.sendSouth(this);
-	
+	if (sw instanceof OVXBigSwitch)
+	    ((OVXBigSwitch) sw).sendSouthBS(this, inport);
+	else
+	    sw.sendSouth(this);
     }
     
     

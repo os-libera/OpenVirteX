@@ -17,7 +17,7 @@ public class ManualRoute implements Routable {
     @Override
     public SwitchRoute getRoute(OVXBigSwitch vSwitch,
 	    OVXPort srcPort, OVXPort dstPort) {
-	//return route that was set manually, in this case just fetch from switch 
+	//return route that was set manually 
 	return vSwitch.getRouteMap().get(srcPort).get(dstPort);
     }
 

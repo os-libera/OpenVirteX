@@ -31,8 +31,10 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -65,25 +67,17 @@ public class OVXBigSwitch extends OVXSwitch {
     /** The alg. */
     private RoutingAlgorithms                                                  	alg;
 
-    /** The path map. */
-    private final HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>> 	pathMap;
-
     /** The routing mechanism */
     private Routable 								routing;
     
     /**The calculated routes*/
     private final HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> 		routeMap;
     
-    /**For assigning route IDs*/
-    private final AtomicInteger 						routeCounter;
-    
     public OVXBigSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
 	this.alg = RoutingAlgorithms.NONE;
-	this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
 	this.routing = new ManualRoute();
 	this.routeMap = new HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>();
-	this.routeCounter = new AtomicInteger(0);
     }
 
     /**
@@ -216,15 +210,11 @@ public class OVXBigSwitch extends OVXSwitch {
 
     @Override
     public void sendSouth(OFMessage msg) {
-	// TODO Auto-generated method stub
-	
     }
     
     public void sendSouthBS(OFMessage msg, OVXPort inPort) {
-	if (inPort != null) {
-	    PhysicalSwitch sw = inPort.getPhysicalPort().getParentSwitch();
-	    sw.sendMsg(msg, this);
-	}
+	PhysicalSwitch sw = inPort.getPhysicalPort().getParentSwitch();
+	sw.sendMsg(msg, this);
     }
     
     /**
@@ -237,14 +227,31 @@ public class OVXBigSwitch extends OVXSwitch {
      */
     public int createRoute(OVXPort ingress, OVXPort egress, 
 	    final List<PhysicalLink> path, List<PhysicalLink> revpath) {
-	final int routeId = this.routeCounter.getAndIncrement();
+	final int routeId = this.map.getVirtualNetwork(this.tenantId).getLinkCounter().getAndIncrement();
 	SwitchRoute rtEntry = new SwitchRoute(this.switchId, routeId);
 	SwitchRoute revRtEntry = new SwitchRoute(this.switchId, routeId);
 	rtEntry.addRoute(path);
 	revRtEntry.addRoute(revpath);
 	
-	this.addToRouteMap(ingress, egress, rtEntry);
-	this.addToRouteMap(egress, ingress, revRtEntry);
+	synchronized(routeMap) {
+	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(ingress);
+	    if (rtmap == null) {
+		rtmap = new HashMap<OVXPort, SwitchRoute>();
+		this.routeMap.put(ingress, rtmap);
+	    }
+	    rtmap.put(egress, rtEntry);
+	    this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt().registerOVXRoute(rtEntry);
+	}
+	//add reverse path dst->src
+	synchronized(routeMap) {
+	    HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(egress);
+	    if (rtmap == null) {
+		rtmap = new HashMap<OVXPort, SwitchRoute>();
+		this.routeMap.put(egress, rtmap);
+	    }
+	    rtmap.put(ingress, revRtEntry);
+	    this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt().registerOVXRoute(revRtEntry);
+	}
 	
 	this.log.info("Added route {}", rtEntry);
 	return routeId;
