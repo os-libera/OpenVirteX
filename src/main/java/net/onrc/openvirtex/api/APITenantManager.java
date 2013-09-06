@@ -189,9 +189,11 @@ public class APITenantManager {
      * Creates a single route between two edge ports of a big switch, as 
      * specified by a list of physical links. 
      * 
-     * @param tenantId
-     * @param dpid
-     * @param routeString
+     * @param tenantId the virtual network ID 
+     * @param dpid the DPID of the virtual switch
+     * @param inPort the ingress port on the virtual switch
+     * @param outPort the egress port of the virutal switch
+     * @param routeString a string list of physical links joining the in/egress ports through the virtual switch
      * @return the route identifier or -1 for failed route creation
      */
     public int createOVXSwitchRoute(int tenantId, String dpid, String inPort, 
@@ -212,16 +214,10 @@ public class APITenantManager {
 	    final HashSet<PhysicalSwitch> switchSet = new HashSet<PhysicalSwitch>(
 		    bigSwitch.getMap().getPhysicalSwitches(bigSwitch)); 
 	    
-	    //find ingress/egress virtual ports to Big Switch  
-	    final String[] inPortPair = inPort.split("/");
-	    final String[] outPortPair = outPort.split("/");
-	    final PhysicalPort inPhyPort = phyNetwork
-		    .getSwitch(Long.valueOf(inPortPair[0])).getPort(Short.valueOf(inPortPair[1]));
-	    final PhysicalPort outPhyPort = phyNetwork
-		    .getSwitch(Long.valueOf(outPortPair[0])).getPort(Short.valueOf(outPortPair[1]));
-	    final OVXPort ingress = inPhyPort.getOVXPort(tenantId);
-	    final OVXPort egress = outPhyPort.getOVXPort(tenantId);
-	    
+	    //find ingress/egress virtual ports to Big Switch 
+	    final OVXPort ingress = virtSwitch.getPort(Short.valueOf(inPort)); //Pair[0]));
+	    final OVXPort egress = virtSwitch.getPort(Short.valueOf(outPort)); //Pair[0]));
+
 	    final List<PhysicalLink> pathLinks = new ArrayList<PhysicalLink>();
 	    final List<PhysicalLink> reverseLinks = new ArrayList<PhysicalLink>();
 	    
