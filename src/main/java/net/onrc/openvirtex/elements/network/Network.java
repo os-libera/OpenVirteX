@@ -43,6 +43,9 @@ import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 /**
  * 
  * Abstract parent class for networks, maintains data structures for the
@@ -58,7 +61,11 @@ import org.apache.logging.log4j.Logger;
 public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
         OVXSendMsg {
 
+    @SerializedName("switches")
+    @Expose
     private final HashSet<T1>              switchSet;
+    @SerializedName("links")
+    @Expose
     private final HashSet<T3>              linkSet;
     private final HashMap<Long, T1>        dpidMap;
     private final HashMap<T2, T2>          neighborPortMap;
@@ -166,6 +173,14 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 
     public Set<T1> getSwitches() {
 	return Collections.unmodifiableSet(this.switchSet);
+    }
+    
+    protected Set<Long> getDpids() {
+	return this.dpidMap.keySet();
+    }
+    
+    protected Set<T3> getLinks() {
+	return Collections.unmodifiableSet(this.linkSet);
     }
 
     // TODO: optimize this because we iterate over all links

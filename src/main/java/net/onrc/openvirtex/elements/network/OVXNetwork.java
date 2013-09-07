@@ -250,8 +250,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 			    .getPort();
 		    final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
 		    final OVXPort dstPort = this.getNeighborPort(srcPort);
+		    final OVXPacketIn pi = new OVXPacketIn();
 		    if (dstPort != null) {
-			final OVXPacketIn pi = new OVXPacketIn();
 			pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 			// Get input port from pkt_out
 			pi.setInPort(dstPort.getPortNumber());

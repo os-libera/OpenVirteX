@@ -9,10 +9,13 @@ import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitchSerializer;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.network.Network;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
+import net.onrc.openvirtex.elements.network.PhysicalNetworkSerializer;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.ControllerUnavailableException;
@@ -26,10 +29,13 @@ import net.onrc.openvirtex.util.MACAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 public class APITenantManager {
 
     Logger log = LogManager.getLogger(APITenantManager.class.getName());
-
+    
     /**
      * Creates a new OVXNetwork object that is registered in the OVXMap.
      * 
@@ -200,7 +206,17 @@ public class APITenantManager {
 	final OVXMap map = OVXMap.getInstance();
 	final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
 	this.log.info("Booted virtual network {}", virtualNetwork.getTenantId());
+	this.log.info(this.getPhysicalTopology());
 	return virtualNetwork.boot();
+    }
+    
+    public String getPhysicalTopology() {
+	GsonBuilder gsonBuilder = new GsonBuilder();
+	gsonBuilder.setPrettyPrinting();
+	gsonBuilder.excludeFieldsWithoutExposeAnnotation();
+	gsonBuilder.registerTypeAdapter(PhysicalSwitch.class, new PhysicalSwitchSerializer());
+	Gson gson = gsonBuilder.create();
+	return gson.toJson(((Network<PhysicalSwitch, PhysicalPort, PhysicalLink>) PhysicalNetwork.getInstance()));
     }
 
     public String saveConfig() {

@@ -23,7 +23,6 @@ public class LLDPUtil {
     final public static short  ETHER_VLAN       = (short) 0x8100;
     final public static byte[] LLDP_MULTICAST   = { 0x01, 0x23, 0x20, 0x00,
 	    0x00, 0x01                         };
-    final public static int    MIN_FV_NAME      = 20;
     final public static byte   OUI_TYPE         = 127;
     public final static int    FLOWNAMELEN_LEN  = 1;
     public final static int    FLOWNAMELEN_NULL = 1;
