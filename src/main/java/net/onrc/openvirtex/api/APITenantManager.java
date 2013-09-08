@@ -15,9 +15,9 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.Network;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
-import net.onrc.openvirtex.elements.network.PhysicalNetworkSerializer;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.elements.port.PhysicalPortSerializer;
 import net.onrc.openvirtex.exceptions.ControllerUnavailableException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidLinkException;
@@ -210,11 +210,17 @@ public class APITenantManager {
 	return virtualNetwork.boot();
     }
     
+    /**
+     * Get the physical topology in json format
+     * @return Physical topology in json format
+     */
     public String getPhysicalTopology() {
+	// TODO: gson objects can be shared with other methods
 	GsonBuilder gsonBuilder = new GsonBuilder();
 	gsonBuilder.setPrettyPrinting();
 	gsonBuilder.excludeFieldsWithoutExposeAnnotation();
 	gsonBuilder.registerTypeAdapter(PhysicalSwitch.class, new PhysicalSwitchSerializer());
+	gsonBuilder.registerTypeAdapter(PhysicalPort.class, new PhysicalPortSerializer());
 	Gson gson = gsonBuilder.create();
 	return gson.toJson(((Network<PhysicalSwitch, PhysicalPort, PhysicalLink>) PhysicalNetwork.getInstance()));
     }

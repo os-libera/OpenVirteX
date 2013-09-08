@@ -44,13 +44,7 @@ public class Port<T> extends OFPhysicalPort {
 
     protected MACAddress mac;
     protected Boolean    isEdge;
-    @SerializedName("dpid")
-    @Expose
     protected T          parentSwitch;
-    // TODO: check if we didn't break anything by redeclaring the portNumber
-    @SerializedName("port")
-    @Expose
-    protected short portNumber;
 
     // TODO: duplexing/speed on port/link???
 
