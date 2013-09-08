@@ -215,12 +215,6 @@ public class APITenantManager {
 		    bigSwitch.getMap().getPhysicalSwitches(bigSwitch)); 
 	    
 	    //find ingress/egress virtual ports to Big Switch 
-	    //final String[] inPortPair = inPort.split("/");
-	    //final String[] outPortPair = outPort.split("/");
-	    //final PhysicalPort inPhyPort = phyNetwork
-	    	//.getSwitch(Long.valueOf(inPortPair[0])).getPort(Short.valueOf(inPortPair[1]));
-	    //final PhysicalPort outPhyPort = phyNetwork
-	    	//.getSwitch(Long.valueOf(outPortPair[0])).getPort(Short.valueOf(outPortPair[1]));
 	    final OVXPort ingress = virtSwitch.getPort(Short.valueOf(inPort)); //Pair[0]));
 	    final OVXPort egress = virtSwitch.getPort(Short.valueOf(outPort)); //Pair[0]));
 	    
