@@ -84,8 +84,6 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     protected OFFeaturesReply          featuresReply = null;
 
     /** The switch id (DPID). */
-    @SerializedName("dpid")
-    @Expose
     protected Long                     switchId      = (long) 0;
 
     /** The log. */

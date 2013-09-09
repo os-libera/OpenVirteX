@@ -13,7 +13,7 @@ public class PhysicalPortSerializer implements JsonSerializer<PhysicalPort> {
     public JsonElement serialize(PhysicalPort port, Type portType,
             JsonSerializationContext context) {
 	JsonObject result = new JsonObject();
-	result.addProperty("dpid", port.getParentSwitch().getSwitchId());
+	result.addProperty("dpid", port.getParentSwitch().getSwitchName());
 	result.addProperty("port", port.getPortNumber());
 	return result;
     }

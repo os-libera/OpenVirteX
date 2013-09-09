@@ -12,7 +12,7 @@ public class PhysicalSwitchSerializer implements JsonSerializer<PhysicalSwitch> 
     @Override
     public JsonElement serialize(PhysicalSwitch sw, Type switchType,
             JsonSerializationContext context) {
-	JsonPrimitive dpid = new JsonPrimitive(sw.switchId);
+	JsonPrimitive dpid = new JsonPrimitive(sw.switchName);
 	return dpid;
     }
 

@@ -16,13 +16,13 @@ class ERROR_CODE:
   INVALID_NETWORK_TYPE = 1
 
 class OVXClient():
-  def createVirtualNetwork(self, protocol, host, port, subnet):
+  def createNetwork(self, protocol, host, port, subnet):
     pass
 
-  def createVirtualSwitch(self, tenantId, dpids):
+  def createSwitch(self, tenantId, dpids):
     pass
 
-  def createVirtualLink(self, tenantId, path):
+  def createLink(self, tenantId, path):
     pass
 
   def createHost(self, tenantId, dpid, portNumber, mac):
@@ -41,6 +41,9 @@ class OVXPlannerAPIHandler(BaseHTTPRequestHandler):
   """
   Implementation of JSON-RPC API, defines all API handler methods.
   """
+  def __init__(self):
+    client = OVXClient()
+  
   def _buildResponse(self, json_id, result=None, error=None):
     """Returns JSON 2.0 compliant response"""
     res = {}
@@ -62,32 +65,52 @@ class OVXPlannerAPIHandler(BaseHTTPRequestHandler):
       res['data'] = data
     return res
 
-  def doBigSwitchNetwork():
+  def doBigSwitchNetwork(self, proto, host, port, subnet, hosts):
     # request physical topology
+    phyTopo = json.loads(client.getPhysicalTopology())
     # create virtual network
+    response = client.createNetwork(proto, host, port, subnet)
+    tenantId = json.loads(response)['result']
     # create virtual switch with all physical dpids
+    client.createSwitch(tenantId, phyTopo['switches'])
     # add hosts
+    for host in hosts:
+      client.createHost(tenantId, host['dpid'], host['portNumber'], host['mac'])
+    # TODO: calculate routing and configure switch through createVirtualSwitchRoute
     # boot network
-    pass
+    client.startNetwork(tenantId)
 
-  def doPhysicalNetwork():
+  def doPhysicalNetwork(self, proto, host, port, subnet, hosts):
     # request physical topology
+    phyTopo = json.loads(client.getPhysicalTopology())
     # create virtual network
+    response = client.createNetwork(proto, host, port, subnet)
+    tenantId = json.loads(response)['result']
     # create virtual switch per physical dpid
+    for dpid in phyTopo['switches']:
+      client.createSwitch(tenantId, dpid)
     # create virtual link per physical link
+    for link in phyTopo['links']:
+      path = link[src][dpid] + '/' + link[src][port] + '-'
+      path += link[dst][dpid] + '/' + link[dst][port]
+      client.createLink(tenantId, path)
     # add hosts
+    for host in hosts:
+      client.createHost(tenantId, host['dpid'], host['portNumber'], host['mac'])
     # boot network
-    pass
+    client.startNetwork(tenantId)
 
   def _exec_createNetwork(self, json_id, params):
     """Handler to create a network"""
 
+    p = params['network']
+
     # check type
-    if (params['type'] == 'bigswitch'):
-      pass
-    elif (params['type'] == 'physical'):
-      pass
-    elif (params['type'] == 'custom'):
+    if p['type'] == 'bigswitch':
+      doBigSwitchNetwork()
+    elif p['type'] == 'physical':
+      doPhysicalNetwork()
+    elif p['type'] == 'custom':
       pass
     else:
       msg = 'Unsupported network type'
@@ -96,19 +119,8 @@ class OVXPlannerAPIHandler(BaseHTTPRequestHandler):
       return self._buildResponse(json_id, error=err)
     
     # Pass information to OVX and call createNetwork
-    try:
-      network_id = core.NetVisor.createNetwork(pox_mac_address, primary_controller, ip_range)
-      response = self._buildResponse(json_id, result={ 'network_id' : network_id })
-    except nvexc.DuplicateMAC as dm:
-      msg = str(dm)
-      log.info(msg)
-      err = self._buildError(ERROR_CODE.MAC_NOT_UNIQUE, msg)
-      return self._buildResponse(json_id, error=err)
-    except nvexc.DuplicateController as dc:
-      msg = str(dc)
-      log.info(msg)
-      err = self._buildError(ERROR_CODE.CTRL_NOT_UNIQUE, msg)
-      return self._buildResponse(json_id, error=err)
+    # network_id = core.NetVisor.createNetwork(pox_mac_address, primary_controller, ip_range)
+    # response = self._buildResponse(json_id, result={ 'network_id' : network_id })
 
     return response
 
