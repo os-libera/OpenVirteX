@@ -15,6 +15,91 @@ class ERROR_CODE:
   INTERNAL_ERROR = -32603	      # Internal JSON-RPC error.
   INVALID_NETWORK_TYPE = 1
 
+class Routing():
+  def __init__(self, topology):
+    try:
+      self.nodes = topology['switches']
+      for link in topology['links']
+        src = link['src']
+        dst = link['dst']
+        self.links[(src['dpid'], src['port'])] = (dst['dpid'], dst['port'])
+      self.SP = {}
+    except:
+      pass
+    
+  def neighbours(self, node):
+    """Returns list of nodes that are neighbour to node.
+      
+    Assumes nodes are connected on at most one port, i.e., multigraphs are not supported (should
+    delete duplicate entries from result.
+    
+    """
+    return [dst_node for (src_node,src_port),(dst_node,dst_port) in self.links.iteritems() if src_node == node]
+
+  def shortestPath(self, src, dst):
+    """Calculates shortest path between src and dst switches and stores it in the SP dict.
+    
+    Assumes graph is connected.
+    
+    """
+    distance = {}
+    previous = {}
+    for node in nodes:
+      distance[node] = sys.maxint
+      distance[src] = 0
+      # Sort Q according to distance
+      Q = sorted(distance, key=distance.get)
+      
+      while Q:
+        current = Q.pop(0)
+        if distance[current] == sys.maxint:
+          log.error("Graph is disconnected")
+          # TODO: raise expection
+          break
+        for neighbour in self.neighbours(current):
+          alt = distance[current] + 1
+          if alt < distance[neighbour]:
+            distance[neighbour] = alt
+            previous[neighbour] = current
+            # Really should use a heap instead of resorting every time
+            Q = sorted(distance, key=distance.get)
+            # Path is between current and src (first iteration of outer while: current == src, previous[current] undefined)
+            x = current
+            path = []
+            while previous.get(x) >= 0:
+              path.append(x)
+              x = previous[x]
+              path.append(src)
+              path.reverse()
+              self.SP[(src, current)] = path
+
+  def getRoute(dpid_in, port_in, dpid_out, port_out):
+    """Find path between port_in on dpid_in and port_out on dpid_out.
+
+    Path is of form [ (inport, dpid, outport) ]
+
+    """
+    # Catch trivial path
+    if dpid_in == dpid_out:
+      return [ (port_in, dpid_in, port_out) ]
+
+    # Calculate path
+    if (dpid_in, dpid_out) not in self.SP.keys():
+      self.shortestPath(dpid_in, dpid_out)
+
+    path = self.SP[(dpid_in, dpid_out)]
+
+    # Adjust result to include ports
+    result = []
+    result.append((port_in, dpid_in, findOutPort(dpid_in, path[1])))
+    # Loop over intermediate switches
+    for index in xrange(1, len(path) - 1):
+      ip = findInPort(path[index - 1], path[index])
+      op = findOutPort(path[index], path[index + 1])
+      result.append((ip, path[index], op))
+    result.append((findInPort(path[-2], dpid_out), dpid_out, port_out))
+    return result
+
 class OVXClient():
   def createNetwork(self, protocol, host, port, subnet):
     pass
@@ -26,6 +111,9 @@ class OVXClient():
     pass
 
   def createHost(self, tenantId, dpid, portNumber, mac):
+    pass
+
+  def createSwitchRoute(self, tenantId, switchId, route):
     pass
 
   def startNetwork(self, tenantId):
@@ -72,11 +160,20 @@ class OVXPlannerAPIHandler(BaseHTTPRequestHandler):
     response = client.createNetwork(proto, host, port, subnet)
     tenantId = json.loads(response)['result']
     # create virtual switch with all physical dpids
-    client.createSwitch(tenantId, phyTopo['switches'])
+    response = client.createSwitch(tenantId, phyTopo['switches'])
+    switchId = json.loads(response)['result']
     # add hosts
     for host in hosts:
       client.createHost(tenantId, host['dpid'], host['portNumber'], host['mac'])
-    # TODO: calculate routing and configure switch through createVirtualSwitchRoute
+    # calculate routing and configure virtual switch
+    # assume 
+    routing = Routing(phyTopo)
+    for src_index in xrange(0, len(hosts)):
+      src = hosts[src_index]
+      for dst_index in xrange(src_index + 1, len(hosts)):
+        dst = hosts[dst_index]
+        route = routing.getRoute(src, dst)
+        client.createSwitchRoute(tenantId, switchId, route)
     # boot network
     client.startNetwork(tenantId)
 
