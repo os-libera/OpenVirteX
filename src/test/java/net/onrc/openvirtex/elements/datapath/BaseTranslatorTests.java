@@ -9,6 +9,7 @@ public class BaseTranslatorTests {
 	TestSuite suite = new TestSuite(BaseTranslatorTests.class.getName());
 	//$JUnit-BEGIN$
 	suite.addTest(TranslatorTest.suite());
+	suite.addTest(FlowTableTest.suite());
 	//$JUnit-END$
 	return suite;
     }
