@@ -19,7 +19,7 @@ class Routing():
   def __init__(self, topology):
     try:
       self.nodes = topology['switches']
-      for link in topology['links']
+      for link in topology['links']:
         src = link['src']
         dst = link['dst']
         self.links[(src['dpid'], src['port'])] = (dst['dpid'], dst['port'])
@@ -61,7 +61,7 @@ class Routing():
           if alt < distance[neighbour]:
             distance[neighbour] = alt
             previous[neighbour] = current
-            # Really should use a heap instead of resorting every time
+            # TODO: really should use a heap instead of resorting every time
             Q = sorted(distance, key=distance.get)
             # Path is between current and src (first iteration of outer while: current == src, previous[current] undefined)
             x = current
@@ -166,14 +166,17 @@ class OVXPlannerAPIHandler(BaseHTTPRequestHandler):
     for host in hosts:
       client.createHost(tenantId, host['dpid'], host['portNumber'], host['mac'])
     # calculate routing and configure virtual switch
-    # assume 
     routing = Routing(phyTopo)
     for src_index in xrange(0, len(hosts)):
       src = hosts[src_index]
       for dst_index in xrange(src_index + 1, len(hosts)):
         dst = hosts[dst_index]
         route = routing.getRoute(src, dst)
+        # TODO: reformat route according to API reqs
         client.createSwitchRoute(tenantId, switchId, route)
+        reverse_route = routing.getRoute(dst, src)
+        # TODO: reformat route according to API reqs
+        client.createSwitchRoute(tenantId, switchId, reverse_route)
     # boot network
     client.startNetwork(tenantId)
 
@@ -267,7 +270,7 @@ class OVXPlannerAPIHandler(BaseHTTPRequestHandler):
 
 class OVXPlanner (threading.Thread):
   """
-  OpenVirteX planner JSON RPC server
+  OpenVirteX planner JSON RPC 2.0 server
   """
   def __init__(self, address="localhost", port="8000"):
     threading.Thread.__init__(self)
