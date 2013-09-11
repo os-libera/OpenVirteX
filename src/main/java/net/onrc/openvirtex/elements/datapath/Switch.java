@@ -99,12 +99,11 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      */
 
     protected Switch(final Long switchId) {
-	super();
+	this();
 	this.switchName = HexString.toHexString(switchId);
 	this.switchId = switchId;
 	this.portMap = new HashMap<Short, T>();
 	this.featuresReply = null;
-	this.map = OVXMap.getInstance();
     }
 
     /**

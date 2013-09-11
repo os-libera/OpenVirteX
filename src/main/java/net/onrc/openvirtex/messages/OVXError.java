@@ -22,6 +22,7 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
@@ -31,14 +32,23 @@ public class OVXError extends OFError implements Virtualizable, Devirtualizable 
 
 	@Override
 	public void devirtualize(OVXSwitch sw) {
-		// TODO Auto-generated method stub
-
+	    // TODO Auto-generated method stub
+	    int newXid = OVXMessageUtil.translateXid(this, sw);
+	    if (sw instanceof OVXBigSwitch) {
+		
+	    } else {
+		sw.sendSouth(this);
+	    }
 	}
 
 	@Override
 	public void virtualize(PhysicalSwitch sw) {
-		// TODO Auto-generated method stub
-
+	    OVXSwitch vsw = OVXMessageUtil.untranslateXid(this, sw);
+	    if (vsw == null) {
+		//log error
+		return;
+	    }
+	    vsw.sendMsg(this, sw);
 	}
 
 }

@@ -49,6 +49,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     /** The log. */
     Logger log = LogManager.getLogger(PhysicalSwitch.class.getName());
 
+    /** The Xid mapper */
+    private XidTranslator translator;
+
     /**
      * Instantiates a new physical switch.
      * 
@@ -57,6 +60,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      */
     public PhysicalSwitch(final long switchId) {
 	super(switchId);
+	this.translator = new XidTranslator();
     }
 
     /**
@@ -66,11 +70,13 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      *            the physical port number
      * @param tenantId
      *            the tenant id
+     * @param vLinkId
+     * 		  the virtual link id (for a core port), 0 if edge port
      * @return the oVX port number
      */
     public Short getOVXPortNumber(final Short physicalPortNumber,
-	    final Integer tenantId) {
-	return this.portMap.get(physicalPortNumber).getOVXPort(tenantId)
+	    final Integer tenantId, final Integer vLinkId) {
+	return this.portMap.get(physicalPortNumber).getOVXPort(tenantId, vLinkId)
 	        .getPortNumber();
     }
 
@@ -177,4 +183,17 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	
 	return false;
     }
+    
+    public int translate(OFMessage ofm, OVXSwitch sw) {
+        return this.translator.translate(ofm.getXid(), sw);
+    }
+
+    public XidPair untranslate(OFMessage ofm) {
+        XidPair pair = this.translator.untranslate(ofm.getXid());
+        if (pair == null) {
+                return null;
+        }
+        return pair;
+    }
+    
 }

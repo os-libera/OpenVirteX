@@ -23,7 +23,9 @@
 package net.onrc.openvirtex.messages;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.port.OVXPort;
 
+import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.OFQueueGetConfigRequest;
 
 public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest implements
@@ -31,8 +33,15 @@ public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest implements
 
 	@Override
 	public void devirtualize(OVXSwitch sw) {
-		// TODO Auto-generated method stub
-
+	    // TODO Auto-generated method stub
+	    OVXPort p = sw.getPort(this.getPortNumber());
+	    if (p == null) {
+		sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+			OFBadRequestCode.OFPBRC_EPERM, this), sw);
+		return;
+	    }
+	    
+	    OVXMessageUtil.translateXid(this, p);
 	}
 
 }
