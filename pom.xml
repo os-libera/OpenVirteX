@@ -165,5 +165,15 @@
       <version>1.7.5</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+	  <artifactId>gson</artifactId>
+	  <version>2.2.4</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.jacoco</groupId>
+	  <artifactId>org.jacoco.agent</artifactId>
+	  <version>0.6.3.201306030806</version>
+    </dependency>
   </dependencies>
 </project>
