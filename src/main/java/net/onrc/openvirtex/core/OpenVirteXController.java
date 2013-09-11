@@ -25,7 +25,7 @@ package net.onrc.openvirtex.core;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-import net.onrc.openvirtex.api.APIServer;
+import net.onrc.openvirtex.api.server.JettyServer;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -47,165 +47,159 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 public class OpenVirteXController implements Runnable {
 
-    Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
+	Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
 
-    private static final int SEND_BUFFER_SIZE = 1024 * 1024;
-    private static OpenVirteXController instance = null;
-    
-    
-    private String configFile = null;
-    private String ofHost = null;
-    private Integer ofPort = null;
-    APIServer server;
+	private static final int SEND_BUFFER_SIZE = 1024 * 1024;
+	private static OpenVirteXController instance = null;
 
 
-    private NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
-	    Executors.newCachedThreadPool(), 
-	    Executors.newCachedThreadPool());
+	private String configFile = null;
+	private String ofHost = null;
+	private Integer ofPort = null;
+	Thread server;
+ 
 
-    private final ChannelGroup sg = new DefaultChannelGroup();
-    private final ChannelGroup cg = new DefaultChannelGroup();
-    
-    private SwitchChannelPipeline pfact = null;
-    private ClientChannelPipeline cfact = null;
+	private NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
+			Executors.newCachedThreadPool(), 
+			Executors.newCachedThreadPool());
 
-    private int maxVirtual = 0;
+	private final ChannelGroup sg = new DefaultChannelGroup();
+	private final ChannelGroup cg = new DefaultChannelGroup();
 
-    public OpenVirteXController(String configFile, String ofHost, Integer ofPort, int maxVirtual) {
-	this.configFile = configFile;
-	this.ofHost = ofHost;
-	this.ofPort = ofPort;
-	this.maxVirtual  = maxVirtual;
-	instance = this;
-    }
+	private SwitchChannelPipeline pfact = null;
+	private ClientChannelPipeline cfact = null;
 
-    @Override
-    public void run() {
-	Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
-	PhysicalNetwork.getInstance().boot();
-	
-//	OVXSingleSwitch sw = new OVXSingleSwitch(1,1);
-//	sw.init();
-//	this.registerOVXSwitch(sw, "192.168.2.136", 6633);
-	//this.registerOVXSwitch(new OVXSingleSwitch("fake", (long)2, null, 1, (short)100), "192.168.2.136", 6633);
-	this.startServer();
-	try {
-	    final ServerBootstrap switchServerBootStrap = createServerBootStrap();
+	private int maxVirtual = 0;
 
-	    setServerBootStrapParams(switchServerBootStrap);
-
-	    pfact = new SwitchChannelPipeline(this, null);
-	    switchServerBootStrap.setPipelineFactory(pfact);
-	    InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
-		    ofPort) : new InetSocketAddress(ofHost, ofPort);
-		    sg.add(switchServerBootStrap.bind(sa));
-		    
-	} catch (Exception e) {
-	    throw new RuntimeException(e);
+	public OpenVirteXController(String configFile, String ofHost, Integer ofPort, int maxVirtual) {
+		this.configFile = configFile;
+		this.ofHost = ofHost;
+		this.ofPort = ofPort;
+		this.maxVirtual  = maxVirtual;
+		instance = this;
 	}
 
-    }
+	@Override
+	public void run() {
+		Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
+		PhysicalNetwork.getInstance().boot();
 
-    public void registerOVXSwitch(final OVXSwitch sw) {
-	OVXNetwork ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId()); 
-	String host = ovxNetwork.getControllerHost();
-	Integer port = ovxNetwork.getControllerPort();
+		this.startServer();
+		
+		try {
+			final ServerBootstrap switchServerBootStrap = createServerBootStrap();
 
-	ClientBootstrap clientBootStrap = createClientBootStrap();
-	setClientBootStrapParams(clientBootStrap);
-	final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
-	clientBootStrap.setOption("remoteAddress", remoteAddr);
+			setServerBootStrapParams(switchServerBootStrap);
 
-	cfact = new ClientChannelPipeline(this, cg, null,
-		clientBootStrap, sw);
-	clientBootStrap.setPipelineFactory(cfact);
+			pfact = new SwitchChannelPipeline(this, null);
+			switchServerBootStrap.setPipelineFactory(pfact);
+			InetSocketAddress sa = (ofHost == null) ? new InetSocketAddress(
+					ofPort) : new InetSocketAddress(ofHost, ofPort);
+					sg.add(switchServerBootStrap.bind(sa));
 
-	ChannelFuture cf = clientBootStrap.connect();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
-	cf.addListener(new ChannelFutureListener() {
-
-	    @Override
-	    public void operationComplete(ChannelFuture e) throws Exception {
-		if (e.isSuccess()) {
-		    Channel chan = e.getChannel();
-		    sw.setChannel(chan);
-		    cg.add(chan);
-		} else
-		    log.error("Failed to connect to controller {} for switch {}", remoteAddr, sw.getSwitchId());
-	    }
-	});
-    }
-
-
-    private void setServerBootStrapParams(ServerBootstrap bootstrap) {
-	bootstrap.setOption("reuseAddr", true);
-	bootstrap.setOption("child.keepAlive", true);
-	bootstrap.setOption("child.tcpNoDelay", true);
-	bootstrap.setOption("child.sendBufferSize",
-		OpenVirteXController.SEND_BUFFER_SIZE);
-
-    }
-
-    private void setClientBootStrapParams(ClientBootstrap bootstrap) {
-	bootstrap.setOption("reuseAddr", true);
-	bootstrap.setOption("child.keepAlive", true);
-	bootstrap.setOption("child.tcpNoDelay", true);
-	bootstrap.setOption("child.sendBufferSize",
-		OpenVirteXController.SEND_BUFFER_SIZE);
-
-    }
-
-    private ClientBootstrap createClientBootStrap() {
-	return new ClientBootstrap(clientSockets);
-    }
-
-    private ServerBootstrap createServerBootStrap() {
-	return new ServerBootstrap(new NioServerSocketChannelFactory(
-		Executors.newCachedThreadPool(),
-		Executors.newCachedThreadPool()));
-    }
-    
-    private void startServer() {
-	this.server = new APIServer();
-	new Thread(server).start();
-    }
-
-    private void stopServer() {
-	this.server.stop();
-    }
-    
-    public void terminate() {
-	if (cg != null && cg.close().awaitUninterruptibly(1000)) {
-	    log.info("Shut down all controller connections. Quitting...");
-	} else {
-	    log.error("Error shutting down all controller connections. Quitting anyway.");
 	}
-	
-	if (sg != null && sg.close().awaitUninterruptibly(1000)) {
-	    log.info("Shut down all switch connections. Quitting...");
-	} else {
-	    log.error("Error shutting down all switch connections. Quitting anyway.");
+
+	public void registerOVXSwitch(final OVXSwitch sw) {
+		OVXNetwork ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId()); 
+		String host = ovxNetwork.getControllerHost();
+		Integer port = ovxNetwork.getControllerPort();
+
+		ClientBootstrap clientBootStrap = createClientBootStrap();
+		setClientBootStrapParams(clientBootStrap);
+		final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
+		clientBootStrap.setOption("remoteAddress", remoteAddr);
+
+		cfact = new ClientChannelPipeline(this, cg, null,
+				clientBootStrap, sw);
+		clientBootStrap.setPipelineFactory(cfact);
+
+		ChannelFuture cf = clientBootStrap.connect();
+
+		cf.addListener(new ChannelFutureListener() {
+
+			@Override
+			public void operationComplete(ChannelFuture e) throws Exception {
+				if (e.isSuccess()) {
+					Channel chan = e.getChannel();
+					sw.setChannel(chan);
+					cg.add(chan);
+				} else
+					log.error("Failed to connect to controller {} for switch {}", remoteAddr, sw.getSwitchId());
+			}
+		});
 	}
-	
-	if (pfact != null)
-	    pfact.releaseExternalResources();
-	if (cfact != null)
-	    cfact.releaseExternalResources();
-	
-	stopServer();
-    }
-    
-    public static OpenVirteXController getInstance() {
-	if (instance == null)
-	    throw new RuntimeException("The OpenVirtexController has not been initialized; quitting.");
-	return instance;
-    }
-    
-    /*
-     * return the number of bits needed to encode the tenant id
-     */
-    public int getNumberVirtualNets() {
-	return this.maxVirtual;
-    }
+
+
+	private void setServerBootStrapParams(ServerBootstrap bootstrap) {
+		bootstrap.setOption("reuseAddr", true);
+		bootstrap.setOption("child.keepAlive", true);
+		bootstrap.setOption("child.tcpNoDelay", true);
+		bootstrap.setOption("child.sendBufferSize",
+				OpenVirteXController.SEND_BUFFER_SIZE);
+
+	}
+
+	private void setClientBootStrapParams(ClientBootstrap bootstrap) {
+		bootstrap.setOption("reuseAddr", true);
+		bootstrap.setOption("child.keepAlive", true);
+		bootstrap.setOption("child.tcpNoDelay", true);
+		bootstrap.setOption("child.sendBufferSize",
+				OpenVirteXController.SEND_BUFFER_SIZE);
+
+	}
+
+	private ClientBootstrap createClientBootStrap() {
+		return new ClientBootstrap(clientSockets);
+	}
+
+	private ServerBootstrap createServerBootStrap() {
+		return new ServerBootstrap(new NioServerSocketChannelFactory(
+				Executors.newCachedThreadPool(),
+				Executors.newCachedThreadPool()));
+	}
+
+	private void startServer() {
+		// TODO: pass this via cmd args. 
+		this.server = new Thread(new JettyServer(8080));
+		this.server.start();
+
+	}
+
+	public void terminate() {
+		if (cg != null && cg.close().awaitUninterruptibly(1000)) {
+			log.info("Shut down all controller connections. Quitting...");
+		} else {
+			log.error("Error shutting down all controller connections. Quitting anyway.");
+		}
+
+		if (sg != null && sg.close().awaitUninterruptibly(1000)) {
+			log.info("Shut down all switch connections. Quitting...");
+		} else {
+			log.error("Error shutting down all switch connections. Quitting anyway.");
+		}
+
+		if (pfact != null)
+			pfact.releaseExternalResources();
+		if (cfact != null)
+			cfact.releaseExternalResources();
+
+	}
+
+	public static OpenVirteXController getInstance() {
+		if (instance == null)
+			throw new RuntimeException("The OpenVirtexController has not been initialized; quitting.");
+		return instance;
+	}
+
+	/*
+	 * return the number of bits needed to encode the tenant id
+	 */
+	public int getNumberVirtualNets() {
+		return this.maxVirtual;
+	}
 
 }
