@@ -7,6 +7,7 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.Devirtualizable;
 
 import org.apache.logging.log4j.LogManager;
@@ -74,10 +75,24 @@ public class OVXSingleSwitch extends OVXSwitch {
 	channel.disconnect();
 
     }
+    
     @Override
     // TODO: this is probably not optimal
     public void sendSouth(OFMessage msg) {
 	PhysicalSwitch sw = this.map.getPhysicalSwitches(this).get(0);
 	sw.sendMsg(msg, this);
     }
+
+    @Override
+    public int translate(OFMessage ofm, OVXPort inPort) {
+        //get new xid from only PhysicalSwitch tied to this switch
+        PhysicalSwitch psw;
+        if (inPort == null) {
+            psw = this.map.getPhysicalSwitches(this).get(0);
+        } else {
+            psw = inPort.getPhysicalPort().getParentSwitch();
+        }
+        return psw.translate(ofm, this);
+    }
+
 }

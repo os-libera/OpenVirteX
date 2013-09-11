@@ -58,7 +58,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     public void virtualize(final PhysicalSwitch sw) {
 
 
-	OVXSwitch vSwitch = null;
+	OVXSwitch vSwitch = OVXMessageUtil.untranslateXid(this, sw);//null;
 	/*
 	 * Fetching port from the physical switch
 	 */
@@ -90,7 +90,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		this.installDropRule(sw, match);
 		return;
 	    }
-	    vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    if (vSwitch == null) {
+		vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    }
 	    this.sendPkt(vSwitch, match, sw);
 	    this.learnAddresses(match, map);
 	    this.log.debug("Edge PacketIn {} sent to virtual network {}", this,
@@ -108,6 +110,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
 	    Ethernet eth = new Ethernet();
 	    eth.deserialize(this.getPacketData(), 0, this.getPacketData().length);
+	    
+	    //remove vlanId when the packet comes from a virtual link
+	    eth.setVlanID((short)65535);
 
 	    if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
 		// ARP packet
@@ -134,7 +139,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		    return;
 		}
 	    this.setPacketData(eth.serialize());
-	    vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    if (vSwitch == null)  {
+		vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	    }
 	    this.sendPkt(vSwitch, match, sw);
 	    this.log.debug("IPv4 PacketIn {} sent to virtual network {}", this,
 		    this.tenantId);
@@ -150,7 +157,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    this.installDropRule(sw, match);
 	    return;
 	}
-	vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	if (vSwitch == null) {
+	    vSwitch = map.getVirtualSwitch(sw, this.tenantId);
+	}
 	this.sendPkt(vSwitch, match, sw);
 	this.log.debug("Layer2 PacketIn {} sent to virtual network {}", this,
 	        this.tenantId);
@@ -166,8 +175,13 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 	    return;
 	}
 	this.setBufferId(vSwitch.addToBufferMap(this));
-	this.setInPort(this.port.getOVXPort(this.tenantId).getPortNumber());
-	vSwitch.sendMsg(this, sw);
+	int vLinkId = 0;
+	if (match.getDataLayerVirtualLan() != -1)
+	    vLinkId = match.getDataLayerVirtualLan();
+	if (this.port != null && this.port.getOVXPort(this.tenantId, vLinkId) != null) {
+	    this.setInPort(this.port.getOVXPort(this.tenantId, vLinkId).getPortNumber());
+	    vSwitch.sendMsg(this, sw);
+	}
     }
 
     private void learnAddresses(final OFMatch match, final Mappable map) {
