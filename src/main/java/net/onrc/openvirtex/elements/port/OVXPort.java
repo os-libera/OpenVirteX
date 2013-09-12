@@ -36,6 +36,8 @@ public class OVXPort extends Port<OVXSwitch> {
 
     private final Integer      tenantId;
     private final PhysicalPort physicalPort;
+    /** The link id. */
+    private Integer linkId;
 
     public OVXPort(final int tenantId, final PhysicalPort port,
 	    final boolean isEdge) {
@@ -54,6 +56,7 @@ public class OVXPort extends Port<OVXSwitch> {
 	// advertise all the OF1.0 physical port speeds and duplex. Advertise
 	// media type as copper
 	this.supportedFeatures = 383;
+	this.linkId = 0;
     }
 
     public Integer getTenantId() {
@@ -68,6 +71,14 @@ public class OVXPort extends Port<OVXSwitch> {
 	return this.physicalPort.getPortNumber();
     }
 
+    public Integer getLinkId() {
+        return linkId;
+    }
+
+    public void setLinkId(Integer linkId) {
+        this.linkId = linkId;
+    }
+    
     /**
      * Registers a port in the virtual parent switch and in the physical port
      */
@@ -79,7 +90,7 @@ public class OVXPort extends Port<OVXSwitch> {
     @Override
     public String toString() {
 	String result = super.toString();
-	result += "\n- tenantId: " + this.tenantId;
+	result += "\n- tenantId: " + this.tenantId + "\n- linkId: " + this.linkId;
 	return result;
     }
     

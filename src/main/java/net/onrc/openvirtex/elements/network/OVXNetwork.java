@@ -31,6 +31,7 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,6 +46,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.elements.link.OVXLinkManager;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -60,6 +62,8 @@ import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
+
+import com.google.common.collect.Lists;
 
 /**
  * Virtual networks contain tenantId, controller info, subnet and gateway
@@ -82,9 +86,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private final AtomicLong               dpidCounter;
     private final AtomicInteger            linkCounter;
     private final AtomicInteger		   ipCounter;
-    
-    // TODO: implement vlink flow pusher
-    // public VLinkManager vLinkMgmt;
+
+    public OVXLinkManager vLinkMgmt;
 
     Logger                                 log             = LogManager
 	                                                           .getLogger(OVXNetwork.class
@@ -105,6 +108,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	// TODO: decide which value to start linkId's
 	this.linkCounter = new AtomicInteger(2);
 	this.ipCounter = new AtomicInteger(1);
+	this.vLinkMgmt = new OVXLinkManager(this.tenantId);
     }
 
     public String getProtocol() {
@@ -137,6 +141,14 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
     public void register() {
 	OVXMap.getInstance().addNetwork(this);
+    }
+    
+    public AtomicInteger getLinkCounter() {
+        return linkCounter;
+    }
+    
+    public OVXLinkManager getvLinkMgmt() {
+        return vLinkMgmt;
     }
 
     // API-facing methods
@@ -176,13 +188,18 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	// Create and register virtual source and destination ports
 	final PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
 	final OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
-	srcPort.register();
 	final PhysicalPort phyDstPort = physicalLinks.get(
 	        physicalLinks.size() - 1).getDstPort();
 	final OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
-	dstPort.register();
+	
 	// Create link, add it to the topology, register it in the map
 	final int linkId = this.linkCounter.getAndIncrement();
+	//Set the linkId value inside the src and dst virtual ports
+	srcPort.setLinkId(linkId);
+	dstPort.setLinkId(linkId);
+	srcPort.register();
+	dstPort.register();
+
 	final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
 	        dstPort);
 	final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
@@ -190,8 +207,17 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	super.addLink(link);
 	super.addLink(reverseLink);
 	link.register(physicalLinks);
-	reverseLink.register(physicalLinks);
-
+	//create the reverse list of physical links
+	List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>(); 
+	for (PhysicalLink phyLink : Lists.reverse(physicalLinks)) {
+	    reversePhysicalLinks.add(new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort()));
+	}
+	reverseLink.register(reversePhysicalLinks);
+	
+	//register links to the virtual link manager
+	this.vLinkMgmt.registerOVXLink(link);
+	this.vLinkMgmt.registerOVXLink(reverseLink);
+	
 	return link;
     }
 
@@ -206,6 +232,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	edgePort.register();
 	OVXMap.getInstance().addMAC(mac, this.tenantId);
 
+	this.vLinkMgmt.registerOVXPort(edgePort);
 	return edgePort;
     }
 
@@ -228,6 +255,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	    result &= sw.boot();
 	}
 	this.bootState = result;
+	this.vLinkMgmt.start();
 	return this.bootState;
     }
 

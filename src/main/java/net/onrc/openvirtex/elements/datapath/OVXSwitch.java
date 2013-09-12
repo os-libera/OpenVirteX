@@ -34,9 +34,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
-
-
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 
 import org.openflow.protocol.OFFeaturesReply;
@@ -85,6 +84,11 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     private AtomicInteger bufferId = null;
 
     private AtomicInteger		portCounter;
+    
+    /**
+     * The virtual flow table
+     */
+    protected OVXFlowTable flowTable;
 
     /**
      * Instantiates a new OVX switch.
@@ -97,6 +101,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(bufferDimension);
 	this.portCounter = new AtomicInteger(1);
 	this.bufferId = new AtomicInteger(1);
+	this.flowTable = new OVXFlowTable(this);
     }
 
     /**
@@ -329,5 +334,39 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	return false;
     }
 
+    public OVXFlowTable getFlowTable() {
+	return this.flowTable;
+    }
+    
+    /**
+     * get a OVXFlowMod out of the map
+     * @param cookie the physical cookie
+     * @return
+     */
+    public OVXFlowMod getFlowMod(Long cookie) {
+	return this.flowTable.getFlowMod(cookie);
+    }
+    
+    /**
+     * Add a FlowMod to the mapping
+     * @param flowmod
+     * @return the new physical cookie
+     */
+    public long addFlowMod(OVXFlowMod flowmod) {
+	return this.flowTable.addFlowMod(flowmod);
+    }
+    
+    /**
+     * Remove an entry in the mapping
+     * @param cookie
+     * @return The deleted FlowMod
+     */
+    public OVXFlowMod deleteFlowMod(Long cookie) {
+	return this.flowTable.deleteFlowMod(cookie);
+    }
+    
+    public abstract int translate(OFMessage ofm, OVXPort inPort);
+    
     public abstract void sendSouth(OFMessage msg);
+
 }
