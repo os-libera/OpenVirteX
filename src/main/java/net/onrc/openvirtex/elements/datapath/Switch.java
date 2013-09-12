@@ -1,22 +1,29 @@
 /**
- *  Copyright (c) 2013 Open Networking Laboratory
+ * Copyright (c) 2013 Open Networking Laboratory
  * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of
+ * the Software, and to permit persons to whom the Software is furnished to do
+ * so,
  * subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
 
@@ -40,6 +47,9 @@ import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
 import org.openflow.util.HexString;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 
 /**
  * The Class Switch.
@@ -48,42 +58,45 @@ import org.openflow.util.HexString;
  *            generic type (Port) that is casted in the subclasses
  */
 public abstract class Switch<T extends Port> implements OVXEventHandler,
-	OVXSendMsg {
+        OVXSendMsg {
 
     /** Switch channel status. */
-    protected boolean isConnected = false;
+    protected boolean                  isConnected   = false;
 
     /** The channel descriptor */
-    protected Channel channel = null;
+    protected Channel                  channel       = null;
 
     /** The description of OXV stats */
-    protected OVXDescriptionStatistics desc = null;
+    protected OVXDescriptionStatistics desc          = null;
 
     /** The switch name (converted from the DPID). */
-    protected String switchName = null;
-    
-    protected Mappable map = null;
+    protected String                   switchName    = null;
+
+    protected Mappable                 map           = null;
 
     /**
      * The port map. Associate all the port instances with the switch. The port
      * number is the key.
      */
-    protected HashMap<Short, T> portMap = null;
+    protected HashMap<Short, T>        portMap       = null;
 
     /** The features reply message. */
-    protected OFFeaturesReply featuresReply = null;
+    protected OFFeaturesReply          featuresReply = null;
 
     /** The switch id (DPID). */
-    protected Long switchId = (long) 0;
+    protected Long                     switchId      = (long) 0;
 
     /** The log. */
-    private Logger log = LogManager.getLogger(this.getClass().getName());
+    private final Logger               log           = LogManager
+	                                                     .getLogger(this
+	                                                             .getClass()
+	                                                             .getName());
 
     /**
      * Instantiates a new switch (should be never used).
      */
     protected Switch() {
-	this.switchName = HexString.toHexString(switchId);
+	this.switchName = HexString.toHexString(this.switchId);
 	this.portMap = new HashMap<Short, T>();
 	this.featuresReply = null;
 	this.map = OVXMap.getInstance();
@@ -99,12 +112,11 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      */
 
     protected Switch(final Long switchId) {
-	super();
+	this();
 	this.switchName = HexString.toHexString(switchId);
 	this.switchId = switchId;
 	this.portMap = new HashMap<Short, T>();
 	this.featuresReply = null;
-	this.map = OVXMap.getInstance();
     }
 
     /**
@@ -115,7 +127,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     public String getSwitchName() {
 	return this.switchName;
     }
-    
+
     public Mappable getMap() {
 	return this.map;
     }
@@ -135,7 +147,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * @param the
      *            new features reply
      */
-    public void setFeaturesReply(OFFeaturesReply m) {
+    public void setFeaturesReply(final OFFeaturesReply m) {
 	this.featuresReply = m;
     }
 
@@ -164,7 +176,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port number
      * @return the port instance
      */
-    public T getPort(Short portNumber) {
+    public T getPort(final Short portNumber) {
 	return this.portMap.get(portNumber);
     };
 
@@ -176,9 +188,10 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port instance
      * @return true, if successful
      */
-    public boolean addPort(T port) {
-	if (this.portMap.containsKey(port.getPortNumber()))
+    public boolean addPort(final T port) {
+	if (this.portMap.containsKey(port.getPortNumber())) {
 	    return false;
+	}
 	this.portMap.put(port.getPortNumber(), port);
 	return true;
     }
@@ -190,7 +203,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port number
      * @return true, if successful
      */
-    protected boolean removePort(Short portNumber) {
+    protected boolean removePort(final Short portNumber) {
 	if (this.portMap.containsKey(portNumber)) {
 	    this.portMap.remove(portNumber);
 	    return true;
@@ -214,7 +227,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * @param isConnected
      *            the new connected
      */
-    public void setConnected(boolean isConnected) {
+    public void setConnected(final boolean isConnected) {
 	this.isConnected = isConnected;
     }
 
@@ -224,13 +237,13 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * @param channel
      *            the new channel
      */
-    public void setChannel(Channel channel) {
+    public void setChannel(final Channel channel) {
 	this.channel = channel;
 
     }
 
     public abstract boolean boot();
-    
+
     /**
      * Tear down.
      */
@@ -242,7 +255,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * @param description
      *            the new description stats
      */
-    public void setDescriptionStats(OVXDescriptionStatistics description) {
+    public void setDescriptionStats(final OVXDescriptionStatistics description) {
 	this.desc = description;
 
     }
@@ -255,6 +268,6 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     @Override
     public String toString() {
 	return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
-		+ this.switchName + "\n- isConnected: " + this.isConnected;
-    }    
+	        + this.switchName + "\n- isConnected: " + this.isConnected;
+    }
 }

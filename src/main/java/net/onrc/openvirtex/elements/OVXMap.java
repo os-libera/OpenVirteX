@@ -1,34 +1,40 @@
 /**
- *  Copyright (c) 2013 Open Networking Laboratory
+ * Copyright (c) 2013 Open Networking Laboratory
  * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of
+ * the Software, and to permit persons to whom the Software is furnished to do
+ * so,
  * subject to the following conditions:
  * 
- * The above copyright notice and this permission notice shall be included in all
+ * The above copyright notice and this permission notice shall be included in
+ * all
  * copies or substantial portions of the Software.
  * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+ * OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
 
 package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
@@ -39,15 +45,19 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 
 public class OVXMap implements Mappable {
 
-    
-    Logger log = LogManager.getLogger(OVXMap.class.getName());
-    private static AtomicReference<OVXMap>         			     mapInstance = new AtomicReference<>();
+    Logger                                                                   log         = LogManager
+	                                                                                         .getLogger(OVXMap.class
+	                                                                                                 .getName());
+    private static AtomicReference<OVXMap>                                   mapInstance = new AtomicReference<OVXMap>();
 
     ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>                  virtualSwitchMap;
     ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
@@ -56,7 +66,7 @@ public class OVXMap implements Mappable {
     ConcurrentHashMap<Integer, OVXNetwork>                                   networkMap;
     RadixTree<OVXIPAddress>                                                  physicalIPMap;
     RadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>                 virtualIPMap;
-    RadixTree<Integer>						macMap;
+    RadixTree<Integer>                                                       macMap;
 
     /**
      * constructor for OVXMap will be an empty constructor
@@ -71,7 +81,8 @@ public class OVXMap implements Mappable {
 	        new DefaultCharArrayNodeFactory());
 	this.virtualIPMap = new ConcurrentRadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>(
 	        new DefaultCharArrayNodeFactory());
-	this.macMap = new ConcurrentRadixTree<Integer>(new DefaultCharArrayNodeFactory());
+	this.macMap = new ConcurrentRadixTree<Integer>(
+	        new DefaultCharArrayNodeFactory());
     }
 
     /**
@@ -81,24 +92,24 @@ public class OVXMap implements Mappable {
      * @return mapInstance Return the OVXMap object instance
      */
     public static OVXMap getInstance() {
-	mapInstance.compareAndSet(null, new OVXMap());
-	return mapInstance.get();
+	OVXMap.mapInstance.compareAndSet(null, new OVXMap());
+	return OVXMap.mapInstance.get();
     }
 
     // ADD objects to dictionary
 
     /**
-     * Create the mapping between PhysicalSwithes and a VirtualSwitch. This
-     * function takes
-     * in a list of physicalSwitches and adds to the OVXMap indexed by the
+     * Create the mapping between PhysicalSwithes and a VirtualSwitch. Takes
+     * a list of physicalSwitches and adds to the OVXMap indexed by the
      * virtualSwitch.
      * 
      * @param physicalSwitches
      * @param virtualSwitch
      */
+    @Override
     public void addSwitches(final List<PhysicalSwitch> physicalSwitches,
 	    final OVXSwitch virtualSwitch) {
-	
+
 	for (final PhysicalSwitch physicalSwitch : physicalSwitches) {
 	    this.addSwitch(physicalSwitch, virtualSwitch);
 	}
@@ -130,6 +141,7 @@ public class OVXMap implements Mappable {
      * @param physicalLinks
      * @param virtualLink
      */
+    @Override
     public void addLinks(final List<PhysicalLink> physicalLinks,
 	    final OVXLink virtualLink) {
 	for (final PhysicalLink physicalLink : physicalLinks) {
@@ -222,7 +234,8 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalSwitch(final PhysicalSwitch physicalSwitch,
 	    final OVXSwitch virtualSwitch) {
-	ConcurrentHashMap<Integer, OVXSwitch> switchMap = this.physicalSwitchMap.get(physicalSwitch);
+	ConcurrentHashMap<Integer, OVXSwitch> switchMap = this.physicalSwitchMap
+	        .get(physicalSwitch);
 	if (switchMap == null) {
 	    switchMap = new ConcurrentHashMap<Integer, OVXSwitch>();
 	    this.physicalSwitchMap.put(physicalSwitch, switchMap);
@@ -243,7 +256,8 @@ public class OVXMap implements Mappable {
      */
     private void addPhysicalLink(final PhysicalLink physicalLink,
 	    final OVXLink virtualLink) {
-	ConcurrentHashMap<Integer, OVXLink> linkMap = this.physicalLinkMap.get(physicalLink);
+	ConcurrentHashMap<Integer, OVXLink> linkMap = this.physicalLinkMap
+	        .get(physicalLink);
 	if (linkMap == null) {
 	    linkMap = new ConcurrentHashMap<Integer, OVXLink>();
 	    this.physicalLinkMap.put(physicalLink, linkMap);
@@ -265,7 +279,8 @@ public class OVXMap implements Mappable {
      */
     private void addVirtualSwitch(final OVXSwitch virtualSwitch,
 	    final PhysicalSwitch physicalSwitch) {
-	ArrayList<PhysicalSwitch> switchList = this.virtualSwitchMap.get(virtualSwitch);
+	ArrayList<PhysicalSwitch> switchList = this.virtualSwitchMap
+	        .get(virtualSwitch);
 	if (switchList == null) {
 	    switchList = new ArrayList<PhysicalSwitch>();
 	    this.virtualSwitchMap.put(virtualSwitch, switchList);
@@ -288,7 +303,7 @@ public class OVXMap implements Mappable {
 	ArrayList<PhysicalLink> linkList = this.virtualLinkMap.get(virtualLink);
 	if (linkList == null) {
 	    linkList = new ArrayList<PhysicalLink>();
-	    this.virtualLinkMap.put(virtualLink,  linkList);
+	    this.virtualLinkMap.put(virtualLink, linkList);
 	}
 	linkList.add(physicalLink);
     }
@@ -307,26 +322,29 @@ public class OVXMap implements Mappable {
 	this.networkMap.put(virtualNetwork.getTenantId(), virtualNetwork);
     }
 
-
     @Override
-    public void addMAC(MACAddress mac, Integer tenantId) {
+    public void addMAC(final MACAddress mac, final Integer tenantId) {
 	this.macMap.put(mac.toStringNoColon(), tenantId);
-    } 
+    }
 
     // Access objects from dictionary given the key
 
-    public PhysicalIPAddress getPhysicalIP(OVXIPAddress ip, Integer tenantId) {
-	ConcurrentHashMap<Integer, PhysicalIPAddress> ips = 
-		this.virtualIPMap.getValueForExactKey(ip.toString());
-	if (ips == null)
+    @Override
+    public PhysicalIPAddress getPhysicalIP(final OVXIPAddress ip,
+	    final Integer tenantId) {
+	final ConcurrentHashMap<Integer, PhysicalIPAddress> ips = this.virtualIPMap
+	        .getValueForExactKey(ip.toString());
+	if (ips == null) {
 	    return null;
+	}
 	return ips.get(tenantId);
     }
-    
-    public OVXIPAddress getVirtualIP(PhysicalIPAddress ip) {
+
+    @Override
+    public OVXIPAddress getVirtualIP(final PhysicalIPAddress ip) {
 	return this.physicalIPMap.getValueForExactKey(ip.toString());
     }
-    
+
     /**
      * get the OVXSwitch which has been specified by the physicalSwitch
      * and tenantId
@@ -341,9 +359,11 @@ public class OVXMap implements Mappable {
     @Override
     public OVXSwitch getVirtualSwitch(final PhysicalSwitch physicalSwitch,
 	    final Integer tenantId) {
-	ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap.get(physicalSwitch);
+	final ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap
+	        .get(physicalSwitch);
 	if (sws == null) {
-	    log.error("No virtual switches for physical switch {}", physicalSwitch);
+	    this.log.error("No virtual switches for physical switch {}",
+		    physicalSwitch);
 	    return null;
 	}
 	return this.physicalSwitchMap.get(physicalSwitch).get(tenantId);
@@ -366,7 +386,7 @@ public class OVXMap implements Mappable {
 	    final Integer tenantId) {
 	if (this.physicalLinkMap.get(physicalLink) != null) {
 	    return this.physicalLinkMap.get(physicalLink).get(tenantId);
-	}	
+	}
 	return null;
     }
 
@@ -419,8 +439,17 @@ public class OVXMap implements Mappable {
 	return this.networkMap.get(tenantId);
     }
 
+    @Override
     public Integer getMAC(final MACAddress mac) {
 	return this.macMap.getValueForExactKey(mac.toStringNoColon());
+    }
+
+    public Map<Integer, OVXNetwork> getNetworkMap() {
+	return Collections.unmodifiableMap(this.networkMap);
+    }
+
+    public Map<OVXLink, ArrayList<PhysicalLink>> getVirtualLinkMap() {
+	return Collections.unmodifiableMap(this.virtualLinkMap);
     }
 
     // Remove objects from dictionary

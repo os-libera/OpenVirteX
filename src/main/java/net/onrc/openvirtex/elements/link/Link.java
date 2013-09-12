@@ -22,6 +22,9 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
 
@@ -36,9 +39,13 @@ import net.onrc.openvirtex.elements.port.Port;
 public abstract class Link<T1, T2> {
 
 	/** The source port. */
-	protected T1 srcPort = null;
+    	@SerializedName("src")
+    	@Expose
+    	protected T1 srcPort = null;
 
 	/** The destination port. */
+    	@SerializedName("dst")
+    	@Expose
 	protected T1 dstPort = null;
 
 	/**
@@ -89,5 +96,13 @@ public abstract class Link<T1, T2> {
 	    short srcPort = ((Port) this.srcPort).getPortNumber();
 	    short dstPort = ((Port) this.dstPort).getPortNumber();
 	    return srcSwitch + ":" + srcPort + "-" + dstSwitch + ":" + dstPort;
+	}
+	
+	public boolean equals(Link link) {
+	    if (link.dstPort.equals(this.dstPort) && link.srcPort.equals(this.srcPort)){
+		return true;
+	    } else {
+		return false;
+	    }
 	}
 }

@@ -27,8 +27,8 @@
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.6.3.201306030806</version>
         <configuration>
-          <destfile>${basedir}/target/jacoco/jacoco.exec</destfile>
-          <datafile>${basedir}/target/jacoco/jacoco.exec</datafile>
+          <destfile>${basedir}/target/jacoco.exec</destfile>
+          <datafile>${basedir}/target/jacoco.exec</datafile>
         </configuration>
         <executions>
           <execution>
@@ -38,7 +38,7 @@
             </goals>
           </execution>
           <execution>
-            <id>jacoco-site</id>
+            <id>report</id>
             <phase>package</phase>
             <goals>
               <goal>report</goal>
@@ -92,12 +92,58 @@
     </plugins>
     </pluginManagement>
   </build>
+  <repositories>
+    <repository>
+        <id>jsonrpc4j-webdav-maven-repo</id>
+        <name>jsonrpc4j maven repository</name>
+        <url>http://jsonrpc4j.googlecode.com/svn/maven/repo/</url>
+        <layout>default</layout>
+    </repository>
+  </repositories>
   <dependencies>
+    <dependency>
+    <groupId>com.thetransactioncompany</groupId>
+    <artifactId>jsonrpc2-base</artifactId>
+    <version>1.35</version>
+</dependency>
+<dependency>
+    <groupId>com.thetransactioncompany</groupId>
+    <artifactId>jsonrpc2-server</artifactId>
+    <version>1.10.1</version>
+</dependency>
+    <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-server</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+     <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-security</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+      <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-http</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+      <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-util</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+
+
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.5</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -148,12 +194,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libfb303</artifactId>
-      <version>0.9.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.netty</groupId>
       <artifactId>netty</artifactId>
       <version>3.2.9.Final</version>
@@ -164,6 +204,16 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.5</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+	  <artifactId>gson</artifactId>
+	  <version>2.2.4</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.jacoco</groupId>
+	  <artifactId>org.jacoco.agent</artifactId>
+	  <version>0.6.3.201306030806</version>
     </dependency>
   </dependencies>
 </project>

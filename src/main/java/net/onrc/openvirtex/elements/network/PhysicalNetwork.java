@@ -31,6 +31,7 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -44,6 +45,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.openflow.protocol.OFMessage;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -186,5 +190,4 @@ public class PhysicalNetwork extends
     public boolean boot() {
 	return true;
     }
-
 }
