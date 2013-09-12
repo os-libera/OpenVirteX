@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import sys
 import json
@@ -6,6 +8,7 @@ import logging as log
 import copy
 import socket
 import struct
+from argparse import ArgumentParser
 
 class ERROR_CODE:
   PARSE_ERROR = -32700          # Invalid JSON was received by the server.
@@ -272,9 +275,9 @@ class OVXPlanner (threading.Thread):
   """
   OpenVirteX planner JSON RPC 2.0 server
   """
-  def __init__(self, address="localhost", port="8000"):
+  def __init__(self, host, port):
     threading.Thread.__init__(self)
-    self.httpd = HTTPServer((address, int(port)), OVXPlannerAPIHandler)
+    self.httpd = HTTPServer((host, port), OVXPlannerAPIHandler)
     self.setDaemon(True)
     
   # Multi-threaded webserver
@@ -288,10 +291,15 @@ class OVXPlanner (threading.Thread):
     finally:
       self.httpd.server_close()
 
+if __name__ == '__main__':
+  parser = ArgumentParser(description="OpenVirteX network embedding tool.")
+  parser.add_argument('--host', default='localhost', help='Specify the OpenVirteX host (default="localhost")')
+  parser.add_argument('--port', default=8080, type=int, help='Specify the OpenVirteX port (default="8080")')
+  parser.add_argument('--version', action='version', version='%(prog)s 0.1')
 
-log.basicConfig(format='%(asctime)s %(message)s')
-address = sys.argv[1]
-# TODO: check exception
-port = int(sys.argv[2])
-planner = OVXPlanner(address, port)
-planner.run()
+  args = parser.parse_args()
+  args_dict = vars(args)
+
+  log.basicConfig(format='%(asctime)s %(message)s')
+  planner = OVXPlanner(args_dict['host'], args_dict['port'])
+  planner.run()
