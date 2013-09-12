@@ -271,7 +271,7 @@ class OVXPlannerAPIHandler(BaseHTTPRequestHandler):
 
     reply(result)
 
-class OVXPlanner (threading.Thread):
+class OVXPlanner(threading.Thread):
   """
   OpenVirteX planner JSON RPC 2.0 server
   """
