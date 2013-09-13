@@ -45,6 +45,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.elements.link.OVXLinkManager;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -83,6 +84,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private final AtomicInteger            linkCounter;
     private final AtomicInteger		   ipCounter;
     
+    public OVXLinkManager vLinkMgmt;
+    
     // TODO: implement vlink flow pusher
     // public VLinkManager vLinkMgmt;
 
@@ -105,6 +108,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	// TODO: decide which value to start linkId's
 	this.linkCounter = new AtomicInteger(2);
 	this.ipCounter = new AtomicInteger(1);
+        this.vLinkMgmt = new OVXLinkManager(this.tenantId);
     }
 
     public String getProtocol() {
@@ -137,6 +141,14 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
     public void register() {
 	OVXMap.getInstance().addNetwork(this);
+    }
+
+    public AtomicInteger getLinkCounter() {
+        return linkCounter;
+    }
+
+    public OVXLinkManager getvLinkMgmt() {
+        return vLinkMgmt;
     }
 
     // API-facing methods

@@ -31,16 +31,27 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.routing.ManualRoute;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.Devirtualizable;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
+import net.onrc.openvirtex.routing.Routable;
+import net.onrc.openvirtex.routing.SwitchRoute;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPhysicalPort;
 
 /**
  * The Class OVXBigSwitch.
@@ -55,14 +66,18 @@ public class OVXBigSwitch extends OVXSwitch {
 
     /** The alg. */
     private RoutingAlgorithms                                                  alg;
-
-    /** The path map. */
-    private final HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>> pathMap;
+    
+    /** The routing mechanism */
+    private Routable                                                           routing;
+    
+    /**The calculated routes*/
+    private final HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>              routeMap;
 
     public OVXBigSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
 	this.alg = RoutingAlgorithms.NONE;
-	this.pathMap = new HashMap<OVXPort, HashMap<OVXPort, LinkedList<PhysicalLink>>>();
+	this.routing = new ManualRoute();
+	this.routeMap = new HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>();
     }
 
     /**
@@ -82,6 +97,27 @@ public class OVXBigSwitch extends OVXSwitch {
      */
     public void setAlg(final RoutingAlgorithms alg) {
 	this.alg = alg;
+	this.routing = alg.getRoutable();
+    }
+
+    /**
+     * @return The routable for this Big Switch
+     */
+    public Routable getRoutable() {
+        return this.routing;
+    }
+
+    /**
+     * @param srcPort the ingress port on the Big Switch
+     * @param dstPort the egress port on the Big Switch 
+     * @return list of physical links
+     */
+    public SwitchRoute getRoute(OVXPort srcPort, OVXPort dstPort) {
+        return this.routing.getRoute(this, srcPort, dstPort);
+    }
+
+    public HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> getRouteMap() {
+        return this.routeMap;
     }
 
     /*
@@ -178,4 +214,69 @@ public class OVXBigSwitch extends OVXSwitch {
 	
     }
 
+    public void sendSouthBS(OFMessage msg, OVXPort inPort) {
+        PhysicalSwitch sw = inPort.getPhysicalPort().getParentSwitch();
+        sw.sendMsg(msg, this);
+    }
+
+    /**
+     * Adds a path between two edge ports on the big switch 
+     * @param ingress  
+     * @param egress
+     * @param path list of links 
+     * @param revpath the corresponding reverse path from egress to ingress
+     * @return the route ID of the new route
+     */
+    public int createRoute(OVXPort ingress, OVXPort egress,
+            final List<PhysicalLink> path, List<PhysicalLink> revpath) {
+        final int routeId = this.map.getVirtualNetwork(this.tenantId).getLinkCounter().getAndIncrement();
+        SwitchRoute rtEntry = new SwitchRoute(this.switchId, routeId);
+        SwitchRoute revRtEntry = new SwitchRoute(this.switchId, routeId);
+        rtEntry.addRoute(path);
+        revRtEntry.addRoute(revpath);
+
+        synchronized(routeMap) {
+            HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(ingress);
+            if (rtmap == null) {
+                rtmap = new HashMap<OVXPort, SwitchRoute>();
+                this.routeMap.put(ingress, rtmap);
+            }
+            rtmap.put(egress, rtEntry);
+            this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt().registerOVXRoute(rtEntry);
+        }
+        //add reverse path dst->src
+        synchronized(routeMap) {
+            HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(egress);
+            if (rtmap == null) {
+                rtmap = new HashMap<OVXPort, SwitchRoute>();
+                this.routeMap.put(egress, rtmap);
+            }
+            rtmap.put(ingress, revRtEntry);
+            this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt().registerOVXRoute(revRtEntry);
+        }
+
+        this.log.info("Added route {}", rtEntry);
+        return routeId;
+    }
+
+    private void addToRouteMap(OVXPort in, OVXPort out, SwitchRoute entry) {
+        HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(in);
+        if (rtmap == null) {
+            rtmap = new HashMap<OVXPort, SwitchRoute>();
+            this.routeMap.put(in, rtmap);
+        }
+        rtmap.put(out, entry);
+    }
+
+    @Override
+    public int translate(OFMessage ofm, OVXPort inPort) {
+        if (inPort == null) {
+            //don't know the PhysicalSwitch, for now return original XID.
+            return ofm.getXid();
+        } else {
+            //we know the PhysicalSwitch
+            PhysicalSwitch psw = inPort.getPhysicalPort().getParentSwitch();
+            return psw.translate(ofm, this);
+        }
+    }
 }
