@@ -235,37 +235,21 @@ public class OVXBigSwitch extends OVXSwitch {
         rtEntry.addRoute(path);
         revRtEntry.addRoute(revpath);
 
-        synchronized(routeMap) {
-            HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(ingress);
-            if (rtmap == null) {
-                rtmap = new HashMap<OVXPort, SwitchRoute>();
-                this.routeMap.put(ingress, rtmap);
-            }
-            rtmap.put(egress, rtEntry);
-            this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt().registerOVXRoute(rtEntry);
-        }
-        //add reverse path dst->src
-        synchronized(routeMap) {
-            HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(egress);
-            if (rtmap == null) {
-                rtmap = new HashMap<OVXPort, SwitchRoute>();
-                this.routeMap.put(egress, rtmap);
-            }
-            rtmap.put(ingress, revRtEntry);
-            this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt().registerOVXRoute(revRtEntry);
-        }
-
-        this.log.info("Added route {}", rtEntry);
+        addToRouteMap(ingress, egress, rtEntry);
+        addToRouteMap(egress, ingress, revRtEntry);
+     
+        OVXBigSwitch.log.info("Added route {}", rtEntry);
         return routeId;
-    }
-
+    }   
+ 
     private void addToRouteMap(OVXPort in, OVXPort out, SwitchRoute entry) {
         HashMap<OVXPort, SwitchRoute> rtmap =  this.routeMap.get(in);
         if (rtmap == null) {
             rtmap = new HashMap<OVXPort, SwitchRoute>();
             this.routeMap.put(in, rtmap);
         }
-        rtmap.put(out, entry);
+        rtmap.put(out, entry);            
+        this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt().registerOVXRoute(entry);
     }
 
     @Override

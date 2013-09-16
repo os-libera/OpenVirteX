@@ -41,6 +41,8 @@ import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -76,6 +78,9 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		        act, e.getMessage());
 		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 		return;
+	    } catch (DroppedMessageException e) {
+		log.debug("Dropping flowmod {}", this);
+		return;
 	    }
 	}
 	
@@ -90,18 +95,28 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	    sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
 	    return;
 	} else {
+	    OVXMessageUtil.translateXid(this, ovxInPort);
 	    this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
 	    if (ovxInPort.isEdge()) {
 		this.prependRewriteActions();
 		computeLength();
-		sw.sendSouth(this);
+		if (sw instanceof OVXBigSwitch) {
+                    ((OVXBigSwitch) sw).sendSouthBS(this, ovxInPort);
+		} else {
+                    sw.sendSouth(this);
+		} 
 		return;
 	    } else {
 		this.rewriteMatch();
 	    }
 	}
+	OVXMessageUtil.translateXid(this, ovxInPort);
 	computeLength();
-	sw.sendSouth(this);
+	if (sw instanceof OVXBigSwitch) {
+	    ((OVXBigSwitch) sw).sendSouthBS(this, ovxInPort);
+	} else {
+	    sw.sendSouth(this);
+	}
 
     }
     

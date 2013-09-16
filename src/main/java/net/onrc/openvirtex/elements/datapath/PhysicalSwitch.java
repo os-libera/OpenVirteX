@@ -73,8 +73,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
      * @return the oVX port number
      */
     public Short getOVXPortNumber(final Short physicalPortNumber,
-	    final Integer tenantId) {
-	return this.portMap.get(physicalPortNumber).getOVXPort(tenantId)
+	    final Integer tenantId, final Integer vLinkId) {
+	return this.portMap.get(physicalPortNumber).getOVXPort(tenantId, vLinkId)
 	        .getPortNumber();
     }
 

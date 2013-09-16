@@ -23,6 +23,7 @@
 package net.onrc.openvirtex.messages;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 
 import org.openflow.protocol.OFPortStatus;
 
@@ -30,8 +31,8 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 
 	@Override
 	public void virtualize(PhysicalSwitch sw) {
-		// TODO Auto-generated method stub
-
+	    // TODO Auto-generated method stub
+	    PhysicalPort p = sw.getPort(this.desc.getPortNumber());
 	}
 
 }

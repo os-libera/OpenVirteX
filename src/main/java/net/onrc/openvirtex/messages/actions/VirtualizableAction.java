@@ -7,11 +7,13 @@ import org.openflow.protocol.action.OFAction;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
 
 
 public interface VirtualizableAction {
     
-    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied;
+    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) 
+	    throws ActionVirtualizationDenied, DroppedMessageException;
     
 
 }

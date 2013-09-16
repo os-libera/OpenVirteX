@@ -28,9 +28,11 @@ import java.util.List;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
@@ -57,7 +59,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	
 	
 	
-	if (this.getBufferId() == -1) {
+	if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
 	    if (this.getPacketData().length <= 14) {
 		log.error("PacketOut has no buffer or data {}; dropping", this);
 		sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_LEN, this), sw);
@@ -72,7 +74,11 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	    }
 	
 	    match = new OFMatch().loadFromPacket(cause.getPacketData(), this.inPort);
-	    this.setBufferId(cause.getBufferId());
+	    this.setBufferId(cause.getBufferId());           
+	    if (cause.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
+                this.setPacketData(cause.getPacketData());
+                this.setLengthU(this.getLengthU() + this.packetData.length);
+            }
 	}
 	
 	for (OFAction act : this.getActions()) {
@@ -83,7 +89,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 		log.warn("Action {} could not be virtualized; error: {}", act, e.getMessage());
 		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 		return;
-	    } 
+	    } catch (DroppedMessageException e) {
+                log.debug("Dropping flowmod {}", this);
+                return;
+            }
 	}
 	
 	this.setInPort(inport.getPhysicalPortNumber());
@@ -95,8 +104,13 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	    this.setLengthU(this.getLengthU() + act.getLengthU());
 	    this.setActionsLength((short) (this.getActionsLength() + act.getLength()));
 	}
-	sw.sendSouth(this);
-	
+
+	OVXMessageUtil.translateXid(this, inport);
+        if (sw instanceof OVXBigSwitch) {
+            ((OVXBigSwitch) sw).sendSouthBS(this, inport);
+        } else {
+            sw.sendSouth(this);
+        }
     }
     
     

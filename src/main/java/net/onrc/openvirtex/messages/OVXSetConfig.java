@@ -37,6 +37,9 @@ public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 
 	sw.setMissSendLen(this.missSendLength);
 	log.info("Setting miss send length to {} for OVXSwitch {}", this.missSendLength, sw.getSwitchId());
+	
+	OVXMessageUtil.translateXid(this, sw);
+        //don't send since we always want full pkt?
     }
 
 }

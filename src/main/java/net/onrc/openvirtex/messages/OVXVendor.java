@@ -32,14 +32,12 @@ public class OVXVendor extends OFVendor implements Virtualizable,
 
 	@Override
 	public void devirtualize(OVXSwitch sw) {
-		// TODO Auto-generated method stub
-
+	    OVXMessageUtil.translateXidAndSend(this, sw);
 	}
 
 	@Override
 	public void virtualize(PhysicalSwitch sw) {
-		// TODO Auto-generated method stub
-
+	    OVXMessageUtil.untranslateXidAndSend(this, sw);
 	}
 
 }

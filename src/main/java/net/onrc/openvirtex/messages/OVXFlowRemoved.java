@@ -22,15 +22,27 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 import org.openflow.protocol.OFFlowRemoved;
+import org.openflow.protocol.OFMatch;
 
 public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 
 	@Override
 	public void virtualize(PhysicalSwitch sw) {
-		// TODO Auto-generated method stub
+	    // in response to FlowMod?
+            OVXSwitch vsw = OVXMessageUtil.untranslateXid(this, sw);
+            if (vsw == null) {
+                //no-body asked for this
+                return;
+            }
+
+            // TODO need to re-write OFMatch 
+            OFMatch ofm = this.getMatch();
+
+            //vsw.sendMsg(this, sw);
 
 	}
 

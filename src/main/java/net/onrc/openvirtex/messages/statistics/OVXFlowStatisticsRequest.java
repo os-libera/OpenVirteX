@@ -22,20 +22,27 @@
 
 package net.onrc.openvirtex.messages.statistics;
 
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.messages.OVXStatisticsReply;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.messages.OVXMessageUtil;
+import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 
+import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.statistics.OFFlowStatisticsRequest;
 
 public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest
-	implements VirtualizableStatistic {
+	implements DevirtualizableStatistic {
 
     @Override
-    public void virtualizeStatistic(PhysicalSwitch sw, OVXStatisticsReply msg) {
+    public void devirtualizeStatistic(OVXSwitch sw, OVXStatisticsRequest msg) {
 	// TODO Auto-generated method stub
-	
+	OVXPort p = sw.getPort(this.getMatch().getInputPort());
+	if (p == null) {
+	    sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+		    OFBadRequestCode.OFPBRC_EPERM, msg), sw);
+	    return;
+	}
+	OVXMessageUtil.translateXid(msg, p);
     }
-
-    
 
 }

@@ -22,6 +22,7 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 import org.openflow.protocol.OFQueueGetConfigReply;
@@ -31,8 +32,12 @@ public class OVXQueueGetConfigReply extends OFQueueGetConfigReply implements
 
 	@Override
 	public void virtualize(PhysicalSwitch sw) {
-		// TODO Auto-generated method stub
-
+	    OVXSwitch vsw = OVXMessageUtil.untranslateXid(this, sw);
+            if (vsw == null) {
+                //log error
+                return;
+            }
+            // re-write port mappings 
 	}
 
 }
