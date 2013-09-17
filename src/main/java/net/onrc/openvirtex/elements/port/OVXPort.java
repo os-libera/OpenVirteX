@@ -34,63 +34,63 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 public class OVXPort extends Port<OVXSwitch> {
 
-    private final Integer      tenantId;
-    private final PhysicalPort physicalPort;
-    /** The link id. */
-    private Integer linkId;
+	private final Integer      tenantId;
+	private final PhysicalPort physicalPort;
+	/** The link id. */
+	private Integer linkId;
 
-    public OVXPort(final int tenantId, final PhysicalPort port,
-	    final boolean isEdge) {
-	super(port);
-	this.tenantId = tenantId;
-	this.physicalPort = port;
-	this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(
-	        port.getParentSwitch(), tenantId);
-	this.portNumber = this.parentSwitch.getNextPortNumber();
-	this.hardwareAddress = port.getHardwareAddress();
-	this.isEdge = isEdge;
-	// advertise current speed/duplex as 100MB FD, media type copper
-	this.currentFeatures = 324;
-	// advertise current feature + 1GB FD
-	this.advertisedFeatures = 340;
-	// advertise all the OF1.0 physical port speeds and duplex. Advertise
-	// media type as copper
-	this.supportedFeatures = 383;
-	this.linkId = 0;
-    }
+	public OVXPort(final int tenantId, final PhysicalPort port,
+			final boolean isEdge) {
+		super(port);
+		this.tenantId = tenantId;
+		this.physicalPort = port;
+		this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(
+				port.getParentSwitch(), tenantId);
+		this.portNumber = this.parentSwitch.getNextPortNumber();
+		this.hardwareAddress = port.getHardwareAddress();
+		this.isEdge = isEdge;
+		// advertise current speed/duplex as 100MB FD, media type copper
+		this.currentFeatures = 324;
+		// advertise current feature + 1GB FD
+		this.advertisedFeatures = 340;
+		// advertise all the OF1.0 physical port speeds and duplex. Advertise
+		// media type as copper
+		this.supportedFeatures = 383;
+		this.linkId = 0;
+	}
 
-    public Integer getTenantId() {
-	return this.tenantId;
-    }
+	public Integer getTenantId() {
+		return this.tenantId;
+	}
 
-    public PhysicalPort getPhysicalPort() {
-	return this.physicalPort;
-    }
+	public PhysicalPort getPhysicalPort() {
+		return this.physicalPort;
+	}
 
-    public Short getPhysicalPortNumber() {
-	return this.physicalPort.getPortNumber();
-    }
+	public Short getPhysicalPortNumber() {
+		return this.physicalPort.getPortNumber();
+	}
+	
+	public Integer getLinkId() {
+		return linkId;
+	}
 
-    public Integer getLinkId() {
-        return linkId;
-    }
+	public void setLinkId(Integer linkId) {
+		this.linkId = linkId;
+	}
 
-    public void setLinkId(Integer linkId) {
-        this.linkId = linkId;
-    }
+	/**
+	 * Registers a port in the virtual parent switch and in the physical port
+	 */
+	public void register() {
+		this.parentSwitch.addPort(this);
+		this.physicalPort.setOVXPort(this);
+	}
 
-    /**
-     * Registers a port in the virtual parent switch and in the physical port
-     */
-    public void register() {
-	this.parentSwitch.addPort(this);
-	this.physicalPort.setOVXPort(this);
-    }
-
-    @Override
-    public String toString() {
-	String result = super.toString();
-	result += "\n- tenantId: " + this.tenantId +  "\n- linkId: " + this.linkId;
-	return result;
-    }
+	@Override
+	public String toString() {
+		String result = super.toString();
+		result += "\n- tenantId: " + this.tenantId +  "\n- linkId: " + this.linkId;
+		return result;
+	}
 }

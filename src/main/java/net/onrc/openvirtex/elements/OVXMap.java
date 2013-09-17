@@ -48,7 +48,7 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 public class OVXMap implements Mappable {
 
 
-	Logger log = LogManager.getLogger(OVXMap.class.getName());
+	static Logger log = LogManager.getLogger(OVXMap.class.getName());
 	private static AtomicReference<OVXMap>         			     mapInstance = new AtomicReference<>();
 
 	ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>                  virtualSwitchMap;
@@ -86,6 +86,12 @@ public class OVXMap implements Mappable {
 		mapInstance.compareAndSet(null, new OVXMap());
 		return mapInstance.get();
 	}
+	
+	public static void reset() {
+		log.debug("OVXMap has been reset explicitely. Hope you know what you are doing!");
+		mapInstance.set(null);
+	}
+	
 
 	// ADD objects to dictionary
 

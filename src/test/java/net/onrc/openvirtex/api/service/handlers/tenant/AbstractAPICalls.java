@@ -7,7 +7,6 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 import junit.framework.TestCase;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
-import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 
 public class AbstractAPICalls extends TestCase {
@@ -53,10 +52,33 @@ public class AbstractAPICalls extends TestCase {
     
     
     
-    public void connectHost() {
-    	HashMap<String, Object> request = new HashMap<>();
+    public JSONRPC2Response connectHost(final Integer tenantId, final Long dpid, 
+    		final Short port, final String mac) {
     	
+    	ConnectHost ch = new ConnectHost();
+    	
+    	@SuppressWarnings("serial")
+		HashMap<String, Object> request = new HashMap<String, Object>() {{
+    		put(TenantHandler.TENANT, tenantId);
+    		put(TenantHandler.DPID, dpid);
+    		put(TenantHandler.PORT, port);
+    		put(TenantHandler.MAC, mac);
+    	}};
+    	
+    	return ch.process(request);
     }
+
+	public JSONRPC2Response createLink(final int tenantId, final String pathString) {
+		CreateOVXLink cl = new CreateOVXLink();
+		
+    	@SuppressWarnings("serial")
+		HashMap<String, Object> request = new HashMap<String, Object>() {{
+    		put(TenantHandler.TENANT, tenantId);
+    		put(TenantHandler.PATH, pathString);
+		}};
+		
+		return cl.process(request);
+	}
     
     
 }

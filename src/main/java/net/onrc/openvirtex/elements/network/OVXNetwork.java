@@ -70,230 +70,236 @@ import org.openflow.protocol.action.OFActionOutput;
  */
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
-    private final Integer                  tenantId;
-    private final String                   protocol;
-    private final String                   controllerHost;
-    private final Integer                  controllerPort;
-    private final IPAddress                network;
-    private final short                    mask;
-    private HashMap<IPAddress, MACAddress> gwsMap;
-    private boolean                        bootState;
-    private static AtomicInteger           tenantIdCounter = new AtomicInteger(
-	                                                           1);
-    private final AtomicLong               dpidCounter;
-    private final AtomicInteger            linkCounter;
-    private final AtomicInteger		   ipCounter;
-    
-    public OVXLinkManager vLinkMgmt;
-    
-    // TODO: implement vlink flow pusher
-    // public VLinkManager vLinkMgmt;
+	private final Integer                  tenantId;
+	private final String                   protocol;
+	private final String                   controllerHost;
+	private final Integer                  controllerPort;
+	private final IPAddress                network;
+	private final short                    mask;
+	private HashMap<IPAddress, MACAddress> gwsMap;
+	private boolean                        bootState;
+	private static AtomicInteger           tenantIdCounter = new AtomicInteger(1);
+	private final AtomicLong               dpidCounter;
+	private final AtomicInteger            linkCounter;
+	private final AtomicInteger		   ipCounter;
 
-    Logger                                 log             = LogManager
-	                                                           .getLogger(OVXNetwork.class
-	                                                                   .getName());
+	public OVXLinkManager vLinkMgmt;
 
-    public OVXNetwork(final String protocol, final String controllerHost,
-	    final Integer controllerPort, final IPAddress network,
-	    final short mask) {
-	super();
-	this.tenantId = OVXNetwork.tenantIdCounter.getAndIncrement();
-	this.protocol = protocol;
-	this.controllerHost = controllerHost;
-	this.controllerPort = controllerPort;
-	this.network = network;
-	this.mask = mask;
-	this.bootState = false;
-	this.dpidCounter = new AtomicLong(1);
-	// TODO: decide which value to start linkId's
-	this.linkCounter = new AtomicInteger(2);
-	this.ipCounter = new AtomicInteger(1);
-        this.vLinkMgmt = new OVXLinkManager(this.tenantId);
-    }
+	// TODO: implement vlink flow pusher
+	// public VLinkManager vLinkMgmt;
 
-    public String getProtocol() {
-	return this.protocol;
-    }
+	static Logger                                 log             = LogManager
+			.getLogger(OVXNetwork.class
+					.getName());
 
-    public String getControllerHost() {
-	return this.controllerHost;
-    }
-
-    public Integer getControllerPort() {
-	return this.controllerPort;
-    }
-
-    public Integer getTenantId() {
-	return this.tenantId;
-    }
-
-    public IPAddress getNetwork() {
-	return this.network;
-    }
-
-    public MACAddress getGateway(final IPAddress ip) {
-	return this.gwsMap.get(ip);
-    }
-
-    public short getMask() {
-	return this.mask;
-    }
-
-    public void register() {
-	OVXMap.getInstance().addNetwork(this);
-    }
-
-    public AtomicInteger getLinkCounter() {
-        return linkCounter;
-    }
-
-    public OVXLinkManager getvLinkMgmt() {
-        return vLinkMgmt;
-    }
-
-    // API-facing methods
-
-    public OVXSwitch createSwitch(final List<Long> dpids) {
-	OVXSwitch virtualSwitch;
-	// TODO: generate ON.Lab dpid's
-	final long switchId = this.dpidCounter.getAndIncrement();
-	final List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
-	// TODO: check if dpids are present in physical network
-	for (final long dpid : dpids) {
-	    switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
+	public OVXNetwork(final String protocol, final String controllerHost,
+			final Integer controllerPort, final IPAddress network,
+			final short mask) {
+		super();
+		this.tenantId = OVXNetwork.tenantIdCounter.getAndIncrement();
+		this.protocol = protocol;
+		this.controllerHost = controllerHost;
+		this.controllerPort = controllerPort;
+		this.network = network;
+		this.mask = mask;
+		this.bootState = false;
+		this.dpidCounter = new AtomicLong(1);
+		// TODO: decide which value to start linkId's
+		this.linkCounter = new AtomicInteger(2);
+		this.ipCounter = new AtomicInteger(1);
+		this.vLinkMgmt = new OVXLinkManager(this.tenantId);
 	}
-	if (dpids.size() == 1) {
-	    virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId);
-	} else {
-	    virtualSwitch = new OVXBigSwitch(switchId, this.tenantId);
+
+	public String getProtocol() {
+		return this.protocol;
 	}
-	// Add switch to topology and register it in the map
-	this.addSwitch(virtualSwitch);
-	
-	
-	virtualSwitch.register(switches);
-	return virtualSwitch;
-    }
 
-    /**
-     * Create link and add it to the topology. Returns linkId when successful,
-     * -1 if source port is already used.
-     * 
-     * @param srcPort
-     * @param dstPort
-     * @return
-     */
-    public synchronized OVXLink createLink(
-	    final List<PhysicalLink> physicalLinks) {
-	// Create and register virtual source and destination ports
-	final PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
-	final OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
-	srcPort.register();
-	final PhysicalPort phyDstPort = physicalLinks.get(
-	        physicalLinks.size() - 1).getDstPort();
-	final OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
-	dstPort.register();
-	// Create link, add it to the topology, register it in the map
-	final int linkId = this.linkCounter.getAndIncrement();
-	final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
-	        dstPort);
-	final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
-	        srcPort);
-	super.addLink(link);
-	super.addLink(reverseLink);
-	link.register(physicalLinks);
-	reverseLink.register(physicalLinks);
-
-	return link;
-    }
-
-    public OVXPort createHost(final long physicalDpid, final short portNumber,
-	    final MACAddress mac) {
-	// TODO: check if dpid & port exist
-	final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance()
-	        .getSwitch(physicalDpid);
-	final PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
-
-	final OVXPort edgePort = new OVXPort(this.tenantId, physicalPort, true);
-	edgePort.register();
-	OVXMap.getInstance().addMAC(mac, this.tenantId);
-
-	return edgePort;
-    }
-
-    // TODO
-    public void createGateway(final IPAddress ip) {
-
-    }
-
-    /**
-     * Boots the virtual network by booting each virtual switch.
-     * TODO: we should roll-back if any switch fails to boot
-     * 
-     * @return
-     *         True if successful, false otherwise
-     */
-    @Override
-    public boolean boot() {
-	boolean result = true;
-	for (final OVXSwitch sw : this.getSwitches()) {
-	    result &= sw.boot();
+	public String getControllerHost() {
+		return this.controllerHost;
 	}
-	this.bootState = result;
-	return this.bootState;
-    }
 
-    /**
-     * Handle LLDP received from controller.
-     * 
-     * Receive LLDP from controller. Switch to which it is destined is passed in
-     * by the ControllerHandler, port is extracted from the packet_out.
-     * Packet_in is created based on topology info.
-     */
-    @Override
-    public void handleLLDP(final OFMessage msg, final Switch sw) {
-	final OVXPacketOut po = (OVXPacketOut) msg;
-	final byte[] pkt = po.getPacketData();
-	if (LLDPUtil.checkLLDP(pkt)) {
-	    // Create LLDP response for each output action port
-	    for (final OFAction action : po.getActions()) {
-		try {
-		    final short portNumber = ((OFActionOutput) action)
-			    .getPort();
-		    final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
-		    final OVXPort dstPort = this.getNeighborPort(srcPort);
-		    if (dstPort != null) {
-			final OVXPacketIn pi = new OVXPacketIn();
-			pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-			// Get input port from pkt_out
-			pi.setInPort(dstPort.getPortNumber());
-			pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
-			pi.setPacketData(pkt);
-			pi.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + pkt.length));
-			dstPort.getParentSwitch().sendMsg(pi, this);
-		    }
-		} catch (final ClassCastException c) {
-		    // ignore non-ActionOutput pkt_out's
+	public Integer getControllerPort() {
+		return this.controllerPort;
+	}
+
+	public Integer getTenantId() {
+		return this.tenantId;
+	}
+
+	public IPAddress getNetwork() {
+		return this.network;
+	}
+
+	public MACAddress getGateway(final IPAddress ip) {
+		return this.gwsMap.get(ip);
+	}
+
+	public short getMask() {
+		return this.mask;
+	}
+
+	public void register() {
+		OVXMap.getInstance().addNetwork(this);
+	}
+
+	public AtomicInteger getLinkCounter() {
+		return linkCounter;
+	}
+
+	public OVXLinkManager getvLinkMgmt() {
+		return vLinkMgmt;
+	}
+
+	// API-facing methods
+
+	public OVXSwitch createSwitch(final List<Long> dpids) {
+		OVXSwitch virtualSwitch;
+		// TODO: generate ON.Lab dpid's
+		final long switchId = this.dpidCounter.getAndIncrement();
+		final List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
+		// TODO: check if dpids are present in physical network
+		for (final long dpid : dpids) {
+			switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
 		}
-	    }
-	} else {
-	    this.log.debug("Invalid LLDP");
+		if (dpids.size() == 1) {
+			virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId);
+		} else {
+			virtualSwitch = new OVXBigSwitch(switchId, this.tenantId);
+		}
+		// Add switch to topology and register it in the map
+		this.addSwitch(virtualSwitch);
+
+
+		virtualSwitch.register(switches);
+		return virtualSwitch;
 	}
-    }
 
-    @Override
-    public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-	// Do nothing
-    }
+	/**
+	 * Create link and add it to the topology. Returns linkId when successful,
+	 * -1 if source port is already used.
+	 * 
+	 * @param srcPort
+	 * @param dstPort
+	 * @return
+	 */
+	public synchronized OVXLink createLink(
+			final List<PhysicalLink> physicalLinks) {
+		// Create and register virtual source and destination ports
+		final PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
+		final OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
+		srcPort.register();
+		final PhysicalPort phyDstPort = physicalLinks.get(
+				physicalLinks.size() - 1).getDstPort();
+		final OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
+		dstPort.register();
+		// Create link, add it to the topology, register it in the map
+		final int linkId = this.linkCounter.getAndIncrement();
+		final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
+				dstPort);
+		final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
+				srcPort);
+		super.addLink(link);
+		super.addLink(reverseLink);
+		link.register(physicalLinks);
+		reverseLink.register(physicalLinks);
 
-    @Override
-    public String getName() {
-	return "Virtual network:" + this.tenantId.toString();
-    }
+		return link;
+	}
 
-    public Integer nextIP() {
-	return (this.tenantId<< 
-		(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
-			+ ipCounter.getAndIncrement();
-    }
+	public OVXPort createHost(final long physicalDpid, final short portNumber,
+			final MACAddress mac) {
+		// TODO: check if dpid & port exist
+		final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance()
+				.getSwitch(physicalDpid);
+		final PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
+
+		final OVXPort edgePort = new OVXPort(this.tenantId, physicalPort, true);
+		edgePort.register();
+		OVXMap.getInstance().addMAC(mac, this.tenantId);
+
+		return edgePort;
+	}
+
+	// TODO
+	public void createGateway(final IPAddress ip) {
+
+	}
+
+	/**
+	 * Boots the virtual network by booting each virtual switch.
+	 * TODO: we should roll-back if any switch fails to boot
+	 * 
+	 * @return
+	 *         True if successful, false otherwise
+	 */
+	@Override
+	public boolean boot() {
+		boolean result = true;
+		for (final OVXSwitch sw : this.getSwitches()) {
+			result &= sw.boot();
+		}
+		this.bootState = result;
+		return this.bootState;
+	}
+
+	/**
+	 * Handle LLDP received from controller.
+	 * 
+	 * Receive LLDP from controller. Switch to which it is destined is passed in
+	 * by the ControllerHandler, port is extracted from the packet_out.
+	 * Packet_in is created based on topology info.
+	 */
+	@Override
+	public void handleLLDP(final OFMessage msg, final Switch sw) {
+		final OVXPacketOut po = (OVXPacketOut) msg;
+		final byte[] pkt = po.getPacketData();
+		if (LLDPUtil.checkLLDP(pkt)) {
+			// Create LLDP response for each output action port
+			for (final OFAction action : po.getActions()) {
+				try {
+					final short portNumber = ((OFActionOutput) action)
+							.getPort();
+					final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
+					final OVXPort dstPort = this.getNeighborPort(srcPort);
+					if (dstPort != null) {
+						final OVXPacketIn pi = new OVXPacketIn();
+						pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+						// Get input port from pkt_out
+						pi.setInPort(dstPort.getPortNumber());
+						pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
+						pi.setPacketData(pkt);
+						pi.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + pkt.length));
+						dstPort.getParentSwitch().sendMsg(pi, this);
+					}
+				} catch (final ClassCastException c) {
+					// ignore non-ActionOutput pkt_out's
+				}
+			}
+		} else {
+			this.log.debug("Invalid LLDP");
+		}
+	}
+
+	@Override
+	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+		// Do nothing
+	}
+
+	@Override
+	public String getName() {
+		return "Virtual network:" + this.tenantId.toString();
+	}
+
+	public Integer nextIP() {
+		return (this.tenantId<< 
+				(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
+				+ ipCounter.getAndIncrement();
+	}
+	
+	public static void reset() {
+		
+		log.debug("Ressting tenantId counter to initial state. Don't do this at runtime!");
+		tenantIdCounter.set(1);
+		
+	}
 }
