@@ -259,9 +259,6 @@ if __name__ == '__main__':
   except IndexError, e:
     print "%s is an unknown command" % sys.argv[-1]
     printHelp(None, None, None, parser)
-  except Thrift.TException, e:
-    print "error code: %s" % e.errorCode
-    print "message: %s" % e.msg
   except Exception, e:
     print "uknown error"
     print e
