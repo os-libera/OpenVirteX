@@ -61,7 +61,11 @@ import com.google.gson.annotations.SerializedName;
 public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 OVXSendMsg {
 
+    @SerializedName("switches")
+    @Expose
 	private final HashSet<T1>              switchSet;
+    @SerializedName("links")
+    @Expose
 	private final HashSet<T3>              linkSet;
 	private final HashMap<Long, T1>        dpidMap;
 	private final HashMap<T2, T2>          neighborPortMap;

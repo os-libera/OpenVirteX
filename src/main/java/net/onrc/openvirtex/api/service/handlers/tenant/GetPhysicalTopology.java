@@ -25,7 +25,7 @@ public class GetPhysicalTopology extends ApiHandler<Object> {
 		JSONRPC2Response resp = null;
 		// TODO: gson objects can be shared with other methods
 		final GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.setPrettyPrinting();
+		//gsonBuilder.setPrettyPrinting();
 		gsonBuilder.excludeFieldsWithoutExposeAnnotation();
 		gsonBuilder.registerTypeAdapter(PhysicalSwitch.class,
 				new PhysicalSwitchSerializer());
