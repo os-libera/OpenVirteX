@@ -49,7 +49,4 @@ public class StartNetwork extends ApiHandler<Map<String, Object>> {
 	public JSONRPC2ParamsType getType() {
 		return JSONRPC2ParamsType.OBJECT;
 	}
-
-
-
 }

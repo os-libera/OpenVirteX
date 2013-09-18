@@ -124,9 +124,8 @@ public interface Mappable {
     public OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch, Integer tenantId);
 
     /**
-     * get the virtualLink which has been specified by the physicalLink and
-     * the tenantId. This function will return a list of virtualLinks all of
-     * which contain the specified physicalLink in the tenantId.
+	 * Get the list of OVXLinks that are part of virtual network identified by
+	 * tenantId and which include the specified physicalLink
      * 
      * @param physicalLink
      *            A PhysicalLink object which represent a single source and
@@ -135,7 +134,7 @@ public interface Mappable {
      * @return virtualLink A OVXLink object which represents a single link in
      *         the OVXNetwork
      */
-    public OVXLink getVirtualLink(PhysicalLink physicalLink, Integer tenantId);
+    public List<OVXLink> getVirtualLinks(PhysicalLink physicalLink, Integer tenantId);
 
     /**
      * get the physicalLinks that all make up a specified virtualLink.

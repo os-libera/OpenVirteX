@@ -8,4 +8,6 @@
 *.ear
 
 *.pyc
+
+/.settings/
 /target

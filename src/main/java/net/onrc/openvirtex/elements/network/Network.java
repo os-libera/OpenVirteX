@@ -43,6 +43,9 @@ import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 /**
  * 
  * Abstract parent class for networks, maintains data structures for the

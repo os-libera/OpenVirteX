@@ -33,6 +33,9 @@ import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 /**
  * The Class Port.
  * 

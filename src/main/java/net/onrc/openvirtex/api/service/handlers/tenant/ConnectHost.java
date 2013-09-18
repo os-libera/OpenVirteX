@@ -15,6 +15,7 @@ import net.onrc.openvirtex.util.MACAddress;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.util.HexString;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -52,7 +53,7 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
 				    "Created edge port {} on virtual switch {} in virtual network {}",
 				    edgePort.getPortNumber(), edgePort.getParentSwitch()
 				            .getSwitchId(), virtualNetwork.getTenantId());
-			    resp = new JSONRPC2Response(edgePort.getPortNumber(),0);
+			    resp = new JSONRPC2Response(edgePort.getPortNumber(), 0);
 			}
 			
 			

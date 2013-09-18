@@ -27,8 +27,8 @@
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.6.3.201306030806</version>
         <configuration>
-          <destfile>${basedir}/target/jacoco/jacoco.exec</destfile>
-          <datafile>${basedir}/target/jacoco/jacoco.exec</datafile>
+          <destfile>${basedir}/target/jacoco.exec</destfile>
+          <datafile>${basedir}/target/jacoco.exec</datafile>
         </configuration>
         <executions>
           <execution>
@@ -38,7 +38,7 @@
             </goals>
           </execution>
           <execution>
-            <id>jacoco-site</id>
+            <id>report</id>
             <phase>package</phase>
             <goals>
               <goal>report</goal>
@@ -204,6 +204,16 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.5</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+	  <artifactId>gson</artifactId>
+	  <version>2.2.4</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.jacoco</groupId>
+	  <artifactId>org.jacoco.agent</artifactId>
+	  <version>0.6.3.201306030806</version>
     </dependency>
   </dependencies>
 </project>
