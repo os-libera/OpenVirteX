@@ -8,9 +8,13 @@ import logging as log
 import urllib2
 from argparse import ArgumentParser
 import subprocess
+import time
 
-# Command to start default controller
-CTRL_CMD = "ssh -t %s ~/code/pox/pox.py openflow.of_01 --port=%s forwarding.l2_learning openflow.discovery"
+CLONE_VM = '/usr/bin/VBoxManage clonevm OVX --snapshot Master --mode machine --options link --name %s --register'
+GET_IP_VM = '/usr/bin/VBoxManage guestcontrol %s execute --image /home/ovx/get-ip.sh --wait-exit --username ovx --password ovx --wait-stdout -- eth0'
+START_VM = '/usr/bin/VBoxManage startvm %s --type headless'
+STOP_VM = '/usr/bin/VBoxManage controlvm %s poweroff'
+UNREGISTER_VM = '/usr/bin/VBoxManage unregistervm %s --delete'
 
 class ERROR_CODE:
   PARSE_ERROR = -32700          # Invalid JSON was received by the server.
@@ -22,6 +26,8 @@ class ERROR_CODE:
 
 def parseDpid(mac):
   """Return int value of the string mac, which may be given as long value or as hex string"""
+  if isinstance(mac, int):
+    return mac
   if not ':' in mac:
     return int(mac)
   else:
@@ -130,7 +136,7 @@ class Routing():
     for index in xrange(0, len(route) - 1):
       outPort = self._findOutPort(route[index], route[index + 1])
       inPort = self._findInPort(route[index], route[index + 1])
-      path += "%s/%s-%s/%s," % (route[index], outPort, route[index + 1], inPort)
+      path += "%s/%s-%s/%s," % (parseDpid(route[index]), outPort, parseDpid(route[index + 1]), inPort)
     # Remove final comma
     return path[:-1]
   
@@ -264,15 +270,15 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     # TODO: do proper string comparison
     if controller['type'] == 'default':
       proto = self.server.ctrlProto
-      host = self.server.ctrlHost
-      port = self.server.getAndIncrementPort()
-      self._spawnController(host, port)
+      host = self.server._spawnController()
+      port = self.server.ctrlPort
     elif controller['type'] == 'custom':
       proto = controller['protocol']
       host = controller['host']
       port = int(controller['port'])
     else:
-      pass
+      print 'Unsupported controller type'
+      sys.exit(1)
     # split subnet in netaddress and netmask
     (net_address, net_mask) = subnet.split('/')
     # create virtual network
@@ -309,15 +315,15 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     # spawn controller if necessary
     if controller['type'] == 'default':
       proto = self.server.ctrlProto
-      host = self.server.ctrlHost
-      port = self.server.getAndIncrementPort()
-      self._spawnController(host, port)
+      host = self.server._spawnController()
+      port = self.server.ctrlPort
     elif controller['type'] == 'custom':
       proto = controller['protocol']
       host = controller['host']
       port = int(controller['port'])
     else:
-      pass  
+      print 'Unsupported controller type'
+      sys.exit(1)
     # split subnet in netaddress and netmask
     (net_address, net_mask) = subnet.split('/')
     # create virtual network
@@ -339,16 +345,6 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
 
     return tenantId
 
-  def _spawnController(self, host, port):
-    cmd = CTRL_CMD % (host, port)
-    print "Spawning controller: %s" % cmd
-    f = open("ctrl_%s_%s" % (host, port), 'w')
-    p = subprocess.Popen(cmd.split(), stdout=f)
-    ctrl = {}
-    ctrl['process'] = p
-    ctrl['log'] = f
-    self.server.controllers.append(ctrl)
-    
   def _exec_createNetwork(self, json_id, params):
     """Handler for automated network creation"""
 
@@ -420,24 +416,37 @@ class OVXEmbedderServer(HTTPServer):
     HTTPServer.__init__(self, (opts['host'], opts['port']), OVXEmbedderHandler)
     self.client = OVXClient(opts['ovxhost'], opts['ovxport'], opts['ovxuser'], opts['ovxpass'])
     self.ctrlProto = opts['ctrlproto']
-    self.ctrlHost = opts['ctrlhost']
     self.ctrlPort = opts['ctrlport']
-    self._portLock = threading.Lock()
     self.controllers = []
 
-  def getAndIncrementPort(self):
-    """Return and increment ctrlPort atomically."""
-    self._portLock.acquire()
-    ret = self.ctrlPort
-    self.ctrlPort += 1
-    self._portLock.release()
-    return ret
-
+  def _spawnController(self):
+    ctrl = "OVX-%s" % len(self.controllers)
+    devnull = open('/dev/null', 'w')
+    print "Spawning controller VM %s... " % ctrl,
+    clone_cmd = CLONE_VM % ctrl
+    subprocess.call(clone_cmd.split(), stdout=devnull, stderr=devnull)
+    start_cmd = START_VM % ctrl
+    subprocess.call(start_cmd.split(), stdout=devnull, stderr=devnull)
+    get_ip_cmd = GET_IP_VM % ctrl
+    while True:
+      try:
+        ret = subprocess.check_output(get_ip_cmd.split(), stderr=devnull)
+      except subprocess.CalledProcessError:
+        time.sleep(1)
+        continue
+      ip = ret
+      break
+    self.controllers.append(ctrl)
+    print "ready on %s" % ip
+    return ip
+    
   def closeControllers(self):
     for controller in self.controllers:
-      controller['process'].kill()
-      controller['log'].close()
-
+      stop_cmd = STOP_VM % controller
+      subprocess.call(stop_cmd.split())
+      del_cmd = UNREGISTER_VM % controller
+      subprocess.call(del_cmd.split())
+    
 class OVXEmbedder(threading.Thread):
   """
   OpenVirteX planner JSON RPC 2.0 server
@@ -468,9 +477,7 @@ if __name__ == '__main__':
   parser.add_argument('--ovxuser', default='tenant', help='OpenVirteX user (default="tenant")')
   parser.add_argument('--ovxpass', default='tenant', help='OpenVirteX password (default="tenant")')
   parser.add_argument('--ctrlproto', default='tcp', help='Default controller protocol (default="tcp")')
-  parser.add_argument('--ctrlhost', default='localhost', help='Default controller host (default="localhost")')
-  parser.add_argument('--ctrlport', default=10000, type=int, help='Default controller starting port (default="10000")')
-  parser.add_argument('--ctrlcmd', default=CTRL_CMD % ('localhost', 10000), help='Command to start default controller (default="%s")' % (CTRL_CMD % ('CTRLHOST', 'CTRLPORT')))
+  parser.add_argument('--ctrlport', default=10001, type=int, help='Default controller port (default="10001")')
   parser.add_argument('--version', action='version', version='%(prog)s 0.1')
   args = parser.parse_args()
   
