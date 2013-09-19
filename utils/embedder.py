@@ -13,6 +13,7 @@ import time
 CLONE_VM = '/usr/bin/VBoxManage clonevm OVX --snapshot Master --mode machine --options link --name %s --register'
 GET_IP_VM = '/usr/bin/VBoxManage guestcontrol %s execute --image /home/ovx/get-ip.sh --wait-exit --username ovx --password ovx --wait-stdout -- eth0'
 START_VM = '/usr/bin/VBoxManage startvm %s --type headless'
+#START_VM = '/usr/bin/VBoxManage startvm %s'
 STOP_VM = '/usr/bin/VBoxManage controlvm %s poweroff'
 UNREGISTER_VM = '/usr/bin/VBoxManage unregistervm %s --delete'
 
@@ -335,11 +336,14 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     for host in hosts:
       client.connectHost(tenantId, parseDpid(host['dpid']), host['port'], host['mac'])
     # create virtual link per physical link
+    connected = []
     for link in phyTopo['links']:
-      src = "%s/%s" % (parseDpid(link['src']['dpid']), link['src']['port'])
-      dst = "%s/%s" % (parseDpid(link['dst']['dpid']), link['dst']['port'])
-      path = "%s-%s" % (src, dst)
-      client.createLink(tenantId, path)
+      if (link['src']['dpid'], link['src']['port']) not in connected:
+        src = "%s/%s" % (parseDpid(link['src']['dpid']), link['src']['port'])
+        dst = "%s/%s" % (parseDpid(link['dst']['dpid']), link['dst']['port'])
+        path = "%s-%s" % (src, dst)
+        client.createLink(tenantId, path)
+        connected.append((link['dst']['dpid'], link['dst']['port']))
     # boot network
     client.startNetwork(tenantId)
 
