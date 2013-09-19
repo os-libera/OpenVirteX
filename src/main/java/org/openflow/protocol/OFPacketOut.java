@@ -46,8 +46,8 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	public OFPacketOut() {
 		super();
 		this.type = OFType.PACKET_OUT;
-		this.length = U16.t(MINIMUM_LENGTH);
-		this.bufferId = BUFFER_ID_NONE;
+		this.length = U16.t(OFPacketOut.MINIMUM_LENGTH);
+		this.bufferId = OFPacketOut.BUFFER_ID_NONE;
 	}
 
 	/**
@@ -64,9 +64,9 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	 * 
 	 * @param bufferId
 	 */
-	public OFPacketOut setBufferId(int bufferId) {
-		if (packetData != null && packetData.length > 0
-				&& bufferId != BUFFER_ID_NONE) {
+	public OFPacketOut setBufferId(final int bufferId) {
+		if (this.packetData != null && this.packetData.length > 0
+				&& bufferId != OFPacketOut.BUFFER_ID_NONE) {
 			throw new IllegalArgumentException(
 					"PacketOut should not have both bufferId and packetData set");
 		}
@@ -88,9 +88,9 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	 * 
 	 * @param packetData
 	 */
-	public OFPacketOut setPacketData(byte[] packetData) {
+	public OFPacketOut setPacketData(final byte[] packetData) {
 		if (packetData != null && packetData.length > 0
-				&& bufferId != BUFFER_ID_NONE) {
+				&& this.bufferId != OFPacketOut.BUFFER_ID_NONE) {
 			throw new IllegalArgumentException(
 					"PacketOut should not have both bufferId and packetData set");
 		}
@@ -112,7 +112,7 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	 * 
 	 * @param inPort
 	 */
-	public OFPacketOut setInPort(short inPort) {
+	public OFPacketOut setInPort(final short inPort) {
 		this.inPort = inPort;
 		return this;
 	}
@@ -122,7 +122,7 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	 * 
 	 * @param inPort
 	 */
-	public OFPacketOut setInPort(OFPort inPort) {
+	public OFPacketOut setInPort(final OFPort inPort) {
 		this.inPort = inPort.getValue();
 		return this;
 	}
@@ -150,7 +150,7 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	 * 
 	 * @param actionsLength
 	 */
-	public OFPacketOut setActionsLength(short actionsLength) {
+	public OFPacketOut setActionsLength(final short actionsLength) {
 		this.actionsLength = actionsLength;
 		return this;
 	}
@@ -170,49 +170,51 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	 * @param actions
 	 *            a list of ordered OFAction objects
 	 */
-	public OFPacketOut setActions(List<OFAction> actions) {
+	public OFPacketOut setActions(final List<OFAction> actions) {
 		this.actions = actions;
 		return this;
 	}
 
 	@Override
-	public void setActionFactory(OFActionFactory actionFactory) {
+	public void setActionFactory(final OFActionFactory actionFactory) {
 		this.actionFactory = actionFactory;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.bufferId = data.readInt();
 		this.inPort = data.readShort();
 		this.actionsLength = data.readShort();
-		if (this.actionFactory == null)
+		if (this.actionFactory == null) {
 			throw new RuntimeException("ActionFactory not set");
+		}
 		this.actions = this.actionFactory.parseActions(data,
-				getActionsLengthU());
-		this.packetData = new byte[getLengthU() - MINIMUM_LENGTH
-				- getActionsLengthU()];
+				this.getActionsLengthU());
+		this.packetData = new byte[this.getLengthU()
+				- OFPacketOut.MINIMUM_LENGTH - this.getActionsLengthU()];
 		data.readBytes(this.packetData);
-		validate();
+		this.validate();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
-		validate();
+	public void writeTo(final ChannelBuffer data) {
+		this.validate();
 		super.writeTo(data);
-		data.writeInt(bufferId);
-		data.writeShort(inPort);
-		data.writeShort(actionsLength);
-		for (OFAction action : actions) {
+		data.writeInt(this.bufferId);
+		data.writeShort(this.inPort);
+		data.writeShort(this.actionsLength);
+		for (final OFAction action : this.actions) {
 			action.writeTo(data);
 		}
-		if (this.packetData != null)
+		if (this.packetData != null) {
 			data.writeBytes(this.packetData);
+		}
 	}
 
 	/** validate the invariants of this OFMessage hold */
 	public void validate() {
-		if (!((bufferId != BUFFER_ID_NONE) ^ (packetData != null && packetData.length > 0))) {
+		if (!(this.bufferId != OFPacketOut.BUFFER_ID_NONE ^ (this.packetData != null && this.packetData.length > 0))) {
 			throw new IllegalStateException(
 					"OFPacketOut must have exactly one of (bufferId, packetData) set (not one, not both)");
 		}
@@ -222,16 +224,17 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	public int hashCode() {
 		final int prime = 293;
 		int result = super.hashCode();
-		result = prime * result + ((actions == null) ? 0 : actions.hashCode());
-		result = prime * result + actionsLength;
-		result = prime * result + bufferId;
-		result = prime * result + inPort;
-		result = prime * result + Arrays.hashCode(packetData);
+		result = prime * result
+				+ (this.actions == null ? 0 : this.actions.hashCode());
+		result = prime * result + this.actionsLength;
+		result = prime * result + this.bufferId;
+		result = prime * result + this.inPort;
+		result = prime * result + Arrays.hashCode(this.packetData);
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -241,24 +244,24 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 		if (!(obj instanceof OFPacketOut)) {
 			return false;
 		}
-		OFPacketOut other = (OFPacketOut) obj;
-		if (actions == null) {
+		final OFPacketOut other = (OFPacketOut) obj;
+		if (this.actions == null) {
 			if (other.actions != null) {
 				return false;
 			}
-		} else if (!actions.equals(other.actions)) {
+		} else if (!this.actions.equals(other.actions)) {
 			return false;
 		}
-		if (actionsLength != other.actionsLength) {
+		if (this.actionsLength != other.actionsLength) {
 			return false;
 		}
-		if (bufferId != other.bufferId) {
+		if (this.bufferId != other.bufferId) {
 			return false;
 		}
-		if (inPort != other.inPort) {
+		if (this.inPort != other.inPort) {
 			return false;
 		}
-		if (!Arrays.equals(packetData, other.packetData)) {
+		if (!Arrays.equals(this.packetData, other.packetData)) {
 			return false;
 		}
 		return true;
@@ -271,10 +274,11 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 	 */
 	@Override
 	public String toString() {
-		return "OFPacketOut [actionFactory=" + actionFactory + ", actions="
-				+ actions + ", actionsLength=" + actionsLength
-				+ ", bufferId=0x" + Integer.toHexString(bufferId) + ", inPort="
-				+ inPort + ", packetData=" + HexString.toHexString(packetData)
-				+ "]";
+		return "OFPacketOut [actionFactory=" + this.actionFactory
+				+ ", actions=" + this.actions + ", actionsLength="
+				+ this.actionsLength + ", bufferId=0x"
+				+ Integer.toHexString(this.bufferId) + ", inPort="
+				+ this.inPort + ", packetData="
+				+ HexString.toHexString(this.packetData) + "]";
 	}
 }

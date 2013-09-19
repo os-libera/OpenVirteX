@@ -169,14 +169,14 @@ public enum OFType {
 	 *            An Instantiator<OFMessage> implementation that creates an
 	 *            instance of the specified OFMessage
 	 */
-	OFType(int type, Class<? extends OFMessage> clazz,
-			Instantiable<OFMessage> instantiator) {
+	OFType(final int type, final Class<? extends OFMessage> clazz,
+			final Instantiable<OFMessage> instantiator) {
 		this.type = (byte) type;
 		this.clazz = clazz;
 		this.instantiable = instantiator;
 		try {
 			this.constructor = clazz.getConstructor(new Class[] {});
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(
 					"Failure getting constructor for class: " + clazz, e);
 		}
@@ -191,9 +191,10 @@ public enum OFType {
 	 * @param t
 	 *            type
 	 */
-	static public void addMapping(byte i, OFType t) {
-		if (mapping == null)
-			mapping = new OFType[32];
+	static public void addMapping(final byte i, final OFType t) {
+		if (OFType.mapping == null) {
+			OFType.mapping = new OFType[32];
+		}
 		OFType.mapping[i] = t;
 	}
 
@@ -203,7 +204,7 @@ public enum OFType {
 	 * @param i
 	 *            OpenFlow wire protocol type
 	 */
-	static public void removeMapping(byte i) {
+	static public void removeMapping(final byte i) {
 		OFType.mapping[i] = null;
 	}
 
@@ -216,7 +217,7 @@ public enum OFType {
 	 * @return OFType enum type
 	 */
 
-	static public OFType valueOf(Byte i) {
+	static public OFType valueOf(final Byte i) {
 		return OFType.mapping[i];
 	}
 
@@ -231,7 +232,7 @@ public enum OFType {
 	 * @return return the OFMessage subclass corresponding to this OFType
 	 */
 	public Class<? extends OFMessage> toClass() {
-		return clazz;
+		return this.clazz;
 	}
 
 	/**
@@ -241,7 +242,7 @@ public enum OFType {
 	 * @return the constructor
 	 */
 	public Constructor<? extends OFMessage> getConstructor() {
-		return constructor;
+		return this.constructor;
 	}
 
 	/**
@@ -250,21 +251,21 @@ public enum OFType {
 	 * @return the new object
 	 */
 	public OFMessage newInstance() {
-		return instantiable.instantiate();
+		return this.instantiable.instantiate();
 	}
 
 	/**
 	 * @return the instantiable
 	 */
 	public Instantiable<OFMessage> getInstantiable() {
-		return instantiable;
+		return this.instantiable;
 	}
 
 	/**
 	 * @param instantiable
 	 *            the instantiable to set
 	 */
-	public void setInstantiable(Instantiable<OFMessage> instantiable) {
+	public void setInstantiable(final Instantiable<OFMessage> instantiable) {
 		this.instantiable = instantiable;
 	}
 }

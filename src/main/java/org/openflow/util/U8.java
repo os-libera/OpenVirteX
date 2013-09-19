@@ -18,11 +18,11 @@
 package org.openflow.util;
 
 public class U8 {
-	public static short f(byte i) {
+	public static short f(final byte i) {
 		return (short) (i & 0xff);
 	}
 
-	public static byte t(short l) {
+	public static byte t(final short l) {
 		return (byte) l;
 	}
 }

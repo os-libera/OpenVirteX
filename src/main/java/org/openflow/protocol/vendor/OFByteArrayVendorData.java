@@ -42,7 +42,7 @@ public class OFByteArrayVendorData implements OFVendorData {
 	 * 
 	 * @param bytes
 	 */
-	public OFByteArrayVendorData(byte[] bytes) {
+	public OFByteArrayVendorData(final byte[] bytes) {
 		this.bytes = bytes;
 	}
 
@@ -52,7 +52,7 @@ public class OFByteArrayVendorData implements OFVendorData {
 	 * @return the byte array containing the raw vendor data.
 	 */
 	public byte[] getBytes() {
-		return bytes;
+		return this.bytes;
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class OFByteArrayVendorData implements OFVendorData {
 	 * @param bytes
 	 *            the raw byte array containing the vendor data.
 	 */
-	public void setBytes(byte[] bytes) {
+	public void setBytes(final byte[] bytes) {
 		this.bytes = bytes;
 	}
 
@@ -73,7 +73,7 @@ public class OFByteArrayVendorData implements OFVendorData {
 	 */
 	@Override
 	public int getLength() {
-		return (bytes != null) ? bytes.length : 0;
+		return this.bytes != null ? this.bytes.length : 0;
 	}
 
 	/**
@@ -85,9 +85,9 @@ public class OFByteArrayVendorData implements OFVendorData {
 	 *            the length to the end of the enclosing message
 	 */
 	@Override
-	public void readFrom(ChannelBuffer data, int length) {
-		bytes = new byte[length];
-		data.readBytes(bytes);
+	public void readFrom(final ChannelBuffer data, final int length) {
+		this.bytes = new byte[length];
+		data.readBytes(this.bytes);
 	}
 
 	/**
@@ -97,8 +97,9 @@ public class OFByteArrayVendorData implements OFVendorData {
 	 *            the channel buffer to which we're serializing
 	 */
 	@Override
-	public void writeTo(ChannelBuffer data) {
-		if (bytes != null)
-			data.writeBytes(bytes);
+	public void writeTo(final ChannelBuffer data) {
+		if (this.bytes != null) {
+			data.writeBytes(this.bytes);
+		}
 	}
 }

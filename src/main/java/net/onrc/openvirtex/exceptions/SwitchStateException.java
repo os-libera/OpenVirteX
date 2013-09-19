@@ -30,11 +30,11 @@ public class SwitchStateException extends IllegalArgumentException {
 		super();
 	}
 
-	public SwitchStateException(String msg) {
+	public SwitchStateException(final String msg) {
 		super(msg);
 	}
 
-	public SwitchStateException(Throwable msg) {
+	public SwitchStateException(final Throwable msg) {
 		super(msg);
 	}
 

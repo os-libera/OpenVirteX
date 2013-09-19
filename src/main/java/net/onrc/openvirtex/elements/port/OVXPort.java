@@ -34,7 +34,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
 public class OVXPort extends Port<OVXSwitch> {
 
-	private final Integer      tenantId;
+	private final Integer tenantId;
 	private final PhysicalPort physicalPort;
 	/** The link id. */
 	private Integer linkId;
@@ -70,12 +70,12 @@ public class OVXPort extends Port<OVXSwitch> {
 	public Short getPhysicalPortNumber() {
 		return this.physicalPort.getPortNumber();
 	}
-	
+
 	public Integer getLinkId() {
-		return linkId;
+		return this.linkId;
 	}
 
-	public void setLinkId(Integer linkId) {
+	public void setLinkId(final Integer linkId) {
 		this.linkId = linkId;
 	}
 
@@ -90,7 +90,8 @@ public class OVXPort extends Port<OVXSwitch> {
 	@Override
 	public String toString() {
 		String result = super.toString();
-		result += "\n- tenantId: " + this.tenantId +  "\n- linkId: " + this.linkId;
+		result += "\n- tenantId: " + this.tenantId + "\n- linkId: "
+				+ this.linkId;
 		return result;
 	}
 }

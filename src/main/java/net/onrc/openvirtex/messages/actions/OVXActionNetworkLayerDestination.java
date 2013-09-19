@@ -37,27 +37,29 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 
 public class OVXActionNetworkLayerDestination extends
-OFActionNetworkLayerDestination implements VirtualizableAction {
+		OFActionNetworkLayerDestination implements VirtualizableAction {
 
+	private final Logger log = LogManager
+			.getLogger(OVXActionNetworkLayerDestination.class.getName());
 
-    private Logger log = 
-	    LogManager.getLogger(OVXActionNetworkLayerDestination.class.getName());
-
-    @Override
-
-    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
-	Mappable map = sw.getMap();
-	OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(), 
-		this.networkAddress);
-	PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
-	if (pip == null) {
-	    pip = new PhysicalIPAddress(map.getVirtualNetwork(sw.getTenantId()).nextIP());
-	    log.debug("Adding IP mapping {} -> {} for tenant {} at switch {}", vip, pip, 
-		    sw.getTenantId(), sw.getName());
-	    map.addIP(pip, vip);
+	@Override
+	public void virtualize(final OVXSwitch sw,
+			final List<OFAction> approvedActions, final OFMatch match)
+			throws ActionVirtualizationDenied {
+		final Mappable map = sw.getMap();
+		final OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(),
+				this.networkAddress);
+		PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
+		if (pip == null) {
+			pip = new PhysicalIPAddress(map.getVirtualNetwork(sw.getTenantId())
+					.nextIP());
+			this.log.debug(
+					"Adding IP mapping {} -> {} for tenant {} at switch {}",
+					vip, pip, sw.getTenantId(), sw.getName());
+			map.addIP(pip, vip);
+		}
+		this.networkAddress = pip.getIp();
+		approvedActions.add(this);
 	}
-	this.networkAddress = pip.getIp();
-	approvedActions.add(this);
-    }
 
 }

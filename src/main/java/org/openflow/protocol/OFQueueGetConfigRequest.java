@@ -29,10 +29,10 @@ public class OFQueueGetConfigRequest extends OFMessage {
 
 	protected short portNumber;
 
-	public OFQueueGetConfigRequest(short portNumber) {
+	public OFQueueGetConfigRequest(final short portNumber) {
 		super();
 		this.type = OFType.QUEUE_GET_CONFIG_REQUEST;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFQueueGetConfigRequest.MINIMUM_LENGTH);
 		this.portNumber = portNumber;
 	}
 
@@ -44,26 +44,26 @@ public class OFQueueGetConfigRequest extends OFMessage {
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.portNumber = data.readShort();
 		data.readShort(); // pad
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeShort(this.portNumber);
 		data.writeShort(0); // pad
@@ -73,12 +73,12 @@ public class OFQueueGetConfigRequest extends OFMessage {
 	public int hashCode() {
 		final int prime = 347;
 		int result = super.hashCode();
-		result = prime * result + portNumber;
+		result = prime * result + this.portNumber;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -88,8 +88,8 @@ public class OFQueueGetConfigRequest extends OFMessage {
 		if (!(obj instanceof OFQueueGetConfigRequest)) {
 			return false;
 		}
-		OFQueueGetConfigRequest other = (OFQueueGetConfigRequest) obj;
-		if (portNumber != other.portNumber) {
+		final OFQueueGetConfigRequest other = (OFQueueGetConfigRequest) obj;
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
 		return true;

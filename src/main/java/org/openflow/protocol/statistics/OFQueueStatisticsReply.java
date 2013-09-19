@@ -36,14 +36,14 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
@@ -51,14 +51,14 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	 * @return the queueId
 	 */
 	public int getQueueId() {
-		return queueId;
+		return this.queueId;
 	}
 
 	/**
 	 * @param queueId
 	 *            the queueId to set
 	 */
-	public void setQueueId(int queueId) {
+	public void setQueueId(final int queueId) {
 		this.queueId = queueId;
 	}
 
@@ -66,14 +66,14 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	 * @return the transmitBytes
 	 */
 	public long getTransmitBytes() {
-		return transmitBytes;
+		return this.transmitBytes;
 	}
 
 	/**
 	 * @param transmitBytes
 	 *            the transmitBytes to set
 	 */
-	public void setTransmitBytes(long transmitBytes) {
+	public void setTransmitBytes(final long transmitBytes) {
 		this.transmitBytes = transmitBytes;
 	}
 
@@ -81,14 +81,14 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	 * @return the transmitPackets
 	 */
 	public long getTransmitPackets() {
-		return transmitPackets;
+		return this.transmitPackets;
 	}
 
 	/**
 	 * @param transmitPackets
 	 *            the transmitPackets to set
 	 */
-	public void setTransmitPackets(long transmitPackets) {
+	public void setTransmitPackets(final long transmitPackets) {
 		this.transmitPackets = transmitPackets;
 	}
 
@@ -96,14 +96,14 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	 * @return the transmitErrors
 	 */
 	public long getTransmitErrors() {
-		return transmitErrors;
+		return this.transmitErrors;
 	}
 
 	/**
 	 * @param transmitErrors
 	 *            the transmitErrors to set
 	 */
-	public void setTransmitErrors(long transmitErrors) {
+	public void setTransmitErrors(final long transmitErrors) {
 		this.transmitErrors = transmitErrors;
 	}
 
@@ -114,7 +114,7 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.portNumber = data.readShort();
 		data.readShort(); // pad
 		this.queueId = data.readInt();
@@ -124,7 +124,7 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeShort(this.portNumber);
 		data.writeShort((short) 0); // pad
 		data.writeInt(this.queueId);
@@ -137,19 +137,19 @@ public class OFQueueStatisticsReply implements OFStatistics {
 	public int hashCode() {
 		final int prime = 439;
 		int result = 1;
-		result = prime * result + portNumber;
-		result = prime * result + queueId;
+		result = prime * result + this.portNumber;
+		result = prime * result + this.queueId;
 		result = prime * result
-				+ (int) (transmitBytes ^ (transmitBytes >>> 32));
+				+ (int) (this.transmitBytes ^ this.transmitBytes >>> 32);
 		result = prime * result
-				+ (int) (transmitErrors ^ (transmitErrors >>> 32));
+				+ (int) (this.transmitErrors ^ this.transmitErrors >>> 32);
 		result = prime * result
-				+ (int) (transmitPackets ^ (transmitPackets >>> 32));
+				+ (int) (this.transmitPackets ^ this.transmitPackets >>> 32);
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -159,20 +159,20 @@ public class OFQueueStatisticsReply implements OFStatistics {
 		if (!(obj instanceof OFQueueStatisticsReply)) {
 			return false;
 		}
-		OFQueueStatisticsReply other = (OFQueueStatisticsReply) obj;
-		if (portNumber != other.portNumber) {
+		final OFQueueStatisticsReply other = (OFQueueStatisticsReply) obj;
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
-		if (queueId != other.queueId) {
+		if (this.queueId != other.queueId) {
 			return false;
 		}
-		if (transmitBytes != other.transmitBytes) {
+		if (this.transmitBytes != other.transmitBytes) {
 			return false;
 		}
-		if (transmitErrors != other.transmitErrors) {
+		if (this.transmitErrors != other.transmitErrors) {
 			return false;
 		}
-		if (transmitPackets != other.transmitPackets) {
+		if (this.transmitPackets != other.transmitPackets) {
 			return false;
 		}
 		return true;

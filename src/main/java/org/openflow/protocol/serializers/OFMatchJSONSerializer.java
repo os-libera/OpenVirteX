@@ -35,17 +35,17 @@ public class OFMatchJSONSerializer extends JsonSerializer<OFMatch> {
 	 *            The IP address in a 32 bit integer
 	 * @return An IP address string in dotted-decimal
 	 */
-	private String intToIp(int i) {
-		return ((i >> 24) & 0xFF) + "." + ((i >> 16) & 0xFF) + "."
-				+ ((i >> 8) & 0xFF) + "." + (i & 0xFF);
+	private String intToIp(final int i) {
+		return (i >> 24 & 0xFF) + "." + (i >> 16 & 0xFF) + "."
+				+ (i >> 8 & 0xFF) + "." + (i & 0xFF);
 	}
 
 	/**
 	 * Performs the serialization of a OFMatch object
 	 */
 	@Override
-	public void serialize(OFMatch match, JsonGenerator jGen,
-			SerializerProvider serializer) throws IOException,
+	public void serialize(final OFMatch match, final JsonGenerator jGen,
+			final SerializerProvider serializer) throws IOException,
 			JsonProcessingException {
 		jGen.writeStartObject();
 		jGen.writeStringField("dataLayerDestination",
@@ -63,12 +63,12 @@ public class OFMatchJSONSerializer extends JsonSerializer<OFMatch> {
 				match.getDataLayerVirtualLanPriorityCodePoint());
 		jGen.writeNumberField("inputPort", match.getInputPort());
 		jGen.writeStringField("networkDestination",
-				intToIp(match.getNetworkDestination()));
+				this.intToIp(match.getNetworkDestination()));
 		jGen.writeNumberField("networkDestinationMaskLen",
 				match.getNetworkDestinationMaskLen());
 		jGen.writeNumberField("networkProtocol", match.getNetworkProtocol());
 		jGen.writeStringField("networkSource",
-				intToIp(match.getNetworkSource()));
+				this.intToIp(match.getNetworkSource()));
 		jGen.writeNumberField("networkSourceMaskLen",
 				match.getNetworkSourceMaskLen());
 		jGen.writeNumberField("networkTypeOfService",

@@ -16,7 +16,6 @@ import net.onrc.openvirtex.exceptions.MissingRequiredField;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openflow.util.HexString;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -41,8 +40,9 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
 			final List<Long> longDpids = new ArrayList<Long>();
-			for (final Number dpid : dpids)
-			    longDpids.add(dpid.longValue());
+			for (final Number dpid : dpids) {
+				longDpids.add(dpid.longValue());
+			}
 			HandlerUtils.isValidDPID(tenantId.intValue(), longDpids);
 			final OVXSwitch ovxSwitch = virtualNetwork.createSwitch(longDpids);
 			if (ovxSwitch == null) {

@@ -31,14 +31,14 @@ public class OFPortStatisticsRequest implements OFStatistics {
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
@@ -48,14 +48,14 @@ public class OFPortStatisticsRequest implements OFStatistics {
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.portNumber = data.readShort();
 		data.readShort(); // pad
 		data.readInt(); // pad
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeShort(this.portNumber);
 		data.writeShort((short) 0); // pad
 		data.writeInt(0); // pad
@@ -65,12 +65,12 @@ public class OFPortStatisticsRequest implements OFStatistics {
 	public int hashCode() {
 		final int prime = 433;
 		int result = 1;
-		result = prime * result + portNumber;
+		result = prime * result + this.portNumber;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -80,8 +80,8 @@ public class OFPortStatisticsRequest implements OFStatistics {
 		if (!(obj instanceof OFPortStatisticsRequest)) {
 			return false;
 		}
-		OFPortStatisticsRequest other = (OFPortStatisticsRequest) obj;
-		if (portNumber != other.portNumber) {
+		final OFPortStatisticsRequest other = (OFPortStatisticsRequest) obj;
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
 		return true;

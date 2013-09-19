@@ -47,109 +47,117 @@ import org.openflow.protocol.action.OFAction;
 
 public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
-    private Logger log = LogManager.getLogger(OVXPacketOut.class.getName());
-    private OFMatch match = null;
-    private List<OFAction> approvedActions = new LinkedList<OFAction>();
-    
-    @Override
-    public void devirtualize(OVXSwitch sw) {
+	private final Logger log = LogManager.getLogger(OVXPacketOut.class
+			.getName());
+	private OFMatch match = null;
+	private final List<OFAction> approvedActions = new LinkedList<OFAction>();
 
-	
-	OVXPort inport = sw.getPort(this.getInPort());
-	
-	
-	
-	if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
-	    if (this.getPacketData().length <= 14) {
-		log.error("PacketOut has no buffer or data {}; dropping", this);
-		sw.sendMsg(OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_LEN, this), sw);
-		return;
-	    }
-	    match = new OFMatch().loadFromPacket(this.packetData, this.inPort);
-	} else {
-	    OVXPacketIn cause = sw.getFromBufferMap(this.bufferId);
-	    if (cause == null) {
-		log.error("Unknown buffer id {} for virtual switch {}; dropping", this.bufferId, sw);
-		return;
-	    }
-	
-	    match = new OFMatch().loadFromPacket(cause.getPacketData(), this.inPort);
-	    this.setBufferId(cause.getBufferId());           
-	    if (cause.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
-                this.setPacketData(cause.getPacketData());
-                this.setLengthU(this.getLengthU() + this.packetData.length);
-            }
-	}
-	
-	for (OFAction act : this.getActions()) {
-	    try {
-		((VirtualizableAction) act).virtualize(sw, approvedActions, match);
-		
-	    } catch (ActionVirtualizationDenied e) {
-		log.warn("Action {} could not be virtualized; error: {}", act, e.getMessage());
-		sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
-		return;
-	    } catch (DroppedMessageException e) {
-                log.debug("Dropping flowmod {}", this);
-                return;
-            }
-	}
-	
-	this.setInPort(inport.getPhysicalPortNumber());
-	this.prependRewriteActions(sw);
-	this.setActions(approvedActions);
-	this.setActionsLength((short)0);
-	this.setLengthU(OVXPacketOut.MINIMUM_LENGTH + this.packetData.length);
-	for (final OFAction act : this.approvedActions) {
-	    this.setLengthU(this.getLengthU() + act.getLengthU());
-	    this.setActionsLength((short) (this.getActionsLength() + act.getLength()));
+	@Override
+	public void devirtualize(final OVXSwitch sw) {
+
+		final OVXPort inport = sw.getPort(this.getInPort());
+
+		if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
+			if (this.getPacketData().length <= 14) {
+				this.log.error("PacketOut has no buffer or data {}; dropping",
+						this);
+				sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+						OFBadRequestCode.OFPBRC_BAD_LEN, this), sw);
+				return;
+			}
+			this.match = new OFMatch().loadFromPacket(this.packetData,
+					this.inPort);
+		} else {
+			final OVXPacketIn cause = sw.getFromBufferMap(this.bufferId);
+			if (cause == null) {
+				this.log.error(
+						"Unknown buffer id {} for virtual switch {}; dropping",
+						this.bufferId, sw);
+				return;
+			}
+
+			this.match = new OFMatch().loadFromPacket(cause.getPacketData(),
+					this.inPort);
+			this.setBufferId(cause.getBufferId());
+			if (cause.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
+				this.setPacketData(cause.getPacketData());
+				this.setLengthU(this.getLengthU() + this.packetData.length);
+			}
+		}
+
+		for (final OFAction act : this.getActions()) {
+			try {
+				((VirtualizableAction) act).virtualize(sw,
+						this.approvedActions, this.match);
+
+			} catch (final ActionVirtualizationDenied e) {
+				this.log.warn("Action {} could not be virtualized; error: {}",
+						act, e.getMessage());
+				sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
+				return;
+			} catch (final DroppedMessageException e) {
+				this.log.debug("Dropping flowmod {}", this);
+				return;
+			}
+		}
+
+		this.setInPort(inport.getPhysicalPortNumber());
+		this.prependRewriteActions(sw);
+		this.setActions(this.approvedActions);
+		this.setActionsLength((short) 0);
+		this.setLengthU(OVXPacketOut.MINIMUM_LENGTH + this.packetData.length);
+		for (final OFAction act : this.approvedActions) {
+			this.setLengthU(this.getLengthU() + act.getLengthU());
+			this.setActionsLength((short) (this.getActionsLength() + act
+					.getLength()));
+		}
+
+		OVXMessageUtil.translateXid(this, inport);
+		if (sw instanceof OVXBigSwitch) {
+			((OVXBigSwitch) sw).sendSouthBS(this, inport);
+		} else {
+			sw.sendSouth(this);
+		}
 	}
 
-	OVXMessageUtil.translateXid(this, inport);
-        if (sw instanceof OVXBigSwitch) {
-            ((OVXBigSwitch) sw).sendSouthBS(this, inport);
-        } else {
-            sw.sendSouth(this);
-        }
-    }
-    
-    
-    private void prependRewriteActions(OVXSwitch sw) {
-   	Mappable map = sw.getMap();
-   	
-   	if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-   	    OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(), 
-   		    match.getNetworkSource());
-   	    PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
-   	    if (pip == null) {
-   		pip = new PhysicalIPAddress(map.getVirtualNetwork(sw.getTenantId()).nextIP());
-   		log.debug("Adding IP mapping {} -> {} for tenant {} at switch {}", vip, pip, 
-   			sw.getTenantId(), sw.getName());
-   		map.addIP(pip, vip);
-   	    }
-   	    OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-   	    srcAct.setNetworkAddress(pip.getIp());
-   	    approvedActions.add(0,srcAct);
-   	    
-   	    
-   	}
+	private void prependRewriteActions(final OVXSwitch sw) {
+		final Mappable map = sw.getMap();
 
-   	if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-   	    OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(), 
-   		    match.getNetworkDestination());
-   	    PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
-   	    if (pip == null) {
-   		pip = new PhysicalIPAddress(map.getVirtualNetwork(sw.getTenantId()).nextIP());
-   		log.debug("Adding IP mapping {} -> {} for tenant {} at switch {}", vip, pip, 
-   			sw.getTenantId(), sw.getName());
-   		map.addIP(pip, vip);
-   	    }
-   	    OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-   	    dstAct.setNetworkAddress(pip.getIp());
-   	 approvedActions.add(0, dstAct);
-   	    	
-   	   
-   	}
-       }
-    
+		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+			final OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(),
+					this.match.getNetworkSource());
+			PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
+			if (pip == null) {
+				pip = new PhysicalIPAddress(map.getVirtualNetwork(
+						sw.getTenantId()).nextIP());
+				this.log.debug(
+						"Adding IP mapping {} -> {} for tenant {} at switch {}",
+						vip, pip, sw.getTenantId(), sw.getName());
+				map.addIP(pip, vip);
+			}
+			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
+			srcAct.setNetworkAddress(pip.getIp());
+			this.approvedActions.add(0, srcAct);
+
+		}
+
+		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
+			final OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(),
+					this.match.getNetworkDestination());
+			PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
+			if (pip == null) {
+				pip = new PhysicalIPAddress(map.getVirtualNetwork(
+						sw.getTenantId()).nextIP());
+				this.log.debug(
+						"Adding IP mapping {} -> {} for tenant {} at switch {}",
+						vip, pip, sw.getTenantId(), sw.getName());
+				map.addIP(pip, vip);
+			}
+			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
+			dstAct.setNetworkAddress(pip.getIp());
+			this.approvedActions.add(0, dstAct);
+
+		}
+	}
+
 }

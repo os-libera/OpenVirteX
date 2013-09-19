@@ -40,56 +40,56 @@ import net.onrc.openvirtex.elements.port.OVXPort;
  */
 public class OVXLink extends Link<OVXPort, OVXSwitch> {
 
-    /** The link id. */
-    private final Integer linkId;
+	/** The link id. */
+	private final Integer linkId;
 
-    /** The tenant id. */
-    private final Integer tenantId;
+	/** The tenant id. */
+	private final Integer tenantId;
 
-    /**
-     * Instantiates a new virtual link.
-     * 
-     * @param linkId
-     *            link id
-     * @param tenantId
-     *            tenant id
-     * @param srcPort
-     *            virtual source port
-     * @param dstPort
-     *            virtual destination port
-     */
-    public OVXLink(final Integer linkId, final Integer tenantId,
-	    final OVXPort srcPort, final OVXPort dstPort) {
-	super(srcPort, dstPort);
-	this.linkId = linkId;
-	this.tenantId = tenantId;
-    }
+	/**
+	 * Instantiates a new virtual link.
+	 * 
+	 * @param linkId
+	 *            link id
+	 * @param tenantId
+	 *            tenant id
+	 * @param srcPort
+	 *            virtual source port
+	 * @param dstPort
+	 *            virtual destination port
+	 */
+	public OVXLink(final Integer linkId, final Integer tenantId,
+			final OVXPort srcPort, final OVXPort dstPort) {
+		super(srcPort, dstPort);
+		this.linkId = linkId;
+		this.tenantId = tenantId;
+	}
 
-    /**
-     * Gets the link id.
-     * 
-     * @return the link id
-     */
-    public Integer getLinkId() {
-	return this.linkId;
-    }
+	/**
+	 * Gets the link id.
+	 * 
+	 * @return the link id
+	 */
+	public Integer getLinkId() {
+		return this.linkId;
+	}
 
-    /**
-     * Gets the tenant id.
-     * 
-     * @return the tenant id
-     */
-    public Integer getTenantId() {
-	return this.tenantId;
-    }
+	/**
+	 * Gets the tenant id.
+	 * 
+	 * @return the tenant id
+	 */
+	public Integer getTenantId() {
+		return this.tenantId;
+	}
 
-    /**
-     * Register mapping between virtual link and physical path
-     * 
-     * @param physicalLinks
-     */
-    public void register(final List<PhysicalLink> physicalLinks) {
-	this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
-    }
+	/**
+	 * Register mapping between virtual link and physical path
+	 * 
+	 * @param physicalLinks
+	 */
+	public void register(final List<PhysicalLink> physicalLinks) {
+		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
+	}
 
 }

@@ -28,6 +28,6 @@ import org.openflow.protocol.OFMessage;
 
 public interface LLDPEventHandler {
 
-    public void handleLLDP(OFMessage msg, Switch sw);
+	public void handleLLDP(OFMessage msg, Switch sw);
 
 }

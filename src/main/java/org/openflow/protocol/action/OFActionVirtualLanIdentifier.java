@@ -34,10 +34,10 @@ public class OFActionVirtualLanIdentifier extends OFAction {
 
 	public OFActionVirtualLanIdentifier() {
 		super.setType(OFActionType.SET_VLAN_ID);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionVirtualLanIdentifier.MINIMUM_LENGTH);
 	}
 
-	public OFActionVirtualLanIdentifier(short vlanId) {
+	public OFActionVirtualLanIdentifier(final short vlanId) {
 		this();
 		this.virtualLanIdentifier = vlanId;
 	}
@@ -46,26 +46,26 @@ public class OFActionVirtualLanIdentifier extends OFAction {
 	 * @return the virtualLanIdentifier
 	 */
 	public short getVirtualLanIdentifier() {
-		return virtualLanIdentifier;
+		return this.virtualLanIdentifier;
 	}
 
 	/**
 	 * @param virtualLanIdentifier
 	 *            the virtualLanIdentifier to set
 	 */
-	public void setVirtualLanIdentifier(short virtualLanIdentifier) {
+	public void setVirtualLanIdentifier(final short virtualLanIdentifier) {
 		this.virtualLanIdentifier = virtualLanIdentifier;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.virtualLanIdentifier = data.readShort();
 		data.readShort();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeShort(this.virtualLanIdentifier);
 		data.writeShort((short) 0);
@@ -75,12 +75,12 @@ public class OFActionVirtualLanIdentifier extends OFAction {
 	public int hashCode() {
 		final int prime = 383;
 		int result = super.hashCode();
-		result = prime * result + virtualLanIdentifier;
+		result = prime * result + this.virtualLanIdentifier;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -90,8 +90,8 @@ public class OFActionVirtualLanIdentifier extends OFAction {
 		if (!(obj instanceof OFActionVirtualLanIdentifier)) {
 			return false;
 		}
-		OFActionVirtualLanIdentifier other = (OFActionVirtualLanIdentifier) obj;
-		if (virtualLanIdentifier != other.virtualLanIdentifier) {
+		final OFActionVirtualLanIdentifier other = (OFActionVirtualLanIdentifier) obj;
+		if (this.virtualLanIdentifier != other.virtualLanIdentifier) {
 			return false;
 		}
 		return true;

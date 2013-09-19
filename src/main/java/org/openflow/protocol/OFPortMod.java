@@ -39,21 +39,21 @@ public class OFPortMod extends OFMessage {
 	public OFPortMod() {
 		super();
 		this.type = OFType.PORT_MOD;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFPortMod.MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
@@ -61,17 +61,18 @@ public class OFPortMod extends OFMessage {
 	 * @return the hardwareAddress
 	 */
 	public byte[] getHardwareAddress() {
-		return hardwareAddress;
+		return this.hardwareAddress;
 	}
 
 	/**
 	 * @param hardwareAddress
 	 *            the hardwareAddress to set
 	 */
-	public void setHardwareAddress(byte[] hardwareAddress) {
-		if (hardwareAddress.length != OFPhysicalPort.OFP_ETH_ALEN)
+	public void setHardwareAddress(final byte[] hardwareAddress) {
+		if (hardwareAddress.length != OFPhysicalPort.OFP_ETH_ALEN) {
 			throw new RuntimeException("Hardware address must have length "
 					+ OFPhysicalPort.OFP_ETH_ALEN);
+		}
 		this.hardwareAddress = hardwareAddress;
 	}
 
@@ -79,14 +80,14 @@ public class OFPortMod extends OFMessage {
 	 * @return the config
 	 */
 	public int getConfig() {
-		return config;
+		return this.config;
 	}
 
 	/**
 	 * @param config
 	 *            the config to set
 	 */
-	public void setConfig(int config) {
+	public void setConfig(final int config) {
 		this.config = config;
 	}
 
@@ -94,14 +95,14 @@ public class OFPortMod extends OFMessage {
 	 * @return the mask
 	 */
 	public int getMask() {
-		return mask;
+		return this.mask;
 	}
 
 	/**
 	 * @param mask
 	 *            the mask to set
 	 */
-	public void setMask(int mask) {
+	public void setMask(final int mask) {
 		this.mask = mask;
 	}
 
@@ -109,23 +110,24 @@ public class OFPortMod extends OFMessage {
 	 * @return the advertise
 	 */
 	public int getAdvertise() {
-		return advertise;
+		return this.advertise;
 	}
 
 	/**
 	 * @param advertise
 	 *            the advertise to set
 	 */
-	public void setAdvertise(int advertise) {
+	public void setAdvertise(final int advertise) {
 		this.advertise = advertise;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.portNumber = data.readShort();
-		if (this.hardwareAddress == null)
+		if (this.hardwareAddress == null) {
 			this.hardwareAddress = new byte[OFPhysicalPort.OFP_ETH_ALEN];
+		}
 		data.readBytes(this.hardwareAddress);
 		this.config = data.readInt();
 		this.mask = data.readInt();
@@ -134,7 +136,7 @@ public class OFPortMod extends OFMessage {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeShort(this.portNumber);
 		data.writeBytes(this.hardwareAddress);
@@ -148,16 +150,16 @@ public class OFPortMod extends OFMessage {
 	public int hashCode() {
 		final int prime = 311;
 		int result = super.hashCode();
-		result = prime * result + advertise;
-		result = prime * result + config;
-		result = prime * result + Arrays.hashCode(hardwareAddress);
-		result = prime * result + mask;
-		result = prime * result + portNumber;
+		result = prime * result + this.advertise;
+		result = prime * result + this.config;
+		result = prime * result + Arrays.hashCode(this.hardwareAddress);
+		result = prime * result + this.mask;
+		result = prime * result + this.portNumber;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -167,20 +169,20 @@ public class OFPortMod extends OFMessage {
 		if (!(obj instanceof OFPortMod)) {
 			return false;
 		}
-		OFPortMod other = (OFPortMod) obj;
-		if (advertise != other.advertise) {
+		final OFPortMod other = (OFPortMod) obj;
+		if (this.advertise != other.advertise) {
 			return false;
 		}
-		if (config != other.config) {
+		if (this.config != other.config) {
 			return false;
 		}
-		if (!Arrays.equals(hardwareAddress, other.hardwareAddress)) {
+		if (!Arrays.equals(this.hardwareAddress, other.hardwareAddress)) {
 			return false;
 		}
-		if (mask != other.mask) {
+		if (this.mask != other.mask) {
 			return false;
 		}
-		if (portNumber != other.portNumber) {
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
 		return true;

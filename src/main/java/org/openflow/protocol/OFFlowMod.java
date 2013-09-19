@@ -70,7 +70,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 		super();
 		this.outPort = OFPort.OFPP_NONE.getValue();
 		this.type = OFType.FLOW_MOD;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFFlowMod.MINIMUM_LENGTH);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param bufferId
 	 */
-	public OFFlowMod setBufferId(int bufferId) {
+	public OFFlowMod setBufferId(final int bufferId) {
 		this.bufferId = bufferId;
 		return this;
 	}
@@ -106,7 +106,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param cookie
 	 */
-	public OFFlowMod setCookie(long cookie) {
+	public OFFlowMod setCookie(final long cookie) {
 		this.cookie = cookie;
 		return this;
 	}
@@ -125,7 +125,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param command
 	 */
-	public OFFlowMod setCommand(short command) {
+	public OFFlowMod setCommand(final short command) {
 		this.command = command;
 		return this;
 	}
@@ -144,7 +144,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param flags
 	 */
-	public OFFlowMod setFlags(short flags) {
+	public OFFlowMod setFlags(final short flags) {
 		this.flags = flags;
 		return this;
 	}
@@ -163,7 +163,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param hardTimeout
 	 */
-	public OFFlowMod setHardTimeout(short hardTimeout) {
+	public OFFlowMod setHardTimeout(final short hardTimeout) {
 		this.hardTimeout = hardTimeout;
 		return this;
 	}
@@ -182,7 +182,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param idleTimeout
 	 */
-	public OFFlowMod setIdleTimeout(short idleTimeout) {
+	public OFFlowMod setIdleTimeout(final short idleTimeout) {
 		this.idleTimeout = idleTimeout;
 		return this;
 	}
@@ -202,7 +202,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param match
 	 */
-	public OFFlowMod setMatch(OFMatch match) {
+	public OFFlowMod setMatch(final OFMatch match) {
 		this.match = match;
 		return this;
 	}
@@ -221,7 +221,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param outPort
 	 */
-	public OFFlowMod setOutPort(short outPort) {
+	public OFFlowMod setOutPort(final short outPort) {
 		this.outPort = outPort;
 		return this;
 	}
@@ -231,7 +231,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param port
 	 */
-	public OFFlowMod setOutPort(OFPort port) {
+	public OFFlowMod setOutPort(final OFPort port) {
 		this.outPort = port.getValue();
 		return this;
 	}
@@ -250,7 +250,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * 
 	 * @param priority
 	 */
-	public OFFlowMod setPriority(short priority) {
+	public OFFlowMod setPriority(final short priority) {
 		this.priority = priority;
 		return this;
 	}
@@ -270,16 +270,17 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 * @param actions
 	 *            a list of ordered OFAction objects
 	 */
-	public OFFlowMod setActions(List<OFAction> actions) {
+	public OFFlowMod setActions(final List<OFAction> actions) {
 		this.actions = actions;
 		return this;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
-		if (this.match == null)
+		if (this.match == null) {
 			this.match = new OFMatch();
+		}
 		this.match.readFrom(data);
 		this.cookie = data.readLong();
 		this.command = data.readShort();
@@ -289,33 +290,34 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 		this.bufferId = data.readInt();
 		this.outPort = data.readShort();
 		this.flags = data.readShort();
-		if (this.actionFactory == null)
+		if (this.actionFactory == null) {
 			throw new RuntimeException("OFActionFactory not set");
-		this.actions = this.actionFactory.parseActions(data, getLengthU()
-				- MINIMUM_LENGTH);
+		}
+		this.actions = this.actionFactory.parseActions(data, this.getLengthU()
+				- OFFlowMod.MINIMUM_LENGTH);
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		this.match.writeTo(data);
-		data.writeLong(cookie);
-		data.writeShort(command);
-		data.writeShort(idleTimeout);
-		data.writeShort(hardTimeout);
-		data.writeShort(priority);
-		data.writeInt(bufferId);
-		data.writeShort(outPort);
-		data.writeShort(flags);
-		if (actions != null) {
-			for (OFAction action : actions) {
+		data.writeLong(this.cookie);
+		data.writeShort(this.command);
+		data.writeShort(this.idleTimeout);
+		data.writeShort(this.hardTimeout);
+		data.writeShort(this.priority);
+		data.writeInt(this.bufferId);
+		data.writeShort(this.outPort);
+		data.writeShort(this.flags);
+		if (this.actions != null) {
+			for (final OFAction action : this.actions) {
 				action.writeTo(data);
 			}
 		}
 	}
 
 	@Override
-	public void setActionFactory(OFActionFactory actionFactory) {
+	public void setActionFactory(final OFActionFactory actionFactory) {
 		this.actionFactory = actionFactory;
 	}
 
@@ -323,21 +325,23 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	public int hashCode() {
 		final int prime = 227;
 		int result = super.hashCode();
-		result = prime * result + ((actions == null) ? 0 : actions.hashCode());
-		result = prime * result + bufferId;
-		result = prime * result + command;
-		result = prime * result + (int) (cookie ^ (cookie >>> 32));
-		result = prime * result + flags;
-		result = prime * result + hardTimeout;
-		result = prime * result + idleTimeout;
-		result = prime * result + ((match == null) ? 0 : match.hashCode());
-		result = prime * result + outPort;
-		result = prime * result + priority;
+		result = prime * result
+				+ (this.actions == null ? 0 : this.actions.hashCode());
+		result = prime * result + this.bufferId;
+		result = prime * result + this.command;
+		result = prime * result + (int) (this.cookie ^ this.cookie >>> 32);
+		result = prime * result + this.flags;
+		result = prime * result + this.hardTimeout;
+		result = prime * result + this.idleTimeout;
+		result = prime * result
+				+ (this.match == null ? 0 : this.match.hashCode());
+		result = prime * result + this.outPort;
+		result = prime * result + this.priority;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -347,43 +351,43 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 		if (!(obj instanceof OFFlowMod)) {
 			return false;
 		}
-		OFFlowMod other = (OFFlowMod) obj;
-		if (actions == null) {
+		final OFFlowMod other = (OFFlowMod) obj;
+		if (this.actions == null) {
 			if (other.actions != null) {
 				return false;
 			}
-		} else if (!actions.equals(other.actions)) {
+		} else if (!this.actions.equals(other.actions)) {
 			return false;
 		}
-		if (bufferId != other.bufferId) {
+		if (this.bufferId != other.bufferId) {
 			return false;
 		}
-		if (command != other.command) {
+		if (this.command != other.command) {
 			return false;
 		}
-		if (cookie != other.cookie) {
+		if (this.cookie != other.cookie) {
 			return false;
 		}
-		if (flags != other.flags) {
+		if (this.flags != other.flags) {
 			return false;
 		}
-		if (hardTimeout != other.hardTimeout) {
+		if (this.hardTimeout != other.hardTimeout) {
 			return false;
 		}
-		if (idleTimeout != other.idleTimeout) {
+		if (this.idleTimeout != other.idleTimeout) {
 			return false;
 		}
-		if (match == null) {
+		if (this.match == null) {
 			if (other.match != null) {
 				return false;
 			}
-		} else if (!match.equals(other.match)) {
+		} else if (!this.match.equals(other.match)) {
 			return false;
 		}
-		if (outPort != other.outPort) {
+		if (this.outPort != other.outPort) {
 			return false;
 		}
-		if (priority != other.priority) {
+		if (this.priority != other.priority) {
 			return false;
 		}
 		return true;
@@ -396,12 +400,13 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 */
 	@Override
 	public OFFlowMod clone() throws CloneNotSupportedException {
-		OFMatch neoMatch = match.clone();
-		OFFlowMod flowMod = (OFFlowMod) super.clone();
+		final OFMatch neoMatch = this.match.clone();
+		final OFFlowMod flowMod = (OFFlowMod) super.clone();
 		flowMod.setMatch(neoMatch);
-		List<OFAction> neoActions = new LinkedList<OFAction>();
-		for (OFAction action : this.actions)
+		final List<OFAction> neoActions = new LinkedList<OFAction>();
+		for (final OFAction action : this.actions) {
 			neoActions.add(action.clone());
+		}
 		flowMod.setActions(neoActions);
 		return flowMod;
 	}
@@ -413,12 +418,13 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 	 */
 	@Override
 	public String toString() {
-		return "OFFlowMod [actionFactory=" + actionFactory + ", actions="
-				+ actions + ", bufferId=" + bufferId + ", command=" + command
-				+ ", cookie=" + Long.toHexString(cookie) + ", flags=" + flags
-				+ ", hardTimeout=" + hardTimeout + ", idleTimeout="
-				+ idleTimeout + ", match=" + match + ", outPort=" + outPort
-				+ ", priority=" + priority + ", length=" + length + ", type="
-				+ type + ", version=" + version + ", xid=" + xid + "]";
+		return "OFFlowMod [actionFactory=" + this.actionFactory + ", actions="
+				+ this.actions + ", bufferId=" + this.bufferId + ", command="
+				+ this.command + ", cookie=" + Long.toHexString(this.cookie)
+				+ ", flags=" + this.flags + ", hardTimeout=" + this.hardTimeout
+				+ ", idleTimeout=" + this.idleTimeout + ", match=" + this.match
+				+ ", outPort=" + this.outPort + ", priority=" + this.priority
+				+ ", length=" + this.length + ", type=" + this.type
+				+ ", version=" + this.version + ", xid=" + this.xid + "]";
 	}
 }

@@ -129,14 +129,14 @@ public enum OFActionType {
 	 * @param instantiable
 	 *            the instantiable for the OFAction this type represents
 	 */
-	OFActionType(int type, Class<? extends OFAction> clazz,
-			Instantiable<OFAction> instantiable) {
+	OFActionType(final int type, final Class<? extends OFAction> clazz,
+			final Instantiable<OFAction> instantiable) {
 		this.type = (short) type;
 		this.clazz = clazz;
 		this.instantiable = instantiable;
 		try {
 			this.constructor = clazz.getConstructor(new Class[] {});
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(
 					"Failure getting constructor for class: " + clazz, e);
 		}
@@ -151,12 +151,14 @@ public enum OFActionType {
 	 * @param t
 	 *            type
 	 */
-	static public void addMapping(short i, OFActionType t) {
-		if (mapping == null)
-			mapping = new OFActionType[16];
+	static public void addMapping(short i, final OFActionType t) {
+		if (OFActionType.mapping == null) {
+			OFActionType.mapping = new OFActionType[16];
+		}
 		// bring higher mappings down to the edge of our array
-		if (i < 0)
+		if (i < 0) {
 			i = (short) (16 + i);
+		}
 		OFActionType.mapping[i] = t;
 	}
 
@@ -170,8 +172,9 @@ public enum OFActionType {
 	 */
 
 	static public OFActionType valueOf(short i) {
-		if (i < 0)
+		if (i < 0) {
 			i = (short) (16 + i);
+		}
 		return OFActionType.mapping[i];
 	}
 
@@ -187,7 +190,7 @@ public enum OFActionType {
 	 * @return return the OFAction subclass corresponding to this OFActionType
 	 */
 	public Class<? extends OFAction> toClass() {
-		return clazz;
+		return this.clazz;
 	}
 
 	/**
@@ -197,7 +200,7 @@ public enum OFActionType {
 	 * @return the constructor
 	 */
 	public Constructor<? extends OFAction> getConstructor() {
-		return constructor;
+		return this.constructor;
 	}
 
 	/**
@@ -206,21 +209,21 @@ public enum OFActionType {
 	 * @return the new object
 	 */
 	public OFAction newInstance() {
-		return instantiable.instantiate();
+		return this.instantiable.instantiate();
 	}
 
 	/**
 	 * @return the instantiable
 	 */
 	public Instantiable<OFAction> getInstantiable() {
-		return instantiable;
+		return this.instantiable;
 	}
 
 	/**
 	 * @param instantiable
 	 *            the instantiable to set
 	 */
-	public void setInstantiable(Instantiable<OFAction> instantiable) {
+	public void setInstantiable(final Instantiable<OFAction> instantiable) {
 		this.instantiable = instantiable;
 	}
 }

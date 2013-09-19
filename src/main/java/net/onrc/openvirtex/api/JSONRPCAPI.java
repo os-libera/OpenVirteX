@@ -16,42 +16,43 @@ import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 public class JSONRPCAPI extends AbstractHandler {
-	
-	private UIService uiService;
-	private TenantService tenantService;
-	private AdminService adminService;
 
-	public JSONRPCAPI(){
-		tenantService = new TenantService();
-		uiService = new UIService();
-		adminService = new AdminService();
+	private final UIService uiService;
+	private final TenantService tenantService;
+	private final AdminService adminService;
+
+	public JSONRPCAPI() {
+		this.tenantService = new TenantService();
+		this.uiService = new UIService();
+		this.adminService = new AdminService();
 	}
 
 	@Override
-	public void handle(String target,Request baseRequest,
-			HttpServletRequest request,HttpServletResponse response) throws IOException, ServletException {
-		
-		
-		
-		if(baseRequest.getAuthentication() == null ||
-				baseRequest.getAuthentication().equals(Authentication.UNAUTHENTICATED)){
+	public void handle(final String target, final Request baseRequest,
+			final HttpServletRequest request, final HttpServletResponse response)
+			throws IOException, ServletException {
+
+		if (baseRequest.getAuthentication() == null
+				|| baseRequest.getAuthentication().equals(
+						Authentication.UNAUTHENTICATED)) {
 			response.sendError(Response.SC_UNAUTHORIZED, "Permission denied.");
 			baseRequest.setHandled(true);
-			
+
 			return;
 		}
 		if (target.equals("/ui")) {
-			uiService.handle(request, response);
-		
-		} else if (target.equals("/tenant")) { 	
-			tenantService.handle(request, response);
-		
+			this.uiService.handle(request, response);
+
+		} else if (target.equals("/tenant")) {
+			this.tenantService.handle(request, response);
+
 		} else if (target.equals("/admin")) {
-			adminService.handle(request, response);
-		
+			this.adminService.handle(request, response);
+
 		} else {
-			response.sendError(Response.SC_NOT_FOUND, target + " is not a service offered by OVX");
-		
+			response.sendError(Response.SC_NOT_FOUND, target
+					+ " is not a service offered by OVX");
+
 		}
 		baseRequest.setHandled(true);
 	}

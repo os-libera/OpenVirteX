@@ -34,7 +34,7 @@ public class OFActionOutput extends OFAction implements Cloneable {
 
 	public OFActionOutput() {
 		super.setType(OFActionType.OUTPUT);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionOutput.MINIMUM_LENGTH);
 	}
 
 	/**
@@ -45,7 +45,7 @@ public class OFActionOutput extends OFAction implements Cloneable {
 	 * @param port
 	 */
 
-	public OFActionOutput(short port) {
+	public OFActionOutput(final short port) {
 		this(port, (short) 65535);
 	}
 
@@ -60,10 +60,10 @@ public class OFActionOutput extends OFAction implements Cloneable {
 	 *            hardware only supports this value for OFPP_CONTROLLER
 	 */
 
-	public OFActionOutput(short port, short maxLength) {
+	public OFActionOutput(final short port, final short maxLength) {
 		super();
 		super.setType(OFActionType.OUTPUT);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionOutput.MINIMUM_LENGTH);
 		this.port = port;
 		this.maxLength = maxLength;
 	}
@@ -82,7 +82,7 @@ public class OFActionOutput extends OFAction implements Cloneable {
 	 * 
 	 * @param port
 	 */
-	public OFActionOutput setPort(short port) {
+	public OFActionOutput setPort(final short port) {
 		this.port = port;
 		return this;
 	}
@@ -101,36 +101,36 @@ public class OFActionOutput extends OFAction implements Cloneable {
 	 * 
 	 * @param maxLength
 	 */
-	public OFActionOutput setMaxLength(short maxLength) {
+	public OFActionOutput setMaxLength(final short maxLength) {
 		this.maxLength = maxLength;
 		return this;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.port = data.readShort();
 		this.maxLength = data.readShort();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
-		data.writeShort(port);
-		data.writeShort(maxLength);
+		data.writeShort(this.port);
+		data.writeShort(this.maxLength);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 367;
 		int result = super.hashCode();
-		result = prime * result + maxLength;
-		result = prime * result + port;
+		result = prime * result + this.maxLength;
+		result = prime * result + this.port;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -140,11 +140,11 @@ public class OFActionOutput extends OFAction implements Cloneable {
 		if (!(obj instanceof OFActionOutput)) {
 			return false;
 		}
-		OFActionOutput other = (OFActionOutput) obj;
-		if (maxLength != other.maxLength) {
+		final OFActionOutput other = (OFActionOutput) obj;
+		if (this.maxLength != other.maxLength) {
 			return false;
 		}
-		if (port != other.port) {
+		if (this.port != other.port) {
 			return false;
 		}
 		return true;
@@ -157,10 +157,10 @@ public class OFActionOutput extends OFAction implements Cloneable {
 	 */
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(type);
+		final StringBuilder builder = new StringBuilder();
+		builder.append(this.type);
 		builder.append("[");
-		builder.append(port);
+		builder.append(this.port);
 		builder.append("]");
 		return builder.toString();
 	}

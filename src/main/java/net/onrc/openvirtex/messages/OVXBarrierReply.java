@@ -29,7 +29,7 @@ import org.openflow.protocol.OFBarrierReply;
 public class OVXBarrierReply extends OFBarrierReply implements Virtualizable {
 
 	@Override
-	public void virtualize(PhysicalSwitch sw) {
+	public void virtualize(final PhysicalSwitch sw) {
 		// TODO Auto-generated method stubP
 
 	}

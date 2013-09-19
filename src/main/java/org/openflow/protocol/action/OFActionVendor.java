@@ -31,32 +31,32 @@ public abstract class OFActionVendor extends OFAction {
 	public OFActionVendor() {
 		super();
 		super.setType(OFActionType.VENDOR);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionVendor.MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the vendor
 	 */
 	public int getVendor() {
-		return vendor;
+		return this.vendor;
 	}
 
 	/**
 	 * @param vendor
 	 *            the vendor to set
 	 */
-	public void setVendor(int vendor) {
+	public void setVendor(final int vendor) {
 		this.vendor = vendor;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.vendor = data.readInt();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeInt(this.vendor);
 	}
@@ -65,12 +65,12 @@ public abstract class OFActionVendor extends OFAction {
 	public int hashCode() {
 		final int prime = 379;
 		int result = super.hashCode();
-		result = prime * result + vendor;
+		result = prime * result + this.vendor;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -80,8 +80,8 @@ public abstract class OFActionVendor extends OFAction {
 		if (!(obj instanceof OFActionVendor)) {
 			return false;
 		}
-		OFActionVendor other = (OFActionVendor) obj;
-		if (vendor != other.vendor) {
+		final OFActionVendor other = (OFActionVendor) obj;
+		if (this.vendor != other.vendor) {
 			return false;
 		}
 		return true;
@@ -89,6 +89,6 @@ public abstract class OFActionVendor extends OFAction {
 
 	@Override
 	public String toString() {
-		return super.toString() + "; vendor=" + vendor;
+		return super.toString() + "; vendor=" + this.vendor;
 	}
 }

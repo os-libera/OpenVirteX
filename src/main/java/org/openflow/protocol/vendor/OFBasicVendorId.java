@@ -56,10 +56,10 @@ public class OFBasicVendorId extends OFVendorId {
 	 *            the vendor data. The value must be the size of an integeral
 	 *            data type (i.e. either 1,2,4 or 8).
 	 */
-	public OFBasicVendorId(int id, int dataTypeSize) {
+	public OFBasicVendorId(final int id, final int dataTypeSize) {
 		super(id);
-		assert (dataTypeSize == 1) || (dataTypeSize == 2)
-				|| (dataTypeSize == 4) || (dataTypeSize == 8);
+		assert dataTypeSize == 1 || dataTypeSize == 2 || dataTypeSize == 4
+				|| dataTypeSize == 8;
 		this.dataTypeSize = dataTypeSize;
 	}
 
@@ -71,7 +71,7 @@ public class OFBasicVendorId extends OFVendorId {
 	 * @return
 	 */
 	public int getDataTypeSize() {
-		return dataTypeSize;
+		return this.dataTypeSize;
 	}
 
 	/**
@@ -79,8 +79,9 @@ public class OFBasicVendorId extends OFVendorId {
 	 * 
 	 * @param vendorDataType
 	 */
-	public void registerVendorDataType(OFBasicVendorDataType vendorDataType) {
-		dataTypeMap.put(vendorDataType.getTypeValue(), vendorDataType);
+	public void registerVendorDataType(
+			final OFBasicVendorDataType vendorDataType) {
+		this.dataTypeMap.put(vendorDataType.getTypeValue(), vendorDataType);
 	}
 
 	/**
@@ -91,8 +92,8 @@ public class OFBasicVendorId extends OFVendorId {
 	 *            the integer code that was parsed from the
 	 * @return
 	 */
-	public OFVendorDataType lookupVendorDataType(int vendorDataType) {
-		return dataTypeMap.get(vendorDataType);
+	public OFVendorDataType lookupVendorDataType(final int vendorDataType) {
+		return this.dataTypeMap.get(vendorDataType);
 	}
 
 	/**
@@ -121,13 +122,14 @@ public class OFBasicVendorId extends OFVendorId {
 	 *         appropriate subclass of OFVendorData.
 	 */
 	@Override
-	public OFVendorDataType parseVendorDataType(ChannelBuffer data, int length) {
+	public OFVendorDataType parseVendorDataType(final ChannelBuffer data,
+			final int length) {
 		OFVendorDataType vendorDataType = null;
 
 		// Parse out the type code from the vendor data.
 		long dataTypeValue = 0;
-		if ((length == 0) || (length >= dataTypeSize)) {
-			switch (dataTypeSize) {
+		if (length == 0 || length >= this.dataTypeSize) {
+			switch (this.dataTypeSize) {
 			case 1:
 				dataTypeValue = data.readByte();
 				break;
@@ -147,7 +149,7 @@ public class OFBasicVendorId extends OFVendorId {
 				assert false;
 			}
 
-			vendorDataType = dataTypeMap.get(dataTypeValue);
+			vendorDataType = this.dataTypeMap.get(dataTypeValue);
 		}
 
 		// If we weren't able to parse/map the data to a known OFVendorDataType,

@@ -18,11 +18,11 @@
 package org.openflow.util;
 
 public class U16 {
-	public static int f(short i) {
+	public static int f(final short i) {
 		return i & 0xffff;
 	}
 
-	public static short t(int l) {
+	public static short t(final int l) {
 		return (short) l;
 	}
 }

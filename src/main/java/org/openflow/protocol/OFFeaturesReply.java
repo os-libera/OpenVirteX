@@ -43,7 +43,7 @@ public class OFFeaturesReply extends OFMessage {
 
 		protected int value;
 
-		private OFCapabilities(int value) {
+		private OFCapabilities(final int value) {
 			this.value = value;
 		}
 
@@ -51,7 +51,7 @@ public class OFFeaturesReply extends OFMessage {
 		 * @return the value
 		 */
 		public int getValue() {
-			return value;
+			return this.value;
 		}
 	}
 
@@ -65,14 +65,14 @@ public class OFFeaturesReply extends OFMessage {
 	public OFFeaturesReply() {
 		super();
 		this.type = OFType.FEATURES_REPLY;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFFeaturesReply.MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the datapathId
 	 */
 	public long getDatapathId() {
-		return datapathId;
+		return this.datapathId;
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class OFFeaturesReply extends OFMessage {
 	 *            the datapathId to set
 	 */
 
-	public void setDatapathId(long datapathId) {
+	public void setDatapathId(final long datapathId) {
 		this.datapathId = datapathId;
 	}
 
@@ -88,14 +88,14 @@ public class OFFeaturesReply extends OFMessage {
 	 * @return the buffers
 	 */
 	public int getBuffers() {
-		return buffers;
+		return this.buffers;
 	}
 
 	/**
 	 * @param buffers
 	 *            the buffers to set
 	 */
-	public void setBuffers(int buffers) {
+	public void setBuffers(final int buffers) {
 		this.buffers = buffers;
 	}
 
@@ -103,14 +103,14 @@ public class OFFeaturesReply extends OFMessage {
 	 * @return the tables
 	 */
 	public byte getTables() {
-		return tables;
+		return this.tables;
 	}
 
 	/**
 	 * @param tables
 	 *            the tables to set
 	 */
-	public void setTables(byte tables) {
+	public void setTables(final byte tables) {
 		this.tables = tables;
 	}
 
@@ -118,14 +118,14 @@ public class OFFeaturesReply extends OFMessage {
 	 * @return the capabilities
 	 */
 	public int getCapabilities() {
-		return capabilities;
+		return this.capabilities;
 	}
 
 	/**
 	 * @param capabilities
 	 *            the capabilities to set
 	 */
-	public void setCapabilities(int capabilities) {
+	public void setCapabilities(final int capabilities) {
 		this.capabilities = capabilities;
 	}
 
@@ -133,14 +133,14 @@ public class OFFeaturesReply extends OFMessage {
 	 * @return the actions
 	 */
 	public int getActions() {
-		return actions;
+		return this.actions;
 	}
 
 	/**
 	 * @param actions
 	 *            the actions to set
 	 */
-	public void setActions(int actions) {
+	public void setActions(final int actions) {
 		this.actions = actions;
 	}
 
@@ -148,25 +148,25 @@ public class OFFeaturesReply extends OFMessage {
 	 * @return the ports
 	 */
 	public List<OFPhysicalPort> getPorts() {
-		return ports;
+		return this.ports;
 	}
 
 	/**
 	 * @param ports
 	 *            the ports to set
 	 */
-	public void setPorts(List<OFPhysicalPort> ports) {
+	public void setPorts(final List<OFPhysicalPort> ports) {
 		this.ports = ports;
 		if (ports == null) {
-			this.setLengthU(MINIMUM_LENGTH);
+			this.setLengthU(OFFeaturesReply.MINIMUM_LENGTH);
 		} else {
-			this.setLengthU(MINIMUM_LENGTH + ports.size()
+			this.setLengthU(OFFeaturesReply.MINIMUM_LENGTH + ports.size()
 					* OFPhysicalPort.MINIMUM_LENGTH);
 		}
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.datapathId = data.readLong();
 		this.buffers = data.readInt();
@@ -179,7 +179,7 @@ public class OFFeaturesReply extends OFMessage {
 		} else {
 			this.ports.clear();
 		}
-		int portCount = (super.getLengthU() - 32)
+		final int portCount = (super.getLengthU() - 32)
 				/ OFPhysicalPort.MINIMUM_LENGTH;
 		OFPhysicalPort port;
 		for (int i = 0; i < portCount; ++i) {
@@ -190,7 +190,7 @@ public class OFFeaturesReply extends OFMessage {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeLong(this.datapathId);
 		data.writeInt(this.buffers);
@@ -199,27 +199,30 @@ public class OFFeaturesReply extends OFMessage {
 		data.writeByte((byte) 0); // pad
 		data.writeInt(this.capabilities);
 		data.writeInt(this.actions);
-		if (this.ports != null)
-			for (OFPhysicalPort port : this.ports) {
+		if (this.ports != null) {
+			for (final OFPhysicalPort port : this.ports) {
 				port.writeTo(data);
 			}
+		}
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 139;
 		int result = super.hashCode();
-		result = prime * result + actions;
-		result = prime * result + buffers;
-		result = prime * result + capabilities;
-		result = prime * result + (int) (datapathId ^ (datapathId >>> 32));
-		result = prime * result + ((ports == null) ? 0 : ports.hashCode());
-		result = prime * result + tables;
+		result = prime * result + this.actions;
+		result = prime * result + this.buffers;
+		result = prime * result + this.capabilities;
+		result = prime * result
+				+ (int) (this.datapathId ^ this.datapathId >>> 32);
+		result = prime * result
+				+ (this.ports == null ? 0 : this.ports.hashCode());
+		result = prime * result + this.tables;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -229,27 +232,27 @@ public class OFFeaturesReply extends OFMessage {
 		if (!(obj instanceof OFFeaturesReply)) {
 			return false;
 		}
-		OFFeaturesReply other = (OFFeaturesReply) obj;
-		if (actions != other.actions) {
+		final OFFeaturesReply other = (OFFeaturesReply) obj;
+		if (this.actions != other.actions) {
 			return false;
 		}
-		if (buffers != other.buffers) {
+		if (this.buffers != other.buffers) {
 			return false;
 		}
-		if (capabilities != other.capabilities) {
+		if (this.capabilities != other.capabilities) {
 			return false;
 		}
-		if (datapathId != other.datapathId) {
+		if (this.datapathId != other.datapathId) {
 			return false;
 		}
-		if (ports == null) {
+		if (this.ports == null) {
 			if (other.ports != null) {
 				return false;
 			}
-		} else if (!ports.equals(other.ports)) {
+		} else if (!this.ports.equals(other.ports)) {
 			return false;
 		}
-		if (tables != other.tables) {
+		if (this.tables != other.tables) {
 			return false;
 		}
 		return true;

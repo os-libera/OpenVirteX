@@ -38,20 +38,20 @@ public class OpenVirteX {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) throws OpenVirteXException {
-		CmdLineSettings settings = new CmdLineSettings();
-		CmdLineParser parser = new CmdLineParser(settings);
+	public static void main(final String[] args) throws OpenVirteXException {
+		final CmdLineSettings settings = new CmdLineSettings();
+		final CmdLineParser parser = new CmdLineParser(settings);
 		try {
 			parser.parseArgument(args);
-		} catch (CmdLineException e) {
+		} catch (final CmdLineException e) {
 			parser.printUsage(System.out);
 			System.exit(1);
 		}
 
-		OpenVirteXController ctrl = new OpenVirteXController(
+		final OpenVirteXController ctrl = new OpenVirteXController(
 				settings.getConfigFile(), settings.getOFHost(),
 				settings.getOFPort(), settings.getNumberOfVirtualNets());
-		log.info("Starting OpenVirtex...");
+		OpenVirteX.log.info("Starting OpenVirtex...");
 		ctrl.run();
 	}
 

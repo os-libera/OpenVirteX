@@ -33,18 +33,18 @@ public class OFActionStripVirtualLan extends OFAction {
 	public OFActionStripVirtualLan() {
 		super();
 		super.setType(OFActionType.STRIP_VLAN);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionStripVirtualLan.MINIMUM_LENGTH);
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		// PAD
 		data.readInt();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		// PAD
 		data.writeInt(0);
@@ -52,8 +52,8 @@ public class OFActionStripVirtualLan extends OFAction {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(type);
+		final StringBuilder builder = new StringBuilder();
+		builder.append(this.type);
 		return builder.toString();
 	}
 }

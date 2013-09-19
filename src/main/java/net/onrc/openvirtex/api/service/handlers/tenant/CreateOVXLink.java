@@ -19,7 +19,6 @@ import net.onrc.openvirtex.exceptions.VirtualLinkException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openflow.util.HexString;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -39,15 +38,16 @@ public class CreateOVXLink extends ApiHandler<Map<String, Object>> {
 			final String pathString = HandlerUtils.<String> fetchField(
 					TenantHandler.PATH, params, true, null);
 
-			// TODO: should create parsePath() in HandlerUtils as similar functionality is used in createOVXSwitchRoute
+			// TODO: should create parsePath() in HandlerUtils as similar
+			// functionality is used in createOVXSwitchRoute
 			final List<PhysicalLink> physicalLinks = new LinkedList<PhysicalLink>();
 			for (final String hop : pathString.split(",")) {
 				final String srcString = hop.split("-")[0];
 				final String dstString = hop.split("-")[1];
 				final String[] srcDpidPort = srcString.split("/");
 				final String[] dstDpidPort = dstString.split("/");
-				long srcDpid = Long.parseLong(srcDpidPort[0]);
-				long dstDpid = Long.parseLong(dstDpidPort[0]);
+				final long srcDpid = Long.parseLong(srcDpidPort[0]);
+				final long dstDpid = Long.parseLong(dstDpidPort[0]);
 				final PhysicalPort srcPort = PhysicalNetwork.getInstance()
 						.getSwitch(srcDpid)
 						.getPort(Short.valueOf(srcDpidPort[1]));

@@ -2,9 +2,9 @@ package net.onrc.openvirtex.core;
 
 public class OpenVirtexShutdownHook extends Thread {
 
-	private OpenVirteXController ctrl;
+	private final OpenVirteXController ctrl;
 
-	public OpenVirtexShutdownHook(OpenVirteXController ctrl) {
+	public OpenVirtexShutdownHook(final OpenVirteXController ctrl) {
 		this.ctrl = ctrl;
 	}
 

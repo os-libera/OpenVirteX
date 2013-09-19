@@ -57,7 +57,7 @@ public class OFRoleVendorData extends OFNiciraVendorData {
 	 * 
 	 * @param dataType
 	 */
-	public OFRoleVendorData(int dataType) {
+	public OFRoleVendorData(final int dataType) {
 		super(dataType);
 	}
 
@@ -68,7 +68,7 @@ public class OFRoleVendorData extends OFNiciraVendorData {
 	 * @param dataType
 	 *            either role request or role reply data type
 	 */
-	public OFRoleVendorData(int dataType, int role) {
+	public OFRoleVendorData(final int dataType, final int role) {
 		super(dataType);
 		this.role = role;
 	}
@@ -77,14 +77,14 @@ public class OFRoleVendorData extends OFNiciraVendorData {
 	 * @return the role value of the role vendor data
 	 */
 	public int getRole() {
-		return role;
+		return this.role;
 	}
 
 	/**
 	 * @param role
 	 *            the role value of the role vendor data
 	 */
-	public void setRole(int role) {
+	public void setRole(final int role) {
 		this.role = role;
 	}
 
@@ -105,9 +105,9 @@ public class OFRoleVendorData extends OFNiciraVendorData {
 	 *            the length to the end of the enclosing message
 	 */
 	@Override
-	public void readFrom(ChannelBuffer data, int length) {
+	public void readFrom(final ChannelBuffer data, final int length) {
 		super.readFrom(data, length);
-		role = data.readInt();
+		this.role = data.readInt();
 	}
 
 	/**
@@ -117,8 +117,8 @@ public class OFRoleVendorData extends OFNiciraVendorData {
 	 *            the channel buffer to which we're serializing
 	 */
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
-		data.writeInt(role);
+		data.writeInt(this.role);
 	}
 }

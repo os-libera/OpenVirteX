@@ -22,11 +22,11 @@
 
 package net.onrc.openvirtex.elements.link;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * The Class Link.
@@ -39,13 +39,13 @@ import net.onrc.openvirtex.elements.port.Port;
 public abstract class Link<T1, T2> {
 
 	/** The source port. */
-    	@SerializedName("src")
-    	@Expose
-    	protected T1 srcPort = null;
+	@SerializedName("src")
+	@Expose
+	protected T1 srcPort = null;
 
 	/** The destination port. */
-    	@SerializedName("dst")
-    	@Expose
+	@SerializedName("dst")
+	@Expose
 	protected T1 dstPort = null;
 
 	/**
@@ -81,28 +81,32 @@ public abstract class Link<T1, T2> {
 	}
 
 	@SuppressWarnings("unchecked")
-        public T2 getSrcSwitch() {
-	    return (T2) ((Port) this.srcPort).getParentSwitch();
+	public T2 getSrcSwitch() {
+		return (T2) ((Port) this.srcPort).getParentSwitch();
 	}
 
 	@SuppressWarnings("unchecked")
-        public T2 getDstSwitch() {
-	    return (T2) ((Port) this.dstPort).getParentSwitch();
+	public T2 getDstSwitch() {
+		return (T2) ((Port) this.dstPort).getParentSwitch();
 	}
-	
+
+	@Override
 	public String toString() {
-	    String srcSwitch = ((Switch) this.getSrcSwitch()).getSwitchId().toString(); 
-	    String dstSwitch = ((Switch) this.getDstSwitch()).getSwitchId().toString();
-	    short srcPort = ((Port) this.srcPort).getPortNumber();
-	    short dstPort = ((Port) this.dstPort).getPortNumber();
-	    return srcSwitch + ":" + srcPort + "-" + dstSwitch + ":" + dstPort;
+		final String srcSwitch = ((Switch) this.getSrcSwitch()).getSwitchId()
+				.toString();
+		final String dstSwitch = ((Switch) this.getDstSwitch()).getSwitchId()
+				.toString();
+		final short srcPort = ((Port) this.srcPort).getPortNumber();
+		final short dstPort = ((Port) this.dstPort).getPortNumber();
+		return srcSwitch + ":" + srcPort + "-" + dstSwitch + ":" + dstPort;
 	}
-	
-	public boolean equals(Link link) {
-	    if (link.dstPort.equals(this.dstPort) && link.srcPort.equals(this.srcPort)){
-		return true;
-	    } else {
-		return false;
-	    }
+
+	public boolean equals(final Link link) {
+		if (link.dstPort.equals(this.dstPort)
+				&& link.srcPort.equals(this.srcPort)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

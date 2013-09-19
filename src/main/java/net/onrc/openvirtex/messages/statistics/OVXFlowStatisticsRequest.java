@@ -30,19 +30,20 @@ import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.statistics.OFFlowStatisticsRequest;
 
-public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest
-	implements DevirtualizableStatistic {
+public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
+		DevirtualizableStatistic {
 
-    @Override
-    public void devirtualizeStatistic(OVXSwitch sw, OVXStatisticsRequest msg) {
-	// TODO Auto-generated method stub
-	OVXPort p = sw.getPort(this.getMatch().getInputPort());
-	if (p == null) {
-	    sw.sendMsg(OVXMessageUtil.makeErrorMsg(
-		    OFBadRequestCode.OFPBRC_EPERM, msg), sw);
-	    return;
+	@Override
+	public void devirtualizeStatistic(final OVXSwitch sw,
+			final OVXStatisticsRequest msg) {
+		// TODO Auto-generated method stub
+		final OVXPort p = sw.getPort(this.getMatch().getInputPort());
+		if (p == null) {
+			sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+					OFBadRequestCode.OFPBRC_EPERM, msg), sw);
+			return;
+		}
+		OVXMessageUtil.translateXid(msg, p);
 	}
-	OVXMessageUtil.translateXid(msg, p);
-    }
 
 }

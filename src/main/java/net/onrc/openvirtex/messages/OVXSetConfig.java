@@ -30,16 +30,18 @@ import org.openflow.protocol.OFSetConfig;
 
 public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 
+	private final Logger log = LogManager.getLogger(OVXSetConfig.class
+			.getName());
 
-    private Logger log = LogManager.getLogger(OVXSetConfig.class.getName());
-    @Override
-    public void devirtualize(OVXSwitch sw) {
+	@Override
+	public void devirtualize(final OVXSwitch sw) {
 
-	sw.setMissSendLen(this.missSendLength);
-	log.info("Setting miss send length to {} for OVXSwitch {}", this.missSendLength, sw.getSwitchId());
-	
-	OVXMessageUtil.translateXid(this, sw);
-        //don't send since we always want full pkt?
-    }
+		sw.setMissSendLen(this.missSendLength);
+		this.log.info("Setting miss send length to {} for OVXSwitch {}",
+				this.missSendLength, sw.getSwitchId());
+
+		OVXMessageUtil.translateXid(this, sw);
+		// don't send since we always want full pkt?
+	}
 
 }

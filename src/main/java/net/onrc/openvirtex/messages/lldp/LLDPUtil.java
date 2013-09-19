@@ -11,22 +11,22 @@ import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
 
 /**
- * Set of utilities for handling LLDP packets
- * Heavily based on FlowVisor 1.2 implemenation.
+ * Set of utilities for handling LLDP packets Heavily based on FlowVisor 1.2
+ * implemenation.
  * 
  */
 public class LLDPUtil {
-	final private static int   LLDPLen          = 128;
-	final static byte          lldpSysD[]       = { 0x0c, 0x08 }; // Type 6,
+	final private static int LLDPLen = 128;
+	final static byte lldpSysD[] = { 0x0c, 0x08 }; // Type 6,
 	// length 8
-	final public static short  ETHER_LLDP       = (short) 0x88cc;
-	final public static short  ETHER_VLAN       = (short) 0x8100;
-	final public static byte[] LLDP_MULTICAST   = { 0x01, 0x23, 0x20, 0x00,
-		0x00, 0x01                         };
-	final public static int    MIN_FV_NAME      = 20;
-	final public static byte   OUI_TYPE         = 127;
-	public final static int    FLOWNAMELEN_LEN  = 1;
-	public final static int    FLOWNAMELEN_NULL = 1;
+	final public static short ETHER_LLDP = (short) 0x88cc;
+	final public static short ETHER_VLAN = (short) 0x8100;
+	final public static byte[] LLDP_MULTICAST = { 0x01, 0x23, 0x20, 0x00, 0x00,
+			0x01 };
+	final public static int MIN_FV_NAME = 20;
+	final public static byte OUI_TYPE = 127;
+	public final static int FLOWNAMELEN_LEN = 1;
+	public final static int FLOWNAMELEN_NULL = 1;
 
 	/**
 	 * Is this an lldp packet?
@@ -54,8 +54,7 @@ public class LLDPUtil {
 	 * Create an LLDP packet for the specified output port
 	 * 
 	 * @param port
-	 * @return
-	 *         The LLDP packet
+	 * @return The LLDP packet
 	 */
 	public static byte[] makeLLDP(final Port port) {
 		final short portNumber = port.getPortNumber();
@@ -103,8 +102,8 @@ public class LLDPUtil {
 		bb.putLong(((Switch) port.getParentSwitch()).getSwitchId());
 
 		// OUI TLV
-		//final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN
-		//        + LLDPUtil.FLOWNAMELEN_NULL;
+		// final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN
+		// + LLDPUtil.FLOWNAMELEN_NULL;
 		final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN;
 		// 4 - length of OUI Id + it's subtype
 		final int ouiHeader = ouiLen & 0x1ff
@@ -121,8 +120,8 @@ public class LLDPUtil {
 		// ovxName.length() + 1, ovxName);
 		// TODO: this is probably not the most portable code
 		bb.put(ovxName.getBytes());
-		//bb.put((byte) 0);
-		bb.put((byte) (ovxName.length()));
+		// bb.put((byte) 0);
+		bb.put((byte) ovxName.length());
 
 		// EndOfLLDPDU TLV
 		final byte endType[] = { 0x00 };
@@ -138,13 +137,11 @@ public class LLDPUtil {
 	}
 
 	/**
-	 * Extract dpid and port from LLDP packet
-	 * TODO: generalize this so we can parse OVX-generated LLDPs
-	 * and generic controller-generated ones
+	 * Extract dpid and port from LLDP packet TODO: generalize this so we can
+	 * parse OVX-generated LLDPs and generic controller-generated ones
 	 * 
 	 * @param packet
-	 * @return
-	 *         Dpid and port
+	 * @return Dpid and port
 	 */
 	static public DPIDandPort parseLLDP(final byte[] packet) {
 		// TODO: generalize this so we can parse OVX-generated LLDPs

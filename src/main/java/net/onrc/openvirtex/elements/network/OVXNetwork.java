@@ -70,27 +70,25 @@ import org.openflow.protocol.action.OFActionOutput;
  */
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
-	private final Integer                  tenantId;
-	private final String                   protocol;
-	private final String                   controllerHost;
-	private final Integer                  controllerPort;
-	private final IPAddress                network;
-	private final short                    mask;
+	private final Integer tenantId;
+	private final String protocol;
+	private final String controllerHost;
+	private final Integer controllerPort;
+	private final IPAddress network;
+	private final short mask;
 	private HashMap<IPAddress, MACAddress> gwsMap;
-	private boolean                        bootState;
-	private static AtomicInteger           tenantIdCounter = new AtomicInteger(1);
-	private final AtomicLong               dpidCounter;
-	private final AtomicInteger            linkCounter;
-	private final AtomicInteger		   ipCounter;
+	private boolean bootState;
+	private static AtomicInteger tenantIdCounter = new AtomicInteger(1);
+	private final AtomicLong dpidCounter;
+	private final AtomicInteger linkCounter;
+	private final AtomicInteger ipCounter;
 
 	public OVXLinkManager vLinkMgmt;
 
 	// TODO: implement vlink flow pusher
 	// public VLinkManager vLinkMgmt;
 
-	static Logger                                 log             = LogManager
-			.getLogger(OVXNetwork.class
-					.getName());
+	static Logger log = LogManager.getLogger(OVXNetwork.class.getName());
 
 	public OVXNetwork(final String protocol, final String controllerHost,
 			final Integer controllerPort, final IPAddress network,
@@ -143,11 +141,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	}
 
 	public AtomicInteger getLinkCounter() {
-		return linkCounter;
+		return this.linkCounter;
 	}
 
 	public OVXLinkManager getvLinkMgmt() {
-		return vLinkMgmt;
+		return this.vLinkMgmt;
 	}
 
 	// API-facing methods
@@ -168,7 +166,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		}
 		// Add switch to topology and register it in the map
 		this.addSwitch(virtualSwitch);
-
 
 		virtualSwitch.register(switches);
 		return virtualSwitch;
@@ -226,11 +223,10 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	}
 
 	/**
-	 * Boots the virtual network by booting each virtual switch.
-	 * TODO: we should roll-back if any switch fails to boot
+	 * Boots the virtual network by booting each virtual switch. TODO: we should
+	 * roll-back if any switch fails to boot
 	 * 
-	 * @return
-	 *         True if successful, false otherwise
+	 * @return True if successful, false otherwise
 	 */
 	@Override
 	public boolean boot() {
@@ -291,15 +287,15 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	}
 
 	public Integer nextIP() {
-		return (this.tenantId<< 
-				(32-OpenVirteXController.getInstance().getNumberVirtualNets())) 
-				+ ipCounter.getAndIncrement();
+		return (this.tenantId << 32 - OpenVirteXController.getInstance()
+				.getNumberVirtualNets()) + this.ipCounter.getAndIncrement();
 	}
-	
+
 	public static void reset() {
-		
-		log.debug("Ressting tenantId counter to initial state. Don't do this at runtime!");
-		tenantIdCounter.set(1);
-		
+
+		OVXNetwork.log
+				.debug("Ressting tenantId counter to initial state. Don't do this at runtime!");
+		OVXNetwork.tenantIdCounter.set(1);
+
 	}
 }

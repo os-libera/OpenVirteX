@@ -35,10 +35,10 @@ public class OFActionEnqueue extends OFAction {
 
 	public OFActionEnqueue() {
 		super.setType(OFActionType.OPAQUE_ENQUEUE);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionEnqueue.MINIMUM_LENGTH);
 	}
 
-	public OFActionEnqueue(short port, int queueId) {
+	public OFActionEnqueue(final short port, final int queueId) {
 		this();
 		this.port = port;
 		this.queueId = queueId;
@@ -58,7 +58,7 @@ public class OFActionEnqueue extends OFAction {
 	 * 
 	 * @param port
 	 */
-	public void setPort(short port) {
+	public void setPort(final short port) {
 		this.port = port;
 	}
 
@@ -66,19 +66,19 @@ public class OFActionEnqueue extends OFAction {
 	 * @return the queueId
 	 */
 	public int getQueueId() {
-		return queueId;
+		return this.queueId;
 	}
 
 	/**
 	 * @param queueId
 	 *            the queueId to set
 	 */
-	public void setQueueId(int queueId) {
+	public void setQueueId(final int queueId) {
 		this.queueId = queueId;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.port = data.readShort();
 		data.readShort();
@@ -87,7 +87,7 @@ public class OFActionEnqueue extends OFAction {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeShort(this.port);
 		data.writeShort((short) 0);
@@ -99,13 +99,13 @@ public class OFActionEnqueue extends OFAction {
 	public int hashCode() {
 		final int prime = 349;
 		int result = super.hashCode();
-		result = prime * result + port;
-		result = prime * result + queueId;
+		result = prime * result + this.port;
+		result = prime * result + this.queueId;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -115,11 +115,11 @@ public class OFActionEnqueue extends OFAction {
 		if (!(obj instanceof OFActionEnqueue)) {
 			return false;
 		}
-		OFActionEnqueue other = (OFActionEnqueue) obj;
-		if (port != other.port) {
+		final OFActionEnqueue other = (OFActionEnqueue) obj;
+		if (this.port != other.port) {
 			return false;
 		}
-		if (queueId != other.queueId) {
+		if (this.queueId != other.queueId) {
 			return false;
 		}
 		return true;
@@ -127,13 +127,13 @@ public class OFActionEnqueue extends OFAction {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(type);
+		final StringBuilder builder = new StringBuilder();
+		builder.append(this.type);
 		builder.append("[");
 		builder.append("Port: ");
-		builder.append(port);
+		builder.append(this.port);
 		builder.append(", Queue Id: ");
-		builder.append(queueId);
+		builder.append(this.queueId);
 		builder.append("]");
 		return builder.toString();
 	}

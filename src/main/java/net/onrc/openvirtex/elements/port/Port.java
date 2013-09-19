@@ -33,81 +33,77 @@ import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 /**
  * The Class Port.
  * 
  */
 public class Port<T> extends OFPhysicalPort {
 
-    protected MACAddress mac;
-    protected Boolean    isEdge;
-    protected T          parentSwitch;
+	protected MACAddress mac;
+	protected Boolean isEdge;
+	protected T parentSwitch;
 
-    // TODO: duplexing/speed on port/link???
+	// TODO: duplexing/speed on port/link???
 
-    /**
-     * Instantiates a new port.
-     */
-    protected Port(OFPhysicalPort ofPort) {
-	super();
-	this.portNumber = ofPort.getPortNumber();
-	this.hardwareAddress = ofPort.getHardwareAddress();
-	this.name = ofPort.getName();
-	this.config = ofPort.getConfig();
-	this.state = ofPort.getState();
-	this.currentFeatures = ofPort.getCurrentFeatures();
-	this.advertisedFeatures = ofPort.getAdvertisedFeatures();
-	this.supportedFeatures = ofPort.getSupportedFeatures();
-	this.peerFeatures = ofPort.getPeerFeatures();	
-	this.mac = null;
-	this.isEdge = false;
-	this.parentSwitch = null;
-    }
-    
-    public void setHardwareAddress(byte[] hardwareAddress) {
-	super.setHardwareAddress(hardwareAddress);
-	// no way to update MACAddress instances
-	this.mac = new MACAddress(hardwareAddress);
-    }
-    
-    /**
-     * Gets the checks if is edge.
-     * 
-     * @return the checks if is edge
-     */
-    public Boolean isEdge() {
-	return this.isEdge;
-    }
+	/**
+	 * Instantiates a new port.
+	 */
+	protected Port(final OFPhysicalPort ofPort) {
+		super();
+		this.portNumber = ofPort.getPortNumber();
+		this.hardwareAddress = ofPort.getHardwareAddress();
+		this.name = ofPort.getName();
+		this.config = ofPort.getConfig();
+		this.state = ofPort.getState();
+		this.currentFeatures = ofPort.getCurrentFeatures();
+		this.advertisedFeatures = ofPort.getAdvertisedFeatures();
+		this.supportedFeatures = ofPort.getSupportedFeatures();
+		this.peerFeatures = ofPort.getPeerFeatures();
+		this.mac = null;
+		this.isEdge = false;
+		this.parentSwitch = null;
+	}
 
+	@Override
+	public void setHardwareAddress(final byte[] hardwareAddress) {
+		super.setHardwareAddress(hardwareAddress);
+		// no way to update MACAddress instances
+		this.mac = new MACAddress(hardwareAddress);
+	}
 
-    /**
-     * Sets the checks if is edge.
-     * 
-     * @param isEdge
-     *            the new checks if is edge
-     */
-    public void isEdge(final Boolean isEdge) {
-	this.isEdge = isEdge;
-    }
+	/**
+	 * Gets the checks if is edge.
+	 * 
+	 * @return the checks if is edge
+	 */
+	public Boolean isEdge() {
+		return this.isEdge;
+	}
 
-    public T getParentSwitch() {
-	return this.parentSwitch;
-    }
+	/**
+	 * Sets the checks if is edge.
+	 * 
+	 * @param isEdge
+	 *            the new checks if is edge
+	 */
+	public void isEdge(final Boolean isEdge) {
+		this.isEdge = isEdge;
+	}
 
-    @Override
-    public String toString() {
-	return "PORT:\n- portNumber: " + this.portNumber +
-		"\n- hardwareAddress: " + this.hardwareAddress.toString() +
-		"\n- config: " + this.config +
-		"\n- state: " + this.state +
-		"\n- currentFeatures: " + this.currentFeatures +
-	        "\n- advertisedFeatures: " + this.advertisedFeatures +
-	        "\n- supportedFeatures: " + this.supportedFeatures +
-	        "\n- peerFeatures: " + this.peerFeatures +
-		"\n- isEdge: " + this.isEdge;
-    }
+	public T getParentSwitch() {
+		return this.parentSwitch;
+	}
+
+	@Override
+	public String toString() {
+		return "PORT:\n- portNumber: " + this.portNumber
+				+ "\n- hardwareAddress: " + this.hardwareAddress.toString()
+				+ "\n- config: " + this.config + "\n- state: " + this.state
+				+ "\n- currentFeatures: " + this.currentFeatures
+				+ "\n- advertisedFeatures: " + this.advertisedFeatures
+				+ "\n- supportedFeatures: " + this.supportedFeatures
+				+ "\n- peerFeatures: " + this.peerFeatures + "\n- isEdge: "
+				+ this.isEdge;
+	}
 
 }

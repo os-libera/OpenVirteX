@@ -31,13 +31,13 @@ public class OVXQueueGetConfigReply extends OFQueueGetConfigReply implements
 		Virtualizable {
 
 	@Override
-	public void virtualize(PhysicalSwitch sw) {
-	    OVXSwitch vsw = OVXMessageUtil.untranslateXid(this, sw);
-            if (vsw == null) {
-                //log error
-                return;
-            }
-            // re-write port mappings 
+	public void virtualize(final PhysicalSwitch sw) {
+		final OVXSwitch vsw = OVXMessageUtil.untranslateXid(this, sw);
+		if (vsw == null) {
+			// log error
+			return;
+		}
+		// re-write port mappings
 	}
 
 }

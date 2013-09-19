@@ -20,15 +20,15 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.util.U16;
 
 public class OFQueueProp {
-	private int NONE_MINIMUM_LENGTH = 8;
-	private int RATE_MINIMUM_LENGTH = 16;
+	private final int NONE_MINIMUM_LENGTH = 8;
+	private final int RATE_MINIMUM_LENGTH = 16;
 
 	public enum OFQueuePropType {
 		OFPQT_NONE(0), OFPQT_MIN_RATE(1), OFPQT_MAX_RATE(2);
 
 		protected int value;
 
-		private OFQueuePropType(int value) {
+		private OFQueuePropType(final int value) {
 			this.value = value;
 		}
 
@@ -36,10 +36,10 @@ public class OFQueueProp {
 		 * @return the value
 		 */
 		public int getValue() {
-			return value;
+			return this.value;
 		}
 
-		public static OFQueuePropType fromShort(short x) {
+		public static OFQueuePropType fromShort(final short x) {
 			switch (x) {
 			case 0:
 				return OFPQT_NONE;
@@ -58,32 +58,32 @@ public class OFQueueProp {
 
 	public OFQueueProp() {
 		this.type = OFQueuePropType.OFPQT_NONE;
-		this.length = U16.t(NONE_MINIMUM_LENGTH);
+		this.length = U16.t(this.NONE_MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the type
 	 */
 	public OFQueuePropType getType() {
-		return type;
+		return this.type;
 	}
 
 	/**
 	 * @param type
 	 *            the type to set
 	 */
-	public void setType(OFQueuePropType type) {
+	public void setType(final OFQueuePropType type) {
 		this.type = type;
 
 		switch (type) {
 		case OFPQT_NONE:
-			this.length = U16.t(NONE_MINIMUM_LENGTH);
+			this.length = U16.t(this.NONE_MINIMUM_LENGTH);
 			break;
 		case OFPQT_MIN_RATE:
-			this.length = U16.t(RATE_MINIMUM_LENGTH);
+			this.length = U16.t(this.RATE_MINIMUM_LENGTH);
 			break;
 		case OFPQT_MAX_RATE:
-			this.length = U16.t(RATE_MINIMUM_LENGTH);
+			this.length = U16.t(this.RATE_MINIMUM_LENGTH);
 			break;
 		}
 	}
@@ -92,14 +92,14 @@ public class OFQueueProp {
 	 * @return the rate
 	 */
 	public short getRate() {
-		return rate;
+		return this.rate;
 	}
 
 	/**
 	 * @param rate
 	 *            the rate to set
 	 */
-	public void setRate(short rate) {
+	public void setRate(final short rate) {
 		this.rate = rate;
 	}
 
@@ -107,27 +107,27 @@ public class OFQueueProp {
 	 * @return the length
 	 */
 	public short getLength() {
-		return length;
+		return this.length;
 	}
 
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.type = OFQueuePropType.fromShort(data.readShort());
 		this.length = data.readShort();
 		data.readInt(); // pad
 
 		if (this.type == OFQueuePropType.OFPQT_MIN_RATE
 				|| this.type == OFQueuePropType.OFPQT_MAX_RATE) {
-			assert (this.length == RATE_MINIMUM_LENGTH);
+			assert this.length == this.RATE_MINIMUM_LENGTH;
 
 			this.rate = data.readShort();
 			data.readInt(); // pad
 			data.readShort(); // pad
 		} else {
-			assert (this.length == NONE_MINIMUM_LENGTH);
+			assert this.length == this.NONE_MINIMUM_LENGTH;
 		}
 	}
 
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeShort(this.type.getValue());
 		data.writeShort(this.length);
 		data.writeInt(0); // pad
@@ -144,13 +144,13 @@ public class OFQueueProp {
 	public int hashCode() {
 		final int prime = 353;
 		int result = super.hashCode();
-		result = prime * result + type.getValue();
-		result = prime * result + rate;
+		result = prime * result + this.type.getValue();
+		result = prime * result + this.rate;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -160,13 +160,13 @@ public class OFQueueProp {
 		if (!(obj instanceof OFQueueProp)) {
 			return false;
 		}
-		OFQueueProp other = (OFQueueProp) obj;
-		if (type != other.type) {
+		final OFQueueProp other = (OFQueueProp) obj;
+		if (this.type != other.type) {
 			return false;
 		}
-		if (type == OFQueuePropType.OFPQT_MIN_RATE
-				|| type == OFQueuePropType.OFPQT_MAX_RATE) {
-			if (rate != other.rate) {
+		if (this.type == OFQueuePropType.OFPQT_MIN_RATE
+				|| this.type == OFQueuePropType.OFPQT_MAX_RATE) {
+			if (this.rate != other.rate) {
 				return false;
 			}
 		}

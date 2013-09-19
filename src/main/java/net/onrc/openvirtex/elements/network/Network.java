@@ -59,7 +59,8 @@ import com.google.gson.annotations.SerializedName;
  *            Generic Link type
  */
 public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
-OVXSendMsg {
+		OVXSendMsg {
+
 
     @SerializedName("switches")
     @Expose
@@ -71,9 +72,7 @@ OVXSendMsg {
 	private final HashMap<T2, T2>          neighborPortMap;
 	private final HashMap<T1, HashSet<T1>> neighborMap;
 
-	Logger                                 log = LogManager
-			.getLogger(Network.class
-					.getName());
+	Logger log = LogManager.getLogger(Network.class.getName());
 
 	protected Network() {
 		this.switchSet = new HashSet<T1>();
@@ -96,8 +95,8 @@ OVXSendMsg {
 		this.linkSet.add(link);
 		final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 		final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
-		final Port srcPort = (Port) ((T2) ((Link) link).getSrcPort());
-		final Port dstPort = (Port) ((T2) ((Link) link).getSrcPort());
+		final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
+		final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
 		srcPort.isEdge(false);
 		dstPort.isEdge(false);
 		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
@@ -116,13 +115,13 @@ OVXSendMsg {
 		this.linkSet.remove(link);
 		final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 		final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
-		final Port srcPort = (Port) ((T2) ((Link) link).getSrcPort());
-		final Port dstPort = (Port) ((T2) ((Link) link).getSrcPort());
+		final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
+		final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
 		srcPort.isEdge(true);
-		dstPort.isEdge(true);	
+		dstPort.isEdge(true);
 		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 		neighbours.remove(dstSwitch);
-		this.neighborPortMap.remove((T2) ((Link) link).getSrcPort());
+		this.neighborPortMap.remove(((Link) link).getSrcPort());
 		this.log.info("Removing link " + link.toString());
 	}
 
@@ -144,8 +143,7 @@ OVXSendMsg {
 	 * Return neighbor switches of switch.
 	 * 
 	 * @param sw
-	 * @return
-	 *         Unmodifiable set of switch instances
+	 * @return Unmodifiable set of switch instances
 	 */
 	public Set<T1> getNeighbors(final T1 sw) {
 		return Collections.unmodifiableSet(this.neighborMap.get(sw));

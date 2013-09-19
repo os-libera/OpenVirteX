@@ -31,6 +31,6 @@ public class OFFeaturesRequest extends OFMessage {
 	public OFFeaturesRequest() {
 		super();
 		this.type = OFType.FEATURES_REQUEST;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFFeaturesRequest.MINIMUM_LENGTH);
 	}
 }

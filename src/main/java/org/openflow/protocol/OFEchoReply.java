@@ -31,6 +31,6 @@ public class OFEchoReply extends OFEchoRequest {
 	public OFEchoReply() {
 		super();
 		this.type = OFType.ECHO_REPLY;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFEchoReply.MINIMUM_LENGTH);
 	}
 }

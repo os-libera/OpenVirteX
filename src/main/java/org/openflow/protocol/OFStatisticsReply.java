@@ -30,12 +30,12 @@ public class OFStatisticsReply extends OFStatisticsMessageBase {
 
 		protected short type;
 
-		OFStatisticsReplyFlags(int type) {
+		OFStatisticsReplyFlags(final int type) {
 			this.type = (short) type;
 		}
 
 		public short getTypeValue() {
-			return type;
+			return this.type;
 		}
 	}
 

@@ -15,44 +15,49 @@ import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 
-public class ClientChannelPipeline  extends OpenflowChannelPipeline{
+public class ClientChannelPipeline extends OpenflowChannelPipeline {
 
-    private ClientBootstrap bootstrap = null;
-    private OVXSwitch sw = null;
-    private ChannelGroup cg;
-    
+	private ClientBootstrap bootstrap = null;
+	private OVXSwitch sw = null;
+	private final ChannelGroup cg;
 
-    public ClientChannelPipeline(OpenVirteXController openVirteXController, ChannelGroup cg,
-	    ThreadPoolExecutor pipelineExecutor, ClientBootstrap bootstrap, OVXSwitch sw) {
-	super();
-	this.ctrl = openVirteXController;
-	this.pipelineExecutor = pipelineExecutor;
-	this.timer = new HashedWheelTimer();
-	this.idleHandler = new IdleStateHandler(timer, 20, 25, 0);
-	this.readTimeoutHandler = new ReadTimeoutHandler(timer, 30);
-	this.bootstrap  = bootstrap;
-	this.sw  = sw;
-	this.cg = cg;
-    }
+	public ClientChannelPipeline(
+			final OpenVirteXController openVirteXController,
+			final ChannelGroup cg, final ThreadPoolExecutor pipelineExecutor,
+			final ClientBootstrap bootstrap, final OVXSwitch sw) {
+		super();
+		this.ctrl = openVirteXController;
+		this.pipelineExecutor = pipelineExecutor;
+		this.timer = new HashedWheelTimer();
+		this.idleHandler = new IdleStateHandler(this.timer, 20, 25, 0);
+		this.readTimeoutHandler = new ReadTimeoutHandler(this.timer, 30);
+		this.bootstrap = bootstrap;
+		this.sw = sw;
+		this.cg = cg;
+	}
 
-    @Override
-    public ChannelPipeline getPipeline() throws Exception {
-	ControllerChannelHandler handler = new ControllerChannelHandler(ctrl, sw);
+	@Override
+	public ChannelPipeline getPipeline() throws Exception {
+		final ControllerChannelHandler handler = new ControllerChannelHandler(
+				this.ctrl, this.sw);
 
-	ChannelPipeline pipeline = Channels.pipeline();
-	pipeline.addLast("reconnect", new ReconnectHandler(sw, bootstrap, timer, 15, cg));
-	pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
-	pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
-	pipeline.addLast("idle", idleHandler);
-	pipeline.addLast("timeout", readTimeoutHandler);
-	pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
-		handler, timer, 15));
-	if (pipelineExecutor == null)
-	    pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576);
-	pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-		pipelineExecutor));
-	pipeline.addLast("handler", handler);
-	return pipeline;
-    }
+		final ChannelPipeline pipeline = Channels.pipeline();
+		pipeline.addLast("reconnect", new ReconnectHandler(this.sw,
+				this.bootstrap, this.timer, 15, this.cg));
+		pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
+		pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
+		pipeline.addLast("idle", this.idleHandler);
+		pipeline.addLast("timeout", this.readTimeoutHandler);
+		pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
+				handler, this.timer, 15));
+		if (this.pipelineExecutor == null) {
+			this.pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
+					16, 1048576, 1048576);
+		}
+		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
+				this.pipelineExecutor));
+		pipeline.addLast("handler", handler);
+		return pipeline;
+	}
 
 }

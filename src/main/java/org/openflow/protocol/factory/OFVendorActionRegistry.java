@@ -37,16 +37,16 @@ public class OFVendorActionRegistry {
 	private final Map<Integer, OFVendorActionFactory> vendorActionFactories;
 
 	public OFVendorActionRegistry() {
-		vendorActionFactories = new ConcurrentHashMap<Integer, OFVendorActionFactory>();
+		this.vendorActionFactories = new ConcurrentHashMap<Integer, OFVendorActionFactory>();
 	}
 
-	public OFVendorActionFactory register(int vendorId,
-			OFVendorActionFactory factory) {
-		return vendorActionFactories.put(vendorId, factory);
+	public OFVendorActionFactory register(final int vendorId,
+			final OFVendorActionFactory factory) {
+		return this.vendorActionFactories.put(vendorId, factory);
 	}
 
-	public OFVendorActionFactory get(int vendorId) {
-		return vendorActionFactories.get(vendorId);
+	public OFVendorActionFactory get(final int vendorId) {
+		return this.vendorActionFactories.get(vendorId);
 	}
 
 }

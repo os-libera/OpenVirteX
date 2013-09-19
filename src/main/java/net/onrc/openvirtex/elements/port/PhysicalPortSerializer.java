@@ -9,13 +9,13 @@ import com.google.gson.JsonSerializer;
 
 public class PhysicalPortSerializer implements JsonSerializer<PhysicalPort> {
 
-    @Override
-    public JsonElement serialize(PhysicalPort port, Type portType,
-            JsonSerializationContext context) {
-	JsonObject result = new JsonObject();
-	result.addProperty("dpid", port.getParentSwitch().getSwitchName());
-	result.addProperty("port", port.getPortNumber());
-	return result;
-    }
+	@Override
+	public JsonElement serialize(final PhysicalPort port, final Type portType,
+			final JsonSerializationContext context) {
+		final JsonObject result = new JsonObject();
+		result.addProperty("dpid", port.getParentSwitch().getSwitchName());
+		result.addProperty("port", port.getPortNumber());
+		return result;
+	}
 
 }

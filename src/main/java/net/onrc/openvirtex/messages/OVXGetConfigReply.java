@@ -30,7 +30,7 @@ public class OVXGetConfigReply extends OFGetConfigReply implements
 		Virtualizable {
 
 	@Override
-	public void virtualize(PhysicalSwitch sw) {
+	public void virtualize(final PhysicalSwitch sw) {
 		// TODO Auto-generated method stub
 
 	}

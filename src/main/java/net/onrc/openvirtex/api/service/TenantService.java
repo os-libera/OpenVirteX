@@ -5,10 +5,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
@@ -18,35 +18,40 @@ import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 
 public class TenantService extends AbstractService {
 
-	private static Logger log = LogManager.getLogger(TenantService.class.getName());
-	
+	private static Logger log = LogManager.getLogger(TenantService.class
+			.getName());
+
 	Dispatcher dispatcher = new Dispatcher();
-	
+
 	public TenantService() {
-		dispatcher.register(new TenantHandler());
+		this.dispatcher.register(new TenantHandler());
 	}
-	
+
 	@Override
-	public void handle(HttpServletRequest request, HttpServletResponse response) {
+	public void handle(final HttpServletRequest request,
+			final HttpServletResponse response) {
 		JSONRPC2Request json = null;
 		JSONRPC2Response jsonResp = null;
 		try {
-			json = parseJSONRequest(request);
-			jsonResp = dispatcher.process(json, null);
+			json = this.parseJSONRequest(request);
+			jsonResp = this.dispatcher.process(json, null);
 			jsonResp.setID(json.getID());
-		} catch (IOException e) {
-			jsonResp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.PARSE_ERROR.getCode(), 
-					stack2string(e)), 0);
-		} catch (JSONRPC2ParseException e) {
-			jsonResp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.PARSE_ERROR.getCode(), 
-					stack2string(e)), 0);
+		} catch (final IOException e) {
+			jsonResp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.PARSE_ERROR.getCode(),
+					AbstractService.stack2string(e)), 0);
+		} catch (final JSONRPC2ParseException e) {
+			jsonResp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.PARSE_ERROR.getCode(),
+					AbstractService.stack2string(e)), 0);
 		}
 		try {
-			writeJSONObject(response, jsonResp);
-		} catch (IOException e) {
-			log.fatal("Unable to send response: {} ", stack2string(e));
+			this.writeJSONObject(response, jsonResp);
+		} catch (final IOException e) {
+			TenantService.log.fatal("Unable to send response: {} ",
+					AbstractService.stack2string(e));
 		}
-		
+
 	}
 
 }

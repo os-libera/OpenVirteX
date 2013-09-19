@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.openflow.util.HexString;
-
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
@@ -41,7 +39,7 @@ public class HandlerUtils {
 		// throw new UnknownFieldType(fieldName, type.getName());
 
 	}
-	
+
 	/**
 	 * Check that the controller host and port that we are trying to connect
 	 * with is not already being used by another virtual network in our system.
@@ -158,11 +156,13 @@ public class HandlerUtils {
 	public static void isVirtualLinkUnique(final int tenantId,
 			final List<PhysicalLink> physicalLinks) throws VirtualLinkException {
 		final OVXMap map = OVXMap.getInstance();
-		
+
 		// Get virtual links that also use first hop of physical path
-		List<OVXLink> intersection = map.getVirtualLinks(physicalLinks.get(0), tenantId);
-		if (intersection == null)
+		final List<OVXLink> intersection = map.getVirtualLinks(
+				physicalLinks.get(0), tenantId);
+		if (intersection == null) {
 			return;
+		}
 
 		// Find intersection of remaining physical hops
 		final int pathIndex = 1;
@@ -171,15 +171,17 @@ public class HandlerUtils {
 					physicalLinks.get(pathIndex), tenantId);
 			intersection.retainAll(vlinks);
 		}
-		if (intersection.size() == 0)
+		if (intersection.size() == 0) {
 			return;
+		}
 
-		// Check for cases where new virtual link is strict subset of existing virtual links
-		Iterator<OVXLink> iter = intersection.iterator();
+		// Check for cases where new virtual link is strict subset of existing
+		// virtual links
+		final Iterator<OVXLink> iter = intersection.iterator();
 		while (iter.hasNext()) {
-			OVXLink vlink = iter.next();
+			final OVXLink vlink = iter.next();
 			// Check physical path lengths
-			List<PhysicalLink> path = map.getPhysicalLinks(vlink);
+			final List<PhysicalLink> path = map.getPhysicalLinks(vlink);
 			if (path.size() != physicalLinks.size()) {
 				iter.remove();
 				continue;
@@ -193,9 +195,10 @@ public class HandlerUtils {
 				}
 			}
 		}
-		if (intersection.size() == 0)
+		if (intersection.size() == 0) {
 			return;
-		
+		}
+
 		throw new VirtualLinkException(
 				"Virtual link already exists. cannot create the same virtual link in the same virtual network.");
 	}

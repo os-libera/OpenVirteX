@@ -20,27 +20,32 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 public class StartNetwork extends ApiHandler<Map<String, Object>> {
 
 	Logger log = LogManager.getLogger(StartNetwork.class.getName());
-	
+
 	@Override
-	public JSONRPC2Response process(Map<String, Object> params) {
+	public JSONRPC2Response process(final Map<String, Object> params) {
 		JSONRPC2Response resp = null;
-		
+
 		try {
-			Number tenantId = HandlerUtils.<Number>fetchField(TenantHandler.TENANT, 
-					params, true, null);
-			
+			final Number tenantId = HandlerUtils.<Number> fetchField(
+					TenantHandler.TENANT, params, true, null);
+
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 			final OVXMap map = OVXMap.getInstance();
-			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId.intValue());
-			this.log.info("Booted virtual network {}", virtualNetwork.getTenantId());
+			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
+					.intValue());
+			this.log.info("Booted virtual network {}",
+					virtualNetwork.getTenantId());
 			resp = new JSONRPC2Response(virtualNetwork.boot(), 0);
 
-		} catch (MissingRequiredField e) {
-			resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(), 
-					cmdName() + ": Unable to create virtual network : " + e.getMessage()), 0);
-		} catch (InvalidTenantIdException e) {
-			resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(), 
-					cmdName() + ": Invlaid tenant id : " + e.getMessage()), 0);
+		} catch (final MissingRequiredField e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+							+ ": Unable to create virtual network : "
+							+ e.getMessage()), 0);
+		} catch (final InvalidTenantIdException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+							+ ": Invlaid tenant id : " + e.getMessage()), 0);
 		}
 		return resp;
 	}

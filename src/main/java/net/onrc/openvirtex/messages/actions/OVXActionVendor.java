@@ -31,13 +31,14 @@ import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionVendor;
 
-public class OVXActionVendor extends OFActionVendor 
-				implements VirtualizableAction {
+public class OVXActionVendor extends OFActionVendor implements
+		VirtualizableAction {
 
-    @Override
-    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
-	approvedActions.add(this);
-    }
-    
-    
+	@Override
+	public void virtualize(final OVXSwitch sw,
+			final List<OFAction> approvedActions, final OFMatch match)
+			throws ActionVirtualizationDenied {
+		approvedActions.add(this);
+	}
+
 }

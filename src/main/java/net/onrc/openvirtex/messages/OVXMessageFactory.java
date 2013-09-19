@@ -108,25 +108,29 @@ public class OVXMessageFactory extends BasicFactory {
 	}
 
 	public static OVXMessageFactory getInstance() {
-		if (instance == null)
-			instance = new OVXMessageFactory();
-		return instance;
+		if (OVXMessageFactory.instance == null) {
+			OVXMessageFactory.instance = new OVXMessageFactory();
+		}
+		return OVXMessageFactory.instance;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public OFMessage getMessage(OFType t) {
-		if (t == null)
+	public OFMessage getMessage(final OFType t) {
+		if (t == null) {
 			return new OVXUnknownMessage();
-		byte mtype = t.getTypeValue();
-		if (mtype >= convertMap.length)
+		}
+		final byte mtype = t.getTypeValue();
+		if (mtype >= OVXMessageFactory.convertMap.length) {
 			throw new IllegalArgumentException("OFMessage type " + mtype
 					+ " unknown to OVX");
-		Class<? extends OFMessage> c = convertMap[mtype];
+		}
+		final Class<? extends OFMessage> c = OVXMessageFactory.convertMap[mtype];
 		try {
-			OFMessage m = c.getConstructor(new Class[] {}).newInstance();
-			if (m instanceof OFMessageFactoryAware)
+			final OFMessage m = c.getConstructor(new Class[] {}).newInstance();
+			if (m instanceof OFMessageFactoryAware) {
 				((OFMessageFactoryAware) m).setMessageFactory(this);
+			}
 			if (m instanceof OFActionFactoryAware) {
 				((OFActionFactoryAware) m).setActionFactory(this);
 			}
@@ -134,18 +138,19 @@ public class OVXMessageFactory extends BasicFactory {
 				((OFStatisticsFactoryAware) m).setStatisticsFactory(this);
 			}
 			return m;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public OFAction getAction(OFActionType t) {
-		Class<? extends OFAction> c = convertActionsMap[t.getTypeValue()];
+	public OFAction getAction(final OFActionType t) {
+		final Class<? extends OFAction> c = OVXMessageFactory.convertActionsMap[t
+				.getTypeValue()];
 		try {
 			return c.getConstructor(new Class[] {}).newInstance();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -153,23 +158,26 @@ public class OVXMessageFactory extends BasicFactory {
 	@SuppressWarnings("unchecked")
 	// big hack; need to fix
 	@Override
-	public OFStatistics getStatistics(OFType t, OFStatisticsType st) {
+	public OFStatistics getStatistics(final OFType t, final OFStatisticsType st) {
 		Class<? extends OFStatistics> c;
-		if (t == OFType.STATS_REPLY)
-			if (st.getTypeValue() == -1)
+		if (t == OFType.STATS_REPLY) {
+			if (st.getTypeValue() == -1) {
 				c = OVXVendorStatistics.class;
-			else
-				c = convertStatsReplyMap[st.getTypeValue()];
-		else if (t == OFType.STATS_REQUEST)
-			if (st.getTypeValue() == -1)
+			} else {
+				c = OVXMessageFactory.convertStatsReplyMap[st.getTypeValue()];
+			}
+		} else if (t == OFType.STATS_REQUEST) {
+			if (st.getTypeValue() == -1) {
 				c = OVXVendorStatistics.class;
-			else
-				c = convertStatsRequestMap[st.getTypeValue()];
-		else
+			} else {
+				c = OVXMessageFactory.convertStatsRequestMap[st.getTypeValue()];
+			}
+		} else {
 			throw new RuntimeException("non-stats type in stats factory: " + t);
+		}
 		try {
 			return c.getConstructor(new Class[] {}).newInstance();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

@@ -49,324 +49,329 @@ import org.openflow.util.LRULinkedHashMap;
  */
 public abstract class OVXSwitch extends Switch<OVXPort> {
 
-    /**
-     * Datapath description string
-     * should this be made specific per type of virtual switch
-     */
-    public static final String      DPDESCSTRING     = "OpenVirteX Virtual Switch";
+	/**
+	 * Datapath description string should this be made specific per type of
+	 * virtual switch
+	 */
+	public static final String DPDESCSTRING = "OpenVirteX Virtual Switch";
 
-    /** The supported actions. */
-    protected static int            supportedActions = 0xFFF;
+	/** The supported actions. */
+	protected static int supportedActions = 0xFFF;
 
-    /** The buffer dimension. */
-    protected static int            bufferDimension  = 4096;
+	/** The buffer dimension. */
+	protected static int bufferDimension = 4096;
 
-    /** The tenant id. */
-    protected Integer tenantId = 0;
+	/** The tenant id. */
+	protected Integer tenantId = 0;
 
-    /** The miss send len. */
-    protected Short missSendLen = 0;
+	/** The miss send len. */
+	protected Short missSendLen = 0;
 
-    /** The is active. */
-    protected boolean isActive = false;
+	/** The is active. */
+	protected boolean isActive = false;
 
-    /** The capabilities. */
-    protected OVXSwitchCapabilities capabilities;
+	/** The capabilities. */
+	protected OVXSwitchCapabilities capabilities;
 
-    /** The backoff counter for this switch when unconnected */
-    private AtomicInteger backOffCounter = null;
+	/** The backoff counter for this switch when unconnected */
+	private AtomicInteger backOffCounter = null;
 
-    /**
-     * The buffer map
-     */
-    protected LRULinkedHashMap<Integer, OVXPacketIn> bufferMap;
+	/**
+	 * The buffer map
+	 */
+	protected LRULinkedHashMap<Integer, OVXPacketIn> bufferMap;
 
-    private AtomicInteger bufferId = null;
+	private AtomicInteger bufferId = null;
 
-    private AtomicInteger		portCounter;
-    
-    /**
-     * The virtual flow table
-     */
-    protected OVXFlowTable flowTable;
-    
-    /**
-     * Instantiates a new OVX switch.
-     */
-    protected OVXSwitch() {
-	super();
-	this.capabilities = new OVXSwitchCapabilities();
-	this.backOffCounter = new AtomicInteger();
-	this.resetBackOff();
-	this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(bufferDimension);
-	this.portCounter = new AtomicInteger(1);
-	this.bufferId = new AtomicInteger(1);
-	this.flowTable = new OVXFlowTable(this);
-    }
+	private final AtomicInteger portCounter;
 
-    /**
-     * Instantiates a new OVX switch.
-     * 
-     * @param switchId
-     *            the switch id
-     * @param tenantId
-     *            the tenant id
-     */
-    protected OVXSwitch(final Long switchId, final Integer tenantId) {
-	this();
-	this.switchId = switchId;
-	this.tenantId = tenantId;
-	this.missSendLen = 0;
-	this.isActive = false;
-	this.switchName = "OpenVirteX Virtual Switch 1.0";
-    }
+	/**
+	 * The virtual flow table
+	 */
+	protected OVXFlowTable flowTable;
 
-    /**
-     * Gets the tenant id.
-     * 
-     * @return the tenant id
-     */
-    public Integer getTenantId() {
-	return this.tenantId;
-    }
+	/**
+	 * Instantiates a new OVX switch.
+	 */
+	protected OVXSwitch() {
+		super();
+		this.capabilities = new OVXSwitchCapabilities();
+		this.backOffCounter = new AtomicInteger();
+		this.resetBackOff();
+		this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(
+				OVXSwitch.bufferDimension);
+		this.portCounter = new AtomicInteger(1);
+		this.bufferId = new AtomicInteger(1);
+		this.flowTable = new OVXFlowTable(this);
+	}
 
-    /**
-     * Gets the miss send len.
-     * 
-     * @return the miss send len
-     */
-    public short getMissSendLen() {
-	return this.missSendLen;
-    }
+	/**
+	 * Instantiates a new OVX switch.
+	 * 
+	 * @param switchId
+	 *            the switch id
+	 * @param tenantId
+	 *            the tenant id
+	 */
+	protected OVXSwitch(final Long switchId, final Integer tenantId) {
+		this();
+		this.switchId = switchId;
+		this.tenantId = tenantId;
+		this.missSendLen = 0;
+		this.isActive = false;
+		this.switchName = "OpenVirteX Virtual Switch 1.0";
+	}
 
-    /**
-     * Sets the miss send len.
-     * 
-     * @param missSendLen
-     *            the miss send len
-     * @return true, if successful
-     */
-    public boolean setMissSendLen(final Short missSendLen) {
-	this.missSendLen = missSendLen;
-	return true;
-    }
+	/**
+	 * Gets the tenant id.
+	 * 
+	 * @return the tenant id
+	 */
+	public Integer getTenantId() {
+		return this.tenantId;
+	}
 
-    /**
-     * Checks if is active.
-     * 
-     * @return true, if is active
-     */
-    public boolean isActive() {
-	return this.isActive;
-    }
+	/**
+	 * Gets the miss send len.
+	 * 
+	 * @return the miss send len
+	 */
+	public short getMissSendLen() {
+		return this.missSendLen;
+	}
 
-    /**
-     * Sets the active.
-     * 
-     * @param isActive
-     *            the new active
-     */
-    public void setActive(final boolean isActive) {
-	this.isActive = isActive;
-    }
+	/**
+	 * Sets the miss send len.
+	 * 
+	 * @param missSendLen
+	 *            the miss send len
+	 * @return true, if successful
+	 */
+	public boolean setMissSendLen(final Short missSendLen) {
+		this.missSendLen = missSendLen;
+		return true;
+	}
 
-    /**
-     * Gets the physical port number.
-     * 
-     * @param ovxPortNumber
-     *            the ovx port number
-     * @return the physical port number
-     */
-    public Short getPhysicalPortNumber(final Short ovxPortNumber) {
-	return this.portMap.get(ovxPortNumber).getPhysicalPortNumber();
-    }
+	/**
+	 * Checks if is active.
+	 * 
+	 * @return true, if is active
+	 */
+	public boolean isActive() {
+		return this.isActive;
+	}
 
-    public void resetBackOff() {
-	this.backOffCounter.set(-1);
-    }
+	/**
+	 * Sets the active.
+	 * 
+	 * @param isActive
+	 *            the new active
+	 */
+	public void setActive(final boolean isActive) {
+		this.isActive = isActive;
+	}
 
-    public int incrementBackOff() {
-	return this.backOffCounter.incrementAndGet();
-    }
+	/**
+	 * Gets the physical port number.
+	 * 
+	 * @param ovxPortNumber
+	 *            the ovx port number
+	 * @return the physical port number
+	 */
+	public Short getPhysicalPortNumber(final Short ovxPortNumber) {
+		return this.portMap.get(ovxPortNumber).getPhysicalPortNumber();
+	}
 
-    //    /**
-    //     * Gets the new port number.
-    //     * 
-    //     * @return the new port number
-    //     */
-    //    private Short getNewPortNumber() {
-    //	short portNumber = 1;
-    //	final Set<Short> keys = this.portMap.keySet();
-    //
-    //	if (keys.isEmpty()) {
-    //	    return portNumber;
-    //	} else {
-    //	    boolean solved = false;
-    //	    while (solved == false && portNumber < 256) {
-    //		if (!keys.contains(portNumber)) {
-    //		    solved = true;
-    //		} else {
-    //		    portNumber += 1;
-    //		}
-    //	    }
-    //	    if (solved == true) {
-    //		return portNumber;
-    //	    } else {
-    //		return 0;
-    //	    }
-    //	}
-    //    }
+	public void resetBackOff() {
+		this.backOffCounter.set(-1);
+	}
 
-    // TODO: add check for maximum value
-    // TODO: use bitmap to keep track of released port numbers
-    public short getNextPortNumber() {
-	return (short) this.portCounter.getAndIncrement();
-    }
+	public int incrementBackOff() {
+		return this.backOffCounter.incrementAndGet();
+	}
 
-    protected void addDefaultPort(final LinkedList<OFPhysicalPort> ports) {
-	final OFPhysicalPort port = new OFPhysicalPort();
-	port.setPortNumber(OFPort.OFPP_LOCAL.getValue());
-	port.setName("OpenFlow Local Port");
-	port.setConfig(1);
-	final byte[] addr = { (byte) 0xA4, (byte) 0x23, (byte) 0x05,
-		(byte) 0x00, (byte) 0x00, (byte) 0x00 };
-	port.setHardwareAddress(addr);
-	port.setState(1);
-	port.setAdvertisedFeatures(0);
-	port.setCurrentFeatures(0);
-	port.setSupportedFeatures(0);
-	ports.add(port);
-    }
+	// /**
+	// * Gets the new port number.
+	// *
+	// * @return the new port number
+	// */
+	// private Short getNewPortNumber() {
+	// short portNumber = 1;
+	// final Set<Short> keys = this.portMap.keySet();
+	//
+	// if (keys.isEmpty()) {
+	// return portNumber;
+	// } else {
+	// boolean solved = false;
+	// while (solved == false && portNumber < 256) {
+	// if (!keys.contains(portNumber)) {
+	// solved = true;
+	// } else {
+	// portNumber += 1;
+	// }
+	// }
+	// if (solved == true) {
+	// return portNumber;
+	// } else {
+	// return 0;
+	// }
+	// }
+	// }
 
-    public void register(List<PhysicalSwitch> physicalSwitches) {
-	this.map.addSwitches(physicalSwitches, this);
-    }
+	// TODO: add check for maximum value
+	// TODO: use bitmap to keep track of released port numbers
+	public short getNextPortNumber() {
+		return (short) this.portCounter.getAndIncrement();
+	}
 
-    /**
-     * Generate features reply.
-     */
-    protected void generateFeaturesReply() {
-	final OFFeaturesReply ofReply = new OFFeaturesReply();
-	ofReply.setDatapathId(this.switchId);
-	final LinkedList<OFPhysicalPort> portList = new LinkedList<OFPhysicalPort>();
-	for (final OVXPort ovxPort: this.portMap.values()) {
-	    final OFPhysicalPort ofPort = new OFPhysicalPort();
-	    ofPort.setPortNumber(ovxPort.getPortNumber());
-	    ofPort.setName(ovxPort.getName());
-	    ofPort.setConfig(ovxPort.getConfig());
-	    ofPort.setHardwareAddress(ovxPort.getHardwareAddress());
-	    ofPort.setState(ovxPort.getState());
-	    ofPort.setAdvertisedFeatures(ovxPort.getAdvertisedFeatures());
-	    ofPort.setCurrentFeatures(ovxPort.getCurrentFeatures());
-	    ofPort.setSupportedFeatures(ovxPort.getSupportedFeatures());
-	    portList.add(ofPort);
+	protected void addDefaultPort(final LinkedList<OFPhysicalPort> ports) {
+		final OFPhysicalPort port = new OFPhysicalPort();
+		port.setPortNumber(OFPort.OFPP_LOCAL.getValue());
+		port.setName("OpenFlow Local Port");
+		port.setConfig(1);
+		final byte[] addr = { (byte) 0xA4, (byte) 0x23, (byte) 0x05,
+				(byte) 0x00, (byte) 0x00, (byte) 0x00 };
+		port.setHardwareAddress(addr);
+		port.setState(1);
+		port.setAdvertisedFeatures(0);
+		port.setCurrentFeatures(0);
+		port.setSupportedFeatures(0);
+		ports.add(port);
+	}
+
+	public void register(final List<PhysicalSwitch> physicalSwitches) {
+		this.map.addSwitches(physicalSwitches, this);
+	}
+
+	/**
+	 * Generate features reply.
+	 */
+	protected void generateFeaturesReply() {
+		final OFFeaturesReply ofReply = new OFFeaturesReply();
+		ofReply.setDatapathId(this.switchId);
+		final LinkedList<OFPhysicalPort> portList = new LinkedList<OFPhysicalPort>();
+		for (final OVXPort ovxPort : this.portMap.values()) {
+			final OFPhysicalPort ofPort = new OFPhysicalPort();
+			ofPort.setPortNumber(ovxPort.getPortNumber());
+			ofPort.setName(ovxPort.getName());
+			ofPort.setConfig(ovxPort.getConfig());
+			ofPort.setHardwareAddress(ovxPort.getHardwareAddress());
+			ofPort.setState(ovxPort.getState());
+			ofPort.setAdvertisedFeatures(ovxPort.getAdvertisedFeatures());
+			ofPort.setCurrentFeatures(ovxPort.getCurrentFeatures());
+			ofPort.setSupportedFeatures(ovxPort.getSupportedFeatures());
+			portList.add(ofPort);
+		}
+
+		/*
+		 * Giving the switch a port (the local port) which is set
+		 * administratively down.
+		 * 
+		 * Perhaps this can be used to send the packets to somewhere
+		 * interesting.
+		 */
+		this.addDefaultPort(portList);
+		ofReply.setPorts(portList);
+		ofReply.setBuffers(OVXSwitch.bufferDimension);
+		ofReply.setTables((byte) 1);
+		ofReply.setCapabilities(this.capabilities.getOVXSwitchCapabilities());
+		ofReply.setActions(OVXSwitch.supportedActions);
+		ofReply.setXid(0);
+		ofReply.setLengthU(OFFeaturesReply.MINIMUM_LENGTH
+				+ OFPhysicalPort.MINIMUM_LENGTH * portList.size());
+
+		this.setFeaturesReply(ofReply);
+	}
+
+	/**
+	 * Boots virtual switch by connecting it to the controller TODO: should
+	 * 
+	 * @return True if successful, false otherwise
+	 */
+	@Override
+	public boolean boot() {
+		this.generateFeaturesReply();
+		final OpenVirteXController ovxController = OpenVirteXController
+				.getInstance();
+		ovxController.registerOVXSwitch(this);
+		this.setActive(true);
+		return true;
 	}
 
 	/*
-	 * Giving the switch a port (the local port) which
-	 * is set administratively down.
+	 * (non-Javadoc)
 	 * 
-	 * Perhaps this can be used to send the packets to somewhere
-	 * interesting.
+	 * @see net.onrc.openvirtex.elements.datapath.Switch#toString()
 	 */
-	this.addDefaultPort(portList);
-	ofReply.setPorts(portList);
-	ofReply.setBuffers(OVXSwitch.bufferDimension);
-	ofReply.setTables((byte) 1);
-	ofReply.setCapabilities(this.capabilities.getOVXSwitchCapabilities());
-	ofReply.setActions(OVXSwitch.supportedActions);
-	ofReply.setXid(0);
-	ofReply.setLengthU(OFFeaturesReply.MINIMUM_LENGTH
-		+ OFPhysicalPort.MINIMUM_LENGTH * portList.size());
-
-	this.setFeaturesReply(ofReply);
-    }
-
-    /**
-     * Boots virtual switch by connecting it to the controller
-     * TODO: should 
-     * 
-     * @return
-     * 		True if successful, false otherwise
-     */
-    public boolean boot() {
-	this.generateFeaturesReply();
-	OpenVirteXController ovxController = OpenVirteXController.getInstance();
-	ovxController.registerOVXSwitch(this);
-	this.setActive(true);
-	return true;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see net.onrc.openvirtex.elements.datapath.Switch#toString()
-     */
-    @Override
-    public String toString() {
-	return "SWITCH: switchId: " + this.switchId + " - switchName: "
-		+ this.switchName + " - isConnected: " + this.isConnected
-		+ " - tenantId: " + this.tenantId + " - missSendLength: "
-		+ this.missSendLen + " - isActive: " + this.isActive
-		+ " - capabilities: "
-		+ this.capabilities.getOVXSwitchCapabilities();
-    }	
-
-    public synchronized int addToBufferMap(OVXPacketIn pktIn) {
-	//TODO: this isn't thread safe... fix it
-	bufferId.compareAndSet(OVXSwitch.bufferDimension, 0);
-	this.bufferMap.put(bufferId.get(), new OVXPacketIn(pktIn));
-	return bufferId.getAndIncrement();
-    }
-
-    public OVXPacketIn getFromBufferMap(Integer bufId) {
-	return this.bufferMap.get(bufId);
-    }
-
-    
-    @Override
-    public boolean equals(Object other) {
-	//TODO: fix this big shit
-	if (other instanceof OVXSwitch) {
-	    OVXSwitch that = (OVXSwitch) other;
-	    return (this.switchId == that.switchId && this.tenantId == that.tenantId);
+	@Override
+	public String toString() {
+		return "SWITCH: switchId: " + this.switchId + " - switchName: "
+				+ this.switchName + " - isConnected: " + this.isConnected
+				+ " - tenantId: " + this.tenantId + " - missSendLength: "
+				+ this.missSendLen + " - isActive: " + this.isActive
+				+ " - capabilities: "
+				+ this.capabilities.getOVXSwitchCapabilities();
 	}
-	return false;
-    }
 
-    public OVXFlowTable getFlowTable() {
-	return this.flowTable;
-    }
-     
-    /**
-     * get a OVXFlowMod out of the map
-     * @param cookie the physical cookie
-     * @return
-     */
-    public OVXFlowMod getFlowMod(Long cookie) {
-	return this.flowTable.getFlowMod(cookie);
-    }
-     
-    /**
-     * Add a FlowMod to the mapping
-     * @param flowmod
-     * @return the new physical cookie
-     */
-    
-    public long addFlowMod(OVXFlowMod flowmod) {
-	return this.flowTable.addFlowMod(flowmod);
-    }
-     
-    /**
-     * Remove an entry in the mapping
-     * @param cookie
-     * @return The deleted FlowMod
-     */
-    public OVXFlowMod deleteFlowMod(Long cookie) {
-	return this.flowTable.deleteFlowMod(cookie);
-    }
-     
-    public abstract int translate(OFMessage ofm, OVXPort inPort);
-     
-    public abstract void sendSouth(OFMessage msg);
+	public synchronized int addToBufferMap(final OVXPacketIn pktIn) {
+		// TODO: this isn't thread safe... fix it
+		this.bufferId.compareAndSet(OVXSwitch.bufferDimension, 0);
+		this.bufferMap.put(this.bufferId.get(), new OVXPacketIn(pktIn));
+		return this.bufferId.getAndIncrement();
+	}
+
+	public OVXPacketIn getFromBufferMap(final Integer bufId) {
+		return this.bufferMap.get(bufId);
+	}
+
+	@Override
+	public boolean equals(final Object other) {
+		// TODO: fix this big shit
+		if (other instanceof OVXSwitch) {
+			final OVXSwitch that = (OVXSwitch) other;
+			return this.switchId == that.switchId
+					&& this.tenantId == that.tenantId;
+		}
+		return false;
+	}
+
+	public OVXFlowTable getFlowTable() {
+		return this.flowTable;
+	}
+
+	/**
+	 * get a OVXFlowMod out of the map
+	 * 
+	 * @param cookie
+	 *            the physical cookie
+	 * @return
+	 */
+	public OVXFlowMod getFlowMod(final Long cookie) {
+		return this.flowTable.getFlowMod(cookie);
+	}
+
+	/**
+	 * Add a FlowMod to the mapping
+	 * 
+	 * @param flowmod
+	 * @return the new physical cookie
+	 */
+
+	public long addFlowMod(final OVXFlowMod flowmod) {
+		return this.flowTable.addFlowMod(flowmod);
+	}
+
+	/**
+	 * Remove an entry in the mapping
+	 * 
+	 * @param cookie
+	 * @return The deleted FlowMod
+	 */
+	public OVXFlowMod deleteFlowMod(final Long cookie) {
+		return this.flowTable.deleteFlowMod(cookie);
+	}
+
+	public abstract int translate(OFMessage ofm, OVXPort inPort);
+
+	public abstract void sendSouth(OFMessage msg);
 }

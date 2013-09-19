@@ -37,7 +37,7 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	public static int MINIMUM_LENGTH = 88;
 
 	protected OFActionFactory actionFactory;
-	protected short length = (short) MINIMUM_LENGTH;
+	protected short length = (short) OFFlowStatisticsReply.MINIMUM_LENGTH;
 	protected byte tableId;
 	protected OFMatch match;
 	protected int durationSeconds;
@@ -54,14 +54,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the tableId
 	 */
 	public byte getTableId() {
-		return tableId;
+		return this.tableId;
 	}
 
 	/**
 	 * @param tableId
 	 *            the tableId to set
 	 */
-	public void setTableId(byte tableId) {
+	public void setTableId(final byte tableId) {
 		this.tableId = tableId;
 	}
 
@@ -69,14 +69,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the match
 	 */
 	public OFMatch getMatch() {
-		return match;
+		return this.match;
 	}
 
 	/**
 	 * @param match
 	 *            the match to set
 	 */
-	public void setMatch(OFMatch match) {
+	public void setMatch(final OFMatch match) {
 		this.match = match;
 	}
 
@@ -84,14 +84,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the durationSeconds
 	 */
 	public int getDurationSeconds() {
-		return durationSeconds;
+		return this.durationSeconds;
 	}
 
 	/**
 	 * @param durationSeconds
 	 *            the durationSeconds to set
 	 */
-	public void setDurationSeconds(int durationSeconds) {
+	public void setDurationSeconds(final int durationSeconds) {
 		this.durationSeconds = durationSeconds;
 	}
 
@@ -99,14 +99,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the durationNanoseconds
 	 */
 	public int getDurationNanoseconds() {
-		return durationNanoseconds;
+		return this.durationNanoseconds;
 	}
 
 	/**
 	 * @param durationNanoseconds
 	 *            the durationNanoseconds to set
 	 */
-	public void setDurationNanoseconds(int durationNanoseconds) {
+	public void setDurationNanoseconds(final int durationNanoseconds) {
 		this.durationNanoseconds = durationNanoseconds;
 	}
 
@@ -114,14 +114,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the priority
 	 */
 	public short getPriority() {
-		return priority;
+		return this.priority;
 	}
 
 	/**
 	 * @param priority
 	 *            the priority to set
 	 */
-	public void setPriority(short priority) {
+	public void setPriority(final short priority) {
 		this.priority = priority;
 	}
 
@@ -129,14 +129,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the idleTimeout
 	 */
 	public short getIdleTimeout() {
-		return idleTimeout;
+		return this.idleTimeout;
 	}
 
 	/**
 	 * @param idleTimeout
 	 *            the idleTimeout to set
 	 */
-	public void setIdleTimeout(short idleTimeout) {
+	public void setIdleTimeout(final short idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
 
@@ -144,14 +144,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the hardTimeout
 	 */
 	public short getHardTimeout() {
-		return hardTimeout;
+		return this.hardTimeout;
 	}
 
 	/**
 	 * @param hardTimeout
 	 *            the hardTimeout to set
 	 */
-	public void setHardTimeout(short hardTimeout) {
+	public void setHardTimeout(final short hardTimeout) {
 		this.hardTimeout = hardTimeout;
 	}
 
@@ -159,14 +159,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the cookie
 	 */
 	public long getCookie() {
-		return cookie;
+		return this.cookie;
 	}
 
 	/**
 	 * @param cookie
 	 *            the cookie to set
 	 */
-	public void setCookie(long cookie) {
+	public void setCookie(final long cookie) {
 		this.cookie = cookie;
 	}
 
@@ -174,14 +174,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the packetCount
 	 */
 	public long getPacketCount() {
-		return packetCount;
+		return this.packetCount;
 	}
 
 	/**
 	 * @param packetCount
 	 *            the packetCount to set
 	 */
-	public void setPacketCount(long packetCount) {
+	public void setPacketCount(final long packetCount) {
 		this.packetCount = packetCount;
 	}
 
@@ -189,14 +189,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the byteCount
 	 */
 	public long getByteCount() {
-		return byteCount;
+		return this.byteCount;
 	}
 
 	/**
 	 * @param byteCount
 	 *            the byteCount to set
 	 */
-	public void setByteCount(long byteCount) {
+	public void setByteCount(final long byteCount) {
 		this.byteCount = byteCount;
 	}
 
@@ -204,14 +204,14 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @param length
 	 *            the length to set
 	 */
-	public void setLength(short length) {
+	public void setLength(final short length) {
 		this.length = length;
 	}
 
 	@Override
 	@JsonIgnore
 	public int getLength() {
-		return U16.f(length);
+		return U16.f(this.length);
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 *            the actionFactory to set
 	 */
 	@Override
-	public void setActionFactory(OFActionFactory actionFactory) {
+	public void setActionFactory(final OFActionFactory actionFactory) {
 		this.actionFactory = actionFactory;
 	}
 
@@ -227,24 +227,25 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	 * @return the actions
 	 */
 	public List<OFAction> getActions() {
-		return actions;
+		return this.actions;
 	}
 
 	/**
 	 * @param actions
 	 *            the actions to set
 	 */
-	public void setActions(List<OFAction> actions) {
+	public void setActions(final List<OFAction> actions) {
 		this.actions = actions;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.length = data.readShort();
 		this.tableId = data.readByte();
 		data.readByte(); // pad
-		if (this.match == null)
+		if (this.match == null) {
 			this.match = new OFMatch();
+		}
 		this.match.readFrom(data);
 		this.durationSeconds = data.readInt();
 		this.durationNanoseconds = data.readInt();
@@ -256,14 +257,15 @@ public class OFFlowStatisticsReply implements OFStatistics,
 		this.cookie = data.readLong();
 		this.packetCount = data.readLong();
 		this.byteCount = data.readLong();
-		if (this.actionFactory == null)
+		if (this.actionFactory == null) {
 			throw new RuntimeException("OFActionFactory not set");
-		this.actions = this.actionFactory.parseActions(data, getLength()
-				- MINIMUM_LENGTH);
+		}
+		this.actions = this.actionFactory.parseActions(data, this.getLength()
+				- OFFlowStatisticsReply.MINIMUM_LENGTH);
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeShort(this.length);
 		data.writeByte(this.tableId);
 		data.writeByte((byte) 0);
@@ -278,8 +280,8 @@ public class OFFlowStatisticsReply implements OFStatistics,
 		data.writeLong(this.cookie);
 		data.writeLong(this.packetCount);
 		data.writeLong(this.byteCount);
-		if (actions != null) {
-			for (OFAction action : actions) {
+		if (this.actions != null) {
+			for (final OFAction action : this.actions) {
 				action.writeTo(data);
 			}
 		}
@@ -306,22 +308,25 @@ public class OFFlowStatisticsReply implements OFStatistics,
 	public int hashCode() {
 		final int prime = 419;
 		int result = 1;
-		result = prime * result + (int) (byteCount ^ (byteCount >>> 32));
-		result = prime * result + (int) (cookie ^ (cookie >>> 32));
-		result = prime * result + durationNanoseconds;
-		result = prime * result + durationSeconds;
-		result = prime * result + hardTimeout;
-		result = prime * result + idleTimeout;
-		result = prime * result + length;
-		result = prime * result + ((match == null) ? 0 : match.hashCode());
-		result = prime * result + (int) (packetCount ^ (packetCount >>> 32));
-		result = prime * result + priority;
-		result = prime * result + tableId;
+		result = prime * result
+				+ (int) (this.byteCount ^ this.byteCount >>> 32);
+		result = prime * result + (int) (this.cookie ^ this.cookie >>> 32);
+		result = prime * result + this.durationNanoseconds;
+		result = prime * result + this.durationSeconds;
+		result = prime * result + this.hardTimeout;
+		result = prime * result + this.idleTimeout;
+		result = prime * result + this.length;
+		result = prime * result
+				+ (this.match == null ? 0 : this.match.hashCode());
+		result = prime * result
+				+ (int) (this.packetCount ^ this.packetCount >>> 32);
+		result = prime * result + this.priority;
+		result = prime * result + this.tableId;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -331,42 +336,42 @@ public class OFFlowStatisticsReply implements OFStatistics,
 		if (!(obj instanceof OFFlowStatisticsReply)) {
 			return false;
 		}
-		OFFlowStatisticsReply other = (OFFlowStatisticsReply) obj;
-		if (byteCount != other.byteCount) {
+		final OFFlowStatisticsReply other = (OFFlowStatisticsReply) obj;
+		if (this.byteCount != other.byteCount) {
 			return false;
 		}
-		if (cookie != other.cookie) {
+		if (this.cookie != other.cookie) {
 			return false;
 		}
-		if (durationNanoseconds != other.durationNanoseconds) {
+		if (this.durationNanoseconds != other.durationNanoseconds) {
 			return false;
 		}
-		if (durationSeconds != other.durationSeconds) {
+		if (this.durationSeconds != other.durationSeconds) {
 			return false;
 		}
-		if (hardTimeout != other.hardTimeout) {
+		if (this.hardTimeout != other.hardTimeout) {
 			return false;
 		}
-		if (idleTimeout != other.idleTimeout) {
+		if (this.idleTimeout != other.idleTimeout) {
 			return false;
 		}
-		if (length != other.length) {
+		if (this.length != other.length) {
 			return false;
 		}
-		if (match == null) {
+		if (this.match == null) {
 			if (other.match != null) {
 				return false;
 			}
-		} else if (!match.equals(other.match)) {
+		} else if (!this.match.equals(other.match)) {
 			return false;
 		}
-		if (packetCount != other.packetCount) {
+		if (this.packetCount != other.packetCount) {
 			return false;
 		}
-		if (priority != other.priority) {
+		if (this.priority != other.priority) {
 			return false;
 		}
-		if (tableId != other.tableId) {
+		if (this.tableId != other.tableId) {
 			return false;
 		}
 		return true;

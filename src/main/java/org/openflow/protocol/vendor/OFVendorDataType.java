@@ -50,7 +50,7 @@ public class OFVendorDataType {
 	 *            object that creates the subclass of OFVendorData associated
 	 *            with this data type.
 	 */
-	public OFVendorDataType(Instantiable<OFVendorData> instantiable) {
+	public OFVendorDataType(final Instantiable<OFVendorData> instantiable) {
 		this.instantiable = instantiable;
 	}
 
@@ -61,21 +61,21 @@ public class OFVendorDataType {
 	 * @return the new object
 	 */
 	public OFVendorData newInstance() {
-		return instantiable.instantiate();
+		return this.instantiable.instantiate();
 	}
 
 	/**
 	 * @return the instantiable
 	 */
 	public Instantiable<OFVendorData> getInstantiable() {
-		return instantiable;
+		return this.instantiable;
 	}
 
 	/**
 	 * @param instantiable
 	 *            the instantiable to set
 	 */
-	public void setInstantiable(Instantiable<OFVendorData> instantiable) {
+	public void setInstantiable(final Instantiable<OFVendorData> instantiable) {
 		this.instantiable = instantiable;
 	}
 

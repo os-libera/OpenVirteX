@@ -41,43 +41,44 @@ public class OFActionVendorGeneric extends OFActionVendor {
 	}
 
 	public byte[] getVendorData() {
-		return vendorData;
+		return this.vendorData;
 	}
 
-	public void setVendorData(byte[] vendorData) {
+	public void setVendorData(final byte[] vendorData) {
 		this.vendorData = vendorData;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 
-		int vendorDataLength = this.getLength() - MINIMUM_LENGTH;
+		final int vendorDataLength = this.getLength()
+				- OFActionVendorGeneric.MINIMUM_LENGTH;
 		if (vendorDataLength > 0) {
-			vendorData = new byte[vendorDataLength];
-			data.readBytes(vendorData);
+			this.vendorData = new byte[vendorDataLength];
+			data.readBytes(this.vendorData);
 		} else {
-			vendorData = EMPTY_ARRAY;
+			this.vendorData = OFActionVendorGeneric.EMPTY_ARRAY;
 		}
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeInt(this.vendor);
-		data.writeBytes(vendorData);
+		data.writeBytes(this.vendorData);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 379;
 		int result = super.hashCode();
-		result = prime * result + Arrays.hashCode(vendorData);
+		result = prime * result + Arrays.hashCode(this.vendorData);
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -87,8 +88,8 @@ public class OFActionVendorGeneric extends OFActionVendor {
 		if (!(obj instanceof OFActionVendorGeneric)) {
 			return false;
 		}
-		OFActionVendorGeneric other = (OFActionVendorGeneric) obj;
-		if (!Arrays.equals(vendorData, other.vendorData)) {
+		final OFActionVendorGeneric other = (OFActionVendorGeneric) obj;
+		if (!Arrays.equals(this.vendorData, other.vendorData)) {
 			return false;
 		}
 		return true;

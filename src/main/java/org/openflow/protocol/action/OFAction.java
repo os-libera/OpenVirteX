@@ -46,7 +46,7 @@ public class OFAction implements Cloneable {
 	 * @return
 	 */
 	public short getLength() {
-		return length;
+		return this.length;
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class OFAction implements Cloneable {
 	 * @return
 	 */
 	public int getLengthU() {
-		return U16.f(length);
+		return U16.f(this.length);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class OFAction implements Cloneable {
 	 * 
 	 * @param length
 	 */
-	public OFAction setLength(short length) {
+	public OFAction setLength(final short length) {
 		this.length = length;
 		return this;
 	}
@@ -82,7 +82,7 @@ public class OFAction implements Cloneable {
 	 * 
 	 * @param type
 	 */
-	public void setType(OFActionType type) {
+	public void setType(final OFActionType type) {
 		this.type = type;
 	}
 
@@ -102,28 +102,29 @@ public class OFAction implements Cloneable {
 	 * @param val
 	 * @return
 	 */
-	public static OFAction fromString(String val) {
-		String tokens[] = val.split(";");
-		if (!tokens[0].equals("ofaction"))
+	public static OFAction fromString(final String val) {
+		final String tokens[] = val.split(";");
+		if (!tokens[0].equals("ofaction")) {
 			throw new IllegalArgumentException("expected 'ofaction' but got '"
 					+ tokens[0] + "'");
-		String type_tokens[] = tokens[1].split("=");
-		String len_tokens[] = tokens[2].split("=");
-		OFAction action = new OFAction();
+		}
+		final String type_tokens[] = tokens[1].split("=");
+		final String len_tokens[] = tokens[2].split("=");
+		final OFAction action = new OFAction();
 		action.setLength(Short.valueOf(len_tokens[1]));
 		action.setType(OFActionType.valueOf(type_tokens[1]));
 		return action;
 	}
 
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.type = OFActionType.valueOf(data.readShort());
 		this.length = data.readShort();
 		// Note missing PAD, see MINIMUM_LENGTH comment for details
 	}
 
-	public void writeTo(ChannelBuffer data) {
-		data.writeShort(type.getTypeValue());
-		data.writeShort(length);
+	public void writeTo(final ChannelBuffer data) {
+		data.writeShort(this.type.getTypeValue());
+		data.writeShort(this.length);
 		// Note missing PAD, see MINIMUM_LENGTH comment for details
 	}
 
@@ -131,13 +132,14 @@ public class OFAction implements Cloneable {
 	public int hashCode() {
 		final int prime = 347;
 		int result = 1;
-		result = prime * result + length;
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + this.length;
+		result = prime * result
+				+ (this.type == null ? 0 : this.type.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -147,15 +149,15 @@ public class OFAction implements Cloneable {
 		if (!(obj instanceof OFAction)) {
 			return false;
 		}
-		OFAction other = (OFAction) obj;
-		if (length != other.length) {
+		final OFAction other = (OFAction) obj;
+		if (this.length != other.length) {
 			return false;
 		}
-		if (type == null) {
+		if (this.type == null) {
 			if (other.type != null) {
 				return false;
 			}
-		} else if (!type.equals(other.type)) {
+		} else if (!this.type.equals(other.type)) {
 			return false;
 		}
 		return true;

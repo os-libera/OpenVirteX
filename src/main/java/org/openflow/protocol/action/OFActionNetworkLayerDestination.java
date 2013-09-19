@@ -29,7 +29,7 @@ public class OFActionNetworkLayerDestination extends
 		super.setLength((short) OFActionNetworkLayerAddress.MINIMUM_LENGTH);
 	}
 
-	public OFActionNetworkLayerDestination(int ip) {
+	public OFActionNetworkLayerDestination(final int ip) {
 		this();
 		this.networkAddress = ip;
 	}

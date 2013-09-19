@@ -29,22 +29,21 @@ import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 
 import org.openflow.protocol.statistics.OFVendorStatistics;
 
-public class OVXVendorStatistics extends OFVendorStatistics
-	implements VirtualizableStatistic, DevirtualizableStatistic {
+public class OVXVendorStatistics extends OFVendorStatistics implements
+		VirtualizableStatistic, DevirtualizableStatistic {
 
-    @Override
-    public void devirtualizeStatistic(OVXSwitch sw, OVXStatisticsRequest msg) {
-	// TODO Auto-generated method stub
-	
-    }
+	@Override
+	public void devirtualizeStatistic(final OVXSwitch sw,
+			final OVXStatisticsRequest msg) {
+		// TODO Auto-generated method stub
 
-    @Override
-    public void virtualizeStatistic(PhysicalSwitch sw, OVXStatisticsReply msg) {
-	// TODO Auto-generated method stub
-	
-    }
+	}
 
+	@Override
+	public void virtualizeStatistic(final PhysicalSwitch sw,
+			final OVXStatisticsReply msg) {
+		// TODO Auto-generated method stub
 
-
+	}
 
 }

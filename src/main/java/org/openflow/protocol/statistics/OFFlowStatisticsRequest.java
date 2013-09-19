@@ -34,14 +34,14 @@ public class OFFlowStatisticsRequest implements OFStatistics {
 	 * @return the match
 	 */
 	public OFMatch getMatch() {
-		return match;
+		return this.match;
 	}
 
 	/**
 	 * @param match
 	 *            the match to set
 	 */
-	public void setMatch(OFMatch match) {
+	public void setMatch(final OFMatch match) {
 		this.match = match;
 	}
 
@@ -49,14 +49,14 @@ public class OFFlowStatisticsRequest implements OFStatistics {
 	 * @return the tableId
 	 */
 	public byte getTableId() {
-		return tableId;
+		return this.tableId;
 	}
 
 	/**
 	 * @param tableId
 	 *            the tableId to set
 	 */
-	public void setTableId(byte tableId) {
+	public void setTableId(final byte tableId) {
 		this.tableId = tableId;
 	}
 
@@ -64,14 +64,14 @@ public class OFFlowStatisticsRequest implements OFStatistics {
 	 * @return the outPort
 	 */
 	public short getOutPort() {
-		return outPort;
+		return this.outPort;
 	}
 
 	/**
 	 * @param outPort
 	 *            the outPort to set
 	 */
-	public void setOutPort(short outPort) {
+	public void setOutPort(final short outPort) {
 		this.outPort = outPort;
 	}
 
@@ -81,9 +81,10 @@ public class OFFlowStatisticsRequest implements OFStatistics {
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
-		if (this.match == null)
+	public void readFrom(final ChannelBuffer data) {
+		if (this.match == null) {
 			this.match = new OFMatch();
+		}
 		this.match.readFrom(data);
 		this.tableId = data.readByte();
 		data.readByte(); // pad
@@ -91,7 +92,7 @@ public class OFFlowStatisticsRequest implements OFStatistics {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		this.match.writeTo(data);
 		data.writeByte(this.tableId);
 		data.writeByte((byte) 0);
@@ -102,14 +103,15 @@ public class OFFlowStatisticsRequest implements OFStatistics {
 	public int hashCode() {
 		final int prime = 421;
 		int result = 1;
-		result = prime * result + ((match == null) ? 0 : match.hashCode());
-		result = prime * result + outPort;
-		result = prime * result + tableId;
+		result = prime * result
+				+ (this.match == null ? 0 : this.match.hashCode());
+		result = prime * result + this.outPort;
+		result = prime * result + this.tableId;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -119,18 +121,18 @@ public class OFFlowStatisticsRequest implements OFStatistics {
 		if (!(obj instanceof OFFlowStatisticsRequest)) {
 			return false;
 		}
-		OFFlowStatisticsRequest other = (OFFlowStatisticsRequest) obj;
-		if (match == null) {
+		final OFFlowStatisticsRequest other = (OFFlowStatisticsRequest) obj;
+		if (this.match == null) {
 			if (other.match != null) {
 				return false;
 			}
-		} else if (!match.equals(other.match)) {
+		} else if (!this.match.equals(other.match)) {
 			return false;
 		}
-		if (outPort != other.outPort) {
+		if (this.outPort != other.outPort) {
 			return false;
 		}
-		if (tableId != other.tableId) {
+		if (this.tableId != other.tableId) {
 			return false;
 		}
 		return true;

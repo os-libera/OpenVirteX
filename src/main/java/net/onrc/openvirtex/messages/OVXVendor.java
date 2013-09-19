@@ -31,13 +31,13 @@ public class OVXVendor extends OFVendor implements Virtualizable,
 		Devirtualizable {
 
 	@Override
-	public void devirtualize(OVXSwitch sw) {
-	    OVXMessageUtil.translateXidAndSend(this, sw);
+	public void devirtualize(final OVXSwitch sw) {
+		OVXMessageUtil.translateXidAndSend(this, sw);
 	}
 
 	@Override
-	public void virtualize(PhysicalSwitch sw) {
-	    OVXMessageUtil.untranslateXidAndSend(this, sw);
+	public void virtualize(final PhysicalSwitch sw) {
+		OVXMessageUtil.untranslateXidAndSend(this, sw);
 	}
 
 }

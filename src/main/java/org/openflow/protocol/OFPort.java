@@ -26,7 +26,7 @@ public enum OFPort {
 
 	protected short value;
 
-	private OFPort(short value) {
+	private OFPort(final short value) {
 		this.value = value;
 	}
 
@@ -34,6 +34,6 @@ public enum OFPort {
 	 * @return the value
 	 */
 	public short getValue() {
-		return value;
+		return this.value;
 	}
 }

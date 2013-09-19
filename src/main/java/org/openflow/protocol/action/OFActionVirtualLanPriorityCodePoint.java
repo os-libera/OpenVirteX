@@ -34,10 +34,10 @@ public class OFActionVirtualLanPriorityCodePoint extends OFAction {
 
 	public OFActionVirtualLanPriorityCodePoint() {
 		super.setType(OFActionType.SET_VLAN_PCP);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionVirtualLanPriorityCodePoint.MINIMUM_LENGTH);
 	}
 
-	public OFActionVirtualLanPriorityCodePoint(byte priority) {
+	public OFActionVirtualLanPriorityCodePoint(final byte priority) {
 		this();
 		this.virtualLanPriorityCodePoint = priority;
 	}
@@ -46,19 +46,20 @@ public class OFActionVirtualLanPriorityCodePoint extends OFAction {
 	 * @return the virtualLanPriorityCodePoint
 	 */
 	public byte getVirtualLanPriorityCodePoint() {
-		return virtualLanPriorityCodePoint;
+		return this.virtualLanPriorityCodePoint;
 	}
 
 	/**
 	 * @param virtualLanPriorityCodePoint
 	 *            the virtualLanPriorityCodePoint to set
 	 */
-	public void setVirtualLanPriorityCodePoint(byte virtualLanPriorityCodePoint) {
+	public void setVirtualLanPriorityCodePoint(
+			final byte virtualLanPriorityCodePoint) {
 		this.virtualLanPriorityCodePoint = virtualLanPriorityCodePoint;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.virtualLanPriorityCodePoint = data.readByte();
 		data.readShort(); // pad
@@ -66,7 +67,7 @@ public class OFActionVirtualLanPriorityCodePoint extends OFAction {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeByte(this.virtualLanPriorityCodePoint);
 		data.writeShort((short) 0);
@@ -77,12 +78,12 @@ public class OFActionVirtualLanPriorityCodePoint extends OFAction {
 	public int hashCode() {
 		final int prime = 389;
 		int result = super.hashCode();
-		result = prime * result + virtualLanPriorityCodePoint;
+		result = prime * result + this.virtualLanPriorityCodePoint;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -92,8 +93,8 @@ public class OFActionVirtualLanPriorityCodePoint extends OFAction {
 		if (!(obj instanceof OFActionVirtualLanPriorityCodePoint)) {
 			return false;
 		}
-		OFActionVirtualLanPriorityCodePoint other = (OFActionVirtualLanPriorityCodePoint) obj;
-		if (virtualLanPriorityCodePoint != other.virtualLanPriorityCodePoint) {
+		final OFActionVirtualLanPriorityCodePoint other = (OFActionVirtualLanPriorityCodePoint) obj;
+		if (this.virtualLanPriorityCodePoint != other.virtualLanPriorityCodePoint) {
 			return false;
 		}
 		return true;

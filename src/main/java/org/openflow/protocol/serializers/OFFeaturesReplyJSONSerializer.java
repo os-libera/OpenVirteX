@@ -33,9 +33,9 @@ public class OFFeaturesReplyJSONSerializer extends
 	 * Performs the serialization of a OFFeaturesReply object
 	 */
 	@Override
-	public void serialize(OFFeaturesReply reply, JsonGenerator jGen,
-			SerializerProvider serializer) throws IOException,
-			JsonProcessingException {
+	public void serialize(final OFFeaturesReply reply,
+			final JsonGenerator jGen, final SerializerProvider serializer)
+			throws IOException, JsonProcessingException {
 		jGen.writeStartObject();
 		jGen.writeNumberField("actions", reply.getActions());
 		jGen.writeNumberField("buffers", reply.getBuffers());

@@ -126,16 +126,17 @@ public enum OFStatisticsType {
 	 *            The Statistics Java class to return when the containing OFType
 	 *            is STATS_REPLY
 	 */
-	OFStatisticsType(int type, Class<? extends OFStatistics> requestClass,
-			Class<? extends OFStatistics> replyClass,
-			Instantiable<OFStatistics> requestInstantiable,
-			Instantiable<OFStatistics> replyInstantiable) {
+	OFStatisticsType(final int type,
+			final Class<? extends OFStatistics> requestClass,
+			final Class<? extends OFStatistics> replyClass,
+			final Instantiable<OFStatistics> requestInstantiable,
+			final Instantiable<OFStatistics> replyInstantiable) {
 		this.type = (short) type;
 		this.requestClass = requestClass;
 		try {
 			this.requestConstructor = requestClass
 					.getConstructor(new Class[] {});
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(
 					"Failure getting constructor for class: " + requestClass, e);
 		}
@@ -143,7 +144,7 @@ public enum OFStatisticsType {
 		this.replyClass = replyClass;
 		try {
 			this.replyConstructor = replyClass.getConstructor(new Class[] {});
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new RuntimeException(
 					"Failure getting constructor for class: " + replyClass, e);
 		}
@@ -164,16 +165,20 @@ public enum OFStatisticsType {
 	 * @param st
 	 *            type
 	 */
-	static public void addMapping(short i, OFType t, OFStatisticsType st) {
-		if (i < 0)
+	static public void addMapping(short i, final OFType t,
+			final OFStatisticsType st) {
+		if (i < 0) {
 			i = (short) (16 + i);
+		}
 		if (t == OFType.STATS_REQUEST) {
-			if (requestMapping == null)
-				requestMapping = new OFStatisticsType[16];
+			if (OFStatisticsType.requestMapping == null) {
+				OFStatisticsType.requestMapping = new OFStatisticsType[16];
+			}
 			OFStatisticsType.requestMapping[i] = st;
 		} else if (t == OFType.STATS_REPLY) {
-			if (replyMapping == null)
-				replyMapping = new OFStatisticsType[16];
+			if (OFStatisticsType.replyMapping == null) {
+				OFStatisticsType.replyMapping = new OFStatisticsType[16];
+			}
 			OFStatisticsType.replyMapping[i] = st;
 		} else {
 			throw new RuntimeException(t.toString() + " is an invalid OFType");
@@ -189,13 +194,14 @@ public enum OFStatisticsType {
 	 *            type of containing OFMessage, only accepts STATS_REQUEST or
 	 *            STATS_REPLY
 	 */
-	static public void removeMapping(short i, OFType t) {
-		if (i < 0)
+	static public void removeMapping(short i, final OFType t) {
+		if (i < 0) {
 			i = (short) (16 + i);
+		}
 		if (t == OFType.STATS_REQUEST) {
-			requestMapping[i] = null;
+			OFStatisticsType.requestMapping[i] = null;
 		} else if (t == OFType.STATS_REPLY) {
-			replyMapping[i] = null;
+			OFStatisticsType.replyMapping[i] = null;
 		} else {
 			throw new RuntimeException(t.toString() + " is an invalid OFType");
 		}
@@ -212,13 +218,14 @@ public enum OFStatisticsType {
 	 *            STATS_REPLY
 	 * @return OFStatisticsType enum type
 	 */
-	static public OFStatisticsType valueOf(short i, OFType t) {
-		if (i < 0)
+	static public OFStatisticsType valueOf(short i, final OFType t) {
+		if (i < 0) {
 			i = (short) (16 + i);
+		}
 		if (t == OFType.STATS_REQUEST) {
-			return requestMapping[i];
+			return OFStatisticsType.requestMapping[i];
 		} else if (t == OFType.STATS_REPLY) {
-			return replyMapping[i];
+			return OFStatisticsType.replyMapping[i];
 		} else {
 			throw new RuntimeException(t.toString() + " is an invalid OFType");
 		}
@@ -239,11 +246,11 @@ public enum OFStatisticsType {
 	 * @return return the OFMessage subclass corresponding to this
 	 *         OFStatisticsType
 	 */
-	public Class<? extends OFStatistics> toClass(OFType t) {
+	public Class<? extends OFStatistics> toClass(final OFType t) {
 		if (t == OFType.STATS_REQUEST) {
-			return requestClass;
+			return this.requestClass;
 		} else if (t == OFType.STATS_REPLY) {
-			return replyClass;
+			return this.replyClass;
 		} else {
 			throw new RuntimeException(t.toString() + " is an invalid OFType");
 		}
@@ -256,11 +263,11 @@ public enum OFStatisticsType {
 	 * @param t
 	 * @return
 	 */
-	public Constructor<? extends OFStatistics> getConstructor(OFType t) {
+	public Constructor<? extends OFStatistics> getConstructor(final OFType t) {
 		if (t == OFType.STATS_REQUEST) {
-			return requestConstructor;
+			return this.requestConstructor;
 		} else if (t == OFType.STATS_REPLY) {
-			return replyConstructor;
+			return this.replyConstructor;
 		} else {
 			throw new RuntimeException(t.toString() + " is an invalid OFType");
 		}
@@ -270,7 +277,7 @@ public enum OFStatisticsType {
 	 * @return the requestInstantiable
 	 */
 	public Instantiable<OFStatistics> getRequestInstantiable() {
-		return requestInstantiable;
+		return this.requestInstantiable;
 	}
 
 	/**
@@ -278,7 +285,7 @@ public enum OFStatisticsType {
 	 *            the requestInstantiable to set
 	 */
 	public void setRequestInstantiable(
-			Instantiable<OFStatistics> requestInstantiable) {
+			final Instantiable<OFStatistics> requestInstantiable) {
 		this.requestInstantiable = requestInstantiable;
 	}
 
@@ -286,7 +293,7 @@ public enum OFStatisticsType {
 	 * @return the replyInstantiable
 	 */
 	public Instantiable<OFStatistics> getReplyInstantiable() {
-		return replyInstantiable;
+		return this.replyInstantiable;
 	}
 
 	/**
@@ -294,7 +301,7 @@ public enum OFStatisticsType {
 	 *            the replyInstantiable to set
 	 */
 	public void setReplyInstantiable(
-			Instantiable<OFStatistics> replyInstantiable) {
+			final Instantiable<OFStatistics> replyInstantiable) {
 		this.replyInstantiable = replyInstantiable;
 	}
 
@@ -305,11 +312,11 @@ public enum OFStatisticsType {
 	 * @param t
 	 * @return
 	 */
-	public OFStatistics newInstance(OFType t) {
+	public OFStatistics newInstance(final OFType t) {
 		if (t == OFType.STATS_REQUEST) {
-			return requestInstantiable.instantiate();
+			return this.requestInstantiable.instantiate();
 		} else if (t == OFType.STATS_REPLY) {
-			return replyInstantiable.instantiate();
+			return this.replyInstantiable.instantiate();
 		} else {
 			throw new RuntimeException(t.toString() + " is an invalid OFType");
 		}

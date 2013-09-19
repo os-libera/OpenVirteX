@@ -34,14 +34,14 @@ public class OFAggregateStatisticsReply implements OFStatistics {
 	 * @return the packetCount
 	 */
 	public long getPacketCount() {
-		return packetCount;
+		return this.packetCount;
 	}
 
 	/**
 	 * @param packetCount
 	 *            the packetCount to set
 	 */
-	public void setPacketCount(long packetCount) {
+	public void setPacketCount(final long packetCount) {
 		this.packetCount = packetCount;
 	}
 
@@ -49,14 +49,14 @@ public class OFAggregateStatisticsReply implements OFStatistics {
 	 * @return the byteCount
 	 */
 	public long getByteCount() {
-		return byteCount;
+		return this.byteCount;
 	}
 
 	/**
 	 * @param byteCount
 	 *            the byteCount to set
 	 */
-	public void setByteCount(long byteCount) {
+	public void setByteCount(final long byteCount) {
 		this.byteCount = byteCount;
 	}
 
@@ -64,14 +64,14 @@ public class OFAggregateStatisticsReply implements OFStatistics {
 	 * @return the flowCount
 	 */
 	public int getFlowCount() {
-		return flowCount;
+		return this.flowCount;
 	}
 
 	/**
 	 * @param flowCount
 	 *            the flowCount to set
 	 */
-	public void setFlowCount(int flowCount) {
+	public void setFlowCount(final int flowCount) {
 		this.flowCount = flowCount;
 	}
 
@@ -82,7 +82,7 @@ public class OFAggregateStatisticsReply implements OFStatistics {
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.packetCount = data.readLong();
 		this.byteCount = data.readLong();
 		this.flowCount = data.readInt();
@@ -90,7 +90,7 @@ public class OFAggregateStatisticsReply implements OFStatistics {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeLong(this.packetCount);
 		data.writeLong(this.byteCount);
 		data.writeInt(this.flowCount);
@@ -101,14 +101,16 @@ public class OFAggregateStatisticsReply implements OFStatistics {
 	public int hashCode() {
 		final int prime = 397;
 		int result = 1;
-		result = prime * result + (int) (byteCount ^ (byteCount >>> 32));
-		result = prime * result + flowCount;
-		result = prime * result + (int) (packetCount ^ (packetCount >>> 32));
+		result = prime * result
+				+ (int) (this.byteCount ^ this.byteCount >>> 32);
+		result = prime * result + this.flowCount;
+		result = prime * result
+				+ (int) (this.packetCount ^ this.packetCount >>> 32);
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -118,14 +120,14 @@ public class OFAggregateStatisticsReply implements OFStatistics {
 		if (!(obj instanceof OFAggregateStatisticsReply)) {
 			return false;
 		}
-		OFAggregateStatisticsReply other = (OFAggregateStatisticsReply) obj;
-		if (byteCount != other.byteCount) {
+		final OFAggregateStatisticsReply other = (OFAggregateStatisticsReply) obj;
+		if (this.byteCount != other.byteCount) {
 			return false;
 		}
-		if (flowCount != other.flowCount) {
+		if (this.flowCount != other.flowCount) {
 			return false;
 		}
-		if (packetCount != other.packetCount) {
+		if (this.packetCount != other.packetCount) {
 			return false;
 		}
 		return true;

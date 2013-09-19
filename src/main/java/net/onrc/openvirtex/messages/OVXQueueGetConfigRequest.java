@@ -32,15 +32,15 @@ public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest implements
 		Devirtualizable {
 
 	@Override
-	public void devirtualize(OVXSwitch sw) {
-	    OVXPort p = sw.getPort(this.getPortNumber());
-            if (p == null) {
-                sw.sendMsg(OVXMessageUtil.makeErrorMsg(
-                        OFBadRequestCode.OFPBRC_EPERM, this), sw);
-                return;
-            }
+	public void devirtualize(final OVXSwitch sw) {
+		final OVXPort p = sw.getPort(this.getPortNumber());
+		if (p == null) {
+			sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+					OFBadRequestCode.OFPBRC_EPERM, this), sw);
+			return;
+		}
 
-            OVXMessageUtil.translateXid(this, p);
+		OVXMessageUtil.translateXid(this, p);
 	}
 
 }

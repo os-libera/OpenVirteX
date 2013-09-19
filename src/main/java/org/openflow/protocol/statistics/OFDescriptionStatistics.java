@@ -39,14 +39,14 @@ public class OFDescriptionStatistics implements OFStatistics {
 	 * @return the manufacturerDescription
 	 */
 	public String getManufacturerDescription() {
-		return manufacturerDescription;
+		return this.manufacturerDescription;
 	}
 
 	/**
 	 * @param manufacturerDescription
 	 *            the manufacturerDescription to set
 	 */
-	public void setManufacturerDescription(String manufacturerDescription) {
+	public void setManufacturerDescription(final String manufacturerDescription) {
 		this.manufacturerDescription = manufacturerDescription;
 	}
 
@@ -54,14 +54,14 @@ public class OFDescriptionStatistics implements OFStatistics {
 	 * @return the hardwareDescription
 	 */
 	public String getHardwareDescription() {
-		return hardwareDescription;
+		return this.hardwareDescription;
 	}
 
 	/**
 	 * @param hardwareDescription
 	 *            the hardwareDescription to set
 	 */
-	public void setHardwareDescription(String hardwareDescription) {
+	public void setHardwareDescription(final String hardwareDescription) {
 		this.hardwareDescription = hardwareDescription;
 	}
 
@@ -69,14 +69,14 @@ public class OFDescriptionStatistics implements OFStatistics {
 	 * @return the softwareDescription
 	 */
 	public String getSoftwareDescription() {
-		return softwareDescription;
+		return this.softwareDescription;
 	}
 
 	/**
 	 * @param softwareDescription
 	 *            the softwareDescription to set
 	 */
-	public void setSoftwareDescription(String softwareDescription) {
+	public void setSoftwareDescription(final String softwareDescription) {
 		this.softwareDescription = softwareDescription;
 	}
 
@@ -84,14 +84,14 @@ public class OFDescriptionStatistics implements OFStatistics {
 	 * @return the serialNumber
 	 */
 	public String getSerialNumber() {
-		return serialNumber;
+		return this.serialNumber;
 	}
 
 	/**
 	 * @param serialNumber
 	 *            the serialNumber to set
 	 */
-	public void setSerialNumber(String serialNumber) {
+	public void setSerialNumber(final String serialNumber) {
 		this.serialNumber = serialNumber;
 	}
 
@@ -99,14 +99,14 @@ public class OFDescriptionStatistics implements OFStatistics {
 	 * @return the datapathDescription
 	 */
 	public String getDatapathDescription() {
-		return datapathDescription;
+		return this.datapathDescription;
 	}
 
 	/**
 	 * @param datapathDescription
 	 *            the datapathDescription to set
 	 */
-	public void setDatapathDescription(String datapathDescription) {
+	public void setDatapathDescription(final String datapathDescription) {
 		this.datapathDescription = datapathDescription;
 	}
 
@@ -116,30 +116,35 @@ public class OFDescriptionStatistics implements OFStatistics {
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.manufacturerDescription = StringByteSerializer.readFrom(data,
-				DESCRIPTION_STRING_LENGTH);
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH);
 		this.hardwareDescription = StringByteSerializer.readFrom(data,
-				DESCRIPTION_STRING_LENGTH);
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH);
 		this.softwareDescription = StringByteSerializer.readFrom(data,
-				DESCRIPTION_STRING_LENGTH);
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH);
 		this.serialNumber = StringByteSerializer.readFrom(data,
-				SERIAL_NUMBER_LENGTH);
+				OFDescriptionStatistics.SERIAL_NUMBER_LENGTH);
 		this.datapathDescription = StringByteSerializer.readFrom(data,
-				DESCRIPTION_STRING_LENGTH);
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH);
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
-		StringByteSerializer.writeTo(data, DESCRIPTION_STRING_LENGTH,
+	public void writeTo(final ChannelBuffer data) {
+		StringByteSerializer.writeTo(data,
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH,
 				this.manufacturerDescription);
-		StringByteSerializer.writeTo(data, DESCRIPTION_STRING_LENGTH,
+		StringByteSerializer.writeTo(data,
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH,
 				this.hardwareDescription);
-		StringByteSerializer.writeTo(data, DESCRIPTION_STRING_LENGTH,
+		StringByteSerializer.writeTo(data,
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH,
 				this.softwareDescription);
-		StringByteSerializer.writeTo(data, SERIAL_NUMBER_LENGTH,
-				this.serialNumber);
-		StringByteSerializer.writeTo(data, DESCRIPTION_STRING_LENGTH,
+		StringByteSerializer
+				.writeTo(data, OFDescriptionStatistics.SERIAL_NUMBER_LENGTH,
+						this.serialNumber);
+		StringByteSerializer.writeTo(data,
+				OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH,
 				this.datapathDescription);
 	}
 
@@ -149,27 +154,28 @@ public class OFDescriptionStatistics implements OFStatistics {
 		int result = 1;
 		result = prime
 				* result
-				+ ((datapathDescription == null) ? 0 : datapathDescription
-						.hashCode());
+				+ (this.datapathDescription == null ? 0
+						: this.datapathDescription.hashCode());
 		result = prime
 				* result
-				+ ((hardwareDescription == null) ? 0 : hardwareDescription
-						.hashCode());
+				+ (this.hardwareDescription == null ? 0
+						: this.hardwareDescription.hashCode());
 		result = prime
 				* result
-				+ ((manufacturerDescription == null) ? 0
-						: manufacturerDescription.hashCode());
-		result = prime * result
-				+ ((serialNumber == null) ? 0 : serialNumber.hashCode());
+				+ (this.manufacturerDescription == null ? 0
+						: this.manufacturerDescription.hashCode());
 		result = prime
 				* result
-				+ ((softwareDescription == null) ? 0 : softwareDescription
-						.hashCode());
+				+ (this.serialNumber == null ? 0 : this.serialNumber.hashCode());
+		result = prime
+				* result
+				+ (this.softwareDescription == null ? 0
+						: this.softwareDescription.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -179,41 +185,41 @@ public class OFDescriptionStatistics implements OFStatistics {
 		if (!(obj instanceof OFDescriptionStatistics)) {
 			return false;
 		}
-		OFDescriptionStatistics other = (OFDescriptionStatistics) obj;
-		if (datapathDescription == null) {
+		final OFDescriptionStatistics other = (OFDescriptionStatistics) obj;
+		if (this.datapathDescription == null) {
 			if (other.datapathDescription != null) {
 				return false;
 			}
-		} else if (!datapathDescription.equals(other.datapathDescription)) {
+		} else if (!this.datapathDescription.equals(other.datapathDescription)) {
 			return false;
 		}
-		if (hardwareDescription == null) {
+		if (this.hardwareDescription == null) {
 			if (other.hardwareDescription != null) {
 				return false;
 			}
-		} else if (!hardwareDescription.equals(other.hardwareDescription)) {
+		} else if (!this.hardwareDescription.equals(other.hardwareDescription)) {
 			return false;
 		}
-		if (manufacturerDescription == null) {
+		if (this.manufacturerDescription == null) {
 			if (other.manufacturerDescription != null) {
 				return false;
 			}
-		} else if (!manufacturerDescription
+		} else if (!this.manufacturerDescription
 				.equals(other.manufacturerDescription)) {
 			return false;
 		}
-		if (serialNumber == null) {
+		if (this.serialNumber == null) {
 			if (other.serialNumber != null) {
 				return false;
 			}
-		} else if (!serialNumber.equals(other.serialNumber)) {
+		} else if (!this.serialNumber.equals(other.serialNumber)) {
 			return false;
 		}
-		if (softwareDescription == null) {
+		if (this.softwareDescription == null) {
 			if (other.softwareDescription != null) {
 				return false;
 			}
-		} else if (!softwareDescription.equals(other.softwareDescription)) {
+		} else if (!this.softwareDescription.equals(other.softwareDescription)) {
 			return false;
 		}
 		return true;

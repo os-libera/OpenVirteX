@@ -44,14 +44,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
@@ -59,14 +59,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the receivePackets
 	 */
 	public long getreceivePackets() {
-		return receivePackets;
+		return this.receivePackets;
 	}
 
 	/**
 	 * @param receivePackets
 	 *            the receivePackets to set
 	 */
-	public void setreceivePackets(long receivePackets) {
+	public void setreceivePackets(final long receivePackets) {
 		this.receivePackets = receivePackets;
 	}
 
@@ -74,14 +74,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the transmitPackets
 	 */
 	public long getTransmitPackets() {
-		return transmitPackets;
+		return this.transmitPackets;
 	}
 
 	/**
 	 * @param transmitPackets
 	 *            the transmitPackets to set
 	 */
-	public void setTransmitPackets(long transmitPackets) {
+	public void setTransmitPackets(final long transmitPackets) {
 		this.transmitPackets = transmitPackets;
 	}
 
@@ -89,14 +89,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the receiveBytes
 	 */
 	public long getReceiveBytes() {
-		return receiveBytes;
+		return this.receiveBytes;
 	}
 
 	/**
 	 * @param receiveBytes
 	 *            the receiveBytes to set
 	 */
-	public void setReceiveBytes(long receiveBytes) {
+	public void setReceiveBytes(final long receiveBytes) {
 		this.receiveBytes = receiveBytes;
 	}
 
@@ -104,14 +104,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the transmitBytes
 	 */
 	public long getTransmitBytes() {
-		return transmitBytes;
+		return this.transmitBytes;
 	}
 
 	/**
 	 * @param transmitBytes
 	 *            the transmitBytes to set
 	 */
-	public void setTransmitBytes(long transmitBytes) {
+	public void setTransmitBytes(final long transmitBytes) {
 		this.transmitBytes = transmitBytes;
 	}
 
@@ -119,14 +119,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the receiveDropped
 	 */
 	public long getReceiveDropped() {
-		return receiveDropped;
+		return this.receiveDropped;
 	}
 
 	/**
 	 * @param receiveDropped
 	 *            the receiveDropped to set
 	 */
-	public void setReceiveDropped(long receiveDropped) {
+	public void setReceiveDropped(final long receiveDropped) {
 		this.receiveDropped = receiveDropped;
 	}
 
@@ -134,14 +134,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the transmitDropped
 	 */
 	public long getTransmitDropped() {
-		return transmitDropped;
+		return this.transmitDropped;
 	}
 
 	/**
 	 * @param transmitDropped
 	 *            the transmitDropped to set
 	 */
-	public void setTransmitDropped(long transmitDropped) {
+	public void setTransmitDropped(final long transmitDropped) {
 		this.transmitDropped = transmitDropped;
 	}
 
@@ -149,14 +149,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the receiveErrors
 	 */
 	public long getreceiveErrors() {
-		return receiveErrors;
+		return this.receiveErrors;
 	}
 
 	/**
 	 * @param receiveErrors
 	 *            the receiveErrors to set
 	 */
-	public void setreceiveErrors(long receiveErrors) {
+	public void setreceiveErrors(final long receiveErrors) {
 		this.receiveErrors = receiveErrors;
 	}
 
@@ -164,14 +164,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the transmitErrors
 	 */
 	public long getTransmitErrors() {
-		return transmitErrors;
+		return this.transmitErrors;
 	}
 
 	/**
 	 * @param transmitErrors
 	 *            the transmitErrors to set
 	 */
-	public void setTransmitErrors(long transmitErrors) {
+	public void setTransmitErrors(final long transmitErrors) {
 		this.transmitErrors = transmitErrors;
 	}
 
@@ -179,14 +179,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the receiveFrameErrors
 	 */
 	public long getReceiveFrameErrors() {
-		return receiveFrameErrors;
+		return this.receiveFrameErrors;
 	}
 
 	/**
 	 * @param receiveFrameErrors
 	 *            the receiveFrameErrors to set
 	 */
-	public void setReceiveFrameErrors(long receiveFrameErrors) {
+	public void setReceiveFrameErrors(final long receiveFrameErrors) {
 		this.receiveFrameErrors = receiveFrameErrors;
 	}
 
@@ -194,14 +194,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the receiveOverrunErrors
 	 */
 	public long getReceiveOverrunErrors() {
-		return receiveOverrunErrors;
+		return this.receiveOverrunErrors;
 	}
 
 	/**
 	 * @param receiveOverrunErrors
 	 *            the receiveOverrunErrors to set
 	 */
-	public void setReceiveOverrunErrors(long receiveOverrunErrors) {
+	public void setReceiveOverrunErrors(final long receiveOverrunErrors) {
 		this.receiveOverrunErrors = receiveOverrunErrors;
 	}
 
@@ -209,14 +209,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the receiveCRCErrors
 	 */
 	public long getReceiveCRCErrors() {
-		return receiveCRCErrors;
+		return this.receiveCRCErrors;
 	}
 
 	/**
 	 * @param receiveCRCErrors
 	 *            the receiveCRCErrors to set
 	 */
-	public void setReceiveCRCErrors(long receiveCRCErrors) {
+	public void setReceiveCRCErrors(final long receiveCRCErrors) {
 		this.receiveCRCErrors = receiveCRCErrors;
 	}
 
@@ -224,14 +224,14 @@ public class OFPortStatisticsReply implements OFStatistics {
 	 * @return the collisions
 	 */
 	public long getCollisions() {
-		return collisions;
+		return this.collisions;
 	}
 
 	/**
 	 * @param collisions
 	 *            the collisions to set
 	 */
-	public void setCollisions(long collisions) {
+	public void setCollisions(final long collisions) {
 		this.collisions = collisions;
 	}
 
@@ -242,7 +242,7 @@ public class OFPortStatisticsReply implements OFStatistics {
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.portNumber = data.readShort();
 		data.readShort(); // pad
 		data.readInt(); // pad
@@ -261,7 +261,7 @@ public class OFPortStatisticsReply implements OFStatistics {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeShort(this.portNumber);
 		data.writeShort((short) 0); // pad
 		data.writeInt(0); // pad
@@ -283,34 +283,38 @@ public class OFPortStatisticsReply implements OFStatistics {
 	public int hashCode() {
 		final int prime = 431;
 		int result = 1;
-		result = prime * result + (int) (collisions ^ (collisions >>> 32));
-		result = prime * result + portNumber;
 		result = prime * result
-				+ (int) (receivePackets ^ (receivePackets >>> 32));
-		result = prime * result + (int) (receiveBytes ^ (receiveBytes >>> 32));
+				+ (int) (this.collisions ^ this.collisions >>> 32);
+		result = prime * result + this.portNumber;
 		result = prime * result
-				+ (int) (receiveCRCErrors ^ (receiveCRCErrors >>> 32));
+				+ (int) (this.receivePackets ^ this.receivePackets >>> 32);
 		result = prime * result
-				+ (int) (receiveDropped ^ (receiveDropped >>> 32));
+				+ (int) (this.receiveBytes ^ this.receiveBytes >>> 32);
 		result = prime * result
-				+ (int) (receiveFrameErrors ^ (receiveFrameErrors >>> 32));
+				+ (int) (this.receiveCRCErrors ^ this.receiveCRCErrors >>> 32);
 		result = prime * result
-				+ (int) (receiveOverrunErrors ^ (receiveOverrunErrors >>> 32));
+				+ (int) (this.receiveDropped ^ this.receiveDropped >>> 32);
+		result = prime
+				* result
+				+ (int) (this.receiveFrameErrors ^ this.receiveFrameErrors >>> 32);
+		result = prime
+				* result
+				+ (int) (this.receiveOverrunErrors ^ this.receiveOverrunErrors >>> 32);
 		result = prime * result
-				+ (int) (receiveErrors ^ (receiveErrors >>> 32));
+				+ (int) (this.receiveErrors ^ this.receiveErrors >>> 32);
 		result = prime * result
-				+ (int) (transmitBytes ^ (transmitBytes >>> 32));
+				+ (int) (this.transmitBytes ^ this.transmitBytes >>> 32);
 		result = prime * result
-				+ (int) (transmitDropped ^ (transmitDropped >>> 32));
+				+ (int) (this.transmitDropped ^ this.transmitDropped >>> 32);
 		result = prime * result
-				+ (int) (transmitErrors ^ (transmitErrors >>> 32));
+				+ (int) (this.transmitErrors ^ this.transmitErrors >>> 32);
 		result = prime * result
-				+ (int) (transmitPackets ^ (transmitPackets >>> 32));
+				+ (int) (this.transmitPackets ^ this.transmitPackets >>> 32);
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -320,44 +324,44 @@ public class OFPortStatisticsReply implements OFStatistics {
 		if (!(obj instanceof OFPortStatisticsReply)) {
 			return false;
 		}
-		OFPortStatisticsReply other = (OFPortStatisticsReply) obj;
-		if (collisions != other.collisions) {
+		final OFPortStatisticsReply other = (OFPortStatisticsReply) obj;
+		if (this.collisions != other.collisions) {
 			return false;
 		}
-		if (portNumber != other.portNumber) {
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
-		if (receivePackets != other.receivePackets) {
+		if (this.receivePackets != other.receivePackets) {
 			return false;
 		}
-		if (receiveBytes != other.receiveBytes) {
+		if (this.receiveBytes != other.receiveBytes) {
 			return false;
 		}
-		if (receiveCRCErrors != other.receiveCRCErrors) {
+		if (this.receiveCRCErrors != other.receiveCRCErrors) {
 			return false;
 		}
-		if (receiveDropped != other.receiveDropped) {
+		if (this.receiveDropped != other.receiveDropped) {
 			return false;
 		}
-		if (receiveFrameErrors != other.receiveFrameErrors) {
+		if (this.receiveFrameErrors != other.receiveFrameErrors) {
 			return false;
 		}
-		if (receiveOverrunErrors != other.receiveOverrunErrors) {
+		if (this.receiveOverrunErrors != other.receiveOverrunErrors) {
 			return false;
 		}
-		if (receiveErrors != other.receiveErrors) {
+		if (this.receiveErrors != other.receiveErrors) {
 			return false;
 		}
-		if (transmitBytes != other.transmitBytes) {
+		if (this.transmitBytes != other.transmitBytes) {
 			return false;
 		}
-		if (transmitDropped != other.transmitDropped) {
+		if (this.transmitDropped != other.transmitDropped) {
 			return false;
 		}
-		if (transmitErrors != other.transmitErrors) {
+		if (this.transmitErrors != other.transmitErrors) {
 			return false;
 		}
-		if (transmitPackets != other.transmitPackets) {
+		if (this.transmitPackets != other.transmitPackets) {
 			return false;
 		}
 		return true;

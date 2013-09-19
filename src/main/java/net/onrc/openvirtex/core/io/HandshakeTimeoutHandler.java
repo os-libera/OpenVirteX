@@ -47,8 +47,8 @@ public class HandshakeTimeoutHandler extends SimpleChannelUpstreamHandler {
 	final long timeoutNanos;
 	volatile Timeout timeout;
 
-	public HandshakeTimeoutHandler(OFChannelHandler channelHandler,
-			Timer timer, long timeoutSeconds) {
+	public HandshakeTimeoutHandler(final OFChannelHandler channelHandler,
+			final Timer timer, final long timeoutSeconds) {
 		super();
 		this.channelHandler = channelHandler;
 		this.timer = timer;
@@ -57,21 +57,21 @@ public class HandshakeTimeoutHandler extends SimpleChannelUpstreamHandler {
 	}
 
 	@Override
-	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		if (timeoutNanos > 0) {
-			timeout = timer.newTimeout(new HandshakeTimeoutTask(ctx),
-					timeoutNanos, TimeUnit.NANOSECONDS);
+	public void channelOpen(final ChannelHandlerContext ctx,
+			final ChannelStateEvent e) throws Exception {
+		if (this.timeoutNanos > 0) {
+			this.timeout = this.timer.newTimeout(new HandshakeTimeoutTask(ctx),
+					this.timeoutNanos, TimeUnit.NANOSECONDS);
 		}
 		ctx.sendUpstream(e);
 	}
 
 	@Override
-	public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		if (timeout != null) {
-			timeout.cancel();
-			timeout = null;
+	public void channelClosed(final ChannelHandlerContext ctx,
+			final ChannelStateEvent e) throws Exception {
+		if (this.timeout != null) {
+			this.timeout.cancel();
+			this.timeout = null;
 		}
 	}
 
@@ -79,21 +79,24 @@ public class HandshakeTimeoutHandler extends SimpleChannelUpstreamHandler {
 
 		private final ChannelHandlerContext ctx;
 
-		HandshakeTimeoutTask(ChannelHandlerContext ctx) {
+		HandshakeTimeoutTask(final ChannelHandlerContext ctx) {
 			this.ctx = ctx;
 		}
 
 		@Override
-		public void run(Timeout timeout) throws Exception {
+		public void run(final Timeout timeout) throws Exception {
 			if (timeout.isCancelled()) {
 				return;
 			}
 
-			if (!ctx.getChannel().isOpen()) {
+			if (!this.ctx.getChannel().isOpen()) {
 				return;
 			}
-			if (!channelHandler.isHandShakeComplete())
-				Channels.fireExceptionCaught(ctx, EXCEPTION);
+			if (!HandshakeTimeoutHandler.this.channelHandler
+					.isHandShakeComplete()) {
+				Channels.fireExceptionCaught(this.ctx,
+						HandshakeTimeoutHandler.EXCEPTION);
+			}
 		}
 	}
 }

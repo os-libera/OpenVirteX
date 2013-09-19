@@ -5,7 +5,6 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public abstract class ApiHandler<T> {
 
-		
 	public abstract JSONRPC2Response process(T params);
 
 	public abstract JSONRPC2ParamsType getType();

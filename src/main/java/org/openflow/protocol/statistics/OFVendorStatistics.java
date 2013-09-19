@@ -32,30 +32,32 @@ public class OFVendorStatistics implements OFStatistics {
 	protected int length = 0;
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.vendor = data.readInt();
-		if (body == null)
-			body = new byte[length - 4];
-		data.readBytes(body);
+		if (this.body == null) {
+			this.body = new byte[this.length - 4];
+		}
+		data.readBytes(this.body);
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeInt(this.vendor);
-		if (body != null)
-			data.writeBytes(body);
+		if (this.body != null) {
+			data.writeBytes(this.body);
+		}
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 457;
 		int result = 1;
-		result = prime * result + vendor;
+		result = prime * result + this.vendor;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -65,8 +67,8 @@ public class OFVendorStatistics implements OFStatistics {
 		if (!(obj instanceof OFVendorStatistics)) {
 			return false;
 		}
-		OFVendorStatistics other = (OFVendorStatistics) obj;
-		if (vendor != other.vendor) {
+		final OFVendorStatistics other = (OFVendorStatistics) obj;
+		if (this.vendor != other.vendor) {
 			return false;
 		}
 		return true;
@@ -74,10 +76,10 @@ public class OFVendorStatistics implements OFStatistics {
 
 	@Override
 	public int getLength() {
-		return length;
+		return this.length;
 	}
 
-	public void setLength(int length) {
+	public void setLength(final int length) {
 		this.length = length;
 	}
 }

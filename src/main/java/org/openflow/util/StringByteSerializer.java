@@ -24,23 +24,25 @@ import java.util.Arrays;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 public class StringByteSerializer {
-	public static String readFrom(ChannelBuffer data, int length) {
-		byte[] stringBytes = new byte[length];
+	public static String readFrom(final ChannelBuffer data, final int length) {
+		final byte[] stringBytes = new byte[length];
 		data.readBytes(stringBytes);
 		// find the first index of 0
 		int index = 0;
-		for (byte b : stringBytes) {
-			if (0 == b)
+		for (final byte b : stringBytes) {
+			if (0 == b) {
 				break;
+			}
 			++index;
 		}
 		return new String(Arrays.copyOf(stringBytes, index),
 				Charset.forName("ascii"));
 	}
 
-	public static void writeTo(ChannelBuffer data, int length, String value) {
+	public static void writeTo(final ChannelBuffer data, final int length,
+			final String value) {
 		try {
-			byte[] name = value.getBytes("ASCII");
+			final byte[] name = value.getBytes("ASCII");
 			if (name.length < length) {
 				data.writeBytes(name);
 				for (int i = name.length; i < length; ++i) {
@@ -50,7 +52,7 @@ public class StringByteSerializer {
 				data.writeBytes(name, 0, length - 1);
 				data.writeByte((byte) 0);
 			}
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
 

@@ -22,31 +22,32 @@
 
 package net.onrc.openvirtex.messages.actions;
 
-
 import java.util.List;
-
-
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.util.MACAddress;
 
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFError.OFBadActionCode;
+import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionDataLayerDestination;
 
 public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
-	implements VirtualizableAction {
+		implements VirtualizableAction {
 
-    @Override
-    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
-	MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
-	Integer tid = sw.getMap().getMAC(mac);
-	if (tid != sw.getTenantId()) 
-	    throw new ActionVirtualizationDenied("Target mac " + mac + 
-		    " is not in virtual network " + sw.getTenantId(), OFBadActionCode.OFPBAC_EPERM);
-	approvedActions.add(this);
-    }
+	@Override
+	public void virtualize(final OVXSwitch sw,
+			final List<OFAction> approvedActions, final OFMatch match)
+			throws ActionVirtualizationDenied {
+		final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
+		final Integer tid = sw.getMap().getMAC(mac);
+		if (tid != sw.getTenantId()) {
+			throw new ActionVirtualizationDenied("Target mac " + mac
+					+ " is not in virtual network " + sw.getTenantId(),
+					OFBadActionCode.OFPBAC_EPERM);
+		}
+		approvedActions.add(this);
+	}
 
 }

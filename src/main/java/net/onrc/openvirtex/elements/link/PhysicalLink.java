@@ -36,17 +36,17 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
  * The Class PhysicalLink.
  * 
  */
-public class PhysicalLink extends Link<PhysicalPort,PhysicalSwitch> {
+public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
 
-    /**
-     * Instantiates a new physical link.
-     * 
-     * @param srcPort
-     *            the source port
-     * @param dstPort
-     *            the destination port
-     */
-    public PhysicalLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
-	super(srcPort, dstPort);
-    }
+	/**
+	 * Instantiates a new physical link.
+	 * 
+	 * @param srcPort
+	 *            the source port
+	 * @param dstPort
+	 *            the destination port
+	 */
+	public PhysicalLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
+		super(srcPort, dstPort);
+	}
 }

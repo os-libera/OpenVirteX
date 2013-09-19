@@ -30,7 +30,7 @@ public class OVXFeaturesRequest extends OFFeaturesRequest implements
 		Devirtualizable {
 
 	@Override
-	public void devirtualize(OVXSwitch sw) {
+	public void devirtualize(final OVXSwitch sw) {
 		// TODO: Log error, we should never receive this message here
 		return;
 

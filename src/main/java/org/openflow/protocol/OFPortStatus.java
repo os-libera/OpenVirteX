@@ -33,7 +33,7 @@ public class OFPortStatus extends OFMessage {
 
 		private byte reason;
 
-		private OFPortReason(byte reason) {
+		private OFPortReason(final byte reason) {
 			this.reason = reason;
 		}
 
@@ -41,10 +41,11 @@ public class OFPortStatus extends OFMessage {
 			return this.reason;
 		}
 
-		public static OFPortReason fromReasonCode(byte reason) {
-			for (OFPortReason r : OFPortReason.values()) {
-				if (r.getReasonCode() == reason)
+		public static OFPortReason fromReasonCode(final byte reason) {
+			for (final OFPortReason r : OFPortReason.values()) {
+				if (r.getReasonCode() == reason) {
 					return r;
+				}
 			}
 			return null;
 		}
@@ -57,14 +58,14 @@ public class OFPortStatus extends OFMessage {
 	 * @return the reason
 	 */
 	public byte getReason() {
-		return reason;
+		return this.reason;
 	}
 
 	/**
 	 * @param reason
 	 *            the reason to set
 	 */
-	public void setReason(byte reason) {
+	public void setReason(final byte reason) {
 		this.reason = reason;
 	}
 
@@ -72,39 +73,41 @@ public class OFPortStatus extends OFMessage {
 	 * @return the desc
 	 */
 	public OFPhysicalPort getDesc() {
-		return desc;
+		return this.desc;
 	}
 
 	/**
 	 * @param desc
 	 *            the desc to set
 	 */
-	public void setDesc(OFPhysicalPort desc) {
+	public void setDesc(final OFPhysicalPort desc) {
 		this.desc = desc;
 	}
 
 	public OFPortStatus() {
 		super();
 		this.type = OFType.PORT_STATUS;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFPortStatus.MINIMUM_LENGTH);
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.reason = data.readByte();
 		data.readerIndex(data.readerIndex() + 7); // skip 7 bytes of padding
-		if (this.desc == null)
+		if (this.desc == null) {
 			this.desc = new OFPhysicalPort();
+		}
 		this.desc.readFrom(data);
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeByte(this.reason);
-		for (int i = 0; i < 7; ++i)
+		for (int i = 0; i < 7; ++i) {
 			data.writeByte((byte) 0);
+		}
 		this.desc.writeTo(data);
 	}
 
@@ -112,13 +115,14 @@ public class OFPortStatus extends OFMessage {
 	public int hashCode() {
 		final int prime = 313;
 		int result = super.hashCode();
-		result = prime * result + ((desc == null) ? 0 : desc.hashCode());
-		result = prime * result + reason;
+		result = prime * result
+				+ (this.desc == null ? 0 : this.desc.hashCode());
+		result = prime * result + this.reason;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -128,15 +132,15 @@ public class OFPortStatus extends OFMessage {
 		if (!(obj instanceof OFPortStatus)) {
 			return false;
 		}
-		OFPortStatus other = (OFPortStatus) obj;
-		if (desc == null) {
+		final OFPortStatus other = (OFPortStatus) obj;
+		if (this.desc == null) {
 			if (other.desc != null) {
 				return false;
 			}
-		} else if (!desc.equals(other.desc)) {
+		} else if (!this.desc.equals(other.desc)) {
 			return false;
 		}
-		if (reason != other.reason) {
+		if (this.reason != other.reason) {
 			return false;
 		}
 		return true;

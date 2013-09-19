@@ -46,7 +46,7 @@ public class OFFlowRemoved extends OFMessage {
 	public OFFlowRemoved() {
 		super();
 		this.type = OFType.FLOW_REMOVED;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFFlowRemoved.MINIMUM_LENGTH);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class OFFlowRemoved extends OFMessage {
 	 * 
 	 * @param cookie
 	 */
-	public void setCookie(long cookie) {
+	public void setCookie(final long cookie) {
 		this.cookie = cookie;
 	}
 
@@ -81,7 +81,7 @@ public class OFFlowRemoved extends OFMessage {
 	 * 
 	 * @param idleTimeout
 	 */
-	public void setIdleTimeout(short idleTimeout) {
+	public void setIdleTimeout(final short idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
 
@@ -100,7 +100,7 @@ public class OFFlowRemoved extends OFMessage {
 	 * 
 	 * @param match
 	 */
-	public void setMatch(OFMatch match) {
+	public void setMatch(final OFMatch match) {
 		this.match = match;
 	}
 
@@ -118,7 +118,7 @@ public class OFFlowRemoved extends OFMessage {
 	 * 
 	 * @param priority
 	 */
-	public void setPriority(short priority) {
+	public void setPriority(final short priority) {
 		this.priority = priority;
 	}
 
@@ -126,14 +126,14 @@ public class OFFlowRemoved extends OFMessage {
 	 * @return the reason
 	 */
 	public OFFlowRemovedReason getReason() {
-		return reason;
+		return this.reason;
 	}
 
 	/**
 	 * @param reason
 	 *            the reason to set
 	 */
-	public void setReason(OFFlowRemovedReason reason) {
+	public void setReason(final OFFlowRemovedReason reason) {
 		this.reason = reason;
 	}
 
@@ -141,14 +141,14 @@ public class OFFlowRemoved extends OFMessage {
 	 * @return the durationSeconds
 	 */
 	public int getDurationSeconds() {
-		return durationSeconds;
+		return this.durationSeconds;
 	}
 
 	/**
 	 * @param durationSeconds
 	 *            the durationSeconds to set
 	 */
-	public void setDurationSeconds(int durationSeconds) {
+	public void setDurationSeconds(final int durationSeconds) {
 		this.durationSeconds = durationSeconds;
 	}
 
@@ -156,14 +156,14 @@ public class OFFlowRemoved extends OFMessage {
 	 * @return the durationNanoseconds
 	 */
 	public int getDurationNanoseconds() {
-		return durationNanoseconds;
+		return this.durationNanoseconds;
 	}
 
 	/**
 	 * @param durationNanoseconds
 	 *            the durationNanoseconds to set
 	 */
-	public void setDurationNanoseconds(int durationNanoseconds) {
+	public void setDurationNanoseconds(final int durationNanoseconds) {
 		this.durationNanoseconds = durationNanoseconds;
 	}
 
@@ -171,14 +171,14 @@ public class OFFlowRemoved extends OFMessage {
 	 * @return the packetCount
 	 */
 	public long getPacketCount() {
-		return packetCount;
+		return this.packetCount;
 	}
 
 	/**
 	 * @param packetCount
 	 *            the packetCount to set
 	 */
-	public void setPacketCount(long packetCount) {
+	public void setPacketCount(final long packetCount) {
 		this.packetCount = packetCount;
 	}
 
@@ -186,22 +186,23 @@ public class OFFlowRemoved extends OFMessage {
 	 * @return the byteCount
 	 */
 	public long getByteCount() {
-		return byteCount;
+		return this.byteCount;
 	}
 
 	/**
 	 * @param byteCount
 	 *            the byteCount to set
 	 */
-	public void setByteCount(long byteCount) {
+	public void setByteCount(final long byteCount) {
 		this.byteCount = byteCount;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
-		if (this.match == null)
+		if (this.match == null) {
 			this.match = new OFMatch();
+		}
 		this.match.readFrom(data);
 		this.cookie = data.readLong();
 		this.priority = data.readShort();
@@ -221,16 +222,16 @@ public class OFFlowRemoved extends OFMessage {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		this.match.writeTo(data);
-		data.writeLong(cookie);
-		data.writeShort(priority);
+		data.writeLong(this.cookie);
+		data.writeShort(this.priority);
 		data.writeByte((byte) this.reason.ordinal());
 		data.writeByte((byte) 0);
 		data.writeInt(this.durationSeconds);
 		data.writeInt(this.durationNanoseconds);
-		data.writeShort(idleTimeout);
+		data.writeShort(this.idleTimeout);
 		data.writeByte((byte) 0); // pad
 		data.writeByte((byte) 0); // pad
 		data.writeLong(this.packetCount);
@@ -241,20 +242,24 @@ public class OFFlowRemoved extends OFMessage {
 	public int hashCode() {
 		final int prime = 271;
 		int result = super.hashCode();
-		result = prime * result + (int) (byteCount ^ (byteCount >>> 32));
-		result = prime * result + (int) (cookie ^ (cookie >>> 32));
-		result = prime * result + durationNanoseconds;
-		result = prime * result + durationSeconds;
-		result = prime * result + idleTimeout;
-		result = prime * result + ((match == null) ? 0 : match.hashCode());
-		result = prime * result + (int) (packetCount ^ (packetCount >>> 32));
-		result = prime * result + priority;
-		result = prime * result + ((reason == null) ? 0 : reason.hashCode());
+		result = prime * result
+				+ (int) (this.byteCount ^ this.byteCount >>> 32);
+		result = prime * result + (int) (this.cookie ^ this.cookie >>> 32);
+		result = prime * result + this.durationNanoseconds;
+		result = prime * result + this.durationSeconds;
+		result = prime * result + this.idleTimeout;
+		result = prime * result
+				+ (this.match == null ? 0 : this.match.hashCode());
+		result = prime * result
+				+ (int) (this.packetCount ^ this.packetCount >>> 32);
+		result = prime * result + this.priority;
+		result = prime * result
+				+ (this.reason == null ? 0 : this.reason.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -264,40 +269,40 @@ public class OFFlowRemoved extends OFMessage {
 		if (!(obj instanceof OFFlowRemoved)) {
 			return false;
 		}
-		OFFlowRemoved other = (OFFlowRemoved) obj;
-		if (byteCount != other.byteCount) {
+		final OFFlowRemoved other = (OFFlowRemoved) obj;
+		if (this.byteCount != other.byteCount) {
 			return false;
 		}
-		if (cookie != other.cookie) {
+		if (this.cookie != other.cookie) {
 			return false;
 		}
-		if (durationNanoseconds != other.durationNanoseconds) {
+		if (this.durationNanoseconds != other.durationNanoseconds) {
 			return false;
 		}
-		if (durationSeconds != other.durationSeconds) {
+		if (this.durationSeconds != other.durationSeconds) {
 			return false;
 		}
-		if (idleTimeout != other.idleTimeout) {
+		if (this.idleTimeout != other.idleTimeout) {
 			return false;
 		}
-		if (match == null) {
+		if (this.match == null) {
 			if (other.match != null) {
 				return false;
 			}
-		} else if (!match.equals(other.match)) {
+		} else if (!this.match.equals(other.match)) {
 			return false;
 		}
-		if (packetCount != other.packetCount) {
+		if (this.packetCount != other.packetCount) {
 			return false;
 		}
-		if (priority != other.priority) {
+		if (this.priority != other.priority) {
 			return false;
 		}
-		if (reason == null) {
+		if (this.reason == null) {
 			if (other.reason != null) {
 				return false;
 			}
-		} else if (!reason.equals(other.reason)) {
+		} else if (!this.reason.equals(other.reason)) {
 			return false;
 		}
 		return true;

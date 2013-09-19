@@ -56,7 +56,8 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 			final OVXNetwork virtNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
 			final PhysicalNetwork phyNetwork = PhysicalNetwork.getInstance();
-			final OVXSwitch virtSwitch = virtNetwork.getSwitch(dpid.longValue());
+			final OVXSwitch virtSwitch = virtNetwork
+					.getSwitch(dpid.longValue());
 
 			// only try route setup if it's a BigSwitch
 			if (!(virtSwitch instanceof OVXBigSwitch)) {
@@ -144,7 +145,7 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Invalid tenant id : " + e.getMessage()), 0);
 		}
-		
+
 		return resp;
 	}
 

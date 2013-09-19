@@ -35,16 +35,16 @@ public class OFEchoRequest extends OFMessage {
 	public OFEchoRequest() {
 		super();
 		this.type = OFType.ECHO_REQUEST;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFEchoRequest.MINIMUM_LENGTH);
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer bb) {
+	public void readFrom(final ChannelBuffer bb) {
 		super.readFrom(bb);
-		int datalen = this.getLengthU() - MINIMUM_LENGTH;
+		final int datalen = this.getLengthU() - OFEchoRequest.MINIMUM_LENGTH;
 		if (datalen > 0) {
 			this.payload = new byte[datalen];
-			bb.readBytes(payload);
+			bb.readBytes(this.payload);
 		}
 	}
 
@@ -52,22 +52,23 @@ public class OFEchoRequest extends OFMessage {
 	 * @return the payload
 	 */
 	public byte[] getPayload() {
-		return payload;
+		return this.payload;
 	}
 
 	/**
 	 * @param payload
 	 *            the payload to set
 	 */
-	public void setPayload(byte[] payload) {
+	public void setPayload(final byte[] payload) {
 		this.payload = payload;
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer bb) {
+	public void writeTo(final ChannelBuffer bb) {
 		super.writeTo(bb);
-		if (payload != null)
-			bb.writeBytes(payload);
+		if (this.payload != null) {
+			bb.writeBytes(this.payload);
+		}
 	}
 
 	/*
@@ -79,7 +80,7 @@ public class OFEchoRequest extends OFMessage {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + Arrays.hashCode(payload);
+		result = prime * result + Arrays.hashCode(this.payload);
 		return result;
 	}
 
@@ -89,16 +90,20 @@ public class OFEchoRequest extends OFMessage {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
-		OFEchoRequest other = (OFEchoRequest) obj;
-		if (!Arrays.equals(payload, other.payload))
+		}
+		final OFEchoRequest other = (OFEchoRequest) obj;
+		if (!Arrays.equals(this.payload, other.payload)) {
 			return false;
+		}
 		return true;
 	}
 }

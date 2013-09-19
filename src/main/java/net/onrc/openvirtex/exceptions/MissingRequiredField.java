@@ -3,7 +3,6 @@
  */
 package net.onrc.openvirtex.exceptions;
 
-
 public class MissingRequiredField extends Exception {
 
 	/**
@@ -11,7 +10,7 @@ public class MissingRequiredField extends Exception {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public MissingRequiredField(String fieldName) {
+	public MissingRequiredField(final String fieldName) {
 		super(fieldName + " is required ");
 	}
 

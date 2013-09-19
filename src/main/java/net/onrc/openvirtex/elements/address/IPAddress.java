@@ -8,12 +8,12 @@ import net.onrc.openvirtex.packet.IPv4;
 public abstract class IPAddress {
 	protected int ip;
 
-
 	protected IPAddress(final String ipAddress) {
-	    this.ip = IPv4.toIPv4Address(ipAddress);
+		this.ip = IPv4.toIPv4Address(ipAddress);
 	}
-	
-	protected IPAddress() {}
+
+	protected IPAddress() {
+	}
 
 	public int getIp() {
 		return this.ip;
@@ -22,21 +22,20 @@ public abstract class IPAddress {
 	public void setIp(final int ip) {
 		this.ip = ip;
 	}
-	
-	
-	
 
 	@Override
 	public String toString() {
-	    return this.getClass().getSimpleName() + "[" + (ip >> 24) + "." + ((ip >> 16) & 0xFF) +
-		    "." + ((ip >> 8) & 0xFF) +  "." + (ip & 0xFF) + "]";  
+		return this.getClass().getSimpleName() + "[" + (this.ip >> 24) + "."
+				+ (this.ip >> 16 & 0xFF) + "." + (this.ip >> 8 & 0xFF) + "."
+				+ (this.ip & 0xFF) + "]";
 	}
-	
+
 	@Override
-	public boolean equals(Object that) {
-	    if (that instanceof IPAddress)
-		return ip == ((IPAddress)that).ip;
-	    return false;
+	public boolean equals(final Object that) {
+		if (that instanceof IPAddress) {
+			return this.ip == ((IPAddress) that).ip;
+		}
+		return false;
 	}
 
 }

@@ -33,43 +33,40 @@ import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 import org.openflow.protocol.statistics.OFDescriptionStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
-public class OVXDescriptionStatistics extends OFDescriptionStatistics
-implements VirtualizableStatistic, DevirtualizableStatistic {
+public class OVXDescriptionStatistics extends OFDescriptionStatistics implements
+		VirtualizableStatistic, DevirtualizableStatistic {
 
-  
+	/**
+	 * Received a Description stats request from the controller Create a reply
+	 * object populated with the virtual switch params and send it back to the
+	 * controller.
+	 */
+	@Override
+	public void devirtualizeStatistic(final OVXSwitch sw,
+			final OVXStatisticsRequest msg) {
+		final OVXStatisticsReply reply = new OVXStatisticsReply();
 
+		final OVXDescriptionStatistics desc = new OVXDescriptionStatistics();
 
-    /**
-     * Received a Description stats request from the controller
-     * Create a reply object populated with the virtual switch 
-     * params and send it back to the controller.
-     */
-    @Override
-    public void devirtualizeStatistic(OVXSwitch sw, OVXStatisticsRequest msg) {
-	OVXStatisticsReply reply = new OVXStatisticsReply();
+		desc.setDatapathDescription(OVXSwitch.DPDESCSTRING);
+		desc.setHardwareDescription("virtual hardware");
+		desc.setManufacturerDescription("Open Networking Lab");
+		desc.setSerialNumber(sw.getSwitchName());
+		desc.setSoftwareDescription(OpenVirteX.VERSION);
 
-	OVXDescriptionStatistics desc = new OVXDescriptionStatistics();
-	
+		reply.setXid(msg.getXid());
+		reply.setLengthU(reply.getLength() + desc.getLength());
+		reply.setStatisticType(OFStatisticsType.DESC);
+		reply.setStatistics(Collections.singletonList(desc));
+		sw.sendMsg(reply, sw);
 
-	desc.setDatapathDescription(OVXSwitch.DPDESCSTRING);
-	desc.setHardwareDescription("virtual hardware");
-	desc.setManufacturerDescription("Open Networking Lab");
-	desc.setSerialNumber(sw.getSwitchName());
-	desc.setSoftwareDescription(OpenVirteX.VERSION);
+	}
 
+	@Override
+	public void virtualizeStatistic(final PhysicalSwitch sw,
+			final OVXStatisticsReply msg) {
+		// log.error("Received illegal message form physical network; {}", msg);
 
-	reply.setXid(msg.getXid());
-	reply.setLengthU(reply.getLength() + desc.getLength());
-	reply.setStatisticType(OFStatisticsType.DESC);
-	reply.setStatistics(Collections.singletonList(desc));
-	sw.sendMsg(reply, sw);
-
-    }
-
-    @Override
-    public void virtualizeStatistic(PhysicalSwitch sw, OVXStatisticsReply msg) {
-	//log.error("Received illegal message form physical network; {}", msg);
-	
-    }
+	}
 
 }

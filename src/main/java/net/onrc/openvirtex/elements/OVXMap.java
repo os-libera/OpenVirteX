@@ -36,9 +36,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -48,24 +45,26 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 
 public class OVXMap implements Mappable {
 
-
 	static Logger log = LogManager.getLogger(OVXMap.class.getName());
-	private static AtomicReference<OVXMap>         			     mapInstance = new AtomicReference<>();
+	private static AtomicReference<OVXMap> mapInstance = new AtomicReference<>();
 
-	ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>                  virtualSwitchMap;
+	ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>> virtualSwitchMap;
 	ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
-	ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>                      virtualLinkMap;
-	ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, List<OVXLink>>>     physicalLinkMap;
-	ConcurrentHashMap<Integer, OVXNetwork>                                   networkMap;
-	RadixTree<OVXIPAddress>                                                  physicalIPMap;
-	RadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>                 virtualIPMap;
-	RadixTree<Integer>						macMap;
+	ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>> virtualLinkMap;
+	ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, List<OVXLink>>> physicalLinkMap;
+	ConcurrentHashMap<Integer, OVXNetwork> networkMap;
+	RadixTree<OVXIPAddress> physicalIPMap;
+	RadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>> virtualIPMap;
+	RadixTree<Integer> macMap;
 
 	/**
 	 * constructor for OVXMap will be an empty constructor
@@ -91,27 +90,27 @@ public class OVXMap implements Mappable {
 	 * @return mapInstance Return the OVXMap object instance
 	 */
 	public static OVXMap getInstance() {
-		mapInstance.compareAndSet(null, new OVXMap());
-		return mapInstance.get();
+		OVXMap.mapInstance.compareAndSet(null, new OVXMap());
+		return OVXMap.mapInstance.get();
 	}
-	
+
 	public static void reset() {
-		log.debug("OVXMap has been reset explicitely. Hope you know what you are doing!");
-		mapInstance.set(null);
+		OVXMap.log
+				.debug("OVXMap has been reset explicitely. Hope you know what you are doing!");
+		OVXMap.mapInstance.set(null);
 	}
-	
 
 	// ADD objects to dictionary
 
 	/**
 	 * Create the mapping between PhysicalSwithes and a VirtualSwitch. This
-	 * function takes
-	 * in a list of physicalSwitches and adds to the OVXMap indexed by the
-	 * virtualSwitch.
+	 * function takes in a list of physicalSwitches and adds to the OVXMap
+	 * indexed by the virtualSwitch.
 	 * 
 	 * @param physicalSwitches
 	 * @param virtualSwitch
 	 */
+	@Override
 	public void addSwitches(final List<PhysicalSwitch> physicalSwitches,
 			final OVXSwitch virtualSwitch) {
 

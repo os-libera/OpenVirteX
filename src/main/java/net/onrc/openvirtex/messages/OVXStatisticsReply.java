@@ -31,19 +31,20 @@ import org.openflow.protocol.OFStatisticsReply;
 import org.openflow.protocol.statistics.OFStatistics;
 
 public class OVXStatisticsReply extends OFStatisticsReply implements
-Virtualizable {
+		Virtualizable {
 
-    private Logger log = LogManager.getLogger(OVXStatisticsReply.class.getName());
+	private final Logger log = LogManager.getLogger(OVXStatisticsReply.class
+			.getName());
 
-    @Override
-    public void virtualize(PhysicalSwitch sw) {
-	try {
-	    OFStatistics stat = this.getFirstStatistics();
-	    ((VirtualizableStatistic)stat).virtualizeStatistic(sw, this);
-	} catch (ClassCastException e) {
-	    log.error("Statistic received is not virtualizable {}", this);
+	@Override
+	public void virtualize(final PhysicalSwitch sw) {
+		try {
+			final OFStatistics stat = this.getFirstStatistics();
+			((VirtualizableStatistic) stat).virtualizeStatistic(sw, this);
+		} catch (final ClassCastException e) {
+			this.log.error("Statistic received is not virtualizable {}", this);
+		}
+
 	}
-
-    }
 
 }

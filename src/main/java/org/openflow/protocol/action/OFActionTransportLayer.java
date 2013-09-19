@@ -36,26 +36,26 @@ public abstract class OFActionTransportLayer extends OFAction {
 	 * @return the transportPort
 	 */
 	public short getTransportPort() {
-		return transportPort;
+		return this.transportPort;
 	}
 
 	/**
 	 * @param transportPort
 	 *            the transportPort to set
 	 */
-	public void setTransportPort(short transportPort) {
+	public void setTransportPort(final short transportPort) {
 		this.transportPort = transportPort;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.transportPort = data.readShort();
 		data.readShort();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeShort(this.transportPort);
 		data.writeShort((short) 0);
@@ -65,12 +65,12 @@ public abstract class OFActionTransportLayer extends OFAction {
 	public int hashCode() {
 		final int prime = 373;
 		int result = super.hashCode();
-		result = prime * result + transportPort;
+		result = prime * result + this.transportPort;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -80,8 +80,8 @@ public abstract class OFActionTransportLayer extends OFAction {
 		if (!(obj instanceof OFActionTransportLayer)) {
 			return false;
 		}
-		OFActionTransportLayer other = (OFActionTransportLayer) obj;
-		if (transportPort != other.transportPort) {
+		final OFActionTransportLayer other = (OFActionTransportLayer) obj;
+		if (this.transportPort != other.transportPort) {
 			return false;
 		}
 		return true;
@@ -89,10 +89,10 @@ public abstract class OFActionTransportLayer extends OFAction {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(type);
+		final StringBuilder builder = new StringBuilder();
+		builder.append(this.type);
 		builder.append("[");
-		builder.append(transportPort);
+		builder.append(this.transportPort);
 		builder.append("]");
 		return builder.toString();
 	}

@@ -36,26 +36,26 @@ public class OFPacketQueue {
 
 	public OFPacketQueue() {
 		this.queueId = -1;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFPacketQueue.MINIMUM_LENGTH);
 	}
 
-	public OFPacketQueue(int queueId) {
+	public OFPacketQueue(final int queueId) {
 		this.queueId = queueId;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFPacketQueue.MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the queueId
 	 */
 	public long getQueueId() {
-		return queueId;
+		return this.queueId;
 	}
 
 	/**
 	 * @param queueId
 	 *            the queueId to set
 	 */
-	public void setQueueId(int queueId) {
+	public void setQueueId(final int queueId) {
 		this.queueId = queueId;
 	}
 
@@ -63,18 +63,18 @@ public class OFPacketQueue {
 	 * @return the queue's properties
 	 */
 	public List<OFQueueProp> getProperties() {
-		return properties;
+		return this.properties;
 	}
 
 	/**
 	 * @param properties
 	 *            the properties to set
 	 */
-	public void setProperties(List<OFQueueProp> properties) {
+	public void setProperties(final List<OFQueueProp> properties) {
 		this.properties = properties;
 
-		this.length = U16.t(MINIMUM_LENGTH);
-		for (OFQueueProp prop : properties) {
+		this.length = U16.t(OFPacketQueue.MINIMUM_LENGTH);
+		for (final OFQueueProp prop : properties) {
 			this.length += prop.getLength();
 		}
 	}
@@ -83,31 +83,31 @@ public class OFPacketQueue {
 	 * @return the length
 	 */
 	public short getLength() {
-		return length;
+		return this.length;
 	}
 
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.queueId = data.readInt();
 		this.length = data.readShort();
 		data.readShort(); // pad
 
-		int availLength = (this.length - MINIMUM_LENGTH);
+		int availLength = this.length - OFPacketQueue.MINIMUM_LENGTH;
 		this.properties.clear();
 
 		while (availLength > 0) {
-			OFQueueProp prop = new OFQueueProp();
+			final OFQueueProp prop = new OFQueueProp();
 			prop.readFrom(data);
-			properties.add(prop);
+			this.properties.add(prop);
 			availLength -= prop.getLength();
 		}
 	}
 
-	public void writeTo(ChannelBuffer data) {
-		data.writeInt(queueId);
-		data.writeShort(length);
+	public void writeTo(final ChannelBuffer data) {
+		data.writeInt(this.queueId);
+		data.writeShort(this.length);
 		data.writeShort(0); // pad
 
-		for (OFQueueProp prop : properties) {
+		for (final OFQueueProp prop : this.properties) {
 			prop.writeTo(data);
 		}
 	}
@@ -116,14 +116,14 @@ public class OFPacketQueue {
 	public int hashCode() {
 		final int prime = 359;
 		int result = super.hashCode();
-		result = prime * result + queueId;
-		result = prime * result + length;
-		result = prime * result + properties.hashCode();
+		result = prime * result + this.queueId;
+		result = prime * result + this.length;
+		result = prime * result + this.properties.hashCode();
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -133,11 +133,11 @@ public class OFPacketQueue {
 		if (!(obj instanceof OFPacketQueue)) {
 			return false;
 		}
-		OFPacketQueue other = (OFPacketQueue) obj;
-		if (queueId != other.queueId) {
+		final OFPacketQueue other = (OFPacketQueue) obj;
+		if (this.queueId != other.queueId) {
 			return false;
 		}
-		if (!properties.equals(other.properties)) {
+		if (!this.properties.equals(other.properties)) {
 			return false;
 		}
 		return true;

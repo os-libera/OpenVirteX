@@ -36,33 +36,36 @@ import org.jboss.netty.util.HashedWheelTimer;
 
 public class SwitchChannelPipeline extends OpenflowChannelPipeline {
 
-    public SwitchChannelPipeline(OpenVirteXController openVirteXController,
-	    ThreadPoolExecutor pipelineExecutor) {
-	super();
-	this.ctrl = openVirteXController;
-	this.pipelineExecutor = pipelineExecutor;
-	this.timer = new HashedWheelTimer();
-	this.idleHandler = new IdleStateHandler(timer, 20, 25, 0);
-	this.readTimeoutHandler = new ReadTimeoutHandler(timer, 30);
-    }
+	public SwitchChannelPipeline(
+			final OpenVirteXController openVirteXController,
+			final ThreadPoolExecutor pipelineExecutor) {
+		super();
+		this.ctrl = openVirteXController;
+		this.pipelineExecutor = pipelineExecutor;
+		this.timer = new HashedWheelTimer();
+		this.idleHandler = new IdleStateHandler(this.timer, 20, 25, 0);
+		this.readTimeoutHandler = new ReadTimeoutHandler(this.timer, 30);
+	}
 
-    @Override
-    public ChannelPipeline getPipeline() throws Exception {
-	SwitchChannelHandler handler = new SwitchChannelHandler(ctrl);
+	@Override
+	public ChannelPipeline getPipeline() throws Exception {
+		final SwitchChannelHandler handler = new SwitchChannelHandler(this.ctrl);
 
-	ChannelPipeline pipeline = Channels.pipeline();
-	pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
-	pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
-	pipeline.addLast("idle", idleHandler);
-	pipeline.addLast("timeout", readTimeoutHandler);
-	pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
-		handler, timer, 15));
-	if (pipelineExecutor == null)
-	    pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(16, 1048576, 1048576);
-	pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-		pipelineExecutor));
-	pipeline.addLast("handler", handler);
-	return pipeline;
-    }
+		final ChannelPipeline pipeline = Channels.pipeline();
+		pipeline.addLast("ofmessagedecoder", new OVXMessageDecoder());
+		pipeline.addLast("ofmessageencoder", new OVXMessageEncoder());
+		pipeline.addLast("idle", this.idleHandler);
+		pipeline.addLast("timeout", this.readTimeoutHandler);
+		pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
+				handler, this.timer, 15));
+		if (this.pipelineExecutor == null) {
+			this.pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
+					16, 1048576, 1048576);
+		}
+		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
+				this.pipelineExecutor));
+		pipeline.addLast("handler", handler);
+		return pipeline;
+	}
 
 }

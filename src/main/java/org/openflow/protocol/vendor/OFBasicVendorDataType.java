@@ -52,8 +52,8 @@ public class OFBasicVendorDataType extends OFVendorDataType {
 	 *            An Instantiator<OFVendorData> implementation that creates an
 	 *            instance of an appropriate subclass of OFVendorData.
 	 */
-	public OFBasicVendorDataType(long type,
-			Instantiable<OFVendorData> instantiator) {
+	public OFBasicVendorDataType(final long type,
+			final Instantiable<OFVendorData> instantiator) {
 		super(instantiator);
 		this.type = type;
 	}
@@ -70,7 +70,7 @@ public class OFBasicVendorDataType extends OFVendorDataType {
 	 * @param type
 	 *            the wire protocol value for this data type
 	 */
-	public void setTypeValue(long type) {
+	public void setTypeValue(final long type) {
 		this.type = type;
 	}
 }

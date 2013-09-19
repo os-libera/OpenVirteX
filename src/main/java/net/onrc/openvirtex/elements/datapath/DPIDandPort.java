@@ -4,7 +4,7 @@ public class DPIDandPort {
 	long dpid;
 	short port;
 
-	public DPIDandPort(long dpid, short port) {
+	public DPIDandPort(final long dpid, final short port) {
 		super();
 		this.dpid = dpid;
 		this.port = port;
@@ -14,14 +14,14 @@ public class DPIDandPort {
 	 * @return the dpid
 	 */
 	public long getDpid() {
-		return dpid;
+		return this.dpid;
 	}
 
 	/**
 	 * @param dpid
 	 *            the dpid to set
 	 */
-	public void setDpid(long dpid) {
+	public void setDpid(final long dpid) {
 		this.dpid = dpid;
 	}
 
@@ -29,14 +29,14 @@ public class DPIDandPort {
 	 * @return the port
 	 */
 	public short getPort() {
-		return port;
+		return this.port;
 	}
 
 	/**
 	 * @param port
 	 *            the port to set
 	 */
-	public void setPort(short port) {
+	public void setPort(final short port) {
 		this.port = port;
 	}
 }

@@ -27,16 +27,16 @@ public class OFMatchWithSwDpid {
 		this.switchDataPathId = 0;
 	}
 
-	public OFMatchWithSwDpid(OFMatch ofm, long swDpid) {
+	public OFMatchWithSwDpid(final OFMatch ofm, final long swDpid) {
 		this.ofMatch = ofm.clone();
 		this.switchDataPathId = swDpid;
 	}
 
 	public OFMatch getOfMatch() {
-		return ofMatch;
+		return this.ofMatch;
 	}
 
-	public void setOfMatch(OFMatch ofMatch) {
+	public void setOfMatch(final OFMatch ofMatch) {
 		this.ofMatch = ofMatch.clone();
 	}
 
@@ -44,29 +44,31 @@ public class OFMatchWithSwDpid {
 		return this.switchDataPathId;
 	}
 
-	public OFMatchWithSwDpid setSwitchDataPathId(long dpid) {
+	public OFMatchWithSwDpid setSwitchDataPathId(final long dpid) {
 		this.switchDataPathId = dpid;
 		return this;
 	}
 
 	@Override
 	public String toString() {
-		return "OFMatchWithSwDpid [" + HexString.toHexString(switchDataPathId)
-				+ " " + ofMatch + "]";
+		return "OFMatchWithSwDpid ["
+				+ HexString.toHexString(this.switchDataPathId) + " "
+				+ this.ofMatch + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((ofMatch == null) ? 0 : ofMatch.hashCode());
 		result = prime * result
-				+ (int) (switchDataPathId ^ (switchDataPathId >>> 32));
+				+ (this.ofMatch == null ? 0 : this.ofMatch.hashCode());
+		result = prime * result
+				+ (int) (this.switchDataPathId ^ this.switchDataPathId >>> 32);
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -76,15 +78,15 @@ public class OFMatchWithSwDpid {
 		if (!(obj instanceof OFMatchWithSwDpid)) {
 			return false;
 		}
-		OFMatchWithSwDpid other = (OFMatchWithSwDpid) obj;
-		if (ofMatch == null) {
+		final OFMatchWithSwDpid other = (OFMatchWithSwDpid) obj;
+		if (this.ofMatch == null) {
 			if (other.ofMatch != null) {
 				return false;
 			}
-		} else if (!ofMatch.equals(other.ofMatch)) {
+		} else if (!this.ofMatch.equals(other.ofMatch)) {
 			return false;
 		}
-		if (switchDataPathId != other.switchDataPathId) {
+		if (this.switchDataPathId != other.switchDataPathId) {
 			return false;
 		}
 		return true;

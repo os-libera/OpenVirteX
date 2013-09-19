@@ -56,12 +56,12 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 			this.value = (short) this.ordinal();
 		}
 
-		private OFErrorType(short value) {
+		private OFErrorType(final short value) {
 			this.value = value;
 		}
 
 		public short getValue() {
-			return value;
+			return this.value;
 		}
 	}
 
@@ -101,31 +101,31 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 	public OFError() {
 		super();
 		this.type = OFType.ERROR;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFError.MINIMUM_LENGTH);
 	}
 
 	/** convenience constructor */
-	public OFError(OFErrorType errorType) {
+	public OFError(final OFErrorType errorType) {
 		this();
-		setErrorType(errorType);
+		this.setErrorType(errorType);
 	}
 
 	/**
 	 * @return the errorType
 	 */
 	public short getErrorType() {
-		return errorType;
+		return this.errorType;
 	}
 
 	/**
 	 * @param errorType
 	 *            the errorType to set
 	 */
-	public void setErrorType(short errorType) {
+	public void setErrorType(final short errorType) {
 		this.errorType = errorType;
 	}
 
-	public void setErrorType(OFErrorType type) {
+	public void setErrorType(final OFErrorType type) {
 		this.errorType = type.getValue();
 	}
 
@@ -133,76 +133,79 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 	 * @return true if the error is an extended vendor error
 	 */
 	public boolean isVendorError() {
-		return errorType == OFErrorType.OFPET_VENDOR_ERROR.getValue();
+		return this.errorType == OFErrorType.OFPET_VENDOR_ERROR.getValue();
 	}
 
 	/**
 	 * @return the errorCode
 	 */
 	public short getErrorCode() {
-		return errorCode;
+		return this.errorCode;
 	}
 
 	/**
 	 * @param errorCode
 	 *            the errorCode to set
 	 */
-	public void setErrorCode(OFHelloFailedCode code) {
+	public void setErrorCode(final OFHelloFailedCode code) {
 		this.errorCode = (short) code.ordinal();
 	}
 
-	public void setErrorCode(short errorCode) {
+	public void setErrorCode(final short errorCode) {
 		this.errorCode = errorCode;
 	}
 
-	public void setErrorCode(OFBadRequestCode code) {
+	public void setErrorCode(final OFBadRequestCode code) {
 		this.errorCode = (short) code.ordinal();
 	}
 
-	public void setErrorCode(OFBadActionCode code) {
+	public void setErrorCode(final OFBadActionCode code) {
 		this.errorCode = (short) code.ordinal();
 	}
 
-	public void setErrorCode(OFFlowModFailedCode code) {
+	public void setErrorCode(final OFFlowModFailedCode code) {
 		this.errorCode = (short) code.ordinal();
 	}
 
-	public void setErrorCode(OFPortModFailedCode code) {
+	public void setErrorCode(final OFPortModFailedCode code) {
 		this.errorCode = (short) code.ordinal();
 	}
 
-	public void setErrorCode(OFQueueOpFailedCode code) {
+	public void setErrorCode(final OFQueueOpFailedCode code) {
 		this.errorCode = (short) code.ordinal();
 	}
 
 	public int getVendorErrorType() {
-		return vendorErrorType;
+		return this.vendorErrorType;
 	}
 
-	public void setVendorErrorType(int vendorErrorType) {
+	public void setVendorErrorType(final int vendorErrorType) {
 		this.vendorErrorType = vendorErrorType;
 	}
 
 	public short getVendorErrorCode() {
-		return vendorErrorCode;
+		return this.vendorErrorCode;
 	}
 
-	public void setVendorErrorCode(short vendorErrorCode) {
+	public void setVendorErrorCode(final short vendorErrorCode) {
 		this.vendorErrorCode = vendorErrorCode;
 	}
 
 	public OFMessage getOffendingMsg() throws MessageParseException {
 		// should only have one message embedded; if more than one, just
 		// grab first
-		if (this.error == null)
+		if (this.error == null) {
 			return null;
-		ChannelBuffer errorMsg = ChannelBuffers.wrappedBuffer(this.error);
-		if (factory == null)
+		}
+		final ChannelBuffer errorMsg = ChannelBuffers.wrappedBuffer(this.error);
+		if (this.factory == null) {
 			throw new RuntimeException("MessageFactory not set");
+		}
 
-		List<OFMessage> msglist = this.factory.parseMessage(errorMsg);
-		if (msglist == null)
+		final List<OFMessage> msglist = this.factory.parseMessage(errorMsg);
+		if (msglist == null) {
 			return null;
+		}
 		return msglist.get(0);
 	}
 
@@ -212,24 +215,24 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 	 * @param offendingMsg
 	 */
 
-	public void setOffendingMsg(OFMessage offendingMsg) {
+	public void setOffendingMsg(final OFMessage offendingMsg) {
 		if (offendingMsg == null) {
-			super.setLengthU(MINIMUM_LENGTH);
+			super.setLengthU(OFError.MINIMUM_LENGTH);
 		} else {
 			this.error = new byte[offendingMsg.getLengthU()];
-			ChannelBuffer data = ChannelBuffers.wrappedBuffer(this.error);
+			final ChannelBuffer data = ChannelBuffers.wrappedBuffer(this.error);
 			data.writerIndex(0);
 			offendingMsg.writeTo(data);
-			super.setLengthU(MINIMUM_LENGTH + offendingMsg.getLengthU());
+			super.setLengthU(OFError.MINIMUM_LENGTH + offendingMsg.getLengthU());
 		}
 	}
 
 	public OFMessageFactory getFactory() {
-		return factory;
+		return this.factory;
 	}
 
 	@Override
-	public void setMessageFactory(OFMessageFactory factory) {
+	public void setMessageFactory(final OFMessageFactory factory) {
 		this.factory = factory;
 	}
 
@@ -237,14 +240,14 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 	 * @return the error
 	 */
 	public byte[] getError() {
-		return error;
+		return this.error;
 	}
 
 	/**
 	 * @param error
 	 *            the error to set
 	 */
-	public void setError(byte[] error) {
+	public void setError(final byte[] error) {
 		this.error = error;
 	}
 
@@ -252,38 +255,40 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 	 * @return the errorIsAscii
 	 */
 	public boolean isErrorIsAscii() {
-		return errorIsAscii;
+		return this.errorIsAscii;
 	}
 
 	/**
 	 * @param errorIsAscii
 	 *            the errorIsAscii to set
 	 */
-	public void setErrorIsAscii(boolean errorIsAscii) {
+	public void setErrorIsAscii(final boolean errorIsAscii) {
 		this.errorIsAscii = errorIsAscii;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.errorType = data.readShort();
 		this.errorCode = data.readShort();
-		int dataLength = this.getLengthU() - MINIMUM_LENGTH;
+		final int dataLength = this.getLengthU() - OFError.MINIMUM_LENGTH;
 		if (dataLength > 0) {
 			this.error = new byte[dataLength];
 			data.readBytes(this.error);
-			if (this.errorType == OFErrorType.OFPET_HELLO_FAILED.getValue())
+			if (this.errorType == OFErrorType.OFPET_HELLO_FAILED.getValue()) {
 				this.errorIsAscii = true;
+			}
 		}
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
-		data.writeShort(errorType);
-		data.writeShort(errorCode);
-		if (error != null)
-			data.writeBytes(error);
+		data.writeShort(this.errorType);
+		data.writeShort(this.errorCode);
+		if (this.error != null) {
+			data.writeBytes(this.error);
+		}
 	}
 
 	/*
@@ -295,10 +300,10 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + Arrays.hashCode(error);
-		result = prime * result + errorCode;
-		result = prime * result + (errorIsAscii ? 1231 : 1237);
-		result = prime * result + errorType;
+		result = prime * result + Arrays.hashCode(this.error);
+		result = prime * result + this.errorCode;
+		result = prime * result + (this.errorIsAscii ? 1231 : 1237);
+		result = prime * result + this.errorType;
 		return result;
 	}
 
@@ -308,22 +313,29 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
-		OFError other = (OFError) obj;
-		if (!Arrays.equals(error, other.error))
+		}
+		final OFError other = (OFError) obj;
+		if (!Arrays.equals(this.error, other.error)) {
 			return false;
-		if (errorCode != other.errorCode)
+		}
+		if (this.errorCode != other.errorCode) {
 			return false;
-		if (errorIsAscii != other.errorIsAscii)
+		}
+		if (this.errorIsAscii != other.errorIsAscii) {
 			return false;
-		if (errorType != other.errorType)
+		}
+		if (this.errorType != other.errorType) {
 			return false;
+		}
 		return true;
 	}
 

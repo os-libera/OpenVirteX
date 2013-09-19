@@ -38,25 +38,25 @@ public abstract class OFActionNetworkLayerAddress extends OFAction {
 	 * @return the networkAddress
 	 */
 	public int getNetworkAddress() {
-		return networkAddress;
+		return this.networkAddress;
 	}
 
 	/**
 	 * @param networkAddress
 	 *            the networkAddress to set
 	 */
-	public void setNetworkAddress(int networkAddress) {
+	public void setNetworkAddress(final int networkAddress) {
 		this.networkAddress = networkAddress;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.networkAddress = data.readInt();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeInt(this.networkAddress);
 	}
@@ -65,12 +65,12 @@ public abstract class OFActionNetworkLayerAddress extends OFAction {
 	public int hashCode() {
 		final int prime = 353;
 		int result = super.hashCode();
-		result = prime * result + networkAddress;
+		result = prime * result + this.networkAddress;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -80,8 +80,8 @@ public abstract class OFActionNetworkLayerAddress extends OFAction {
 		if (!(obj instanceof OFActionNetworkLayerAddress)) {
 			return false;
 		}
-		OFActionNetworkLayerAddress other = (OFActionNetworkLayerAddress) obj;
-		if (networkAddress != other.networkAddress) {
+		final OFActionNetworkLayerAddress other = (OFActionNetworkLayerAddress) obj;
+		if (this.networkAddress != other.networkAddress) {
 			return false;
 		}
 		return true;
@@ -89,10 +89,10 @@ public abstract class OFActionNetworkLayerAddress extends OFAction {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(type);
+		final StringBuilder builder = new StringBuilder();
+		builder.append(this.type);
 		builder.append("[");
-		builder.append(IPv4.fromIPv4Address(networkAddress));
+		builder.append(IPv4.fromIPv4Address(this.networkAddress));
 		builder.append("]");
 		return builder.toString();
 	}

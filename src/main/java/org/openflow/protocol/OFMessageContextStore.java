@@ -17,22 +17,21 @@
 
 package org.openflow.protocol;
 
-
 public class OFMessageContextStore<V> {
 	protected OFMessage msg;
 	String namespace;
 
-	public OFMessageContextStore(OFMessage msg, String namespace) {
+	public OFMessageContextStore(final OFMessage msg, final String namespace) {
 		this.msg = msg;
 		this.namespace = namespace;
 	}
 
 	@SuppressWarnings("unchecked")
-	public V get(String key) {
-		return (V) msg.getMessageStore().get(namespace + "|" + key);
+	public V get(final String key) {
+		return (V) this.msg.getMessageStore().get(this.namespace + "|" + key);
 	}
 
-	public void put(String key, V value) {
-		msg.getMessageStore().put(namespace + "|" + key, value);
+	public void put(final String key, final V value) {
+		this.msg.getMessageStore().put(this.namespace + "|" + key, value);
 	}
 }

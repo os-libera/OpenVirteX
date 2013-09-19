@@ -6,9 +6,10 @@ import javax.servlet.http.HttpServletResponse;
 public class UIService extends AbstractService {
 
 	@Override
-	public void handle(HttpServletRequest request, HttpServletResponse response) {
+	public void handle(final HttpServletRequest request,
+			final HttpServletResponse response) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

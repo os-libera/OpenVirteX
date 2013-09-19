@@ -32,20 +32,20 @@ import org.openflow.protocol.OFPortMod;
 public class OVXPortMod extends OFPortMod implements Devirtualizable {
 
 	@Override
-	public void devirtualize(OVXSwitch sw) {
-	    // TODO Auto-generated method stub
-	    //assume port numbers are virtual
-            OVXPort p = sw.getPort(this.getPortNumber());
-            if (p == null) {
-                sw.sendMsg(OVXMessageUtil.makeErrorMsg(
-                        OFBadRequestCode.OFPBRC_EPERM, this), sw);
-                return;
-            }
-            //set physical port number - anything else to do?
-            PhysicalPort phyPort = p.getPhysicalPort();
-            this.setPortNumber(phyPort.getPortNumber());
+	public void devirtualize(final OVXSwitch sw) {
+		// TODO Auto-generated method stub
+		// assume port numbers are virtual
+		final OVXPort p = sw.getPort(this.getPortNumber());
+		if (p == null) {
+			sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+					OFBadRequestCode.OFPBRC_EPERM, this), sw);
+			return;
+		}
+		// set physical port number - anything else to do?
+		final PhysicalPort phyPort = p.getPhysicalPort();
+		this.setPortNumber(phyPort.getPortNumber());
 
-            OVXMessageUtil.translateXid(this, p);
+		OVXMessageUtil.translateXid(this, p);
 	}
 
 }

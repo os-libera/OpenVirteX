@@ -26,7 +26,7 @@ public class OpenVirteXException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-	public OpenVirteXException(Exception e) {
+	public OpenVirteXException(final Exception e) {
 		super(e);
 	}
 

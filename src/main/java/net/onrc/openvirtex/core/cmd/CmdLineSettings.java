@@ -27,37 +27,37 @@ import net.onrc.openvirtex.util.OVXUtil;
 import org.kohsuke.args4j.Option;
 
 public class CmdLineSettings {
-    public static final String DEFAULT_CONFIG_FILE = "config/config.json";
-    public static final String DEFAULT_OF_HOST = "0.0.0.0";
-    public static final Integer DEFAULT_OF_PORT = 6633;
-    public static final Integer DEFAULT_NUMBER_VIRT_NETS = 255;
+	public static final String DEFAULT_CONFIG_FILE = "config/config.json";
+	public static final String DEFAULT_OF_HOST = "0.0.0.0";
+	public static final Integer DEFAULT_OF_PORT = 6633;
+	public static final Integer DEFAULT_NUMBER_VIRT_NETS = 255;
 
-    @Option(name = "-cf", aliases = "--configFile", metaVar = "FILE", usage = "OpenVirteX configuration file")
-    private String configFile = DEFAULT_CONFIG_FILE;
+	@Option(name = "-cf", aliases = "--configFile", metaVar = "FILE", usage = "OpenVirteX configuration file")
+	private final String configFile = CmdLineSettings.DEFAULT_CONFIG_FILE;
 
-    @Option(name = "-p", aliases = "--ofPort", metaVar = "INT", usage = "OpenVirteX openflow listen port")
-    private Integer ofPort = DEFAULT_OF_PORT;
+	@Option(name = "-p", aliases = "--ofPort", metaVar = "INT", usage = "OpenVirteX openflow listen port")
+	private final Integer ofPort = CmdLineSettings.DEFAULT_OF_PORT;
 
-    @Option(name = "-h", aliases = "--ofHost", metaVar = "String", usage = "OpenVirteX Host")
-    private String ofHost = DEFAULT_OF_HOST;
+	@Option(name = "-h", aliases = "--ofHost", metaVar = "String", usage = "OpenVirteX Host")
+	private final String ofHost = CmdLineSettings.DEFAULT_OF_HOST;
 
-    @Option(name = "-n", aliases = "--numVirtual", metaVar = "INT", usage = "The number of virtual networks")
-    private Integer numVirtual = DEFAULT_NUMBER_VIRT_NETS;
+	@Option(name = "-n", aliases = "--numVirtual", metaVar = "INT", usage = "The number of virtual networks")
+	private final Integer numVirtual = CmdLineSettings.DEFAULT_NUMBER_VIRT_NETS;
 
-    public String getConfigFile() {
-	return configFile;
-    }
+	public String getConfigFile() {
+		return this.configFile;
+	}
 
-    public String getOFHost() {
-	return ofHost;
-    }
+	public String getOFHost() {
+		return this.ofHost;
+	}
 
-    public Integer getOFPort() {
-	return ofPort;
-    }
+	public Integer getOFPort() {
+		return this.ofPort;
+	}
 
-    public Integer getNumberOfVirtualNets() {
-	return OVXUtil.NUMBITSNEEDED(numVirtual);
-    }
+	public Integer getNumberOfVirtualNets() {
+		return OVXUtil.NUMBITSNEEDED(this.numVirtual);
+	}
 
 }

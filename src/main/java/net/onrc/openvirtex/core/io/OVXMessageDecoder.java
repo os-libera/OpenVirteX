@@ -42,14 +42,14 @@ public class OVXMessageDecoder extends FrameDecoder {
 	OVXMessageFactory factory = OVXMessageFactory.getInstance();
 
 	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel,
-			ChannelBuffer buffer) throws Exception {
+	protected Object decode(final ChannelHandlerContext ctx,
+			final Channel channel, final ChannelBuffer buffer) throws Exception {
 		if (!channel.isConnected()) {
 			// if the channel is closed, there will be nothing to read.
 			return null;
 		}
 
-		List<OFMessage> message = factory.parseMessage(buffer);
+		final List<OFMessage> message = this.factory.parseMessage(buffer);
 		return message;
 	}
 

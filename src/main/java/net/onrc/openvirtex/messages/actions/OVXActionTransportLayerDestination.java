@@ -34,10 +34,11 @@ import org.openflow.protocol.action.OFActionTransportLayerDestination;
 public class OVXActionTransportLayerDestination extends
 		OFActionTransportLayerDestination implements VirtualizableAction {
 
-    @Override
-    public void virtualize(OVXSwitch sw, List<OFAction> approvedActions, OFMatch match) throws ActionVirtualizationDenied {
-	approvedActions.add(this);
-    }
-    
+	@Override
+	public void virtualize(final OVXSwitch sw,
+			final List<OFAction> approvedActions, final OFMatch match)
+			throws ActionVirtualizationDenied {
+		approvedActions.add(this);
+	}
 
 }

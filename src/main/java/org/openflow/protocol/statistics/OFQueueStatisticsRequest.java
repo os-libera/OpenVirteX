@@ -32,14 +32,14 @@ public class OFQueueStatisticsRequest implements OFStatistics {
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
@@ -47,14 +47,14 @@ public class OFQueueStatisticsRequest implements OFStatistics {
 	 * @return the queueId
 	 */
 	public int getQueueId() {
-		return queueId;
+		return this.queueId;
 	}
 
 	/**
 	 * @param queueId
 	 *            the queueId to set
 	 */
-	public void setQueueId(int queueId) {
+	public void setQueueId(final int queueId) {
 		this.queueId = queueId;
 	}
 
@@ -64,14 +64,14 @@ public class OFQueueStatisticsRequest implements OFStatistics {
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.portNumber = data.readShort();
 		data.readShort(); // pad
 		this.queueId = data.readInt();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeShort(this.portNumber);
 		data.writeShort((short) 0); // pad
 		data.writeInt(this.queueId);
@@ -81,13 +81,13 @@ public class OFQueueStatisticsRequest implements OFStatistics {
 	public int hashCode() {
 		final int prime = 443;
 		int result = 1;
-		result = prime * result + portNumber;
-		result = prime * result + queueId;
+		result = prime * result + this.portNumber;
+		result = prime * result + this.queueId;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -97,11 +97,11 @@ public class OFQueueStatisticsRequest implements OFStatistics {
 		if (!(obj instanceof OFQueueStatisticsRequest)) {
 			return false;
 		}
-		OFQueueStatisticsRequest other = (OFQueueStatisticsRequest) obj;
-		if (portNumber != other.portNumber) {
+		final OFQueueStatisticsRequest other = (OFQueueStatisticsRequest) obj;
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
-		if (queueId != other.queueId) {
+		if (this.queueId != other.queueId) {
 			return false;
 		}
 		return true;

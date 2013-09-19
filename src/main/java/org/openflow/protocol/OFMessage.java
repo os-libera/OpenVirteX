@@ -46,16 +46,16 @@ public class OFMessage {
 	private ConcurrentHashMap<String, Object> storage;
 
 	public OFMessage() {
-		storage = null;
-		this.version = OFP_VERSION;
+		this.storage = null;
+		this.version = OFMessage.OFP_VERSION;
 	}
 
 	protected synchronized ConcurrentHashMap<String, Object> getMessageStore() {
-		if (storage == null) {
-			storage = new ConcurrentHashMap<String, Object>();
+		if (this.storage == null) {
+			this.storage = new ConcurrentHashMap<String, Object>();
 			;
 		}
-		return storage;
+		return this.storage;
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class OFMessage {
 	 * @return
 	 */
 	public short getLength() {
-		return length;
+		return this.length;
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class OFMessage {
 	 * @return
 	 */
 	public int getLengthU() {
-		return U16.f(length);
+		return U16.f(this.length);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class OFMessage {
 	 * 
 	 * @param length
 	 */
-	public OFMessage setLength(short length) {
+	public OFMessage setLength(final short length) {
 		this.length = length;
 		return this;
 	}
@@ -91,7 +91,7 @@ public class OFMessage {
 	 * 
 	 * @param length
 	 */
-	public OFMessage setLengthU(int length) {
+	public OFMessage setLengthU(final int length) {
 		this.length = U16.t(length);
 		return this;
 	}
@@ -102,7 +102,7 @@ public class OFMessage {
 	 * @return
 	 */
 	public OFType getType() {
-		return type;
+		return this.type;
 	}
 
 	/**
@@ -110,7 +110,7 @@ public class OFMessage {
 	 * 
 	 * @param type
 	 */
-	public void setType(OFType type) {
+	public void setType(final OFType type) {
 		this.type = type;
 	}
 
@@ -120,7 +120,7 @@ public class OFMessage {
 	 * @return
 	 */
 	public byte getVersion() {
-		return version;
+		return this.version;
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class OFMessage {
 	 * 
 	 * @param version
 	 */
-	public void setVersion(byte version) {
+	public void setVersion(final byte version) {
 		this.version = version;
 	}
 
@@ -138,7 +138,7 @@ public class OFMessage {
 	 * @return
 	 */
 	public int getXid() {
-		return xid;
+		return this.xid;
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class OFMessage {
 	 * 
 	 * @param xid
 	 */
-	public void setXid(int xid) {
+	public void setXid(final int xid) {
 		this.xid = xid;
 	}
 
@@ -155,7 +155,7 @@ public class OFMessage {
 	 * 
 	 * @param data
 	 */
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.version = data.readByte();
 		this.type = OFType.valueOf(data.readByte());
 		this.length = data.readShort();
@@ -167,11 +167,11 @@ public class OFMessage {
 	 * 
 	 * @param data
 	 */
-	public void writeTo(ChannelBuffer data) {
-		data.writeByte(version);
-		data.writeByte(type.getTypeValue());
-		data.writeShort(length);
-		data.writeInt(xid);
+	public void writeTo(final ChannelBuffer data) {
+		data.writeByte(this.version);
+		data.writeByte(this.type.getTypeValue());
+		data.writeShort(this.length);
+		data.writeInt(this.xid);
 	}
 
 	/**
@@ -190,15 +190,16 @@ public class OFMessage {
 	public int hashCode() {
 		final int prime = 97;
 		int result = 1;
-		result = prime * result + length;
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		result = prime * result + version;
-		result = prime * result + xid;
+		result = prime * result + this.length;
+		result = prime * result
+				+ (this.type == null ? 0 : this.type.hashCode());
+		result = prime * result + this.version;
+		result = prime * result + this.xid;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -208,39 +209,39 @@ public class OFMessage {
 		if (!(obj instanceof OFMessage)) {
 			return false;
 		}
-		OFMessage other = (OFMessage) obj;
-		if (length != other.length) {
+		final OFMessage other = (OFMessage) obj;
+		if (this.length != other.length) {
 			return false;
 		}
-		if (type == null) {
+		if (this.type == null) {
 			if (other.type != null) {
 				return false;
 			}
-		} else if (!type.equals(other.type)) {
+		} else if (!this.type.equals(other.type)) {
 			return false;
 		}
-		if (version != other.version) {
+		if (this.version != other.version) {
 			return false;
 		}
-		if (xid != other.xid) {
+		if (this.xid != other.xid) {
 			return false;
 		}
 		return true;
 	}
 
-	public static String getDataAsString(OFMessage msg) {
+	public static String getDataAsString(final OFMessage msg) {
 
-		StringBuffer sb = new StringBuffer("");
+		final StringBuffer sb = new StringBuffer("");
 
-		DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
-		Date date = new Date();
+		final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+		final Date date = new Date();
 
 		sb.append(dateFormat.format(date));
 		sb.append("      ");
 
 		switch (msg.getType()) {
 		case PACKET_IN:
-			OFPacketIn pktIn = (OFPacketIn) msg;
+			final OFPacketIn pktIn = (OFPacketIn) msg;
 
 			sb.append("\ntotal length: ");
 			sb.append(pktIn.getTotalLength());
@@ -254,7 +255,7 @@ public class OFMessage {
 			break;
 
 		case PACKET_OUT:
-			OFPacketOut pktOut = (OFPacketOut) msg;
+			final OFPacketOut pktOut = (OFPacketOut) msg;
 
 			sb.append("\nin_port: ");
 			sb.append(pktOut.getInPort());
@@ -267,7 +268,7 @@ public class OFMessage {
 			break;
 
 		case FLOW_MOD:
-			OFFlowMod fm = (OFFlowMod) msg;
+			final OFFlowMod fm = (OFFlowMod) msg;
 
 			sb.append("\nADD: cookie: ");
 			sb.append(fm.getCookie());
@@ -296,7 +297,7 @@ public class OFMessage {
 
 	}
 
-	public static byte[] getData(OFMessage msg) {
+	public static byte[] getData(final OFMessage msg) {
 		return OFMessage.getDataAsString(msg).getBytes();
 	}
 }

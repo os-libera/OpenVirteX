@@ -46,7 +46,7 @@ public class OFNiciraVendorData implements OFVendorData {
 	 * @param dataType
 	 *            the data type value at the beginning of the vendor data.
 	 */
-	public OFNiciraVendorData(int dataType) {
+	public OFNiciraVendorData(final int dataType) {
 		this.dataType = dataType;
 	}
 
@@ -56,7 +56,7 @@ public class OFNiciraVendorData implements OFVendorData {
 	 * @return the integer data type value
 	 */
 	public int getDataType() {
-		return dataType;
+		return this.dataType;
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class OFNiciraVendorData implements OFVendorData {
 	 *            the integer data type value at the beginning of the vendor
 	 *            data.
 	 */
-	public void setDataType(int dataType) {
+	public void setDataType(final int dataType) {
 		this.dataType = dataType;
 	}
 
@@ -91,8 +91,8 @@ public class OFNiciraVendorData implements OFVendorData {
 	 *            the length to the end of the enclosing message
 	 */
 	@Override
-	public void readFrom(ChannelBuffer data, int length) {
-		dataType = data.readInt();
+	public void readFrom(final ChannelBuffer data, final int length) {
+		this.dataType = data.readInt();
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class OFNiciraVendorData implements OFVendorData {
 	 *            the channel buffer to which we're serializing
 	 */
 	@Override
-	public void writeTo(ChannelBuffer data) {
-		data.writeInt(dataType);
+	public void writeTo(final ChannelBuffer data) {
+		data.writeInt(this.dataType);
 	}
 }

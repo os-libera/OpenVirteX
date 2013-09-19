@@ -40,7 +40,7 @@ public class OFRoleRequestVendorData extends OFRoleVendorData {
 	 *         instance of OFRoleRequestVendorData.
 	 */
 	public static Instantiable<OFVendorData> getInstantiable() {
-		return instantiable;
+		return OFRoleRequestVendorData.instantiable;
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class OFRoleRequestVendorData extends OFRoleVendorData {
 	 * Construct a role request vendor data with an unspecified role value.
 	 */
 	public OFRoleRequestVendorData() {
-		super(NXT_ROLE_REQUEST);
+		super(OFRoleRequestVendorData.NXT_ROLE_REQUEST);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class OFRoleRequestVendorData extends OFRoleVendorData {
 	 *            the role value for the role request. Should be one of
 	 *            NX_ROLE_OTHER, NX_ROLE_MASTER or NX_ROLE_SLAVE.
 	 */
-	public OFRoleRequestVendorData(int role) {
-		super(NXT_ROLE_REQUEST, role);
+	public OFRoleRequestVendorData(final int role) {
+		super(OFRoleRequestVendorData.NXT_ROLE_REQUEST, role);
 	}
 }

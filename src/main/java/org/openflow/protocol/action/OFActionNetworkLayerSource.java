@@ -28,7 +28,7 @@ public class OFActionNetworkLayerSource extends OFActionNetworkLayerAddress {
 		super.setLength((short) OFActionNetworkLayerAddress.MINIMUM_LENGTH);
 	}
 
-	public OFActionNetworkLayerSource(int ip) {
+	public OFActionNetworkLayerSource(final int ip) {
 		this();
 		this.networkAddress = ip;
 	}

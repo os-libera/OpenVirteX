@@ -39,24 +39,25 @@ import org.openflow.protocol.OFMessage;
 public class OVXMessageEncoder extends OneToOneEncoder {
 
 	@Override
-	protected Object encode(ChannelHandlerContext ctx, Channel channel,
-			Object msg) throws Exception {
-		if (!(msg instanceof List))
+	protected Object encode(final ChannelHandlerContext ctx,
+			final Channel channel, final Object msg) throws Exception {
+		if (!(msg instanceof List)) {
 			return msg;
+		}
 
 		@SuppressWarnings("unchecked")
-		List<OFMessage> msglist = (List<OFMessage>) msg;
+		final List<OFMessage> msglist = (List<OFMessage>) msg;
 		int size = 0;
-		for (OFMessage ofm : msglist) {
+		for (final OFMessage ofm : msglist) {
 			size += ofm.getLengthU();
 		}
 
-		ChannelBuffer buf = ChannelBuffers.buffer(size);
-		
-		for (OFMessage ofm : msglist) {
-		    
+		final ChannelBuffer buf = ChannelBuffers.buffer(size);
+
+		for (final OFMessage ofm : msglist) {
+
 			ofm.writeTo(buf);
-		    
+
 		}
 		return buf;
 	}

@@ -36,21 +36,21 @@ public abstract class OFSwitchConfig extends OFMessage {
 
 	public OFSwitchConfig() {
 		super();
-		super.setLengthU(MINIMUM_LENGTH);
+		super.setLengthU(OFSwitchConfig.MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the flags
 	 */
 	public short getFlags() {
-		return flags;
+		return this.flags;
 	}
 
 	/**
 	 * @param flags
 	 *            the flags to set
 	 */
-	public OFSwitchConfig setFlags(short flags) {
+	public OFSwitchConfig setFlags(final short flags) {
 		this.flags = flags;
 		return this;
 	}
@@ -59,27 +59,27 @@ public abstract class OFSwitchConfig extends OFMessage {
 	 * @return the missSendLength
 	 */
 	public short getMissSendLength() {
-		return missSendLength;
+		return this.missSendLength;
 	}
 
 	/**
 	 * @param missSendLength
 	 *            the missSendLength to set
 	 */
-	public OFSwitchConfig setMissSendLength(short missSendLength) {
+	public OFSwitchConfig setMissSendLength(final short missSendLength) {
 		this.missSendLength = missSendLength;
 		return this;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.flags = data.readShort();
 		this.missSendLength = data.readShort();
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeShort(this.flags);
 		data.writeShort(this.missSendLength);
@@ -89,13 +89,13 @@ public abstract class OFSwitchConfig extends OFMessage {
 	public int hashCode() {
 		final int prime = 331;
 		int result = super.hashCode();
-		result = prime * result + flags;
-		result = prime * result + missSendLength;
+		result = prime * result + this.flags;
+		result = prime * result + this.missSendLength;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -105,11 +105,11 @@ public abstract class OFSwitchConfig extends OFMessage {
 		if (!(obj instanceof OFSwitchConfig)) {
 			return false;
 		}
-		OFSwitchConfig other = (OFSwitchConfig) obj;
-		if (flags != other.flags) {
+		final OFSwitchConfig other = (OFSwitchConfig) obj;
+		if (this.flags != other.flags) {
 			return false;
 		}
-		if (missSendLength != other.missSendLength) {
+		if (this.missSendLength != other.missSendLength) {
 			return false;
 		}
 		return true;

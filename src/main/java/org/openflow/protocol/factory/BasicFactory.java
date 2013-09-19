@@ -50,13 +50,14 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 	private final OFVendorActionRegistry vendorActionRegistry;
 
 	protected BasicFactory() {
-		vendorActionRegistry = OFVendorActionRegistry.getInstance();
+		this.vendorActionRegistry = OFVendorActionRegistry.getInstance();
 	}
 
 	public static BasicFactory getInstance() {
-		if (instance == null)
-			instance = new BasicFactory();
-		return instance;
+		if (BasicFactory.instance == null) {
+			BasicFactory.instance = new BasicFactory();
+		}
+		return BasicFactory.instance;
 	}
 
 	/**
@@ -68,16 +69,16 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 	 *         the caller
 	 */
 	@Override
-	public OFMessage getMessage(OFType t) {
-		OFMessage message = t.newInstance();
-		injectFactories(message);
+	public OFMessage getMessage(final OFType t) {
+		final OFMessage message = t.newInstance();
+		this.injectFactories(message);
 		return message;
 	}
 
 	@Override
-	public List<OFMessage> parseMessage(ChannelBuffer data)
+	public List<OFMessage> parseMessage(final ChannelBuffer data)
 			throws MessageParseException {
-		List<OFMessage> msglist = new ArrayList<OFMessage>();
+		final List<OFMessage> msglist = new ArrayList<OFMessage>();
 		OFMessage msg = null;
 
 		while (data.readableBytes() >= OFMessage.MINIMUM_LENGTH) {
@@ -98,47 +99,51 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 
 	}
 
-	public OFMessage parseMessageOne(ChannelBuffer data)
+	public OFMessage parseMessageOne(final ChannelBuffer data)
 			throws MessageParseException {
 		try {
-			OFMessage demux = new OFMessage();
+			final OFMessage demux = new OFMessage();
 			OFMessage ofm = null;
 
-			if (data.readableBytes() < OFMessage.MINIMUM_LENGTH)
+			if (data.readableBytes() < OFMessage.MINIMUM_LENGTH) {
 				return ofm;
+			}
 
 			data.markReaderIndex();
 			demux.readFrom(data);
 			data.resetReaderIndex();
 
-			if (demux.getLengthU() > data.readableBytes())
+			if (demux.getLengthU() > data.readableBytes()) {
 				return ofm;
+			}
 
-			ofm = getMessage(demux.getType());
-			if (ofm == null)
+			ofm = this.getMessage(demux.getType());
+			if (ofm == null) {
 				return null;
+			}
 
-			injectFactories(ofm);
+			this.injectFactories(ofm);
 			ofm.readFrom(data);
 			if (OFMessage.class.equals(ofm.getClass())) {
 				// advance the position for un-implemented messages
-				data.readerIndex(data.readerIndex()
-						+ (ofm.getLengthU() - OFMessage.MINIMUM_LENGTH));
+				data.readerIndex(data.readerIndex() + ofm.getLengthU()
+						- OFMessage.MINIMUM_LENGTH);
 			}
 
 			return ofm;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			/* Write the offending data along with the error message */
 			data.resetReaderIndex();
-			String msg = "Message Parse Error for packet:" + dumpBuffer(data)
-					+ "\nException: " + e.toString();
+			final String msg = "Message Parse Error for packet:"
+					+ BasicFactory.dumpBuffer(data) + "\nException: "
+					+ e.toString();
 			data.resetReaderIndex();
 
 			throw new MessageParseException(msg, e);
 		}
 	}
 
-	private void injectFactories(OFMessage ofm) {
+	private void injectFactories(final OFMessage ofm) {
 		if (ofm instanceof OFActionFactoryAware) {
 			((OFActionFactoryAware) ofm).setActionFactory(this);
 		}
@@ -154,68 +159,75 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 	}
 
 	@Override
-	public OFAction getAction(OFActionType t) {
+	public OFAction getAction(final OFActionType t) {
 		return t.newInstance();
 	}
 
 	@Override
-	public List<OFAction> parseActions(ChannelBuffer data, int length) {
-		return parseActions(data, length, 0);
+	public List<OFAction> parseActions(final ChannelBuffer data,
+			final int length) {
+		return this.parseActions(data, length, 0);
 	}
 
 	@Override
-	public List<OFAction> parseActions(ChannelBuffer data, int length, int limit) {
-		List<OFAction> results = new ArrayList<OFAction>();
-		OFAction demux = new OFAction();
+	public List<OFAction> parseActions(final ChannelBuffer data,
+			final int length, final int limit) {
+		final List<OFAction> results = new ArrayList<OFAction>();
+		final OFAction demux = new OFAction();
 		OFAction ofa;
-		int end = data.readerIndex() + length;
+		final int end = data.readerIndex() + length;
 
 		while (limit == 0 || results.size() <= limit) {
-			if ((data.readableBytes() < OFAction.MINIMUM_LENGTH || (data
-					.readerIndex() + OFAction.MINIMUM_LENGTH) > end))
+			if (data.readableBytes() < OFAction.MINIMUM_LENGTH
+					|| data.readerIndex() + OFAction.MINIMUM_LENGTH > end) {
 				return results;
+			}
 
 			data.markReaderIndex();
 			demux.readFrom(data);
 			data.resetReaderIndex();
 
-			if ((demux.getLengthU() > data.readableBytes() || (data
-					.readerIndex() + demux.getLengthU()) > end))
+			if (demux.getLengthU() > data.readableBytes()
+					|| data.readerIndex() + demux.getLengthU() > end) {
 				return results;
+			}
 
-			ofa = parseActionOne(demux.getType(), data);
+			ofa = this.parseActionOne(demux.getType(), data);
 			results.add(ofa);
 		}
 
 		return results;
 	}
 
-	private OFAction parseActionOne(OFActionType type, ChannelBuffer data) {
+	private OFAction parseActionOne(final OFActionType type,
+			final ChannelBuffer data) {
 		OFAction ofa;
 		data.markReaderIndex();
-		ofa = getAction(type);
+		ofa = this.getAction(type);
 		ofa.readFrom(data);
 
 		if (type == OFActionType.VENDOR) {
-			OFActionVendor vendorAction = (OFActionVendor) ofa;
+			final OFActionVendor vendorAction = (OFActionVendor) ofa;
 
-			OFVendorActionFactory vendorActionFactory = vendorActionRegistry
+			final OFVendorActionFactory vendorActionFactory = this.vendorActionRegistry
 					.get(vendorAction.getVendor());
 
 			if (vendorActionFactory != null) {
 				// if we have a specific vendorActionFactory for this vendor id,
 				// delegate to it for vendor-specific reparsing of the message
 				data.resetReaderIndex();
-				OFActionVendor newAction = vendorActionFactory.readFrom(data);
-				if (newAction != null)
+				final OFActionVendor newAction = vendorActionFactory
+						.readFrom(data);
+				if (newAction != null) {
 					ofa = newAction;
+				}
 			}
 		}
 
 		if (OFAction.class.equals(ofa.getClass())) {
 			// advance the position for un-implemented messages
-			data.readerIndex(data.readerIndex()
-					+ (ofa.getLengthU() - OFAction.MINIMUM_LENGTH));
+			data.readerIndex(data.readerIndex() + ofa.getLengthU()
+					- OFAction.MINIMUM_LENGTH);
 		}
 		return ofa;
 	}
@@ -226,14 +238,15 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 	}
 
 	@Override
-	public OFStatistics getStatistics(OFType t, OFStatisticsType st) {
+	public OFStatistics getStatistics(final OFType t, final OFStatisticsType st) {
 		return st.newInstance(t);
 	}
 
 	@Override
-	public List<OFStatistics> parseStatistics(OFType t, OFStatisticsType st,
-			ChannelBuffer data, int length) {
-		return parseStatistics(t, st, data, length, 0);
+	public List<OFStatistics> parseStatistics(final OFType t,
+			final OFStatisticsType st, final ChannelBuffer data,
+			final int length) {
+		return this.parseStatistics(t, st, data, length, 0);
 	}
 
 	/**
@@ -252,30 +265,33 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 	 */
 
 	@Override
-	public List<OFStatistics> parseStatistics(OFType t, OFStatisticsType st,
-			ChannelBuffer data, int length, int limit) {
-		List<OFStatistics> results = new ArrayList<OFStatistics>();
-		OFStatistics statistics = getStatistics(t, st);
+	public List<OFStatistics> parseStatistics(final OFType t,
+			final OFStatisticsType st, final ChannelBuffer data,
+			final int length, final int limit) {
+		final List<OFStatistics> results = new ArrayList<OFStatistics>();
+		OFStatistics statistics = this.getStatistics(t, st);
 
-		int start = data.readerIndex();
+		final int start = data.readerIndex();
 		int count = 0;
 
 		while (limit == 0 || results.size() <= limit) {
 			// TODO Create a separate MUX/DEMUX path for vendor stats
-			if (statistics instanceof OFVendorStatistics)
+			if (statistics instanceof OFVendorStatistics) {
 				((OFVendorStatistics) statistics).setLength(length);
+			}
 
 			/**
 			 * can't use data.remaining() here, b/c there could be other data
 			 * buffered past this message
 			 */
-			if ((length - count) >= statistics.getLength()) {
-				if (statistics instanceof OFActionFactoryAware)
+			if (length - count >= statistics.getLength()) {
+				if (statistics instanceof OFActionFactoryAware) {
 					((OFActionFactoryAware) statistics).setActionFactory(this);
+				}
 				statistics.readFrom(data);
 				results.add(statistics);
 				count += statistics.getLength();
-				statistics = getStatistics(t, st);
+				statistics = this.getStatistics(t, st);
 			} else {
 				if (count < length) {
 					/**
@@ -295,10 +311,11 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 	}
 
 	@Override
-	public OFVendorData getVendorData(OFVendorId vendorId,
-			OFVendorDataType vendorDataType) {
-		if (vendorDataType == null)
+	public OFVendorData getVendorData(final OFVendorId vendorId,
+			final OFVendorDataType vendorDataType) {
+		if (vendorDataType == null) {
 			return null;
+		}
 
 		return vendorDataType.newInstance();
 	}
@@ -316,35 +333,38 @@ public class BasicFactory implements OFMessageFactory, OFActionFactory,
 	 * @return an OFVendorData instance
 	 */
 	@Override
-	public OFVendorData parseVendorData(int vendor, ChannelBuffer data,
-			int length) {
+	public OFVendorData parseVendorData(final int vendor,
+			final ChannelBuffer data, final int length) {
 		OFVendorDataType vendorDataType = null;
-		OFVendorId vendorId = OFVendorId.lookupVendorId(vendor);
+		final OFVendorId vendorId = OFVendorId.lookupVendorId(vendor);
 		if (vendorId != null) {
 			data.markReaderIndex();
 			vendorDataType = vendorId.parseVendorDataType(data, length);
 			data.resetReaderIndex();
 		}
 
-		OFVendorData vendorData = getVendorData(vendorId, vendorDataType);
-		if (vendorData == null)
+		OFVendorData vendorData = this.getVendorData(vendorId, vendorDataType);
+		if (vendorData == null) {
 			vendorData = new OFByteArrayVendorData();
+		}
 
 		vendorData.readFrom(data, length);
 
 		return vendorData;
 	}
 
-	public static String dumpBuffer(ChannelBuffer data) {
+	public static String dumpBuffer(final ChannelBuffer data) {
 		// NOTE: Reads all the bytes in buffer from current read offset.
 		// Set/Reset ReaderIndex if you want to read from a different location
-		int len = data.readableBytes();
-		StringBuffer sb = new StringBuffer();
+		final int len = data.readableBytes();
+		final StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < len; i++) {
-			if (i % 32 == 0)
+			if (i % 32 == 0) {
 				sb.append("\n");
-			if (i % 4 == 0)
+			}
+			if (i % 4 == 0) {
 				sb.append(" ");
+			}
 			sb.append(String.format("%02x", data.getUnsignedByte(i)));
 		}
 		return sb.toString();

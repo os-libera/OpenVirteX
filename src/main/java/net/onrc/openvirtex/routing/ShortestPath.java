@@ -22,11 +22,12 @@ public class ShortestPath implements Routable {
 	}
 
 	@Override
-        public SwitchRoute getRoute(OVXBigSwitch vSwitch,
-                OVXPort srcPort, OVXPort dstPort) {
-	    return null;
-        }
-	
+	public SwitchRoute getRoute(final OVXBigSwitch vSwitch,
+			final OVXPort srcPort, final OVXPort dstPort) {
+		return null;
+	}
+
+	@Override
 	public String getName() {
 		return "shortest path";
 	}

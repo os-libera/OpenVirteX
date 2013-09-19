@@ -9,11 +9,11 @@ import com.google.gson.JsonSerializer;
 
 public class PhysicalSwitchSerializer implements JsonSerializer<PhysicalSwitch> {
 
-    @Override
-    public JsonElement serialize(PhysicalSwitch sw, Type switchType,
-            JsonSerializationContext context) {
-	JsonPrimitive dpid = new JsonPrimitive(sw.switchName);
-	return dpid;
-    }
+	@Override
+	public JsonElement serialize(final PhysicalSwitch sw,
+			final Type switchType, final JsonSerializationContext context) {
+		final JsonPrimitive dpid = new JsonPrimitive(sw.switchName);
+		return dpid;
+	}
 
 }

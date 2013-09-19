@@ -42,6 +42,6 @@ public abstract class OpenflowChannelPipeline implements
 
 	@Override
 	public void releaseExternalResources() {
-		timer.stop();
+		this.timer.stop();
 	}
 }

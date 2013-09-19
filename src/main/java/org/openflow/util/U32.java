@@ -18,11 +18,11 @@
 package org.openflow.util;
 
 public class U32 {
-	public static long f(int i) {
+	public static long f(final int i) {
 		return i & 0xffffffffL;
 	}
 
-	public static int t(long l) {
+	public static int t(final long l) {
 		return (int) l;
 	}
 }

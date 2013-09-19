@@ -36,21 +36,21 @@ public class OFQueueGetConfigReply extends OFMessage {
 	public OFQueueGetConfigReply() {
 		super();
 		this.type = OFType.QUEUE_GET_CONFIG_REPLY;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFQueueGetConfigReply.MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
@@ -58,44 +58,44 @@ public class OFQueueGetConfigReply extends OFMessage {
 	 * @return the port's queues
 	 */
 	public List<OFPacketQueue> getQueues() {
-		return queues;
+		return this.queues;
 	}
 
 	/**
 	 * @param queues
 	 *            the queues to set
 	 */
-	public void setQueues(List<OFPacketQueue> queues) {
+	public void setQueues(final List<OFPacketQueue> queues) {
 		this.queues.clear();
 		this.queues.addAll(queues);
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.portNumber = data.readShort();
 		data.readInt(); // pad
 		data.readShort(); // pad
 
-		int availLength = (this.length - MINIMUM_LENGTH);
+		int availLength = this.length - OFQueueGetConfigReply.MINIMUM_LENGTH;
 		this.queues.clear();
 
 		while (availLength > 0) {
-			OFPacketQueue queue = new OFPacketQueue();
+			final OFPacketQueue queue = new OFPacketQueue();
 			queue.readFrom(data);
-			queues.add(queue);
+			this.queues.add(queue);
 			availLength -= queue.getLength();
 		}
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeShort(this.portNumber);
 		data.writeInt(0); // pad
 		data.writeShort(0); // pad
 
-		for (OFPacketQueue queue : queues) {
+		for (final OFPacketQueue queue : this.queues) {
 			queue.writeTo(data);
 		}
 	}
@@ -104,12 +104,12 @@ public class OFQueueGetConfigReply extends OFMessage {
 	public int hashCode() {
 		final int prime = 349;
 		int result = super.hashCode();
-		result = prime * result + portNumber;
+		result = prime * result + this.portNumber;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -119,8 +119,8 @@ public class OFQueueGetConfigReply extends OFMessage {
 		if (!(obj instanceof OFQueueGetConfigReply)) {
 			return false;
 		}
-		OFQueueGetConfigReply other = (OFQueueGetConfigReply) obj;
-		if (portNumber != other.portNumber) {
+		final OFQueueGetConfigReply other = (OFQueueGetConfigReply) obj;
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
 		return true;

@@ -55,18 +55,17 @@ import org.openflow.protocol.OFMessage;
  * TODO: should probably subscribe to PORT UP/DOWN events here
  * 
  */
-public class PhysicalNetwork extends Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
+public class PhysicalNetwork extends
+		Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 
-	private static PhysicalNetwork                  instance;
-	private ArrayList<Uplink>                       uplinkList;
+	private static PhysicalNetwork instance;
+	private ArrayList<Uplink> uplinkList;
 	private final Map<Long, SwitchDiscoveryManager> discoveryManager;
-	private static HashedWheelTimer                 timer;
-	static Logger                                          log           = LogManager
-			.getLogger(PhysicalNetwork.class
-					.getName());
+	private static HashedWheelTimer timer;
+	static Logger log = LogManager.getLogger(PhysicalNetwork.class.getName());
 
 	private PhysicalNetwork() {
-		log.info("Starting network discovery...");
+		PhysicalNetwork.log.info("Starting network discovery...");
 		PhysicalNetwork.timer = new HashedWheelTimer();
 		this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
 	}
@@ -83,10 +82,10 @@ public class PhysicalNetwork extends Network<PhysicalSwitch, PhysicalPort, Physi
 	}
 
 	public static void reset() {
-		log.debug("PhysicalNetwork has been explicitely reset. Hope you know what you are doing!!");
-		instance = null;
+		PhysicalNetwork.log
+				.debug("PhysicalNetwork has been explicitely reset. Hope you know what you are doing!!");
+		PhysicalNetwork.instance = null;
 	}
-
 
 	public ArrayList<Uplink> getUplinkList() {
 		return this.uplinkList;
@@ -112,7 +111,8 @@ public class PhysicalNetwork extends Network<PhysicalSwitch, PhysicalPort, Physi
 	 * @param port
 	 */
 	public synchronized void addPort(final PhysicalPort port) {
-		this.discoveryManager.get(port.getParentSwitch().getSwitchId()).addPort(port);
+		this.discoveryManager.get(port.getParentSwitch().getSwitchId())
+				.addPort(port);
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class PhysicalNetwork extends Network<PhysicalSwitch, PhysicalPort, Physi
 			final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 			super.addLink(link);
 		} else {
-			log.debug("Tried to create invalid link");
+			PhysicalNetwork.log.debug("Tried to create invalid link");
 		}
 	}
 
@@ -190,7 +190,5 @@ public class PhysicalNetwork extends Network<PhysicalSwitch, PhysicalPort, Physi
 	public boolean boot() {
 		return true;
 	}
-
-
 
 }

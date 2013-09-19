@@ -45,8 +45,8 @@ public abstract class OFVendorId {
 	 * @param vendorId
 	 *            the vendor id to register
 	 */
-	public static void registerVendorId(OFVendorId vendorId) {
-		mapping.put(vendorId.getId(), vendorId);
+	public static void registerVendorId(final OFVendorId vendorId) {
+		OFVendorId.mapping.put(vendorId.getId(), vendorId);
 	}
 
 	/**
@@ -57,8 +57,8 @@ public abstract class OFVendorId {
 	 * @return the corresponding OFVendorId that's been registered for the given
 	 *         value, or null if there id has not been registered.
 	 */
-	public static OFVendorId lookupVendorId(int id) {
-		return mapping.get(id);
+	public static OFVendorId lookupVendorId(final int id) {
+		return OFVendorId.mapping.get(id);
 	}
 
 	/**
@@ -66,7 +66,7 @@ public abstract class OFVendorId {
 	 * 
 	 * @param id
 	 */
-	public OFVendorId(int id) {
+	public OFVendorId(final int id) {
 		this.id = id;
 	}
 
@@ -74,7 +74,7 @@ public abstract class OFVendorId {
 	 * @return the vendor id value
 	 */
 	public int getId() {
-		return id;
+		return this.id;
 	}
 
 	/**

@@ -45,7 +45,7 @@ public class OFPacketIn extends OFMessage {
 	public OFPacketIn() {
 		super();
 		this.type = OFType.PACKET_IN;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFPacketIn.MINIMUM_LENGTH);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class OFPacketIn extends OFMessage {
 	 * 
 	 * @param bufferId
 	 */
-	public OFPacketIn setBufferId(int bufferId) {
+	public OFPacketIn setBufferId(final int bufferId) {
 		this.bufferId = bufferId;
 		return this;
 	}
@@ -81,7 +81,7 @@ public class OFPacketIn extends OFMessage {
 	 * 
 	 * @param packetData
 	 */
-	public OFPacketIn setPacketData(byte[] packetData) {
+	public OFPacketIn setPacketData(final byte[] packetData) {
 		this.packetData = packetData;
 		this.length = U16.t(OFPacketIn.MINIMUM_LENGTH + packetData.length);
 		return this;
@@ -101,7 +101,7 @@ public class OFPacketIn extends OFMessage {
 	 * 
 	 * @param inPort
 	 */
-	public OFPacketIn setInPort(short inPort) {
+	public OFPacketIn setInPort(final short inPort) {
 		this.inPort = inPort;
 		return this;
 	}
@@ -120,7 +120,7 @@ public class OFPacketIn extends OFMessage {
 	 * 
 	 * @param reason
 	 */
-	public OFPacketIn setReason(OFPacketInReason reason) {
+	public OFPacketIn setReason(final OFPacketInReason reason) {
 		this.reason = reason;
 		return this;
 	}
@@ -139,30 +139,31 @@ public class OFPacketIn extends OFMessage {
 	 * 
 	 * @param totalLength
 	 */
-	public OFPacketIn setTotalLength(short totalLength) {
+	public OFPacketIn setTotalLength(final short totalLength) {
 		this.totalLength = totalLength;
 		return this;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.bufferId = data.readInt();
 		this.totalLength = data.readShort();
 		this.inPort = data.readShort();
 		this.reason = OFPacketInReason.values()[U8.f(data.readByte())];
 		data.readByte(); // pad
-		this.packetData = new byte[getLengthU() - MINIMUM_LENGTH];
+		this.packetData = new byte[this.getLengthU()
+				- OFPacketIn.MINIMUM_LENGTH];
 		data.readBytes(this.packetData);
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
-		data.writeInt(bufferId);
-		data.writeShort(totalLength);
-		data.writeShort(inPort);
-		data.writeByte((byte) reason.ordinal());
+		data.writeInt(this.bufferId);
+		data.writeShort(this.totalLength);
+		data.writeShort(this.inPort);
+		data.writeByte((byte) this.reason.ordinal());
 		data.writeByte((byte) 0x0); // pad
 		data.writeBytes(this.packetData);
 	}
@@ -171,16 +172,17 @@ public class OFPacketIn extends OFMessage {
 	public int hashCode() {
 		final int prime = 283;
 		int result = super.hashCode();
-		result = prime * result + bufferId;
-		result = prime * result + inPort;
-		result = prime * result + Arrays.hashCode(packetData);
-		result = prime * result + ((reason == null) ? 0 : reason.hashCode());
-		result = prime * result + totalLength;
+		result = prime * result + this.bufferId;
+		result = prime * result + this.inPort;
+		result = prime * result + Arrays.hashCode(this.packetData);
+		result = prime * result
+				+ (this.reason == null ? 0 : this.reason.hashCode());
+		result = prime * result + this.totalLength;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -190,24 +192,24 @@ public class OFPacketIn extends OFMessage {
 		if (!(obj instanceof OFPacketIn)) {
 			return false;
 		}
-		OFPacketIn other = (OFPacketIn) obj;
-		if (bufferId != other.bufferId) {
+		final OFPacketIn other = (OFPacketIn) obj;
+		if (this.bufferId != other.bufferId) {
 			return false;
 		}
-		if (inPort != other.inPort) {
+		if (this.inPort != other.inPort) {
 			return false;
 		}
-		if (!Arrays.equals(packetData, other.packetData)) {
+		if (!Arrays.equals(this.packetData, other.packetData)) {
 			return false;
 		}
-		if (reason == null) {
+		if (this.reason == null) {
 			if (other.reason != null) {
 				return false;
 			}
-		} else if (!reason.equals(other.reason)) {
+		} else if (!this.reason.equals(other.reason)) {
 			return false;
 		}
-		if (totalLength != other.totalLength) {
+		if (this.totalLength != other.totalLength) {
 			return false;
 		}
 		return true;
@@ -215,7 +217,7 @@ public class OFPacketIn extends OFMessage {
 
 	@Override
 	public String toString() {
-		String myStr = super.toString();
+		final String myStr = super.toString();
 		return "packetIn" + ":bufferId=" + U32.f(this.bufferId) + myStr;
 	}
 }

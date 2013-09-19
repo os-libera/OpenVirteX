@@ -33,6 +33,6 @@ public class OFHello extends OFMessage {
 	public OFHello() {
 		super();
 		this.type = OFType.HELLO;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFHello.MINIMUM_LENGTH);
 	}
 }

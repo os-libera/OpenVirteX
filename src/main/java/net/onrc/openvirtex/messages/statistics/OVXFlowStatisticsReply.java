@@ -29,16 +29,17 @@ import net.onrc.openvirtex.messages.OVXStatisticsReply;
 
 import org.openflow.protocol.statistics.OFFlowStatisticsReply;
 
-public class OVXFlowStatisticsReply extends OFFlowStatisticsReply
-	implements VirtualizableStatistic {
+public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
+		VirtualizableStatistic {
 
-    @Override
-    public void virtualizeStatistic(PhysicalSwitch sw, OVXStatisticsReply msg) {
-	// TODO Auto-generated method stub
-	OVXSwitch vsw = OVXMessageUtil.untranslateXid(msg, sw);
-	if (vsw == null) {
-	    
+	@Override
+	public void virtualizeStatistic(final PhysicalSwitch sw,
+			final OVXStatisticsReply msg) {
+		// TODO Auto-generated method stub
+		final OVXSwitch vsw = OVXMessageUtil.untranslateXid(msg, sw);
+		if (vsw == null) {
+
+		}
 	}
-    }
 
 }

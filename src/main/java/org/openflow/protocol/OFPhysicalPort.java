@@ -78,7 +78,7 @@ public class OFPhysicalPort {
 
 		protected int value;
 
-		private OFPortConfig(int value) {
+		private OFPortConfig(final int value) {
 			this.value = value;
 		}
 
@@ -86,7 +86,7 @@ public class OFPhysicalPort {
 		 * @return the value
 		 */
 		public int getValue() {
-			return value;
+			return this.value;
 		}
 	}
 
@@ -130,7 +130,7 @@ public class OFPhysicalPort {
 
 		protected int value;
 
-		private OFPortState(int value) {
+		private OFPortState(final int value) {
 			this.value = value;
 		}
 
@@ -138,7 +138,7 @@ public class OFPhysicalPort {
 		 * @return the value
 		 */
 		public int getValue() {
-			return value;
+			return this.value;
 		}
 	}
 
@@ -218,7 +218,7 @@ public class OFPhysicalPort {
 
 		protected int value;
 
-		private OFPortFeatures(int value) {
+		private OFPortFeatures(final int value) {
 			this.value = value;
 		}
 
@@ -226,7 +226,7 @@ public class OFPhysicalPort {
 		 * @return the value
 		 */
 		public int getValue() {
-			return value;
+			return this.value;
 		}
 	}
 
@@ -244,14 +244,14 @@ public class OFPhysicalPort {
 	 * @return the portNumber
 	 */
 	public short getPortNumber() {
-		return portNumber;
+		return this.portNumber;
 	}
 
 	/**
 	 * @param portNumber
 	 *            the portNumber to set
 	 */
-	public void setPortNumber(short portNumber) {
+	public void setPortNumber(final short portNumber) {
 		this.portNumber = portNumber;
 	}
 
@@ -259,17 +259,18 @@ public class OFPhysicalPort {
 	 * @return the hardwareAddress
 	 */
 	public byte[] getHardwareAddress() {
-		return hardwareAddress;
+		return this.hardwareAddress;
 	}
 
 	/**
 	 * @param hardwareAddress
 	 *            the hardwareAddress to set
 	 */
-	public void setHardwareAddress(byte[] hardwareAddress) {
-		if (hardwareAddress.length != OFP_ETH_ALEN)
+	public void setHardwareAddress(final byte[] hardwareAddress) {
+		if (hardwareAddress.length != OFPhysicalPort.OFP_ETH_ALEN) {
 			throw new RuntimeException("Hardware address must have length "
-					+ OFP_ETH_ALEN);
+					+ OFPhysicalPort.OFP_ETH_ALEN);
+		}
 		this.hardwareAddress = hardwareAddress;
 	}
 
@@ -277,14 +278,14 @@ public class OFPhysicalPort {
 	 * @return the name
 	 */
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	/**
 	 * @param name
 	 *            the name to set
 	 */
-	public void setName(String name) {
+	public void setName(final String name) {
 		this.name = name;
 	}
 
@@ -292,14 +293,14 @@ public class OFPhysicalPort {
 	 * @return the config
 	 */
 	public int getConfig() {
-		return config;
+		return this.config;
 	}
 
 	/**
 	 * @param config
 	 *            the config to set
 	 */
-	public void setConfig(int config) {
+	public void setConfig(final int config) {
 		this.config = config;
 	}
 
@@ -307,14 +308,14 @@ public class OFPhysicalPort {
 	 * @return the state
 	 */
 	public int getState() {
-		return state;
+		return this.state;
 	}
 
 	/**
 	 * @param state
 	 *            the state to set
 	 */
-	public void setState(int state) {
+	public void setState(final int state) {
 		this.state = state;
 	}
 
@@ -322,14 +323,14 @@ public class OFPhysicalPort {
 	 * @return the currentFeatures
 	 */
 	public int getCurrentFeatures() {
-		return currentFeatures;
+		return this.currentFeatures;
 	}
 
 	/**
 	 * @param currentFeatures
 	 *            the currentFeatures to set
 	 */
-	public void setCurrentFeatures(int currentFeatures) {
+	public void setCurrentFeatures(final int currentFeatures) {
 		this.currentFeatures = currentFeatures;
 	}
 
@@ -337,14 +338,14 @@ public class OFPhysicalPort {
 	 * @return the advertisedFeatures
 	 */
 	public int getAdvertisedFeatures() {
-		return advertisedFeatures;
+		return this.advertisedFeatures;
 	}
 
 	/**
 	 * @param advertisedFeatures
 	 *            the advertisedFeatures to set
 	 */
-	public void setAdvertisedFeatures(int advertisedFeatures) {
+	public void setAdvertisedFeatures(final int advertisedFeatures) {
 		this.advertisedFeatures = advertisedFeatures;
 	}
 
@@ -352,14 +353,14 @@ public class OFPhysicalPort {
 	 * @return the supportedFeatures
 	 */
 	public int getSupportedFeatures() {
-		return supportedFeatures;
+		return this.supportedFeatures;
 	}
 
 	/**
 	 * @param supportedFeatures
 	 *            the supportedFeatures to set
 	 */
-	public void setSupportedFeatures(int supportedFeatures) {
+	public void setSupportedFeatures(final int supportedFeatures) {
 		this.supportedFeatures = supportedFeatures;
 	}
 
@@ -367,14 +368,14 @@ public class OFPhysicalPort {
 	 * @return the peerFeatures
 	 */
 	public int getPeerFeatures() {
-		return peerFeatures;
+		return this.peerFeatures;
 	}
 
 	/**
 	 * @param peerFeatures
 	 *            the peerFeatures to set
 	 */
-	public void setPeerFeatures(int peerFeatures) {
+	public void setPeerFeatures(final int peerFeatures) {
 		this.peerFeatures = peerFeatures;
 	}
 
@@ -383,18 +384,20 @@ public class OFPhysicalPort {
 	 * 
 	 * @param data
 	 */
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		this.portNumber = data.readShort();
-		if (this.hardwareAddress == null)
-			this.hardwareAddress = new byte[OFP_ETH_ALEN];
+		if (this.hardwareAddress == null) {
+			this.hardwareAddress = new byte[OFPhysicalPort.OFP_ETH_ALEN];
+		}
 		data.readBytes(this.hardwareAddress);
-		byte[] name = new byte[16];
+		final byte[] name = new byte[16];
 		data.readBytes(name);
 		// find the first index of 0
 		int index = 0;
-		for (byte b : name) {
-			if (0 == b)
+		for (final byte b : name) {
+			if (0 == b) {
 				break;
+			}
 			++index;
 		}
 		this.name = new String(Arrays.copyOf(name, index),
@@ -412,11 +415,11 @@ public class OFPhysicalPort {
 	 * 
 	 * @param data
 	 */
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		data.writeShort(this.portNumber);
-		data.writeBytes(hardwareAddress);
+		data.writeBytes(this.hardwareAddress);
 		try {
-			byte[] name = this.name.getBytes("ASCII");
+			final byte[] name = this.name.getBytes("ASCII");
 			if (name.length < 16) {
 				data.writeBytes(name);
 				for (int i = name.length; i < 16; ++i) {
@@ -426,7 +429,7 @@ public class OFPhysicalPort {
 				data.writeBytes(name, 0, 15);
 				data.writeByte((byte) 0);
 			}
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
 		data.writeInt(this.config);
@@ -441,20 +444,21 @@ public class OFPhysicalPort {
 	public int hashCode() {
 		final int prime = 307;
 		int result = 1;
-		result = prime * result + advertisedFeatures;
-		result = prime * result + config;
-		result = prime * result + currentFeatures;
-		result = prime * result + Arrays.hashCode(hardwareAddress);
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + peerFeatures;
-		result = prime * result + portNumber;
-		result = prime * result + state;
-		result = prime * result + supportedFeatures;
+		result = prime * result + this.advertisedFeatures;
+		result = prime * result + this.config;
+		result = prime * result + this.currentFeatures;
+		result = prime * result + Arrays.hashCode(this.hardwareAddress);
+		result = prime * result
+				+ (this.name == null ? 0 : this.name.hashCode());
+		result = prime * result + this.peerFeatures;
+		result = prime * result + this.portNumber;
+		result = prime * result + this.state;
+		result = prime * result + this.supportedFeatures;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -464,36 +468,36 @@ public class OFPhysicalPort {
 		if (!(obj instanceof OFPhysicalPort)) {
 			return false;
 		}
-		OFPhysicalPort other = (OFPhysicalPort) obj;
-		if (advertisedFeatures != other.advertisedFeatures) {
+		final OFPhysicalPort other = (OFPhysicalPort) obj;
+		if (this.advertisedFeatures != other.advertisedFeatures) {
 			return false;
 		}
-		if (config != other.config) {
+		if (this.config != other.config) {
 			return false;
 		}
-		if (currentFeatures != other.currentFeatures) {
+		if (this.currentFeatures != other.currentFeatures) {
 			return false;
 		}
-		if (!Arrays.equals(hardwareAddress, other.hardwareAddress)) {
+		if (!Arrays.equals(this.hardwareAddress, other.hardwareAddress)) {
 			return false;
 		}
-		if (name == null) {
+		if (this.name == null) {
 			if (other.name != null) {
 				return false;
 			}
-		} else if (!name.equals(other.name)) {
+		} else if (!this.name.equals(other.name)) {
 			return false;
 		}
-		if (peerFeatures != other.peerFeatures) {
+		if (this.peerFeatures != other.peerFeatures) {
 			return false;
 		}
-		if (portNumber != other.portNumber) {
+		if (this.portNumber != other.portNumber) {
 			return false;
 		}
-		if (state != other.state) {
+		if (this.state != other.state) {
 			return false;
 		}
-		if (supportedFeatures != other.supportedFeatures) {
+		if (this.supportedFeatures != other.supportedFeatures) {
 			return false;
 		}
 		return true;

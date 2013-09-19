@@ -38,21 +38,21 @@ public class OFVendor extends OFMessage implements OFVendorDataFactoryAware {
 	public OFVendor() {
 		super();
 		this.type = OFType.VENDOR;
-		this.length = U16.t(MINIMUM_LENGTH);
+		this.length = U16.t(OFVendor.MINIMUM_LENGTH);
 	}
 
 	/**
 	 * @return the vendor
 	 */
 	public int getVendor() {
-		return vendor;
+		return this.vendor;
 	}
 
 	/**
 	 * @param vendor
 	 *            the vendor to set
 	 */
-	public void setVendor(int vendor) {
+	public void setVendor(final int vendor) {
 		this.vendor = vendor;
 	}
 
@@ -60,39 +60,41 @@ public class OFVendor extends OFMessage implements OFVendorDataFactoryAware {
 	 * @return the data
 	 */
 	public OFVendorData getVendorData() {
-		return vendorData;
+		return this.vendorData;
 	}
 
 	/**
 	 * @param data
 	 *            the data to set
 	 */
-	public void setVendorData(OFVendorData vendorData) {
+	public void setVendorData(final OFVendorData vendorData) {
 		this.vendorData = vendorData;
 	}
 
 	@Override
-	public void setVendorDataFactory(OFVendorDataFactory vendorDataFactory) {
+	public void setVendorDataFactory(final OFVendorDataFactory vendorDataFactory) {
 		this.vendorDataFactory = vendorDataFactory;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.vendor = data.readInt();
-		if (vendorDataFactory == null)
+		if (this.vendorDataFactory == null) {
 			throw new RuntimeException("OFVendorDataFactory not set");
+		}
 
-		this.vendorData = vendorDataFactory.parseVendorData(vendor, data,
-				super.getLengthU() - MINIMUM_LENGTH);
+		this.vendorData = this.vendorDataFactory.parseVendorData(this.vendor,
+				data, super.getLengthU() - OFVendor.MINIMUM_LENGTH);
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeInt(this.vendor);
-		if (vendorData != null)
-			vendorData.writeTo(data);
+		if (this.vendorData != null) {
+			this.vendorData.writeTo(data);
+		}
 	}
 
 	/*
@@ -104,9 +106,10 @@ public class OFVendor extends OFMessage implements OFVendorDataFactoryAware {
 	public int hashCode() {
 		final int prime = 337;
 		int result = super.hashCode();
-		result = prime * result + vendor;
-		if (vendorData != null)
-			result = prime * result + vendorData.hashCode();
+		result = prime * result + this.vendor;
+		if (this.vendorData != null) {
+			result = prime * result + this.vendorData.hashCode();
+		}
 		return result;
 	}
 
@@ -116,21 +119,25 @@ public class OFVendor extends OFMessage implements OFVendorDataFactoryAware {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (this.getClass() != obj.getClass()) {
 			return false;
-		OFVendor other = (OFVendor) obj;
-		if (vendor != other.vendor)
+		}
+		final OFVendor other = (OFVendor) obj;
+		if (this.vendor != other.vendor) {
 			return false;
-		if (vendorData == null) {
+		}
+		if (this.vendorData == null) {
 			if (other.vendorData != null) {
 				return false;
 			}
-		} else if (!vendorData.equals(other.vendorData)) {
+		} else if (!this.vendorData.equals(other.vendorData)) {
 			return false;
 		}
 		return true;

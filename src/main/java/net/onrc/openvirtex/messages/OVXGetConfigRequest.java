@@ -30,12 +30,12 @@ public class OVXGetConfigRequest extends OFGetConfigRequest implements
 		Devirtualizable {
 
 	@Override
-	public void devirtualize(OVXSwitch sw) {
-		OVXGetConfigReply reply = new OVXGetConfigReply();
+	public void devirtualize(final OVXSwitch sw) {
+		final OVXGetConfigReply reply = new OVXGetConfigReply();
 		reply.setMissSendLength(sw.getMissSendLen());
-		
+
 		reply.setXid(this.getXid());
-		
+
 		sw.sendMsg(reply, sw);
 
 	}

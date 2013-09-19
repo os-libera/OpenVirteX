@@ -30,7 +30,7 @@ public class OVXBarrierRequest extends OFBarrierRequest implements
 		Devirtualizable {
 
 	@Override
-	public void devirtualize(OVXSwitch sw) {
+	public void devirtualize(final OVXSwitch sw) {
 		// TODO Auto-generated method stub
 
 	}

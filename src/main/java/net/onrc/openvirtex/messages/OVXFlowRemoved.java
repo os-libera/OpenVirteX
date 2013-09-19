@@ -31,18 +31,18 @@ import org.openflow.protocol.OFMatch;
 public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 
 	@Override
-	public void virtualize(PhysicalSwitch sw) {
-	    // in response to FlowMod?
-            OVXSwitch vsw = OVXMessageUtil.untranslateXid(this, sw);
-            if (vsw == null) {
-                //no-body asked for this
-                return;
-            }
+	public void virtualize(final PhysicalSwitch sw) {
+		// in response to FlowMod?
+		final OVXSwitch vsw = OVXMessageUtil.untranslateXid(this, sw);
+		if (vsw == null) {
+			// no-body asked for this
+			return;
+		}
 
-            // TODO need to re-write OFMatch 
-            OFMatch ofm = this.getMatch();
+		// TODO need to re-write OFMatch
+		final OFMatch ofm = this.getMatch();
 
-            //vsw.sendMsg(this, sw);
+		// vsw.sendMsg(this, sw);
 
 	}
 

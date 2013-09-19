@@ -43,23 +43,24 @@ public class OFMatchBeanInfo extends SimpleBeanInfo {
 
 	@Override
 	public PropertyDescriptor[] getPropertyDescriptors() {
-		List<PropertyDescriptor> descs = new LinkedList<PropertyDescriptor>();
-		Field[] fields = OFMatch.class.getDeclaredFields();
+		final List<PropertyDescriptor> descs = new LinkedList<PropertyDescriptor>();
+		final Field[] fields = OFMatch.class.getDeclaredFields();
 		String name;
-		for (int i = 0; i < fields.length; i++) {
-			int mod = fields[i].getModifiers();
+		for (final Field field : fields) {
+			final int mod = field.getModifiers();
 			if (Modifier.isFinal(mod) || // don't expose static or final fields
-					Modifier.isStatic(mod))
+					Modifier.isStatic(mod)) {
 				continue;
+			}
 
-			name = fields[i].getName();
-			Class<?> type = fields[i].getType();
+			name = field.getName();
+			final Class<?> type = field.getType();
 
 			try {
-				descs.add(new PropertyDescriptor(name, name2getter(
-						OFMatch.class, name), name2setter(OFMatch.class, name,
-						type)));
-			} catch (IntrospectionException e) {
+				descs.add(new PropertyDescriptor(name, this.name2getter(
+						OFMatch.class, name), this.name2setter(OFMatch.class,
+						name, type)));
+			} catch (final IntrospectionException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -67,34 +68,35 @@ public class OFMatchBeanInfo extends SimpleBeanInfo {
 		return descs.toArray(new PropertyDescriptor[0]);
 	}
 
-	private Method name2setter(Class<OFMatch> c, String name, Class<?> type) {
-		String mName = "set" + toLeadingCaps(name);
+	private Method name2setter(final Class<OFMatch> c, final String name,
+			final Class<?> type) {
+		final String mName = "set" + this.toLeadingCaps(name);
 		Method m = null;
 		try {
 			m = c.getMethod(mName, new Class[] { type });
-		} catch (SecurityException e) {
+		} catch (final SecurityException e) {
 			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
+		} catch (final NoSuchMethodException e) {
 			throw new RuntimeException(e);
 		}
 		return m;
 	}
 
-	private Method name2getter(Class<OFMatch> c, String name) {
-		String mName = "get" + toLeadingCaps(name);
+	private Method name2getter(final Class<OFMatch> c, final String name) {
+		final String mName = "get" + this.toLeadingCaps(name);
 		Method m = null;
 		try {
 			m = c.getMethod(mName, new Class[] {});
-		} catch (SecurityException e) {
+		} catch (final SecurityException e) {
 			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
+		} catch (final NoSuchMethodException e) {
 			throw new RuntimeException(e);
 		}
 		return m;
 	}
 
-	private String toLeadingCaps(String s) {
-		char[] array = s.toCharArray();
+	private String toLeadingCaps(final String s) {
+		final char[] array = s.toCharArray();
 		array[0] = Character.toUpperCase(array[0]);
 		return String.valueOf(array, 0, array.length);
 	}

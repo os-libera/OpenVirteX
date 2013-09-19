@@ -34,10 +34,10 @@ public class OFActionNetworkTypeOfService extends OFAction {
 
 	public OFActionNetworkTypeOfService() {
 		super.setType(OFActionType.SET_NW_TOS);
-		super.setLength((short) MINIMUM_LENGTH);
+		super.setLength((short) OFActionNetworkTypeOfService.MINIMUM_LENGTH);
 	}
 
-	public OFActionNetworkTypeOfService(byte tos) {
+	public OFActionNetworkTypeOfService(final byte tos) {
 		this();
 		this.networkTypeOfService = tos;
 	}
@@ -46,19 +46,19 @@ public class OFActionNetworkTypeOfService extends OFAction {
 	 * @return the networkTypeOfService
 	 */
 	public byte getNetworkTypeOfService() {
-		return networkTypeOfService;
+		return this.networkTypeOfService;
 	}
 
 	/**
 	 * @param networkTypeOfService
 	 *            the networkTypeOfService to set
 	 */
-	public void setNetworkTypeOfService(byte networkTypeOfService) {
+	public void setNetworkTypeOfService(final byte networkTypeOfService) {
 		this.networkTypeOfService = networkTypeOfService;
 	}
 
 	@Override
-	public void readFrom(ChannelBuffer data) {
+	public void readFrom(final ChannelBuffer data) {
 		super.readFrom(data);
 		this.networkTypeOfService = data.readByte();
 		data.readShort();
@@ -66,7 +66,7 @@ public class OFActionNetworkTypeOfService extends OFAction {
 	}
 
 	@Override
-	public void writeTo(ChannelBuffer data) {
+	public void writeTo(final ChannelBuffer data) {
 		super.writeTo(data);
 		data.writeByte(this.networkTypeOfService);
 		data.writeShort((short) 0);
@@ -77,12 +77,12 @@ public class OFActionNetworkTypeOfService extends OFAction {
 	public int hashCode() {
 		final int prime = 359;
 		int result = super.hashCode();
-		result = prime * result + networkTypeOfService;
+		result = prime * result + this.networkTypeOfService;
 		return result;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
 		}
@@ -92,8 +92,8 @@ public class OFActionNetworkTypeOfService extends OFAction {
 		if (!(obj instanceof OFActionNetworkTypeOfService)) {
 			return false;
 		}
-		OFActionNetworkTypeOfService other = (OFActionNetworkTypeOfService) obj;
-		if (networkTypeOfService != other.networkTypeOfService) {
+		final OFActionNetworkTypeOfService other = (OFActionNetworkTypeOfService) obj;
+		if (this.networkTypeOfService != other.networkTypeOfService) {
 			return false;
 		}
 		return true;
@@ -101,10 +101,10 @@ public class OFActionNetworkTypeOfService extends OFAction {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(type);
+		final StringBuilder builder = new StringBuilder();
+		builder.append(this.type);
 		builder.append("[");
-		builder.append(networkTypeOfService);
+		builder.append(this.networkTypeOfService);
 		builder.append("]");
 		return builder.toString();
 	}

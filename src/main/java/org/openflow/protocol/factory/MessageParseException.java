@@ -29,16 +29,16 @@ public class MessageParseException extends Exception {
 		super();
 	}
 
-	public MessageParseException(String message, Throwable cause) {
+	public MessageParseException(final String message, final Throwable cause) {
 		super(message, cause);
 		this.setStackTrace(cause.getStackTrace());
 	}
 
-	public MessageParseException(String message) {
+	public MessageParseException(final String message) {
 		super(message);
 	}
 
-	public MessageParseException(Throwable cause) {
+	public MessageParseException(final Throwable cause) {
 		super(cause);
 		this.setStackTrace(cause.getStackTrace());
 	}
