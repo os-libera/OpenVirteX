@@ -36,6 +36,7 @@ import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
+import net.onrc.openvirtex.protocol.OVXMatch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,6 +57,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	public void devirtualize(final OVXSwitch sw) {
 
 		final OVXPort inport = sw.getPort(this.getInPort());
+		OVXMatch ovxMatch = null;
 
 		if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
 			if (this.getPacketData().length <= 14) {
@@ -67,6 +69,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 			}
 			this.match = new OFMatch().loadFromPacket(this.packetData,
 					this.inPort);
+			ovxMatch = new OVXMatch(match);
+			ovxMatch.setPktData(this.packetData);
 		} else {
 			final OVXPacketIn cause = sw.getFromBufferMap(this.bufferId);
 			if (cause == null) {
@@ -79,6 +83,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 			this.match = new OFMatch().loadFromPacket(cause.getPacketData(),
 					this.inPort);
 			this.setBufferId(cause.getBufferId());
+			ovxMatch = new OVXMatch(match);
+			ovxMatch.setPktData(cause.getPacketData());
 			if (cause.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
 				this.setPacketData(cause.getPacketData());
 				this.setLengthU(this.getLengthU() + this.packetData.length);
@@ -88,7 +94,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 		for (final OFAction act : this.getActions()) {
 			try {
 				((VirtualizableAction) act).virtualize(sw,
-						this.approvedActions, this.match);
+						this.approvedActions, ovxMatch);
 
 			} catch (final ActionVirtualizationDenied e) {
 				this.log.warn("Action {} could not be virtualized; error: {}",
@@ -96,7 +102,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 				sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 				return;
 			} catch (final DroppedMessageException e) {
-				this.log.debug("Dropping flowmod {}", this);
+				this.log.debug("Dropping packetout {}", this);
 				return;
 			}
 		}

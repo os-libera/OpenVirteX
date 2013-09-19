@@ -26,8 +26,8 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.protocol.OVXMatch;
 
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionTransportLayerDestination;
 
@@ -36,7 +36,7 @@ public class OVXActionTransportLayerDestination extends
 
 	@Override
 	public void virtualize(final OVXSwitch sw,
-			final List<OFAction> approvedActions, final OFMatch match)
+			final List<OFAction> approvedActions, final OVXMatch match)
 			throws ActionVirtualizationDenied {
 		approvedActions.add(this);
 	}

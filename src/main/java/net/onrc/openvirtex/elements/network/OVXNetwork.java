@@ -29,8 +29,10 @@
 
 package net.onrc.openvirtex.elements.network;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,7 +47,6 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
-import net.onrc.openvirtex.elements.link.OVXLinkManager;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -54,6 +55,7 @@ import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.lldp.LLDPUtil;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
@@ -61,6 +63,9 @@ import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
+
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
 
 /**
  * Virtual networks contain tenantId, controller info, subnet and gateway
@@ -82,8 +87,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	private final AtomicLong dpidCounter;
 	private final AtomicInteger linkCounter;
 	private final AtomicInteger ipCounter;
-
-	public OVXLinkManager vLinkMgmt;
+    private final LinkedList<MACAddress> macList;
+    private HashBiMap<Integer, BigInteger> flowValues;
+    private final AtomicInteger      flowCounter;
 
 	// TODO: implement vlink flow pusher
 	// public VLinkManager vLinkMgmt;
@@ -103,9 +109,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		this.bootState = false;
 		this.dpidCounter = new AtomicLong(1);
 		// TODO: decide which value to start linkId's
-		this.linkCounter = new AtomicInteger(2);
+		this.linkCounter = new AtomicInteger(1);
 		this.ipCounter = new AtomicInteger(1);
-		this.vLinkMgmt = new OVXLinkManager(this.tenantId);
+		this.macList = new LinkedList<MACAddress>();
+		this.flowValues = HashBiMap.create();
+		this.flowCounter = new AtomicInteger(1);
 	}
 
 	public String getProtocol() {
@@ -144,10 +152,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		return this.linkCounter;
 	}
 
-	public OVXLinkManager getvLinkMgmt() {
-		return this.vLinkMgmt;
-	}
-
 	// API-facing methods
 
 	public OVXSwitch createSwitch(final List<Long> dpids) {
@@ -179,29 +183,38 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	 * @param dstPort
 	 * @return
 	 */
-	public synchronized OVXLink createLink(
-			final List<PhysicalLink> physicalLinks) {
-		// Create and register virtual source and destination ports
-		final PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
-		final OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
-		srcPort.register();
-		final PhysicalPort phyDstPort = physicalLinks.get(
-				physicalLinks.size() - 1).getDstPort();
-		final OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
-		dstPort.register();
-		// Create link, add it to the topology, register it in the map
-		final int linkId = this.linkCounter.getAndIncrement();
-		final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
-				dstPort);
-		final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
-				srcPort);
-		super.addLink(link);
-		super.addLink(reverseLink);
-		link.register(physicalLinks);
-		reverseLink.register(physicalLinks);
+    public synchronized OVXLink createLink(
+    	    final List<PhysicalLink> physicalLinks) {
+    	// Create and register virtual source and destination ports
+    	final PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
+    	final OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
+    	final PhysicalPort phyDstPort = physicalLinks.get(
+    	        physicalLinks.size() - 1).getDstPort();
+    	final OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
+    	
+    	// Create link, add it to the topology, register it in the map
+    	final int linkId = this.linkCounter.getAndIncrement();
+    	//Set the linkId value inside the src and dst virtual ports
+    	srcPort.setLinkId(linkId);
+    	dstPort.setLinkId(linkId);
+    	srcPort.register();
+    	dstPort.register();
 
-		return link;
-	}
+    	final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
+    	        dstPort);
+    	final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
+    	        srcPort);
+    	super.addLink(link);
+    	super.addLink(reverseLink);
+    	link.register(physicalLinks);
+    	//create the reverse list of physical links
+    	List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>(); 
+    	for (PhysicalLink phyLink : Lists.reverse(physicalLinks)) {
+    	    reversePhysicalLinks.add(new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort()));
+    	}
+    	reverseLink.register(reversePhysicalLinks);	
+    	return link;
+        }
 
 	public OVXPort createHost(final long physicalDpid, final short portNumber,
 			final MACAddress mac) {
@@ -213,7 +226,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		final OVXPort edgePort = new OVXPort(this.tenantId, physicalPort, true);
 		edgePort.register();
 		OVXMap.getInstance().addMAC(mac, this.tenantId);
-
+		this.macList.add(mac);
 		return edgePort;
 	}
 
@@ -235,9 +248,52 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 			result &= sw.boot();
 		}
 		this.bootState = result;
+		generateFlowPairs();
 		return this.bootState;
 	}
 
+    public Integer storeFlowValues(byte[] srcMac, byte[] dstMac) {
+    	//TODO: Optimize flow numbers
+    	BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,dstMac));
+    	Integer flowId = this.flowValues.inverse().get(dualMac);
+    	if (flowId == null) {
+    		flowId = this.flowCounter.getAndIncrement();
+    		log.debug("virtual net = {]: save flowId = {} that is associated to {} {}", this.tenantId, flowId, 
+    			MACAddress.valueOf(srcMac).toString(), MACAddress.valueOf(dstMac).toString());
+    		this.flowValues.put(flowId, dualMac);
+    	}
+    	return flowId;
+    }
+    
+    public LinkedList<MACAddress> getFlowValues(Integer flowId) {
+    	LinkedList<MACAddress> macList = new LinkedList<MACAddress>();
+    	BigInteger dualMac = this.flowValues.get(flowId);
+    	if (dualMac != null) {
+    		MACAddress srcMac = MACAddress.valueOf(dualMac.shiftRight(48).longValue());
+    		MACAddress dstMac = MACAddress.valueOf(dualMac.longValue());
+    		macList.add(srcMac);
+    		macList.add(dstMac);
+    	}
+    	return macList;
+    }
+    
+    public Integer getFlowId(byte[] srcMac, byte[] dstMac) {
+    	BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,dstMac));
+    	log.debug("virtual net = {]: retrieving flowId that is associated to {} {}", this.tenantId, 
+			MACAddress.valueOf(srcMac).toString(), MACAddress.valueOf(dstMac).toString());
+    	Integer flowId = this.flowValues.inverse().get(dualMac);
+    	return flowId;
+    }
+    
+    private void generateFlowPairs() {
+    	for (MACAddress srcMac : this.macList) {
+    		for (MACAddress dstMac : this.macList) {
+    			if (srcMac.toLong() != dstMac.toLong())
+    				this.storeFlowValues(srcMac.toBytes(), dstMac.toBytes());
+    		}
+    	}
+    }
+	
 	/**
 	 * Handle LLDP received from controller.
 	 * 

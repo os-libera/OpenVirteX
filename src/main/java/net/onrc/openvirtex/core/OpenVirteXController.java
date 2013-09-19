@@ -29,6 +29,7 @@ import net.onrc.openvirtex.api.server.JettyServer;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.link.OVXLinkField;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 
@@ -66,6 +67,7 @@ public class OpenVirteXController implements Runnable {
 	private ClientChannelPipeline cfact = null;
 
 	private int maxVirtual = 0;
+    private OVXLinkField	ovxLinkField;
 
 	public OpenVirteXController(final String configFile, final String ofHost,
 			final Integer ofPort, final int maxVirtual) {
@@ -73,6 +75,8 @@ public class OpenVirteXController implements Runnable {
 		this.ofHost = ofHost;
 		this.ofPort = ofPort;
 		this.maxVirtual = maxVirtual;
+		//by default, use Mac addresses to store vLinks informations
+		this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
 		OpenVirteXController.instance = this;
 	}
 
@@ -209,4 +213,7 @@ public class OpenVirteXController implements Runnable {
 		return this.maxVirtual;
 	}
 
+    public OVXLinkField getOvxLinkField() {
+		return this.ovxLinkField;
+	}
 }

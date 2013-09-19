@@ -73,11 +73,26 @@ def do_createVSwitch(gopts, opts, args):
     if len(args) != 2:
         print "createVSwitch : Must specify (network_id and dpid,dpid,... - list of physical dpids which are associated with this dpid)"
         sys.exit()
-    dpids = [str(dpid) for dpid in args[1].split(',')]
+    dpids = [int(dpid) for dpid in args[1].split(',')]
     req = { "tenantId" : int(args[0]), "dpids" : dpids }  
     dpid = connect(gopts, "createSwitch", data=req, passwd=getPasswd(gopts)) 
     if dpid:
         print "Virtual switch has been created (dpid %s)" % dpid
+
+def pa_vroute(args, cmd):
+    usage = "%s <network_id> <dpid> <src_port> <dst_port> <physical_path>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_createVRoute(gopts, opts, args):
+    if len(args) != 5:
+        print "createRoute : Must specify a tenantId, dpid, port pair and physical path"
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "dpid" : int(args[1]), "srcPort" : int(args[2]), "dstPort" : int(args[3]), "path" : args[4] }
+    port = connect(gopts, "createSwitchRoute", data=req, passwd=getPasswd(gopts))
+    if port:
+        print "Host has been connected to edge"
 
 def pa_connectHost(args, cmd):
     usage = "%s <mac> <dpid> <port>" % USAGE.format(cmd)
@@ -183,6 +198,7 @@ CMDS = {
     'createSwitch': (pa_vswitch, do_createVSwitch),
     'createLink': (pa_vlink, do_createVLink),
     'connectHost': (pa_connectHost, do_connectHost),
+    'createSwitchRoute': (pa_vroute, do_createVRoute),
     'startNetwork': (pa_bootNetwork, do_bootNetwork),
     'help' : (pa_help, do_help)
 }
@@ -196,6 +212,8 @@ DESCS = {
                      ("Create a virtual switch. Must specify a network_id, and a list of the physicalDPIDs that this contains")),
     'connectHost' : ("Connect host to edge switch",
                      ("Connect host to edge switch. Must specify a network_id, mac, dpid and port.")),
+    'createSwitchRoute': ("Create the route inside a bigswitch", 
+		     ("Create a route. Must provide a tenantId, a switchId, the source and destination portIds and the physical path.")), 
     'startNetwork' : ("Boot virtual network",
                      ("Boot virtual network. Must specify a network_id.")),
 }
@@ -254,6 +272,8 @@ if __name__ == '__main__':
       print "connectHost: int, string, short, string"
     elif function=='createLink':
       print "createVLink: int, string"
+    elif function=='createRoute':
+      print "createVRoute: int, int, int, int, string"
     elif function=='startetwork':
       print "bootNetwork: int"
   except IndexError, e:

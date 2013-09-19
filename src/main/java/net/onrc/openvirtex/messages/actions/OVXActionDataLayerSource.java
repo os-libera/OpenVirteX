@@ -26,10 +26,10 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.protocol.OVXMatch;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFError.OFBadActionCode;
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionDataLayerSource;
 
@@ -38,7 +38,7 @@ public class OVXActionDataLayerSource extends OFActionDataLayerSource implements
 
 	@Override
 	public void virtualize(final OVXSwitch sw,
-			final List<OFAction> approvedActions, final OFMatch match)
+			final List<OFAction> approvedActions, final OVXMatch match)
 			throws ActionVirtualizationDenied {
 		final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
 		final Integer tid = sw.getMap().getMAC(mac);

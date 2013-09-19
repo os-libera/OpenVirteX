@@ -247,8 +247,6 @@ public class OVXBigSwitch extends OVXSwitch {
 			this.routeMap.put(in, rtmap);
 		}
 		rtmap.put(out, entry);
-		this.map.getVirtualNetwork(this.tenantId).getvLinkMgmt()
-				.registerOVXRoute(entry);
 	}
 
 	@Override

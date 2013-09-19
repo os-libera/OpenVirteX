@@ -37,12 +37,14 @@ import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
+import net.onrc.openvirtex.protocol.OVXMatch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,10 +71,15 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		}
 		final short inport = this.getMatch().getInputPort();
 
+		OVXMatch ovxMatch = new OVXMatch(this.match);
+    	//Store the virtual flowMod and obtain the physical cookie
+    	ovxMatch.setCookie(sw.addFlowMod(this));
+    	this.setCookie(ovxMatch.getCookie());
+    	
 		for (final OFAction act : this.getActions()) {
 			try {
 				((VirtualizableAction) act).virtualize(sw,
-						this.approvedActions, this.match);
+						this.approvedActions, ovxMatch);
 			} catch (final ActionVirtualizationDenied e) {
 				this.log.warn("Action {} could not be virtualized; error: {}",
 						act, e.getMessage());
@@ -111,6 +118,16 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		}
 		OVXMessageUtil.translateXid(this, ovxInPort);
 		this.computeLength();
+		
+		//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
+    	if (ovxInPort != null && ovxInPort.isLink()) {
+	    	//rewrite the OFMatch with the values of the link
+    		OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(ovxInPort);
+			OVXLink link = sw.getMap().getVirtualNetwork(sw.getTenantId()).getLink(dstPort, ovxInPort);
+			if (link != null)
+				this.setMatch(link.rewriteMatch(this.match, sw));
+    	}
+    	
 		if (sw instanceof OVXBigSwitch) {
 			((OVXBigSwitch) sw).sendSouthBS(this, ovxInPort);
 		} else {

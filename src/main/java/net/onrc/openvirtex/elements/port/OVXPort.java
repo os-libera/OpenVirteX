@@ -79,6 +79,12 @@ public class OVXPort extends Port<OVXSwitch> {
 		this.linkId = linkId;
 	}
 
+    public boolean isLink() {
+    	if (linkId == 0)
+    		return false;
+    	return true;
+    }
+    
 	/**
 	 * Registers a port in the virtual parent switch and in the physical port
 	 */

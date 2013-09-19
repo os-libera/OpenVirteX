@@ -29,10 +29,10 @@ import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.protocol.OVXMatch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 
@@ -44,7 +44,7 @@ public class OVXActionNetworkLayerDestination extends
 
 	@Override
 	public void virtualize(final OVXSwitch sw,
-			final List<OFAction> approvedActions, final OFMatch match)
+			final List<OFAction> approvedActions, final OVXMatch match)
 			throws ActionVirtualizationDenied {
 		final Mappable map = sw.getMap();
 		final OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(),
