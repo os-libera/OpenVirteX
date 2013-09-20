@@ -1,4 +1,4 @@
-package net.onrc.openvirtex.api.service.handlers.tenant;
+package net.onrc.openvirtex.api.service.handlers.monitoring;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;

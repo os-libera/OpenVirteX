@@ -23,6 +23,7 @@
 package net.onrc.openvirtex.elements;
 
 import java.util.List;
+import java.util.Map;
 
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
@@ -177,4 +178,14 @@ public interface Mappable {
 	 * @return tenantId associated with MAC address
 	 */
 	public Integer getMAC(MACAddress mac);
+	
+	
+	/**
+	 * Obtain an immutable copy of the list of virtual networks
+	 * 
+	 * @return - immutable list of virtual netorks
+	 * 
+	 */
+	public Map<Integer, OVXNetwork> listVirtualNetworks();
+	
 }

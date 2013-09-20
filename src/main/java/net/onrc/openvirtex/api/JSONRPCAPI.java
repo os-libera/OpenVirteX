@@ -7,8 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.onrc.openvirtex.api.service.AdminService;
+import net.onrc.openvirtex.api.service.MonitoringService;
 import net.onrc.openvirtex.api.service.TenantService;
-import net.onrc.openvirtex.api.service.UIService;
+
 
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.Request;
@@ -17,13 +18,13 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 
 public class JSONRPCAPI extends AbstractHandler {
 
-	private final UIService uiService;
+	private final MonitoringService monitoringService;
 	private final TenantService tenantService;
 	private final AdminService adminService;
 
 	public JSONRPCAPI() {
 		this.tenantService = new TenantService();
-		this.uiService = new UIService();
+		this.monitoringService = new MonitoringService();
 		this.adminService = new AdminService();
 	}
 
@@ -40,8 +41,8 @@ public class JSONRPCAPI extends AbstractHandler {
 
 			return;
 		}
-		if (target.equals("/ui")) {
-			this.uiService.handle(request, response);
+		if (target.equals("/status")) {
+			this.monitoringService.handle(request, response);
 
 		} else if (target.equals("/tenant")) {
 			this.tenantService.handle(request, response);

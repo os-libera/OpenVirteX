@@ -458,5 +458,10 @@ public class OVXMap implements Mappable {
 		return Collections.unmodifiableMap(this.virtualLinkMap);
 	}
 
+	@Override
+	public Map<Integer, OVXNetwork> listVirtualNetworks() {
+		return Collections.unmodifiableMap(this.networkMap);
+	}
+
 	// Remove objects from dictionary
 }

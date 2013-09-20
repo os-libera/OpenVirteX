@@ -2,13 +2,8 @@ package net.onrc.openvirtex.api.service.handlers;
 
 import java.util.HashMap;
 
-import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
-import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXLink;
-import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
-import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
-import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitchRoute;
-import net.onrc.openvirtex.api.service.handlers.tenant.SaveConfig;
-import net.onrc.openvirtex.api.service.handlers.tenant.StartNetwork;
+import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalTopology;
+import net.onrc.openvirtex.api.service.handlers.monitoring.ListVirtualNetworks;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -17,34 +12,24 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.server.MessageContext;
 import com.thetransactioncompany.jsonrpc2.server.RequestHandler;
 
-public class TenantHandler extends AbstractHandler implements RequestHandler {
+public class MonitoringHandler extends AbstractHandler implements RequestHandler {
 
-	// Tenant keywords
-	public final static String CTRLHOST = "controllerAddress";
-	public final static String CTRLPORT = "controllerPort";
-	public final static String PROTOCOL = "protocol";
-	public final static String NETADD = "networkAddress";
-	public final static String NETMASK = "mask";
+	
 	public static final String TENANT = "tenantId";
-	public static final String DPIDS = "dpids";
-	public static final String DPID = "dpid";
-	public static final String PORT = "port";
-	public static final String SRC_PORT = "srcPort";
-	public static final String DST_PORT = "dstPort";
-	public static final String MAC = "mac";
-	public static final String PATH = "path";
-
 	
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
 		{
-			this.put("createNetwork", new CreateOVXNetwork());
-			this.put("createSwitch", new CreateOVXSwitch());
-			this.put("connectHost", new ConnectHost());
-			this.put("createLink", new CreateOVXLink());
-			this.put("startNetwork", new StartNetwork());
-			this.put("saveConfig", new SaveConfig());
-			this.put("createSwitchRoute", new CreateOVXSwitchRoute());
+			this.put("getPhysicalTopology", new GetPhysicalTopology());
+			this.put("listVirtualNetworks", new ListVirtualNetworks());
+			this.put("getVirtualTopology", null);
+			this.put("getVirtualSwitchMapping", null);
+			this.put("getVirtualLinkMapping", null);
+			this.put("listHosts", null);
+			this.put("getHost", null);
+			this.put("getSubnet", null);
+			this.put("removePhysicalLink", null);
+			this.put("getVirtualFlowTable", null);
 		}
 	};
 

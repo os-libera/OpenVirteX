@@ -115,7 +115,7 @@ public class JettyServer implements Runnable {
 
 		final ConstraintMapping uimapping = new ConstraintMapping();
 		uimapping.setConstraint(ui_c);
-		uimapping.setPathSpec("/ui");
+		uimapping.setPathSpec("/status");
 
 		final ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
 		sh.setRealmName(JettyServer.REALM_NAME);
