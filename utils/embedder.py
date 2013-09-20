@@ -159,7 +159,7 @@ class OVXClient():
   def _parseResponse(self, data):
     j = json.loads(data)
     if 'error' in j:
-      print "Error: %s (%s)" % (j['error']['message'], j['error']['code'])
+      log.error("%s (%s)" % (j['error']['message'], j['error']['code']))
       sys.exit(1)
     return j['result']
 
@@ -174,67 +174,69 @@ class OVXClient():
       ph = opener.open(req)
       return self._parseResponse(ph.read())
     except urllib2.URLError as e:
-      print e
+      log.error(e)
       sys.exit(1)
     except urllib2.HTTPError as e:
       if e.code == 401:
-        print "Authentication failed: invalid password"
+        log.error("Authentication failed: invalid password")
         # TODO
         sys.exit(1)
       elif e.code == 504:
-        print "HTTP Error 504: Gateway timeout"
+        log.error("HTTP Error 504: Gateway timeout")
         # TODO
         sys.exit(1)
       else:
-        print e
+        log.error(e)
     except RuntimeError as e:
-      print e
+      log.error(e)
 
   def createNetwork(self, protocol, host, port, net_address, net_mask):
     req = {'protocol': protocol, 'controllerAddress': host, 'controllerPort': port,
            'networkAddress': net_address, 'mask': net_mask}
     ret = self._connect("createNetwork", data=req)
     if ret:
-        print "Network with tenantId %s has been created" % ret
+        log.info("Network with tenantId %s has been created" % ret)
     return ret
 
   def createSwitch(self, tenantId, dpids):
     req = {'tenantId': tenantId, 'dpids': dpids}
     ret = self._connect("createSwitch", data=req)
     if ret:
-        print "Switch with switchId %s has been created" % ret
+        log.info("Switch with switchId %s has been created" % ret)
     return ret
 
   def createLink(self, tenantId, path):
     req = {'tenantId': tenantId, 'path': path}
     ret = self._connect("createLink", data=req)
     if ret:
-        print "Link with linkId %s has been created" % ret
+        log.info("Link with linkId %s has been created" % ret)
     return ret
 
   def connectHost(self, tenantId, dpid, port, mac):
     req = {'tenantId': tenantId, 'dpid': dpid, 'port': port, 'mac': mac}
     ret = self._connect("connectHost", data=req)
     if ret:
-        print "Host %s connected on port %s" % (mac, ret)
+        log.info("Host %s connected on port %s" % (mac, ret))
     return ret
 
   def createSwitchRoute(self, tenantId, switchId, srcPort, dstPort, path):
     req = {'tenantId': tenantId, 'dpid': switchId, 'srcPort': srcPort, 'dstPort': dstPort, 'path': path}
     ret = self._connect("createSwitchRoute", data=req)
     if ret:
-      print "Route on switch %s between ports (%s,%s) created" % (switchId, srcPort, dstPort)
+      log.info("Route on switch %s between ports (%s,%s) created" % (switchId, srcPort, dstPort))
     return ret
 
   def startNetwork(self, tenantId):
     req = {'tenantId': tenantId}
     ret = self._connect("startNetwork", data=req)
     if ret:
-        print "Network with tenantId %s has been started" % tenantId
-    return ret    
+        log.info("Network with tenantId %s has been started" % tenantId)
+    return ret
 
   def getPhysicalTopology(self):
     ret = self._connect("getPhysicalTopology")
+    if ret:
+        log.info("Physical network topology received")
     return ret
 
 class OVXEmbedderHandler(BaseHTTPRequestHandler):
@@ -278,7 +280,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
       host = controller['host']
       port = int(controller['port'])
     else:
-      print 'Unsupported controller type'
+      log.error('Unsupported controller type')
       sys.exit(1)
     # split subnet in netaddress and netmask
     (net_address, net_mask) = subnet.split('/')
@@ -297,8 +299,6 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
       src = hosts[src_index]
       for dst_index in xrange(src_index + 1, len(hosts)):
         dst = hosts[dst_index]
-        if src['dpid'] == dst['dpid']:
-          continue
         route = routing.getRoute(src['dpid'], dst['dpid'])
         path = routing.parseRoute(route)
         srcPort = parseDpid(hostPortMap[src['mac']])
@@ -323,7 +323,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
       host = controller['host']
       port = int(controller['port'])
     else:
-      print 'Unsupported controller type'
+      log.error('Unsupported controller type')
       sys.exit(1)
     # split subnet in netaddress and netmask
     (net_address, net_mask) = subnet.split('/')
@@ -426,7 +426,7 @@ class OVXEmbedderServer(HTTPServer):
   def _spawnController(self):
     ctrl = "OVX-%s" % len(self.controllers)
     devnull = open('/dev/null', 'w')
-    print "Spawning controller VM %s... " % ctrl,
+    log.info("Spawning controller VM %s" % ctrl)
     clone_cmd = CLONE_VM % ctrl
     subprocess.call(clone_cmd.split(), stdout=devnull, stderr=devnull)
     start_cmd = START_VM % ctrl
@@ -441,7 +441,7 @@ class OVXEmbedderServer(HTTPServer):
       ip = ret
       break
     self.controllers.append(ctrl)
-    print "ready on %s" % ip
+    log.info("Controller %s ready on %s" % (ctrl, ip))
     return ip
     
   def closeControllers(self):
@@ -485,6 +485,6 @@ if __name__ == '__main__':
   parser.add_argument('--version', action='version', version='%(prog)s 0.1')
   args = parser.parse_args()
   
-  log.basicConfig(format='%(asctime)s %(message)s')
+  log.basicConfig(format='%(asctime)s %(message)s', level=log.INFO)
   embedder = OVXEmbedder(vars(args))
   embedder.run()
