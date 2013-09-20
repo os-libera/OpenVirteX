@@ -130,11 +130,11 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 					return resp;
 				}
 				Collections.reverse(reverseLinks);
-				bigSwitch.createRoute(ingress, egress, pathLinks, reverseLinks);
-				log.info("Created virtual switch route in virtual network {}",
-						virtNetwork.getTenantId());
-				resp = new JSONRPC2Response(virtSwitch.getSwitchId(), 0);
 			}
+			bigSwitch.createRoute(ingress, egress, pathLinks, reverseLinks);
+			log.info("Created virtual switch route in virtual network {}",
+					virtNetwork.getTenantId());
+			resp = new JSONRPC2Response(virtSwitch.getSwitchId(), 0);
 		} catch (final MissingRequiredField e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()

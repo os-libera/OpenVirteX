@@ -66,9 +66,9 @@ class Routing():
     previous = {}
     for node in self.nodes:
       distance[node] = sys.maxint
-      distance[src] = 0
-      # Sort Q according to distance
-      Q = sorted(distance, key=distance.get)
+    distance[src] = 0
+    # Sort Q according to distance
+    Q = sorted(distance, key=distance.get)
       
     while Q:
       current = Q.pop(0)
@@ -299,11 +299,12 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
       src = hosts[src_index]
       for dst_index in xrange(src_index + 1, len(hosts)):
         dst = hosts[dst_index]
-        route = routing.getRoute(src['dpid'], dst['dpid'])
-        path = routing.parseRoute(route)
-        srcPort = parseDpid(hostPortMap[src['mac']])
-        dstPort = parseDpid(hostPortMap[dst['mac']])
-        client.createSwitchRoute(tenantId, switchId, srcPort, dstPort, path)
+        if src['dpid'] != dst['dpid']:
+          route = routing.getRoute(src['dpid'], dst['dpid'])
+          path = routing.parseRoute(route)
+          srcPort = parseDpid(hostPortMap[src['mac']])
+          dstPort = parseDpid(hostPortMap[dst['mac']])
+          client.createSwitchRoute(tenantId, switchId, srcPort, dstPort, path)
     # boot network
     client.startNetwork(tenantId)
 
