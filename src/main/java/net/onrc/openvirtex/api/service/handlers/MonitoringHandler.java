@@ -22,7 +22,7 @@ public class MonitoringHandler extends AbstractHandler implements RequestHandler
 		{
 			this.put("getPhysicalTopology", new GetPhysicalTopology());
 			this.put("listVirtualNetworks", new ListVirtualNetworks());
-			this.put("getVirtualTopology", null);
+			this.put("getVirtualTopology", new GetPhysicalTopology());
 			this.put("getVirtualSwitchMapping", null);
 			this.put("getVirtualLinkMapping", null);
 			this.put("listHosts", null);

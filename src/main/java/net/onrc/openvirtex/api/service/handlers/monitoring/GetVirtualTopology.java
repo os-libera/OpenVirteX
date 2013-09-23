@@ -8,14 +8,9 @@ import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitchSerializer;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitchSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
-import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.OVXPortSerializer;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.elements.port.PhysicalPortSerializer;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 
 import com.google.gson.Gson;
@@ -62,7 +57,7 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 
 	@Override
 	public JSONRPC2ParamsType getType() {
-		return JSONRPC2ParamsType.NO_PARAMS;
+		return JSONRPC2ParamsType.OBJECT;
 	}
 
 }
