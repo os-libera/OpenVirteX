@@ -65,6 +65,7 @@ public abstract class AbstractService {
 			final JSONRPC2Response jresp) throws IOException {
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.setHeader("Content-Type", "application/json; charset=utf-8");
+		response.setHeader("Access-Control-Allow-Origin", "*");
 		response.setContentType("application/json; charset=utf-8");
 		final String json = jresp.toJSONString();
 		AbstractService.log.debug("---------JSON RPC response: {}", json);
