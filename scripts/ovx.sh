@@ -22,5 +22,5 @@ if [ ! -e ${OVX_JAR} ]; then
 fi
 
 echo "Starting OpenVirteX..."
-java ${JVM_OPTS} -Dlog4j.configurationFile=../log4j2.xml -Djavax.net.ssl.keyStore=../config/sslStore -jar ${OVX_JAR}
+java ${JVM_OPTS} -Dlog4j.configurationFile=../config/log4j2.xml -Djavax.net.ssl.keyStore=../config/sslStore -jar ${OVX_JAR}
   
