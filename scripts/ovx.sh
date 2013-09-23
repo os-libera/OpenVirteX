@@ -5,8 +5,8 @@ OVX_JAR="${OVXHOME}/target/OpenVirteX.jar"
 
 JVM_OPTS=""
 ## If you want JaCoCo Code Coverage reports... uncomment line below
-JVM_OPTS="$JVM_OPTS -javaagent:${OVXHOME}/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=${OVXHOME}/target/jacoco.exec"
-#JVM_OPTS="$JVM_OPTS -XX:+UseTieredCompilation"
+#JVM_OPTS="$JVM_OPTS -javaagent:${OVXHOME}/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=${OVXHOME}/target/jacoco.exec"
+JVM_OPTS="$JVM_OPTS -XX:+TieredCompilation"
 JVM_OPTS="$JVM_OPTS -XX:+UseCompressedOops"
 JVM_OPTS="$JVM_OPTS -XX:+UseConcMarkSweepGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods"
 JVM_OPTS="$JVM_OPTS -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192" 
@@ -22,5 +22,5 @@ if [ ! -e ${OVX_JAR} ]; then
 fi
 
 echo "Starting OpenVirteX..."
-java ${JVM_OPTS} -Dlog4j.configurationFile=log4j2.xml -jar ${OVX_JAR}
+java ${JVM_OPTS} -Dlog4j.configurationFile=../log4j2.xml -Djavax.net.ssl.keyStore=../config/sslStore -jar ${OVX_JAR}
   
