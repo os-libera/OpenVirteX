@@ -129,8 +129,8 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 							this.cmdName() + ": invalid route"), 0);
 					return resp;
 				}
-				Collections.reverse(reverseLinks);
 			}
+			Collections.reverse(reverseLinks);
 			bigSwitch.createRoute(ingress, egress, pathLinks, reverseLinks);
 			log.info("Created virtual switch route in virtual network {}",
 					virtNetwork.getTenantId());

@@ -147,14 +147,16 @@ class OVXClient():
     self.port = port
     self.user = user
     self.password = password
-    self.url = "http://%s:%s/tenant" % (self.host, self.port)
+    self.base_url = "http://%s:%s/" % (self.host, self.port)
+    self.tenant_url = self.base_url + 'tenant'
+    self.status_url = self.base_url + 'status'
   
-  def _buildRequest(self, data, cmd):
+  def _buildRequest(self, data, url, cmd):
     j = { "id" : "ovxembedder", "method" : cmd, "jsonrpc" : "2.0" }
     h = {"Content-Type" : "application/json"}
     if data is not None:
       j['params'] = data
-    return urllib2.Request(self.url, json.dumps(j), h)
+    return urllib2.Request(url, json.dumps(j), h)
 
   def _parseResponse(self, data):
     j = json.loads(data)
@@ -163,13 +165,13 @@ class OVXClient():
       sys.exit(1)
     return j['result']
 
-  def _connect(self, cmd, data=None):
+  def _connect(self, cmd, url, data=None):
     try:
       passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-      passman.add_password(None, self.url, self.user, self.password)
+      passman.add_password(None, url, self.user, self.password)
       authhandler = urllib2.HTTPBasicAuthHandler(passman)
       opener = urllib2.build_opener(authhandler)
-      req = self._buildRequest(data, cmd)
+      req = self._buildRequest(data, url, cmd)
       #ph = urllib2.urlopen(req)
       ph = opener.open(req)
       return self._parseResponse(ph.read())
@@ -193,48 +195,48 @@ class OVXClient():
   def createNetwork(self, protocol, host, port, net_address, net_mask):
     req = {'protocol': protocol, 'controllerAddress': host, 'controllerPort': port,
            'networkAddress': net_address, 'mask': net_mask}
-    ret = self._connect("createNetwork", data=req)
+    ret = self._connect("createNetwork", self.tenant_url, data=req)
     if ret:
         log.info("Network with tenantId %s has been created" % ret)
     return ret
 
   def createSwitch(self, tenantId, dpids):
     req = {'tenantId': tenantId, 'dpids': dpids}
-    ret = self._connect("createSwitch", data=req)
+    ret = self._connect("createSwitch", self.tenant_url, data=req)
     if ret:
         log.info("Switch with switchId %s has been created" % ret)
     return ret
 
   def createLink(self, tenantId, path):
     req = {'tenantId': tenantId, 'path': path}
-    ret = self._connect("createLink", data=req)
+    ret = self._connect("createLink", self.tenant_url, data=req)
     if ret:
         log.info("Link with linkId %s has been created" % ret)
     return ret
 
   def connectHost(self, tenantId, dpid, port, mac):
     req = {'tenantId': tenantId, 'dpid': dpid, 'port': port, 'mac': mac}
-    ret = self._connect("connectHost", data=req)
+    ret = self._connect("connectHost", self.tenant_url, data=req)
     if ret:
         log.info("Host %s connected on port %s" % (mac, ret))
     return ret
 
   def createSwitchRoute(self, tenantId, switchId, srcPort, dstPort, path):
     req = {'tenantId': tenantId, 'dpid': switchId, 'srcPort': srcPort, 'dstPort': dstPort, 'path': path}
-    ret = self._connect("createSwitchRoute", data=req)
+    ret = self._connect("createSwitchRoute", self.tenant_url, data=req)
     if ret:
       log.info("Route on switch %s between ports (%s,%s) created" % (switchId, srcPort, dstPort))
     return ret
 
   def startNetwork(self, tenantId):
     req = {'tenantId': tenantId}
-    ret = self._connect("startNetwork", data=req)
+    ret = self._connect("startNetwork", self.tenant_url, data=req)
     if ret:
         log.info("Network with tenantId %s has been started" % tenantId)
     return ret
 
   def getPhysicalTopology(self):
-    ret = self._connect("getPhysicalTopology")
+    ret = self._connect("getPhysicalTopology", self.status_url)
     if ret:
         log.info("Physical network topology received")
     return ret
@@ -479,8 +481,8 @@ if __name__ == '__main__':
   parser.add_argument('--port', default=8000, type=int, help='OpenVirteX embedder port (default="8000")')
   parser.add_argument('--ovxhost', default='localhost', help='Host where OpenVirteX is running (default="localhost")')
   parser.add_argument('--ovxport', default=8080, type=int, help='Port where OpenVirteX is running (default="8080")')
-  parser.add_argument('--ovxuser', default='tenant', help='OpenVirteX user (default="tenant")')
-  parser.add_argument('--ovxpass', default='tenant', help='OpenVirteX password (default="tenant")')
+  parser.add_argument('--ovxuser', default='admin', help='OpenVirteX user (default="admin")')
+  parser.add_argument('--ovxpass', default='admin', help='OpenVirteX password (default="admin")')
   parser.add_argument('--ctrlproto', default='tcp', help='Default controller protocol (default="tcp")')
   parser.add_argument('--ctrlport', default=10001, type=int, help='Default controller port (default="10001")')
   parser.add_argument('--version', action='version', version='%(prog)s 0.1')
