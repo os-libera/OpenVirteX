@@ -3,7 +3,7 @@
 OVXHOME=`dirname $0`/..
 OVX_JAR="${OVXHOME}/target/OpenVirteX.jar"
 
-JVM_OPTS=""
+JVM_OPTS="-Xms512m -Xmx2g"
 ## If you want JaCoCo Code Coverage reports... uncomment line below
 #JVM_OPTS="$JVM_OPTS -javaagent:${OVXHOME}/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=${OVXHOME}/target/jacoco.exec"
 JVM_OPTS="$JVM_OPTS -XX:+TieredCompilation"
