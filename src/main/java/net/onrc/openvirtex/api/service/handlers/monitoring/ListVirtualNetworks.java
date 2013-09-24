@@ -1,5 +1,7 @@
 package net.onrc.openvirtex.api.service.handlers.monitoring;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -22,7 +24,9 @@ public class ListVirtualNetworks extends ApiHandler<Object> {
 		JSONRPC2Response resp = null;
 		
 		Map<Integer, OVXNetwork> nets = OVXMap.getInstance().listVirtualNetworks();
-		resp = new JSONRPC2Response(nets.keySet(), 0);
+		// JSONRPC2Response wants a List, not a Set
+		List<Integer> list = new ArrayList<Integer>(nets.keySet());
+		resp = new JSONRPC2Response(list, 0);
 		return resp;
 		
 	}
