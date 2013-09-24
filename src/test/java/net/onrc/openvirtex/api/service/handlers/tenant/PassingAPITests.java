@@ -48,7 +48,7 @@ public class PassingAPITests extends AbstractAPICalls {
 
 		super.createNetwork();
 		final JSONRPC2Response resp = super.createSwitch(1,
-				Collections.singletonList("1"));
+				Collections.singletonList(1));
 
 		Assert.assertNull("CreateOVXNetwork should not return null",
 				resp.getError());
@@ -66,9 +66,9 @@ public class PassingAPITests extends AbstractAPICalls {
 		PhysicalNetwork.getInstance().addSwitch(sw1);
 		PhysicalNetwork.getInstance().addSwitch(sw2);
 		super.createNetwork();
-		final List<String> l = new LinkedList<>();
-		l.add("1");
-		l.add("2");
+		final List<Integer> l = new LinkedList<>();
+		l.add(1);
+		l.add(2);
 		final JSONRPC2Response resp = super.createSwitch(1, l);
 
 		Assert.assertNull("CreateOVXSwitch should have not returned null",
@@ -82,7 +82,7 @@ public class PassingAPITests extends AbstractAPICalls {
 		super.createNetwork();
 		final PhysicalSwitch sw1 = new PhysicalSwitch(1);
 		PhysicalNetwork.getInstance().addSwitch(sw1);
-		super.createSwitch(1, Collections.singletonList("1"));
+		super.createSwitch(1, Collections.singletonList(1));
 		final PhysicalPort port = new PhysicalPort(new OFPhysicalPort(), sw1,
 				true);
 		port.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -106,8 +106,8 @@ public class PassingAPITests extends AbstractAPICalls {
 		PhysicalNetwork.getInstance().addSwitch(sw1);
 		PhysicalNetwork.getInstance().addSwitch(sw2);
 
-		super.createSwitch(1, Collections.singletonList("1"));
-		super.createSwitch(1, Collections.singletonList("2"));
+		super.createSwitch(1, Collections.singletonList(1));
+		super.createSwitch(1, Collections.singletonList(2));
 
 		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
 				false);
@@ -127,7 +127,7 @@ public class PassingAPITests extends AbstractAPICalls {
 				resp.getError() == null ? "CreatLink should not return null"
 						: resp.getError().getMessage(), resp.getError());
 
-		Assert.assertEquals(2, resp.getResult());
+		Assert.assertEquals(1, resp.getResult());
 
 	}
 
