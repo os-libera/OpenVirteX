@@ -164,15 +164,16 @@ public class HandlerUtils {
 			return;
 		}
 
-		// Find intersection of remaining physical hops
-		final int pathIndex = 1;
-		while (intersection.size() > 0 && pathIndex < physicalLinks.size()) {
-			final List<OVXLink> vlinks = map.getVirtualLinks(
-					physicalLinks.get(pathIndex), tenantId);
-			intersection.retainAll(vlinks);
-		}
-		if (intersection.size() == 0) {
-			return;
+		// Find vlinks which also contain the remaining physical hops
+		for (final PhysicalLink link : physicalLinks) {
+			final List<OVXLink> overlap = map.getVirtualLinks(link, tenantId);
+			if (overlap == null) {
+				return;
+			}
+			intersection.retainAll(overlap);
+			if (intersection.size() == 0) {
+				return;
+			}
 		}
 
 		// Check for cases where new virtual link is strict subset of existing
