@@ -3,6 +3,7 @@ package net.onrc.openvirtex.api.service.handlers;
 import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalTopology;
+import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualTopology;
 import net.onrc.openvirtex.api.service.handlers.monitoring.ListVirtualNetworks;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
@@ -22,7 +23,7 @@ public class MonitoringHandler extends AbstractHandler implements RequestHandler
 		{
 			this.put("getPhysicalTopology", new GetPhysicalTopology());
 			this.put("listVirtualNetworks", new ListVirtualNetworks());
-			this.put("getVirtualTopology", new GetPhysicalTopology());
+			this.put("getVirtualTopology", new GetVirtualTopology());
 			this.put("getVirtualSwitchMapping", null);
 			this.put("getVirtualLinkMapping", null);
 			this.put("listHosts", null);
