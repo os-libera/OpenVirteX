@@ -50,6 +50,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFError.OFFlowModFailedCode;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 
@@ -95,47 +96,55 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		this.setBufferId(bufferId);
 
 		if (ovxInPort == null) {
-			this.log.error("Unknown virtual port id {}; dropping flowmod {}",
+		    	/* specifically handle initial OFPFW_ALL delete */
+		    	if ((this.match.getWildcardObj().isFull()) & 
+		    			(this.command == OFFlowMod.OFPFC_DELETE)) {
+		    	    	sw.getFlowTable().handleFlowMods(this);
+		    	/* expand to all ports, error only if in-port not wildcarded */
+			} else if (this.match.getWildcardObj().isWildcarded(Flag.IN_PORT)) {
+		    	    	for (OVXPort iport : sw.getPorts().values()) {
+		    	    	    int wcard = this.match.getWildcards() & (~OFMatch.OFPFW_IN_PORT); 
+		    	    	    this.match.setWildcards(wcard);
+		    	    	    prepAndSendSouth(iport);
+		    	    	}
+		    	} else {
+				this.log.error("Unknown virtual port id {}; dropping flowmod {}",
 					inport, this);
-			sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+				sw.sendMsg(OVXMessageUtil.makeErrorMsg(
 					OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
-			return;
-		} else {
-			OVXMessageUtil.translateXid(this, ovxInPort);
-			this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
-			if (ovxInPort.isEdge()) {
-				this.prependRewriteActions();
-				this.computeLength();
-				if (sw instanceof OVXBigSwitch) {
-					((OVXBigSwitch) sw).sendSouthBS(this, ovxInPort);
-				} else {
-					sw.sendSouth(this);
-				}
 				return;
-			} else {
-				this.rewriteMatch();
-			}
-		}
-		OVXMessageUtil.translateXid(this, ovxInPort);
-		this.computeLength();
-		
-		//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
-    	if (ovxInPort != null && ovxInPort.isLink()) {
-	    	//rewrite the OFMatch with the values of the link
-    		OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(ovxInPort);
-			OVXLink link = sw.getMap().getVirtualNetwork(sw.getTenantId()).getLink(dstPort, ovxInPort);
-			if (link != null)
-				this.setMatch(link.rewriteMatch(this.match, sw));
-    	}
-    	
-		if (sw instanceof OVXBigSwitch) {
-			((OVXBigSwitch) sw).sendSouthBS(this, ovxInPort);
+		    	}
 		} else {
-			sw.sendSouth(this);
+		    	prepAndSendSouth(ovxInPort);
 		}
-
 	}
 
+	private void prepAndSendSouth(OVXPort inPort) {
+		this.getMatch().setInputPort(inPort.getPhysicalPortNumber());
+		OVXMessageUtil.translateXid(this, inPort);
+		if (inPort.isEdge()) {
+		    	this.prependRewriteActions();
+		} else {
+			this.rewriteMatch();
+			//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
+			if (inPort != null && inPort.isLink()) {
+				//rewrite the OFMatch with the values of the link
+				OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(inPort);
+				OVXLink link = sw.getMap().getVirtualNetwork(sw.getTenantId()).getLink(dstPort, inPort);
+				if (link != null)
+					this.setMatch(link.rewriteMatch(this.match, sw));
+			}
+		}
+		this.computeLength();
+		if (sw.getFlowTable().handleFlowMods(this)) {
+		    	if (sw instanceof OVXBigSwitch) {
+				((OVXBigSwitch) sw).sendSouthBS(this, inPort);
+			} else {
+				sw.sendSouth(this);
+			}
+		}
+	}
+	
 	private void computeLength() {
 		this.setActions(this.approvedActions);
 		this.setLengthU(OVXFlowMod.MINIMUM_LENGTH);
