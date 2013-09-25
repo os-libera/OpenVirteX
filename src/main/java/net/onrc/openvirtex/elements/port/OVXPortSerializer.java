@@ -7,10 +7,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class OVXPortSerializer implements JsonSerializer<PhysicalPort> {
+public class OVXPortSerializer implements JsonSerializer<OVXPort> {
 
 	@Override
-	public JsonElement serialize(final PhysicalPort port, final Type portType,
+	public JsonElement serialize(final OVXPort port, final Type portType,
 			final JsonSerializationContext context) {
 		final JsonObject result = new JsonObject();
 		result.addProperty("dpid", port.getParentSwitch().getSwitchName());

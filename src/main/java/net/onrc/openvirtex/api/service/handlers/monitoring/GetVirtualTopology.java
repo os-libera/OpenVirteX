@@ -36,7 +36,7 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 			OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(tid.intValue());
 			// TODO: gson objects can be shared with other methods
 			final GsonBuilder gsonBuilder = new GsonBuilder();
-			//gsonBuilder.setPrettyPrinting();
+			gsonBuilder.setPrettyPrinting();
 			gsonBuilder.excludeFieldsWithoutExposeAnnotation();
 			gsonBuilder.registerTypeAdapter(OVXSwitch.class,
 					new OVXSwitchSerializer());

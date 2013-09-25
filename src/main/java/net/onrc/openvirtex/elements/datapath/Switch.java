@@ -87,16 +87,6 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 
 	/**
 	 * Instantiates a new switch (should be never used).
-	 */
-	protected Switch() {
-		this.switchName = HexString.toHexString(this.switchId);
-		this.portMap = new HashMap<Short, T>();
-		this.featuresReply = null;
-		this.map = OVXMap.getInstance();
-	}
-
-	/**
-	 * Instantiates a new switch (should be never used).
 	 * 
 	 * @param switchId
 	 *            the switchId (long) that represent the DPID
@@ -105,9 +95,8 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 	 */
 
 	protected Switch(final Long switchId) {
-		super();
-		this.switchName = HexString.toHexString(switchId);
 		this.switchId = switchId;
+		this.switchName = HexString.toHexString(this.switchId);
 		this.portMap = new HashMap<Short, T>();
 		this.featuresReply = null;
 		this.map = OVXMap.getInstance();

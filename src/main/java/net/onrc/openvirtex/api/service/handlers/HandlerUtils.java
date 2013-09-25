@@ -119,7 +119,7 @@ public class HandlerUtils {
 	}
 
 	/**
-	 * Check if the physical port number specified if present on the physical
+	 * Check if the physical port number specified is present on the physical
 	 * switch, and that this physical port is actually an edge port on the
 	 * physical network.
 	 * 
@@ -134,7 +134,7 @@ public class HandlerUtils {
 		if (sw == null || sw.getPort(portNumber) == null
 				|| !sw.getPort(portNumber).isEdge()) {
 			throw new InvalidPortException(
-					"The port specified is already being used: tenantId, dpid, port - "
+					"The port specified is invalid: tenantId, dpid, port - "
 							+ String.valueOf(tenantId) + ", "
 							+ String.valueOf(dpid) + ", "
 							+ String.valueOf(portNumber));

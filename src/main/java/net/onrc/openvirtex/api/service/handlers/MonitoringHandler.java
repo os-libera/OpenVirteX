@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalTopology;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualTopology;
+import net.onrc.openvirtex.api.service.handlers.monitoring.ListHosts;
 import net.onrc.openvirtex.api.service.handlers.monitoring.ListVirtualNetworks;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
@@ -13,11 +14,12 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.server.MessageContext;
 import com.thetransactioncompany.jsonrpc2.server.RequestHandler;
 
-public class MonitoringHandler extends AbstractHandler implements RequestHandler {
+public class MonitoringHandler extends AbstractHandler implements
+		RequestHandler {
 
-	
 	public static final String TENANT = "tenantId";
-	
+	public static final String MAC = "mac";
+
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
 		{
@@ -26,8 +28,7 @@ public class MonitoringHandler extends AbstractHandler implements RequestHandler
 			this.put("getVirtualTopology", new GetVirtualTopology());
 			this.put("getVirtualSwitchMapping", null);
 			this.put("getVirtualLinkMapping", null);
-			this.put("listHosts", null);
-			this.put("getHost", null);
+			this.put("listHosts", new ListHosts());
 			this.put("getSubnet", null);
 			this.put("removePhysicalLink", null);
 			this.put("getVirtualFlowTable", null);

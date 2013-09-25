@@ -92,9 +92,17 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 
 	/**
 	 * Instantiates a new OVX switch.
+	 * 
+	 * @param switchId
+	 *            the switch id
+	 * @param tenantId
+	 *            the tenant id
 	 */
-	protected OVXSwitch() {
-		super();
+	protected OVXSwitch(final Long switchId, final Integer tenantId) {
+		super(switchId);
+		this.tenantId = tenantId;
+		this.missSendLen = 0;
+		this.isActive = false;
 		this.capabilities = new OVXSwitchCapabilities();
 		this.backOffCounter = new AtomicInteger();
 		this.resetBackOff();
@@ -103,23 +111,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		this.portCounter = new AtomicInteger(1);
 		this.bufferId = new AtomicInteger(1);
 		this.flowTable = new OVXFlowTable(this);
-	}
-
-	/**
-	 * Instantiates a new OVX switch.
-	 * 
-	 * @param switchId
-	 *            the switch id
-	 * @param tenantId
-	 *            the tenant id
-	 */
-	protected OVXSwitch(final Long switchId, final Integer tenantId) {
-		this();
-		this.switchId = switchId;
-		this.tenantId = tenantId;
-		this.missSendLen = 0;
-		this.isActive = false;
-		this.switchName = "OpenVirteX Virtual Switch 1.0";
+		//this.switchName = "OpenVirteX Virtual Switch 1.0";
 	}
 
 	/**

@@ -11,7 +11,6 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-
 /**
  * Gte a list of network/tenant ids
  * 
@@ -22,13 +21,14 @@ public class ListVirtualNetworks extends ApiHandler<Object> {
 	@Override
 	public JSONRPC2Response process(final Object params) {
 		JSONRPC2Response resp = null;
-		
-		Map<Integer, OVXNetwork> nets = OVXMap.getInstance().listVirtualNetworks();
+
+		final Map<Integer, OVXNetwork> nets = OVXMap.getInstance()
+				.listVirtualNetworks();
 		// JSONRPC2Response wants a List, not a Set
-		List<Integer> list = new ArrayList<Integer>(nets.keySet());
+		final List<Integer> list = new ArrayList<Integer>(nets.keySet());
 		resp = new JSONRPC2Response(list, 0);
 		return resp;
-		
+
 	}
 
 	@Override
