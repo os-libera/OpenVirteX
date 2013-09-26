@@ -166,6 +166,7 @@ class OVXClient():
     return j['result']
 
   def _connect(self, cmd, url, data=None):
+    log.debug("%s: %s" % (cmd, data))
     try:
       passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
       passman.add_password(None, url, self.user, self.password)
@@ -479,15 +480,17 @@ if __name__ == '__main__':
   parser = ArgumentParser(description="OpenVirteX network embedding tool.")
   parser.add_argument('--host', default='localhost', help='OpenVirteX embedder host (default="localhost")')
   parser.add_argument('--port', default=8000, type=int, help='OpenVirteX embedder port (default="8000")')
-  parser.add_argument('--ovxhost', default='localhost', help='Host where OpenVirteX is running (default="localhost")')
-  parser.add_argument('--ovxport', default=8080, type=int, help='Port where OpenVirteX is running (default="8080")')
+  parser.add_argument('--ovxhost', default='localhost', help='host where OpenVirteX is running (default="localhost")')
+  parser.add_argument('--ovxport', default=8080, type=int, help='port where OpenVirteX is running (default="8080")')
   parser.add_argument('--ovxuser', default='admin', help='OpenVirteX user (default="admin")')
   parser.add_argument('--ovxpass', default='admin', help='OpenVirteX password (default="admin")')
-  parser.add_argument('--ctrlproto', default='tcp', help='Default controller protocol (default="tcp")')
-  parser.add_argument('--ctrlport', default=10001, type=int, help='Default controller port (default="10001")')
+  parser.add_argument('--ctrlproto', default='tcp', help='default controller protocol (default="tcp")')
+  parser.add_argument('--ctrlport', default=10000, type=int, help='default controller port (default="10000")')
+  parser.add_argument('--loglevel', default='INFO', help='log level (default="INFO")')
   parser.add_argument('--version', action='version', version='%(prog)s 0.1')
   args = parser.parse_args()
+  opts = vars(args)
   
-  log.basicConfig(format='%(asctime)s %(message)s', level=log.INFO)
-  embedder = OVXEmbedder(vars(args))
+  log.basicConfig(format='%(asctime)s %(message)s', level=getattr(log, opts['loglevel'].upper()))
+  embedder = OVXEmbedder(opts)
   embedder.run()
