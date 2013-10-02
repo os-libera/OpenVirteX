@@ -58,14 +58,27 @@ public class ReconnectHandler extends SimpleChannelHandler {
 	@Override
 	public void channelClosed(final ChannelHandlerContext ctx,
 			final ChannelStateEvent e) {
+	    	if (!this.sw.isActive())
+	    	    return;
 		final int retry = this.sw.incrementBackOff();
 		final Integer backOffTime = Math.min(1 << retry, this.maxBackOff);
+		
 		this.timeout = this.timer.newTimeout(new ReconnectTimeoutTask(this.sw,
 				this.cg), backOffTime, TimeUnit.SECONDS);
+		
 		this.log.error("Backing off {} for controller {}", backOffTime,
 				this.bootstrap.getOption("remoteAddress"));
 		ctx.sendUpstream(e);
 
+	}
+	
+	@Override
+	public void channelDisconnected(final ChannelHandlerContext ctx,
+			final ChannelStateEvent e) {
+	    if (!this.sw.isActive()) {
+		this.timer.stop();
+	    }
+	    ctx.sendUpstream(e);
 	}
 
 	@Override
@@ -86,6 +99,7 @@ public class ReconnectHandler extends SimpleChannelHandler {
 
 		ctx.sendUpstream(e);
 	}
+	
 
 	private final class ReconnectTimeoutTask implements TimerTask {
 

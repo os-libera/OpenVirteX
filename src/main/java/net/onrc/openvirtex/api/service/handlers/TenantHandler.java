@@ -14,8 +14,14 @@ import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitchRoute;
+import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectHost;
+import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXNetwork;
+import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitch;
+import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitchRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.SaveConfig;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartNetwork;
+import net.onrc.openvirtex.api.service.handlers.tenant.StopNetwork;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -35,6 +41,8 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	public static final String TENANT = "tenantId";
 	public static final String DPIDS = "dpids";
 	public static final String DPID = "dpid";
+	public static final String LINK = "link";
+	public static final String SWITCH_ROUTE = "switch_route";
 	public static final String PORT = "port";
 	public static final String SRC_PORT = "srcPort";
 	public static final String DST_PORT = "dstPort";
@@ -52,6 +60,12 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 			this.put("startNetwork", new StartNetwork());
 			this.put("saveConfig", new SaveConfig());
 			this.put("createSwitchRoute", new CreateOVXSwitchRoute());
+			this.put("removeNetwork", new RemoveOVXNetwork());
+			this.put("removeSwitch", new RemoveOVXSwitch());
+			this.put("disconnectHost", new DisconnectHost());
+			this.put("removeLink", new RemoveOVXLink());
+			this.put("stopNetwork", new StopNetwork());
+			this.put("removeSwitchRoute", new RemoveOVXSwitchRoute());
 		}
 	};
 

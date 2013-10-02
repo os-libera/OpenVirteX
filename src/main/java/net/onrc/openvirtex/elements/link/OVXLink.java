@@ -5,34 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
-/**
- * Copyright (c) 2013 Open Networking Laboratory
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of
- * the Software, and to permit persons to whom the Software is furnished to do
- * so,
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
- * OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
- */
+
 
 package net.onrc.openvirtex.elements.link;
 
@@ -126,6 +99,13 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
 	}
 
+	public void unregister() {
+	    Mappable map = this.srcPort.getParentSwitch().getMap();
+	    map.removeVirtualLink(this);
+	    map.getVirtualNetwork(tenantId).removeLink(this);
+	    this.srcPort.unregister();
+	}
+	
 	public void generateLinkFMs(OFFlowMod fm, Integer flowId, OVXSwitch sw) {
     	Short inPort = 0;
     	Short outPort = 0;
@@ -144,7 +124,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		OFMatch match = linkFM.getMatch().clone();
 		
     	OVXLinkField linkField = OpenVirteXController.getInstance().getOvxLinkField();
-    	LinkUtils lUtils = new LinkUtils(this.tenantId, this.linkId, flowId);
+    	OVXLinkUtils lUtils = new OVXLinkUtils(this.tenantId, this.linkId, flowId);
 		//TODO: Need to check that the values in linkId and flowId don't exceed their space
 		if (linkField == OVXLinkField.MAC_ADDRESS) {
 			match.setDataLayerSource(lUtils.getSrcMac().toBytes());
@@ -229,7 +209,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		
 		List<OFAction> actions = new LinkedList<OFAction>();
 		OVXLinkField linkField = OpenVirteXController.getInstance().getOvxLinkField();
-		LinkUtils lUtils = new LinkUtils(tenantId, linkId, flowId);
+		OVXLinkUtils lUtils = new OVXLinkUtils(tenantId, linkId, flowId);
 		//TODO: Need to check that the values in linkId and flowId don't exceed their space
 		if (linkField == OVXLinkField.MAC_ADDRESS) {
 			actions.add(new OFActionDataLayerSource(lUtils.getSrcMac().toBytes()));
@@ -250,7 +230,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 			flowId = sw.getMap().getVirtualNetwork(this.tenantId).
 					getFlowId(match.getDataLayerSource(), match.getDataLayerDestination());
 			if (flowId != null) {
-    			LinkUtils lUtils = new LinkUtils(this.getTenantId(), linkId, flowId);
+    			OVXLinkUtils lUtils = new OVXLinkUtils(this.getTenantId(), linkId, flowId);
     			LinkedList<MACAddress> macList = sw.getMap().getVirtualNetwork(this.tenantId).getFlowValues(lUtils.getFlowId());
     			if (macList.size() == 0)
     				throw new DroppedMessageException();
@@ -277,7 +257,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 			Integer flowId = sw.getMap().getVirtualNetwork(this.tenantId).
 					getFlowId(match.getDataLayerSource(), match.getDataLayerDestination());
 			if (flowId != null) {
-    			LinkUtils lUtils = new LinkUtils(sw.getTenantId(), linkId, flowId);
+    			OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), linkId, flowId);
     			match.setDataLayerSource(lUtils.getSrcMac().toBytes());
     			match.setDataLayerDestination(lUtils.getDstMac().toBytes());
 			}

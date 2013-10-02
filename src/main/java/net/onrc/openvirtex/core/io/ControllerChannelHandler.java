@@ -470,7 +470,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		if (this.sw != null) {
 
 			this.sw.setConnected(false);
-			this.sw.tearDown();
+			
 		}
 
 	}

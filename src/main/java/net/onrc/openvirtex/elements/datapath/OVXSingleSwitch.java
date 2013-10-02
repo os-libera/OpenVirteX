@@ -5,9 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
-/**
- * 
- */
+
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
@@ -49,7 +47,7 @@ public class OVXSingleSwitch extends OVXSwitch {
 	 */
 	@Override
 	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-		if (this.isConnected) {
+		if (this.isConnected && this.isActive) {
 			this.channel.write(Collections.singletonList(msg));
 		}
 	}
@@ -68,18 +66,6 @@ public class OVXSingleSwitch extends OVXSwitch {
 		} catch (final ClassCastException e) {
 			OVXSingleSwitch.log.error("Received illegal message : " + msg);
 		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.onrc.openvirtex.elements.datapath.Switch#tearDown()
-	 */
-	@Override
-	public void tearDown() {
-		// TODO: Release any acquired resources
-		this.channel.disconnect();
-
 	}
 
 	@Override

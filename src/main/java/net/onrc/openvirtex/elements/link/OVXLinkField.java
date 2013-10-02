@@ -5,29 +5,41 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
-/**
- * 
- */
+
 package net.onrc.openvirtex.elements.link;
 
 /**
- * @author gerola
- *
+ * The Enum OVXLinkField. Used to identify the field(s) used to encapsulate the
+ * virtual link information inside the packet. Currently supported values are
+ * mac addresses and vlan.
  */
 public enum OVXLinkField {
-	MAC_ADDRESS((byte) 0), 
-	VLAN((byte) 1);
 
-	protected byte value;
+    /** The mac address. */
+    MAC_ADDRESS((byte) 0),
 
-	private OVXLinkField(byte value) {
-		this.value = value;
-	}
+    /** The vlan. */
+    VLAN((byte) 1);
 
-	/**
-	 * @return the value
-	 */
-	public byte getValue() {
-		return value;
-	}
+    /** The value. */
+    protected byte value;
+
+    /**
+     * Instantiates a new OVX link field.
+     * 
+     * @param value
+     *            the value
+     */
+    private OVXLinkField(final byte value) {
+	this.value = value;
+    }
+
+    /**
+     * Gets the value.
+     * 
+     * @return the value
+     */
+    public byte getValue() {
+	return this.value;
+    }
 }

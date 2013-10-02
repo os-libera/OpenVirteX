@@ -5,9 +5,8 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
-/**
- * 
- */
+
+
 package net.onrc.openvirtex.routing;
 
 import java.util.LinkedList;
@@ -16,10 +15,6 @@ import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
-/**
- * @author gerola
- * 
- */
 public class ShortestPath implements Routable {
 
 	@Override

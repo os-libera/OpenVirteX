@@ -90,9 +90,9 @@ def do_createVRoute(gopts, opts, args):
         print "createRoute : Must specify a tenantId, dpid, port pair and physical path"
         sys.exit()
     req = { "tenantId" : int(args[0]), "dpid" : int(args[1]), "srcPort" : int(args[2]), "dstPort" : int(args[3]), "path" : args[4] }
-    port = connect(gopts, "createSwitchRoute", data=req, passwd=getPasswd(gopts))
-    if port:
-        print "Host has been connected to edge"
+    routeId = connect(gopts, "createSwitchRoute", data=req, passwd=getPasswd(gopts))
+    if routeId:
+        print "BigSwitch route has been created"
 
 def pa_connectHost(args, cmd):
     usage = "%s <mac> <dpid> <port>" % USAGE.format(cmd)
@@ -123,6 +123,96 @@ def do_bootNetwork(gopts, opts, args):
     result = connect(gopts, "startNetwork", data=req, passwd=getPasswd(gopts)) 
     if result:
         print "Network has been booted"
+        
+def pa_removeNetwork(args, cmd):
+    usage = "%s <network_id>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)    
+
+def do_removeNetwork(gopts, opts, args):
+    if len(args) != 1:
+        print "removeNetwork : Must specify a network/tenant ID"
+        sys.exit()
+    req = { "tenantId" : int(args[0]) }
+    result = connect(gopts, "removeNetwork", data=req, passwd=getPasswd(gopts)) 
+    if result:
+        print "Network has been removed"        
+        
+def pa_removeSwitch(args, cmd):
+    usage = "%s <network_id> <switch_id>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)    
+
+def do_removeSwitch(gopts, opts, args):
+    if len(args) != 2:
+        print "removeSwitch : Must specify a network/tenant ID and a switch ID"
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "dpid" : int(args[1]) }
+    result = connect(gopts, "removeSwitch", data=req, passwd=getPasswd(gopts)) 
+    if result:
+        print "Switch has been removed"      
+
+def pa_removeLink(args, cmd):
+    usage = "%s <network_id> <link_id>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)    
+
+def do_removeLink(gopts, opts, args):
+    if len(args) != 2:
+        print "removeLink : Must specify a network/tenant ID and a link ID"
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "link" : int(args[1]) }
+    result = connect(gopts, "removeLink", data=req, passwd=getPasswd(gopts)) 
+    if result:
+        print "Link has been removed"  
+        
+def pa_disconnectHost(args, cmd):
+    usage = "%s <mac> <dpid> <port>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_disconnectHost(gopts, opts, args):
+    if len(args) != 4:
+        print "disconnectHost : Must specify a tenantId, dpid, port and MAC address"
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "dpid" : int(args[1]), "port" : int(args[2]), "mac" : args[3] } 
+    port = connect(gopts, "disconnectHost", data=req, passwd=getPasswd(gopts)) 
+    if port:
+        print "Host has been disconnected from edge"
+        
+def pa_removeSwitchRoute(args, cmd):
+    usage = "%s <network_id> <route_id>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)    
+
+def do_removeSwitchRoute(gopts, opts, args):
+    if len(args) != 2:
+        print "removeSwitchRoute : Must specify a network/tenant ID and a route ID"
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "switch_route" : int(args[1]) }
+    result = connect(gopts, "removeSwitchRoute", data=req, passwd=getPasswd(gopts)) 
+    if result:
+        print "Route has been removed"
+
+def pa_stopNetwork(args, cmd):
+    usage = "%s <network_id>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)    
+
+def do_stopNetwork(gopts, opts, args):
+    if len(args) != 1:
+        print "stopNetwork : Must specify a network/tenant ID"
+        sys.exit()
+    req = { "tenantId" : int(args[0]) }
+    result = connect(gopts, "stopNetwork", data=req, passwd=getPasswd(gopts)) 
+    if result:
+        print "Network has been shutdown"
         
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
@@ -200,6 +290,12 @@ CMDS = {
     'connectHost': (pa_connectHost, do_connectHost),
     'createSwitchRoute': (pa_vroute, do_createVRoute),
     'startNetwork': (pa_bootNetwork, do_bootNetwork),
+    'removeNetwork': (pa_removeNetwork, do_removeNetwork),
+    'removeSwitch': (pa_removeSwitch, do_removeSwitch),
+    'removeLink': (pa_removeLink, do_removeLink),
+    'disconnectHost': (pa_disconnectHost, do_disconnectHost),
+    'removeSwitchRoute': (pa_removeSwitchRoute, do_removeSwitchRoute),
+    'stopNetwork': (pa_stopNetwork, do_stopNetwork),
     'help' : (pa_help, do_help)
 }
 
@@ -213,9 +309,21 @@ DESCS = {
     'connectHost' : ("Connect host to edge switch",
                      ("Connect host to edge switch. Must specify a network_id, mac, dpid and port.")),
     'createSwitchRoute': ("Create the route inside a bigswitch", 
-		     ("Create a route. Must provide a tenantId, a switchId, the source and destination portIds and the physical path.")), 
+		     ("Create a route. Must provide a network_id , a virtual switch_id, the source and destination virtual port_ids and the physical path.")), 
     'startNetwork' : ("Boot virtual network",
                      ("Boot virtual network. Must specify a network_id.")),
+    'removeNetwork' : ("Remove a virtual network",
+                     ("Remove a virtual network. Must specify a network_id.")),
+    'removeSwitch' : ("Remove virtual switch",
+                     ("Remove a virtual switch. Must specify a network_id and a virtual switch_id.")),
+    'removeLink' : ("Remove virtual link",
+                     ("Remove a virtual link. Must specify a network_id and a virtual switch_id.")),
+    'disconnectHost' : ("Disconnect host from edge switch",
+                     ("Disconnect host from edge switch. Must specify a network_id, a physical switch_id, a physical port_id and a mac_address.")),
+    'removeSwitchRoute' : ("Remove a route inside a bigswitch",
+                     ("Delete a route. Must provide a network_id , a virtual switch_id, the source and destination virtual port_ids.")),
+    'stopNetwork' : ("Stop virtual network",
+                     ("Stop virtual network. Must specify a network_id.")),
 }
 
 USAGE="%prog {}"

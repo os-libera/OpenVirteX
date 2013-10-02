@@ -8,10 +8,12 @@
 package net.onrc.openvirtex.api.service.handlers;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
@@ -19,10 +21,12 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.ControllerUnavailableException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
+import net.onrc.openvirtex.exceptions.InvalidLinkException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.VirtualLinkException;
+import net.onrc.openvirtex.util.MACAddress;
 
 public class HandlerUtils {
 
@@ -87,7 +91,45 @@ public class HandlerUtils {
 							+ String.valueOf(tenantId));
 		}
 	}
+	
+	/**
+	 * Check that the link id specified refers to a pair of virtual links in the
+	 * virtual network.
+	 * 
+	 * @param tenantId
+	 * @param linkId
+	 * @throws InvalidLinkException
+	 */
+	public static void isValidLinkId(final int tenantId, final int linkId)
+		throws InvalidTenantIdException {
+	    final OVXMap map = OVXMap.getInstance();
+	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);   
+	    LinkedList<OVXLink> linkList = virtualNetwork.getLinksById(linkId);
+	    if (linkList == null) {
+		throw new InvalidLinkException(
+			"The link id you have provided does not refer to a virtual link. TenantId: "
+				+ String.valueOf(tenantId) + ". LinkId: " + String.valueOf(linkId));
+	    }
+	}
 
+	/**
+	 * Check that the switch id specified belongs to the virtual network
+	 * 
+	 * @param tenantId
+	 * @param dpid
+	 * @throws InvalidDPIDException
+	 */
+	public static void isValidOVXSwitch(final int tenantId, final long dpid) {
+	    final OVXMap map = OVXMap.getInstance();
+	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);   
+	    OVXSwitch sw = virtualNetwork.getSwitch(dpid);
+	    if (sw == null) {
+		throw new InvalidDPIDException(
+			"The switch id you have provided does not belong to this virtual network: "
+				+ String.valueOf(tenantId));
+	    }
+	}
+	
 	/**
 	 * Check that the physical dpids that are provided all actually refer to a
 	 * physical switch in the physical network. If any of them does not exist

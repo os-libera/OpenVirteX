@@ -5,34 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
-/**
- * Copyright (c) 2013 Open Networking Laboratory
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of
- * the Software, and to permit persons to whom the Software is furnished to do
- * so,
- * subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
- * OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
- */
+
 
 package net.onrc.openvirtex.elements.network;
 
@@ -71,13 +44,13 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 
     @SerializedName("switches")
     @Expose
-	private final HashSet<T1>              switchSet;
+	protected final HashSet<T1>              switchSet;
     @SerializedName("links")
     @Expose
-	private final HashSet<T3>              linkSet;
-	private final HashMap<Long, T1>        dpidMap;
-	private final HashMap<T2, T2>          neighborPortMap;
-	private final HashMap<T1, HashSet<T1>> neighborMap;
+	protected final HashSet<T3>              linkSet;
+	protected final HashMap<Long, T1>        dpidMap;
+	protected final HashMap<T2, T2>          neighborPortMap;
+	protected final HashMap<T1, HashSet<T1>> neighborMap;
 
 	Logger log = LogManager.getLogger(Network.class.getName());
 
@@ -117,8 +90,9 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	 * Remove link to topology
 	 * 
 	 * @param link
+	 * @return 
 	 */
-	protected void removeLink(final T3 link) {
+	protected boolean removeLink(final T3 link) {
 		this.linkSet.remove(link);
 		final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
 		final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
@@ -130,6 +104,7 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 		neighbours.remove(dstSwitch);
 		this.neighborPortMap.remove(((Link) link).getSrcPort());
 		this.log.info("Removing link " + link.toString());
+		return true;
 	}
 
 	/**
