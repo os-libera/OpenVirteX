@@ -44,6 +44,7 @@ import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
+import net.onrc.openvirtex.packet.Ethernet;
 import net.onrc.openvirtex.protocol.OVXMatch;
 
 import org.apache.logging.log4j.LogManager;
@@ -64,6 +65,11 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	@Override
 	public void devirtualize(final OVXSwitch sw) {
 
+	    	/* Drop LLDP-matching messages sent by some applications */
+	    	if (this.match.getDataLayerType() == Ethernet.TYPE_LLDP) {
+	    	    	return;
+	    	}
+	    
 		this.sw = sw;
 
 		int bufferId = OVXPacketOut.BUFFER_ID_NONE;

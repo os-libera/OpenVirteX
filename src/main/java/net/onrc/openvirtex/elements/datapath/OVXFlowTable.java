@@ -106,9 +106,11 @@ public class OVXFlowTable {
 	if (fm.getMatch().getWildcards() == OFMatch.OFPFW_ALL) {
 	    /* make it exact? */
 	    //fm.setCommand(OFFlowMod.OFPFC_DELETE_STRICT);
+
 	    /* Send out FlowMod per flow entry. Since the entries are devirtualized
 	     * already - Handle the sends here so we don't have to process the 
 	     * FlowMod again just so they are sent south. */
+
 	    for (OVXFlowEntry fe: this.flowTable) {
 		OFMatch match = fe.getMatch();
 		fm.setMatch(match);
