@@ -1,4 +1,6 @@
 OpenVirteX
 ==========
 
-The OpenVirteX Virtualization Platform. 
+The OpenVirteX Network Virtualization Platform.     
+
+OpenVirteX is a play on words...

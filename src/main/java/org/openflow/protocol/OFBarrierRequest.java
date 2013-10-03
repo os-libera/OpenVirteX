@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2013 Open Networking Laboratory.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ ******************************************************************************/
 /**
  *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
  *    University
