@@ -28,5 +28,7 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
 	 */
 	public PhysicalLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
 		super(srcPort, dstPort);
+		srcPort.setOutLink(this);
+		dstPort.setInLink(this);
 	}
 }

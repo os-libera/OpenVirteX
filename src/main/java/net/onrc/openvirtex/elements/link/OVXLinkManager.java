@@ -190,7 +190,7 @@ public class OVXLinkManager implements OVXSendMsg, TimerTask {
 		match.setNetworkDestination(new PhysicalIPAddress(
 				this.tenantId << 32 - vNets).getIp());
 
-		for (final PhysicalLink phyLink : route.getRoute()) {
+		for (final PhysicalLink phyLink : map.getRoute(route)) {
 			if (inPort != 0) {
 				/*
 				 * generate the flowMod, using the previous physical link dst

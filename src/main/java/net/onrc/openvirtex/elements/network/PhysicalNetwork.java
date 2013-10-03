@@ -96,6 +96,16 @@ public class PhysicalNetwork extends
 	}
 
 	/**
+	 * Remove port from discovery
+	 * 
+	 * @param port
+	 */
+	public synchronized void removePort(final PhysicalPort port) {
+		this.discoveryManager.get(port.getParentSwitch().getSwitchId())
+				.removePort(port);
+	}
+	
+	/**
 	 * Create link and add it to the topology.
 	 * 
 	 * @param srcPort

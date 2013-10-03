@@ -10,7 +10,9 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
@@ -83,12 +85,35 @@ public class OVXBigSwitch extends OVXSwitch {
 	 *            the ingress port on the Big Switch
 	 * @param dstPort
 	 *            the egress port on the Big Switch
-	 * @return list of physical links
+	 * @return The route 
 	 */
 	public SwitchRoute getRoute(final OVXPort srcPort, final OVXPort dstPort) {
 		return this.routing.getRoute(this, srcPort, dstPort);
 	}
 
+	/**
+	 * Fetch all routes associated with a specific port, assuming that the 
+	 * routes are duplex. Does not account for the use of backups for now... 
+	 * 
+	 * @param port
+	 * @return
+	 */
+	public Set<SwitchRoute> getRoutebyPort(final OVXPort port) {
+		Set<SwitchRoute> routes = new HashSet<SwitchRoute>();
+		for (OVXPort vport : this.portMap.values()) {
+			if (vport.equals(port)) {
+				continue;
+			}
+			SwitchRoute rt = getRoute(port, vport);
+			if (rt != null) {
+				SwitchRoute revrt = getRoute(vport, port);    
+			    	routes.add(rt);
+			    	routes.add(revrt);
+			}
+		}
+		return routes;
+	}
+	
 	public HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> getRouteMap() {
 		return this.routeMap;
 	}
@@ -195,10 +220,12 @@ public class OVXBigSwitch extends OVXSwitch {
 			final List<PhysicalLink> path, final List<PhysicalLink> revpath) {
 		final int routeId = this.map.getVirtualNetwork(this.tenantId)
 				.getLinkCounter().getAndIncrement();
-		final SwitchRoute rtEntry = new SwitchRoute(this.switchId, routeId);
-		final SwitchRoute revRtEntry = new SwitchRoute(this.switchId, routeId);
-		rtEntry.addRoute(path);
-		revRtEntry.addRoute(revpath);
+		final SwitchRoute rtEntry = new SwitchRoute(
+				ingress, egress, this.switchId, routeId, this.tenantId);
+		final SwitchRoute revRtEntry = new SwitchRoute(
+				egress, ingress, this.switchId, routeId, this.tenantId);
+		this.map.addRoute(rtEntry, path);
+		this.map.addRoute(revRtEntry, revpath);
 
 		this.addToRouteMap(ingress, egress, rtEntry);
 		this.addToRouteMap(egress, ingress, revRtEntry);
@@ -209,7 +236,7 @@ public class OVXBigSwitch extends OVXSwitch {
 
 	private void addToRouteMap(final OVXPort in, final OVXPort out,
 			final SwitchRoute entry) {
-		HashMap<OVXPort, SwitchRoute> rtmap = this.routeMap.get(in);
+	    	HashMap<OVXPort, SwitchRoute> rtmap = this.routeMap.get(in);
 		if (rtmap == null) {
 			rtmap = new HashMap<OVXPort, SwitchRoute>();
 			this.routeMap.put(in, rtmap);

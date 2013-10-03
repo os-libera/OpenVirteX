@@ -70,6 +70,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		super(srcPort, dstPort);
 		this.linkId = linkId;
 		this.tenantId = tenantId;
+		srcPort.setOutLink(this);
+		dstPort.setInLink(this);
 	}
 
 	/**

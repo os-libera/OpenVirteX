@@ -7,10 +7,8 @@
  ******************************************************************************/
 package net.onrc.openvirtex.routing;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +24,9 @@ import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
@@ -36,7 +36,7 @@ import net.onrc.openvirtex.packet.Ethernet;
  * Route within a Big Switch abstraction
  * 
  */
-public class SwitchRoute {
+public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> {
 	Logger	log = LogManager.getLogger(OVXSwitch.class.getName());
 
 	/** unique route identifier */
@@ -45,15 +45,26 @@ public class SwitchRoute {
 	/** DPID of parent virtual switch */
 	long dpid;
 
-	/** list of links making up route */
-	ArrayList<PhysicalLink> routeList;
-
-	public SwitchRoute(final long dpid, final int routeid) {
-		this.dpid = dpid;
+	/** The Tenant ID of the switch - makes it unique in the physical network */
+	int tenantid;
+	
+	/** A reference to the PhysicalPort at the start of the path */
+	PhysicalPort inPort;
+	
+	/** A reference to the PhysicalPort at the start of the path */
+	PhysicalPort outPort;
+	
+	public SwitchRoute(OVXPort in, OVXPort out, final long dpid, final int routeid, final int tid){
+	    	super(in, out);
+	    	this.dpid = dpid;
 		this.routeId = routeid;
-		this.routeList = new ArrayList<PhysicalLink>();
+		this.tenantid = tid;
 	}
 
+	/**
+	 * Sets the switch-unique identifier of this route. 
+	 * @param routeid
+	 */
 	public void setRouteId(final int routeid) {
 		this.routeId = routeid;
 	}
@@ -65,6 +76,10 @@ public class SwitchRoute {
 		return this.routeId;
 	}
 
+	/**
+	 * Sets the DPID of the parent switch of route
+	 * @param dpid
+	 */
 	public void setSwitchId(final long dpid) {
 		this.dpid = dpid;
 	}
@@ -77,31 +92,70 @@ public class SwitchRoute {
 	}
 
 	/**
-	 * associates this route with a set of links
-	 * 
-	 * @param path
+	 * Sets the tenant ID of this route's parent switch
+	 * @param tid
 	 */
-	public void addRoute(final List<PhysicalLink> path) {
-		for (final PhysicalLink hop : path) {
-			this.routeList.add(hop);
-		}
+	public void setTenantId(int tid) {
+	    	this.tenantid = tid;
+	}
+	
+	public Integer getTenantId() {
+	    	return this.tenantid;
 	}
 
 	/**
-	 * @return the links in this route
+	 * Sets the start PhysicalPort to the path defining the route.
+	 * @param start
 	 */
-	public ArrayList<PhysicalLink> getRoute() {
-		return this.routeList;
+	public void setPathSrcPort(PhysicalPort start) {
+		this.inPort = start;
+	}
+	
+	/**
+	 * @return the PhysicalPort at start of the route.
+	 */
+	public PhysicalPort getPathSrcPort() {
+		/* have to go fetch the map for the links, bit convoluted */
+		return this.inPort;
+	}
+	
+	/**
+	 * Sets the end PhysicalPort to the path defining the route.
+	 * @param end
+	 */
+	public void setPathDstPort(PhysicalPort end) {
+		this.outPort = end;
+	}
+	
+	/**
+	 * @return the PhysicalPort at end of the route.
+	 */
+	public PhysicalPort getPathDstPort() {
+		/* have to go fetch the map for the links, bit convoluted */
+		return this.outPort;
 	}
 
 	@Override
 	public String toString() {
-		String sroute = "routeId: " + this.routeId + " dpid: " + this.dpid
-				+ " route: ";
-		for (final PhysicalLink pl : this.routeList) {
-			sroute += pl.toString() + " ";
-		}
-		return sroute;
+		return "routeId: " + this.routeId + " dpid: " + this.dpid
+				+ " inPort: "+ this.srcPort == null ? "" : this.srcPort.toString() 
+				+ " outPort: "+ this.dstPort == null ? "" : this.dstPort.toString();
+	}
+	
+	@Override 
+	/**
+	 * @return the PhysicalSwitch at the start of the route.
+	 */
+	public PhysicalSwitch getSrcSwitch() {
+		return this.srcPort.getPhysicalPort().getParentSwitch();
+	}
+	
+	@Override 
+	/**
+	 * @return the PhysicalSwitch at the end of the route. 
+	 */
+	public PhysicalSwitch getDstSwitch() {
+		return this.dstPort.getPhysicalPort().getParentSwitch();
 	}
 	
     public void generateRouteFMs(OFFlowMod fm, LinkedList<OFAction> additionalActions, 
@@ -125,7 +179,7 @@ public class SwitchRoute {
 		LinkedList<OFFlowMod> fmList = new LinkedList<>();
 		LinkedList<PhysicalSwitch> sws = new  LinkedList<PhysicalSwitch>();
 		
-    	for (PhysicalLink phyLink : this.getRoute()) {
+    	for (PhysicalLink phyLink : sw.getMap().getRoute(this)) {
     		if (inPort != 0) {
     			outPort = phyLink.getSrcPort().getPortNumber();
     			match.setInputPort(inPort);

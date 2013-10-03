@@ -105,6 +105,14 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		}
 		return result;
 	}
+	
+	public boolean removePort(final PhysicalPort port) {
+		final boolean result = super.removePort(port.getPortNumber());
+		if (result) {
+			PhysicalNetwork.getInstance().removePort(port);    
+		}
+		return result;
+	}
 
 	/*
 	 * (non-Javadoc)

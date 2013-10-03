@@ -11,8 +11,10 @@ package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -23,6 +25,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +44,8 @@ public class OVXMap implements Mappable {
 	ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
 	ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>> virtualLinkMap;
 	ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, List<OVXLink>>> physicalLinkMap;
+	ConcurrentHashMap<SwitchRoute, ArrayList<PhysicalLink>> routetoLinkMap;
+	ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, Set<SwitchRoute>>> linktoRouteMap;
 	ConcurrentHashMap<Integer, OVXNetwork> networkMap;
 	RadixTree<OVXIPAddress> physicalIPMap;
 	RadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>> virtualIPMap;
@@ -54,6 +59,8 @@ public class OVXMap implements Mappable {
 		this.physicalSwitchMap = new ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>>();
 		this.virtualLinkMap = new ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>();
 		this.physicalLinkMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, List<OVXLink>>>();
+		this.routetoLinkMap = new ConcurrentHashMap<SwitchRoute, ArrayList<PhysicalLink>>();
+		this.linktoRouteMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, Set<SwitchRoute>>>();
 		this.networkMap = new ConcurrentHashMap<Integer, OVXNetwork>();
 		this.physicalIPMap = new ConcurrentRadixTree<OVXIPAddress>(
 				new DefaultCharArrayNodeFactory());
@@ -309,6 +316,43 @@ public class OVXMap implements Mappable {
 		this.macMap.put(mac.toStringNoColon(), tenantId);
 	}
 
+	@Override 
+	public void addRoute(final SwitchRoute route, 
+			final List<PhysicalLink> physicalLinks) {
+		route.setPathSrcPort(physicalLinks.get(0).getSrcPort());
+		route.setPathDstPort(physicalLinks.get(physicalLinks.size() - 1).getDstPort());
+		this.addRoutetoLink(route, physicalLinks);
+		for (PhysicalLink l : physicalLinks) {
+			this.addLinktoRoute(l, route);
+		}
+	}
+	
+	private void addRoutetoLink(SwitchRoute route, List<PhysicalLink> links) {
+		ArrayList<PhysicalLink> path = this.routetoLinkMap.get(route);
+		if (path == null) {
+	    		path = new ArrayList<PhysicalLink>();
+	    		this.routetoLinkMap.put(route, path);
+		}
+		for (PhysicalLink l : links) {
+			path.add(l);    
+		}
+	}
+	
+	private void addLinktoRoute(PhysicalLink link, SwitchRoute route) {
+		ConcurrentHashMap<Integer, Set<SwitchRoute>> rmap = 
+					this.linktoRouteMap.get(link);    
+		if (rmap == null) {
+			rmap = new ConcurrentHashMap<Integer, Set<SwitchRoute>>();
+			this.linktoRouteMap.put(link, rmap);
+		}
+		Set<SwitchRoute> rlist = rmap.get(route.getTenantId());
+		if (rlist == null) {
+			rlist = new HashSet<SwitchRoute>();
+			rmap.put(route.getTenantId(), rlist);
+		}
+		rlist.add(route);
+	}
+
 	// Access objects from dictionary given the key
 
 	@Override
@@ -442,7 +486,6 @@ public class OVXMap implements Mappable {
 	public Map<Integer, OVXNetwork> listVirtualNetworks() {
 		return Collections.unmodifiableMap(this.networkMap);
 	}
-
 	// Remove objects from dictionary
 
 	public void removeNetwork(OVXNetwork network) {
@@ -495,4 +538,42 @@ public class OVXMap implements Mappable {
 	    this.macMap.remove(mac.toStringNoColon());
 	}
 
+	@Override
+	public List<PhysicalLink> getRoute(SwitchRoute route) {  
+		return this.routetoLinkMap.get(route);    
+	}
+
+	@Override
+        public Set<SwitchRoute> getSwitchRoutes(PhysicalLink physicalLink,
+        		Integer tenantId) {
+		Map<Integer, Set<SwitchRoute>> pair = this.linktoRouteMap.get(physicalLink);
+		if (pair == null) {
+			return null;    
+		}
+		return pair.get(tenantId);
+        }
+
+	@Override
+        public void removeRoute(SwitchRoute route) {
+		List<PhysicalLink> plist = this.routetoLinkMap.get(route);
+		if (plist == null) {
+		    return;
+		}
+		int tid = route.getTenantId();
+		for (PhysicalLink l : plist) {
+			removeRoute(l, tid, route);
+		}
+		plist.clear();
+        }
+	
+	private void removeRoute(PhysicalLink link, int tid, SwitchRoute route) {
+		Map<Integer, Set<SwitchRoute>> rmap = this.linktoRouteMap.get(link);
+		if (rmap == null) {
+			return;
+		}
+	   	Set<SwitchRoute> routes = rmap.get(tid);
+		if (routes != null) {
+	   		routes.remove(route);
+		}	    
+	}
 }

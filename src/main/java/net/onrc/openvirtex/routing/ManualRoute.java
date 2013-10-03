@@ -26,6 +26,7 @@ public class ManualRoute implements Routable {
 	public SwitchRoute getRoute(final OVXBigSwitch vSwitch,
 			final OVXPort srcPort, final OVXPort dstPort) {
 		// return route that was set manually
+	    	// TODO : throw 'route not initialized' type of exception if null 
 		return vSwitch.getRouteMap().get(srcPort).get(dstPort);
 	}
 

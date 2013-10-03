@@ -126,7 +126,7 @@ public class FlowTableTest extends TestCase {
 	Assert.assertEquals(base_fe.compare(disj_m, true),
 	        OVXFlowEntry.DISJOINT);
     }
-
+    
     /* main FlowTable operations */
     public void testHandleFlowMod() {
 	final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
@@ -159,7 +159,7 @@ public class FlowTableTest extends TestCase {
 	        .setFlags(OFFlowMod.OFPFF_CHECK_OVERLAP).setMatch(super_m);
 	Assert.assertFalse(oft.handleFlowMods(fm));
 
-	/* try add with overlap check off -xs should succeed. */
+	/* try add with overlap check off should succeed. */
 	fm.setFlags((short) 0);
 	Assert.assertTrue(oft.handleFlowMods(fm));
 

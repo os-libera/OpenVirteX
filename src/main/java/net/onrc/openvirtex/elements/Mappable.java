@@ -9,6 +9,7 @@ package net.onrc.openvirtex.elements;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
@@ -17,6 +18,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
 
 public interface Mappable {
@@ -74,6 +76,13 @@ public interface Mappable {
 	 */
 	public void addMAC(MACAddress mac, Integer tenantId);
 
+	/**
+	 * Adds a mapping between a SwitchRoute and the PhysicalLinks making it up.  
+	 * 
+	 * @param route
+	 * @param physicalLinks
+	 */
+	public void addRoute(final SwitchRoute route, final List<PhysicalLink> physicalLinks);
 	// Access objects from dictionary given the key
 
 	/**
@@ -168,7 +177,7 @@ public interface Mappable {
 	/**
 	 * Obtain an immutable copy of the list of virtual networks
 	 * 
-	 * @return - immutable list of virtual netorks
+	 * @return - immutable list of virtual networks
 	 * 
 	 */
 	public Map<Integer, OVXNetwork> listVirtualNetworks();
@@ -213,4 +222,24 @@ public interface Mappable {
 	 * @param tenantId
 	 */
 	public void removeMAC(MACAddress mac);
+
+	/**
+	 * @param route
+	 * @return A list of PhysicalLinks making up the path for a given SwitchRoute. 
+	 */
+	public List<PhysicalLink> getRoute(SwitchRoute route);
+	
+	/**
+	 * @param physicalLink
+	 * @return The routes associated with the supplied PhysicalLink
+ 	 */
+	public Set<SwitchRoute> getSwitchRoutes(PhysicalLink physicalLink,
+			Integer tenantId);
+	
+	/**
+	 * Removes a SwitchRoute from mappings
+	 * @param route
+	 */
+	public void removeRoute(SwitchRoute route);
+	
 }

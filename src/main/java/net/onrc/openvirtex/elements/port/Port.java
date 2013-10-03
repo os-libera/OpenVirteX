@@ -9,19 +9,26 @@
 
 package net.onrc.openvirtex.elements.port;
 
+import net.onrc.openvirtex.messages.OVXPortStatus;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
+import org.openflow.protocol.OFPortStatus.OFPortReason;
 
 /**
  * The Class Port.
  * 
+ * @param <T1>
+ * 		The Generic Switch type
+ * @param <T2>
+ * 		The Generic Link type
  */
-public class Port<T> extends OFPhysicalPort {
+public class Port<T1, T2> extends OFPhysicalPort {
 
 	protected MACAddress mac;
 	protected Boolean isEdge;
-	protected T parentSwitch;
+	protected T1 parentSwitch;
+	protected LinkPair<T2> portLink;
 
 	// TODO: duplexing/speed on port/link???
 
@@ -42,6 +49,7 @@ public class Port<T> extends OFPhysicalPort {
 		this.mac = null;
 		this.isEdge = false;
 		this.parentSwitch = null;
+		this.portLink = null;
 	}
 
 	@Override
@@ -70,10 +78,39 @@ public class Port<T> extends OFPhysicalPort {
 		this.isEdge = isEdge;
 	}
 
-	public T getParentSwitch() {
+	public T1 getParentSwitch() {
 		return this.parentSwitch;
 	}
 
+	/**
+	 * Set the link connected to this port.
+	 * @param link
+	 */
+	public void setInLink(T2 link) {
+	    	if (this.portLink == null) {
+			this.portLink = new LinkPair<T2>();
+	    	}
+	    	this.portLink.setInLink(link);
+	}
+	
+	/**
+	 * Set the link connected to this port.
+	 * @param link
+	 */
+	public void setOutLink(T2 link) {
+	    	if (this.portLink == null) {
+			this.portLink = new LinkPair<T2>();
+	    	}
+	    	this.portLink.setOutLink(link);
+	}
+	
+	/**
+	 * @return The physical link connected to this port
+	 */
+	public LinkPair<T2> getLink() {
+	    return this.portLink;
+	}
+	
 	@Override
 	public String toString() {
 		return "PORT:\n- portNumber: " + this.portNumber

@@ -44,7 +44,6 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 	@Override
 	public void devirtualize(final OVXSwitch sw) {
-
 	    	/* Drop LLDP-matching messages sent by some applications */
 	    	if (this.match.getDataLayerType() == Ethernet.TYPE_LLDP) {
 	    	    	return;
@@ -59,9 +58,9 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		final short inport = this.getMatch().getInputPort();
 
 		OVXMatch ovxMatch = new OVXMatch(this.match);
-    	//Store the virtual flowMod and obtain the physical cookie
-    	ovxMatch.setCookie(sw.addFlowMod(this));
-    	this.setCookie(ovxMatch.getCookie());
+		//Store the virtual flowMod and obtain the physical cookie
+		ovxMatch.setCookie(sw.addFlowMod(this));
+		this.setCookie(ovxMatch.getCookie());
     	
 		for (final OFAction act : this.getActions()) {
 			try {
@@ -80,26 +79,26 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 		final OVXPort ovxInPort = sw.getPort(inport);
 		this.setBufferId(bufferId);
-
+		
 		if (ovxInPort == null) {
 		    	/* specifically handle initial OFPFW_ALL delete */
-		    	if ((this.match.getWildcardObj().isFull()) & 
+		    	if ((this.match.getWildcardObj().isFull()) &
 		    			(this.command == OFFlowMod.OFPFC_DELETE)) {
 		    	    	sw.getFlowTable().handleFlowMods(this);
-		    	/* expand to all ports, error only if in-port not wildcarded */
-			} else if (this.match.getWildcardObj().isWildcarded(Flag.IN_PORT)) {
-		    	    	for (OVXPort iport : sw.getPorts().values()) {
+		    	} else if (this.match.getWildcardObj().isWildcarded(Flag.IN_PORT)) {
+			    	/* expand match to all ports */
+			    	for (OVXPort iport : sw.getPorts().values()) {
 		    	    	    int wcard = this.match.getWildcards() & (~OFMatch.OFPFW_IN_PORT); 
 		    	    	    this.match.setWildcards(wcard);
 		    	    	    prepAndSendSouth(iport);
 		    	    	}
-		    	} else {
-				this.log.error("Unknown virtual port id {}; dropping flowmod {}",
+		   	} else {
+		   	    	this.log.error("Unknown virtual port id {}; dropping flowmod {}",
 					inport, this);
 				sw.sendMsg(OVXMessageUtil.makeErrorMsg(
 					OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
 				return;
-		    	}
+		  	}
 		} else {
 		    	prepAndSendSouth(ovxInPort);
 		}

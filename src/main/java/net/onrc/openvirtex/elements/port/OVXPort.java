@@ -10,14 +10,17 @@
 package net.onrc.openvirtex.elements.port;
 
 import org.openflow.protocol.OFPortStatus;
+import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.messages.OVXPortStatus;
 
-public class OVXPort extends Port<OVXSwitch> {
+public class OVXPort extends Port<OVXSwitch, OVXLink> {
 
     private final Integer      tenantId;
     private final PhysicalPort physicalPort;
@@ -90,6 +93,37 @@ public class OVXPort extends Port<OVXSwitch> {
 	}
     }
 
+	/**
+	 * Modifies the fields of a OVXPortStatus message so that it is consistent  
+	 * with the configs of the corresponding OVXPort. 
+	 * 
+	 * @param portstat
+	 * @return
+	 */
+	public void virtualizePortStat(OVXPortStatus portstat) {
+	    	OFPhysicalPort desc = portstat.getDesc();
+	    	desc.setPortNumber(this.portNumber);
+		desc.setHardwareAddress(this.hardwareAddress);
+		desc.setCurrentFeatures(this.currentFeatures);
+		desc.setAdvertisedFeatures(this.advertisedFeatures);
+		desc.setSupportedFeatures(this.supportedFeatures);
+		portstat.setDesc(desc);  
+	}
+	
+	/**
+	 * Changes the attribute of this port according to a MODIFY PortStatus
+	 * @param portstat
+	 */
+	public void applyPortStatus(OVXPortStatus portstat) {
+		if (portstat.getReason() != OFPortReason.OFPPR_MODIFY.getReasonCode()) {    	
+			return;    
+		}
+		OFPhysicalPort psport = portstat.getDesc();
+		this.config = psport.getConfig();    
+		this.state = psport.getState();    
+		this.peerFeatures = psport.getPeerFeatures();
+	}
+	
     public void unregister() {
 	this.parentSwitch.removePort(this.portNumber);
 	this.physicalPort.removeOVXPort(this);

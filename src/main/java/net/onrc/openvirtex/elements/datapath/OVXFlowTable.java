@@ -38,6 +38,7 @@ public class OVXFlowTable {
     
     /** Map of FlowMods to physical cookies for vlinks*/
     protected ConcurrentHashMap<Long, OVXFlowMod> flowmodMap;
+
     /** 
      * The actual flow table flow entries, sorted by priority field. Stores
      * the de-virtualized OFMatch i.e. after its address fields have been changed */
@@ -113,11 +114,9 @@ public class OVXFlowTable {
 	if (fm.getMatch().getWildcards() == OFMatch.OFPFW_ALL) {
 	    /* make it exact? */
 	    //fm.setCommand(OFFlowMod.OFPFC_DELETE_STRICT);
-
 	    /* Send out FlowMod per flow entry. Since the entries are devirtualized
 	     * already - Handle the sends here so we don't have to process the 
 	     * FlowMod again just so they are sent south. */
-
 	    for (OVXFlowEntry fe: this.flowTable) {
 		OFMatch match = fe.getMatch();
 		fm.setMatch(match);
