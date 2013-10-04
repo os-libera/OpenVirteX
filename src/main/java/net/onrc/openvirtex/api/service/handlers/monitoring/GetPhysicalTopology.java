@@ -30,7 +30,7 @@ public class GetPhysicalTopology extends ApiHandler<Object> {
 
 	@Override
 	public JSONRPC2Response process(final Object params) {
-		Map<String, String> result;
+		Map<String, Object> result;
 		JSONRPC2Response resp = null;
 		// TODO: gson objects can be shared with other methods
 		final GsonBuilder gsonBuilder = new GsonBuilder();

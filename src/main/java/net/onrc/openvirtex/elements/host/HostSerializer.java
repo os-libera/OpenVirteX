@@ -24,7 +24,7 @@ public class HostSerializer implements JsonSerializer<Host> {
 		final JsonObject result = new JsonObject();
 		result.addProperty("mac", host.getMac().toString());
 		result.addProperty("dpid", host.getPort().getParentSwitch().getSwitchName());
-		result.addProperty("port", host.getPort().getPortNumber());
+		result.addProperty("port", String.valueOf(host.getPort().getPortNumber()));
 		return result;
 	}
 }

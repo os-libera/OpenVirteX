@@ -21,7 +21,7 @@ public class OVXPortSerializer implements JsonSerializer<OVXPort> {
 			final JsonSerializationContext context) {
 		final JsonObject result = new JsonObject();
 		result.addProperty("dpid", port.getParentSwitch().getSwitchName());
-		result.addProperty("port", port.getPortNumber());
+		result.addProperty("port", String.valueOf(port.getPortNumber()));
 		return result;
 	}
 

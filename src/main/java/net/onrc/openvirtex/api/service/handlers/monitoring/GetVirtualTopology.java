@@ -40,7 +40,7 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
-		Map<String, String> result;
+		Map<String, Object> result;
 		JSONRPC2Response resp = null;
 
 		try {
