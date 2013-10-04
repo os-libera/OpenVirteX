@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.monitoring;
 
+import java.util.Map;
+
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitchSerializer;
@@ -28,7 +30,7 @@ public class GetPhysicalTopology extends ApiHandler<Object> {
 
 	@Override
 	public JSONRPC2Response process(final Object params) {
-		String result;
+		Map<String, String> result;
 		JSONRPC2Response resp = null;
 		// TODO: gson objects can be shared with other methods
 		final GsonBuilder gsonBuilder = new GsonBuilder();
@@ -38,8 +40,10 @@ public class GetPhysicalTopology extends ApiHandler<Object> {
 				new PhysicalSwitchSerializer());
 		gsonBuilder.registerTypeAdapter(PhysicalPort.class,
 				new PhysicalPortSerializer());
+		
 		final Gson gson = gsonBuilder.create();
-		result = gson.toJson(PhysicalNetwork.getInstance());
+	
+		result = gson.fromJson(gson.toJson(PhysicalNetwork.getInstance()), Map.class );
 		resp = new JSONRPC2Response(result, 0);
 		return resp;
 	}

@@ -18,6 +18,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitchSerializer;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.host.HostSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.util.MACAddress;
 import net.onrc.openvirtex.util.MACAddressSerializer;
@@ -32,7 +33,7 @@ public class ListHosts extends ApiHandler<Map<String, Object>> {
 
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
-		String result;
+		Map<String, String> result;
 		JSONRPC2Response resp = null;
 
 		try {
@@ -51,7 +52,7 @@ public class ListHosts extends ApiHandler<Map<String, Object>> {
 				gsonBuilder.registerTypeAdapter(Host.class,
 						new HostSerializer());
 				final Gson gson = gsonBuilder.create();
-				result = gson.toJson(vnet.getHosts());
+				result = gson.fromJson(gson.toJson(gson.toJson(vnet.getHosts())), Map.class );
 				resp = new JSONRPC2Response(result, 0);
 			}
 			return resp;

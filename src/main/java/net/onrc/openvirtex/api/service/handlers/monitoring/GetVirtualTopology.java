@@ -40,7 +40,7 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
-		String result;
+		Map<String, String> result;
 		JSONRPC2Response resp = null;
 
 		try {
@@ -55,7 +55,7 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 			gsonBuilder.registerTypeAdapter(OVXPort.class,
 					new OVXPortSerializer());
 			final Gson gson = gsonBuilder.create();
-			result = gson.toJson(vnet);
+			result = gson.fromJson(gson.toJson(vnet), Map.class );
 			resp = new JSONRPC2Response(result, 0);
 			return resp;
 		} catch (ClassCastException | MissingRequiredField e) {
