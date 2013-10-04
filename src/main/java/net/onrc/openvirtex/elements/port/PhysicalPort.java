@@ -70,6 +70,7 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 	public boolean equals(PhysicalPort port) {
 	    return this.portNumber==port.portNumber && this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId();
 	}
+
 	    
 	/**
 	 * @return The OVXPorts that map to this PhysicalPort
@@ -102,4 +103,5 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 		this.supportedFeatures = psport.getSupportedFeatures();
 		this.peerFeatures = psport.getPeerFeatures();
 	}
+
 }

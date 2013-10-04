@@ -5,7 +5,6 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
-
 package net.onrc.openvirtex.routing;
 
 public enum RoutingAlgorithms {

@@ -10,6 +10,7 @@
 package net.onrc.openvirtex.elements.port;
 
 import org.openflow.protocol.OFPortStatus;
+
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
 
@@ -17,6 +18,7 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.messages.OVXPortStatus;
 
@@ -90,6 +92,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	if (this.parentSwitch.isActive()) {
 	    sendStatusMsg(OFPortReason.OFPPR_ADD);
 	    this.parentSwitch.generateFeaturesReply();
+
 	}
     }
 
@@ -124,6 +127,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 		this.peerFeatures = psport.getPeerFeatures();
 	}
 	
+
     public void unregister() {
 	this.parentSwitch.removePort(this.portNumber);
 	this.physicalPort.removeOVXPort(this);
