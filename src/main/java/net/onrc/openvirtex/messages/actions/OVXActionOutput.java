@@ -252,6 +252,7 @@ public class OVXActionOutput extends OFActionOutput implements
 	         */
 
 		// TODO check how to delete the packetOut and if it's required
+		boolean throwException = true;
 		
 		for (final OVXPort outPort : outPortList) {
 		    /*
@@ -278,27 +279,28 @@ public class OVXActionOutput extends OFActionOutput implements
 			    final OVXBigSwitch bigSwitch = (OVXBigSwitch) outPort
 				    .getParentSwitch();
 			    final SwitchRoute route = bigSwitch.getRoute(inPort, outPort);
-			    if (route == null) {
+			    if (route == null)
 				this.log.error(
-				        "Cannot retrieve the bigswitch internal route between ports {} {}, dropping message",
+				        "Cannot retrieve the bigswitch internal route between ports {} {}",
 				        inPort, outPort);
-				return;
+			    else {
+				final PhysicalPort srcPort = route.getPathDstPort();
+				final PhysicalPort dstPort = outPort
+					.getPhysicalPort();
+				dstPort.getParentSwitch().sendMsg(
+					this.createPacketOut(match.getPktData(),
+						srcPort.getPortNumber(),
+						dstPort.getPortNumber()), null);
+				this.log.debug(
+					"Physical ports are on different physical switches, "
+						+ "generate a packetOut from Physical Port {}",
+						dstPort.getPortNumber());
 			    }
-			    final PhysicalPort srcPort = route.getPathDstPort();
-			    final PhysicalPort dstPort = outPort
-				    .getPhysicalPort();
-			    dstPort.getParentSwitch().sendMsg(
-				    this.createPacketOut(match.getPktData(),
-				            srcPort.getPortNumber(),
-				            dstPort.getPortNumber()), null);
-			    this.log.debug(
-				    "Physical ports are on different physical switches, "
-				            + "generate a packetOut from Physical Port {}",
-				    dstPort.getPortNumber());
 			} else {
 			    /*
 			     * and inPort & outPort belongs to the same physical switch
 			     */
+			    throwException = false;
 			    approvedActions.addAll(this
 				    .prependUnRewriteActions(match));
 			    approvedActions.add(new OFActionOutput(outPort
@@ -308,6 +310,8 @@ public class OVXActionOutput extends OFActionOutput implements
 			}
 		    }
 		}
+		if (throwException == true)
+		    throw new DroppedMessageException();
 	    }
 
     }
