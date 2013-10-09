@@ -33,6 +33,37 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	private final XidTranslator translator;
 
 	/**
+	 * Unregisters OVXSwitches and associated virtual elements mapped to
+	 * this PhysicalSwitch. Called by unregister() when the PhysicalSwitch 
+	 * is torn down.  
+	 */
+	class DeregAction implements Runnable {
+	    
+		PhysicalSwitch psw;   
+		int tid;
+		DeregAction(PhysicalSwitch s, int t) {
+			this.psw = s;
+			this.tid = t;
+	    	}
+	    
+		@Override
+		public void run() {
+	        	// TODO Auto-generated method stub
+			OVXSwitch vsw = psw.map.getVirtualSwitch(psw, tid);
+			if (vsw != null) {
+				/* save = don't destroy the switch, it can be saved */    
+		    		boolean save = false;
+		    		if (vsw instanceof OVXBigSwitch) {    
+					save = ((OVXBigSwitch) vsw).tryRecovery(psw);    	    
+		    		} 
+		    		if (!save) {
+		    			vsw.unregister();
+		    		}
+			}
+		}
+	}
+	
+	/**
 	 * Instantiates a new physical switch.
 	 * 
 	 * @param switchId
@@ -129,6 +160,23 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		return true;
 	}
 
+	/**
+	 * Removes this PhysicalSwitch from the network. Also removes associated
+	 * ports, links, and virtual elements mapped to it (OVX*Switch, etc.).
+	 */
+	@Override
+	public void unregister() {
+	    	/* tear down OVXSingleSwitches mapped to this PhysialSwitch */
+		for (Integer tid : this.map.listVirtualNetworks().keySet()) {   
+			DeregAction dereg = new DeregAction(this, tid);    
+			new Thread(dereg).start();
+		}
+		/* try to remove from network and disconnect */
+		PhysicalNetwork.getInstance().removeSwitch(this);
+		this.portMap.clear();
+		this.tearDown();
+	}
+	
 	@Override
 	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 		if (this.isConnected) {

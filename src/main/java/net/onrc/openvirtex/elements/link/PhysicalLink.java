@@ -31,4 +31,11 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
 		srcPort.setOutLink(this);
 		dstPort.setInLink(this);
 	}
+	
+	@Override
+	public void unregister() {
+		this.getSrcSwitch().getMap().removePhysicalLink(this);    
+		srcPort.setOutLink(null);
+		dstPort.setInLink(null);
+	}
 }

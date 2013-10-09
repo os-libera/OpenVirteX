@@ -16,7 +16,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
-import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.elements.port.LinkPair;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketIn;
@@ -230,12 +231,17 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		if (port.isEdge()) {
 		    port.unregister();
 		} else {
-		    final OVXNetwork virtualNetwork = this.map
+		    LinkPair<OVXLink> links = port.getLink();
+		    if ((links != null) && (links.exists())) {
+			links.getOutLink().unregister();
+			links.getInLink().unregister();
+		    }
+		    /*final OVXNetwork virtualNetwork = this.map
 			    .getVirtualNetwork(this.tenantId);
 		    final OVXPort neighPort = virtualNetwork
 			    .getNeighborPort(port);
 		    virtualNetwork.getLink(port, neighPort).unregister();
-		    virtualNetwork.getLink(neighPort, port).unregister();
+		    virtualNetwork.getLink(neighPort, port).unregister(); */
 		}
 	    }
 	}
@@ -381,7 +387,20 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	return this.flowTable.deleteFlowMod(cookie);
     }
 
-    public abstract int translate(OFMessage ofm, OVXPort inPort);
+    /**
+     * Generates a new XID for messages destined for the physical network.
+     * 
+     * @param msg The OFMessage being translated
+     * @param inPort The ingress port 
+     * @return the new message XID
+     */
+    public abstract int translate(OFMessage msg, OVXPort inPort);
 
+    /**
+     * Sends a message towards the physical network
+     * 
+     * @param msg The OFMessage being translated
+     * @param inPort The ingress port
+     */
     public abstract void sendSouth(OFMessage msg, OVXPort inPort);
 }

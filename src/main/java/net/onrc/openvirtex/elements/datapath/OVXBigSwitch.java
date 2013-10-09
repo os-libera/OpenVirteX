@@ -172,6 +172,20 @@ public class OVXBigSwitch extends OVXSwitch {
 	}
 
 	/**
+	 * Tries to gracefully disable the parts of this BVS that map to the 
+	 * specified PhysicalSwitch. This method returns true if the shutdown of the 
+	 * PhysicalSwitch does not compromise this switch's functions e.g. a
+	 * backup path can be found through the switch. 
+	 * 
+	 * @param phySwitch
+	 * @return true for success, false otherwise.
+	 */
+	public boolean tryRecovery(PhysicalSwitch phySwitch) {
+		//TODO actually do recovery. 	    
+		return false;    
+	}
+	
+	/**
 	 * Gets the port.
 	 * 
 	 * @param portNumber

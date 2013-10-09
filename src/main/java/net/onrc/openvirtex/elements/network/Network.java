@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.port.Port;
@@ -118,6 +119,19 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 			this.neighborMap.put(sw, new HashSet());
 		}
 	}
+	
+	/**
+	 * Remove switch from topology
+	 * @param sw
+	 */
+	protected boolean removeSwitch(final T1 sw) {
+		if (this.switchSet.remove(sw)) {
+			this.neighborMap.remove(sw);    	
+			this.dpidMap.remove(((Switch) sw).getSwitchId());
+			return true;
+		}
+		return false;
+        }
 
 	// Public methods to query topology information
 
@@ -167,4 +181,5 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	}
 
 	public abstract boolean boot();
+
 }

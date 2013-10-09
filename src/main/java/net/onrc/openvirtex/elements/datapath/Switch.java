@@ -203,9 +203,22 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 		this.channel = channel;
 
 	}
-
+	
+	/**
+	 * Starts up the switch. 
+	 * 
+	 * @return true upon success startup.
+	 */
 	public abstract boolean boot();
 
+	/**
+	 * Removes the switch from the network representation. Removal 
+	 * may be triggered by an API call (in the case of a OVXSwitch) 
+	 * or disconnection of a switch connected to us (in the case of
+	 * a PhysicalSwitch).   
+	 */
+	public abstract void unregister();
+	
 	/**
 	 * Tear down.
 	 */

@@ -262,4 +262,9 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> {
     	}
 
     }
+
+	@Override
+	public void unregister() {
+		this.srcPort.getParentSwitch().getMap().removeRoute(this);
+	}
 }

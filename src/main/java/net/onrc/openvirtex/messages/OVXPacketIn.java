@@ -45,8 +45,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     @Override
     public void virtualize(final PhysicalSwitch sw) {
 
-
-    	OVXSwitch vSwitch = OVXMessageUtil.untranslateXid(this, sw);//null;
+    	OVXSwitch vSwitch = OVXMessageUtil.untranslateXid(this, sw);
     	/*
     	 * Fetching port from the physical switch
     	 */

@@ -9,11 +9,15 @@
 
 package net.onrc.openvirtex.elements.port;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.messages.OVXPortStatus;
@@ -60,28 +64,20 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 			this.ovxPortMap.put(ovxPort.getTenantId(), portMap);
 		}
 	}
-	
-	public void removeOVXPort(OVXPort ovxPort) {
-	    if (this.ovxPortMap.containsKey(ovxPort.getTenantId())) {
-		this.ovxPortMap.remove(ovxPort.getTenantId());
-	    }
-	}
-
-	public boolean equals(PhysicalPort port) {
-	    return this.portNumber==port.portNumber && this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId();
-	}
-
-	    
+		    
 	/**
-	 * @return The OVXPorts that map to this PhysicalPort
+	 * @param tenant The ID of the tenant of interest
+	 * @return The OVXPorts that map to this PhysicalPort for a given tenant ID, if 
+	 * tenant is null all of the OVXPorts mapping to this port
 	 */
-	public Set<OVXPort> getOVXPorts() {
-	    	// want a set of unique OVXPorts from map of maps.
-	    	Set<OVXPort> ports = new HashSet<OVXPort>();
-	    	for(HashMap<Integer, OVXPort> el : this.ovxPortMap.values()) {
-	    	    	ports.addAll(el.values());
-	    	}
-	    	return ports;
+	public List<Map<Integer, OVXPort>> getOVXPorts(Integer tenant) {
+	    	List<Map<Integer, OVXPort>> ports = new ArrayList<Map<Integer,OVXPort>>();
+		if (tenant == null) {    	
+		    	ports.addAll(this.ovxPortMap.values());
+	    	} else {
+			ports.add(this.ovxPortMap.get(tenant));
+		}
+	    	return Collections.unmodifiableList(ports);
 	}
 	
 	/**
@@ -103,4 +99,26 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 		this.supportedFeatures = psport.getSupportedFeatures();
 		this.peerFeatures = psport.getPeerFeatures();
 	}
+
+	public void removeOVXPort(OVXPort ovxPort) {
+	    if (this.ovxPortMap.containsKey(ovxPort.getTenantId())) {
+		this.ovxPortMap.remove(ovxPort.getTenantId());
+	    }
+	}
+
+	/**
+	 * unmaps this port from the global mapping and its parent switch. 
+	 */
+	public void unregister() {
+		/* remove links, if any */
+		if ((this.portLink != null) && (this.portLink.exists())) {
+			this.portLink.egressLink.unregister();
+			this.portLink.ingressLink.unregister();
+		}
+	}
+	
+	public boolean equals(PhysicalPort port) {
+	    return this.portNumber==port.portNumber && this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId();
+	}
+
 }

@@ -106,19 +106,20 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	public void removePort(final PhysicalPort port) {
 		// Ignore ports that are not on this switch
 		if (port.getParentSwitch().equals(this.sw)) {
+		    	short portnum = port.getPortNumber();
 			synchronized (this) {
-				if (this.slowPorts.contains(port)) {
-					this.slowPorts.remove(port);
+				if (this.slowPorts.contains(portnum)) {
+					this.slowPorts.remove(portnum);
 					this.slowIterator = this.slowPorts.iterator();
 
-				} else if (this.fastPorts.contains(port)) {
-					this.fastPorts.remove(port);
-					this.portProbeCount.remove(port.getPortNumber());
+				} else if (this.fastPorts.contains(portnum)) {
+					this.fastPorts.remove(portnum);
+					this.portProbeCount.remove(portnum);
 					// no iterator to update
 				} else {
 					this.log.warn(
 							"tried to dynamically remove non-existing port {}",
-							port.getPortNumber());
+							portnum);
 				}
 			}
 		}
@@ -240,7 +241,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	@Override
 	public void run(final Timeout t) {
 		this.log.debug("sending probes");
-
 		synchronized (this) {
 			final Iterator<Short> fastIterator = this.fastPorts.iterator();
 			while (fastIterator.hasNext()) {

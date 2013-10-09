@@ -10,6 +10,7 @@
 package net.onrc.openvirtex.elements;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -507,7 +508,32 @@ public class OVXMap implements Mappable {
 		this.virtualLinkMap.remove(virtualLink);
 	    }
 	}
-
+	
+	@Override
+	public void removePhysicalLink(PhysicalLink physicalLink) {
+		//TODO : tidy up
+		Map<Integer, List<OVXLink>> lmap = this.physicalLinkMap.get(physicalLink);	
+		if (lmap == null) {
+			return;  	    
+		}
+		for (Map.Entry<Integer, List<OVXLink>> el : lmap.entrySet()) {
+			for (OVXLink vlink : el.getValue()) {
+				this.virtualLinkMap.get(vlink).remove(physicalLink);    
+			}
+		}
+		this.physicalLinkMap.remove(physicalLink);
+		Map<Integer, Set<SwitchRoute>> rmap = this.linktoRouteMap.get(physicalLink);
+		if (rmap == null) {
+			return;
+		}
+		for (Map.Entry<Integer, Set<SwitchRoute>> el : rmap.entrySet()) {
+			for (SwitchRoute vlink : el.getValue()) {
+				this.routetoLinkMap.get(vlink).remove(physicalLink);    
+			}		
+		}
+		this.linktoRouteMap.remove(physicalLink);
+	}
+	
 	public void removeVirtualSwitch(OVXSwitch virtualSwitch) {
 	    if (this.virtualSwitchMap.containsKey(virtualSwitch)) {
 		ArrayList<PhysicalSwitch> physicalSwitches = this.virtualSwitchMap.get(virtualSwitch);

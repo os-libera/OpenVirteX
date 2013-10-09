@@ -101,6 +101,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
 	}
 
+	@Override
 	public void unregister() {
 	    Mappable map = this.srcPort.getParentSwitch().getMap();
 	    map.removeVirtualLink(this);

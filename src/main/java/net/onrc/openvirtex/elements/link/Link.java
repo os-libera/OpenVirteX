@@ -96,4 +96,9 @@ public abstract class Link<T1, T2> {
 			return false;
 		}
 	}
+	
+	/**
+	 * Removes mappings and dependencies related to this link. 
+	 */
+	public abstract void unregister();
 }

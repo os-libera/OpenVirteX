@@ -10,8 +10,7 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -40,14 +39,14 @@ public class PhysicalNetwork extends
 
 	private static PhysicalNetwork instance;
 	private ArrayList<Uplink> uplinkList;
-	private final Map<Long, SwitchDiscoveryManager> discoveryManager;
+	private final ConcurrentHashMap<Long, SwitchDiscoveryManager> discoveryManager;
 	private static HashedWheelTimer timer;
 	static Logger log = LogManager.getLogger(PhysicalNetwork.class.getName());
 
 	private PhysicalNetwork() {
 		PhysicalNetwork.log.info("Starting network discovery...");
 		PhysicalNetwork.timer = new HashedWheelTimer();
-		this.discoveryManager = new HashMap<Long, SwitchDiscoveryManager>();
+		this.discoveryManager = new ConcurrentHashMap<Long, SwitchDiscoveryManager>();
 	}
 
 	public static PhysicalNetwork getInstance() {
@@ -83,6 +82,33 @@ public class PhysicalNetwork extends
 		super.addSwitch(sw);
 		this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
 				sw));
+	}
+	
+	/**
+	 * Remove switch from topology discovery and mappings for this network
+ 	 * @param sw
+	 */
+	public boolean removeSwitch(final PhysicalSwitch sw) {
+		SwitchDiscoveryManager sdm = this.discoveryManager.get(sw.getSwitchId());
+		for (PhysicalPort port : sw.getPorts().values()) {
+			/* handle any link mappings */
+			port.unregister();
+			/* remove from topology discovery */
+			if(sdm != null) {
+			    	log.info("removing port {}", port.getPortNumber());
+				sdm.removePort(port);
+			}
+			/* remove from this network's mappings */
+			PhysicalPort dst = this.neighborPortMap.get(port);
+			if (dst != null ) {
+				this.removeLink(port, dst);
+				this.removeLink(dst, port);    
+			}
+		}
+		if(sdm != null) {
+			this.discoveryManager.remove(sw.getSwitchId());
+		}
+		return super.removeSwitch(sw);
 	}
 
 	/**
@@ -123,7 +149,7 @@ public class PhysicalNetwork extends
 	}
 
 	/**
-	 * Create link and add it to the topology.
+	 * Remove link from the topology.
 	 * 
 	 * @param srcPort
 	 * @param dstPort

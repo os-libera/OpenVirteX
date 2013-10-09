@@ -603,9 +603,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			final ChannelStateEvent e) throws Exception {
 
 		if (this.sw != null) {
-
 			this.sw.setConnected(false);
-			this.sw.tearDown();
+			this.sw.unregister();
 		}
 
 	}
