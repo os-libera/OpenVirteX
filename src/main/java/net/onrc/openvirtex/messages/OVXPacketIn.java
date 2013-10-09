@@ -134,6 +134,8 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     		if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
     			// ARP packet
     			final ARP arp = (ARP) eth.getPayload();
+    			System.out.println("ETH " + eth);
+    			System.out.println("supposed ARP " + arp);
     			this.tenantId = this.fetchTenantId(match, map, true);
     			if (map.getVirtualIP(srcIP) != null) {
     				arp.setSenderProtocolAddress(map.getVirtualIP(srcIP)

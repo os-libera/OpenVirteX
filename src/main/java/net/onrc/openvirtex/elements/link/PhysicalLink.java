@@ -9,6 +9,11 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 
@@ -18,6 +23,14 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
  */
 public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
 
+	
+	private static AtomicInteger linkIds = new AtomicInteger(0);
+	
+	@SerializedName("linkId")
+	@Expose
+	private Integer linkId = null;
+	
+	
 	/**
 	 * Instantiates a new physical link.
 	 * 
@@ -30,5 +43,11 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
 		super(srcPort, dstPort);
 		srcPort.setOutLink(this);
 		dstPort.setInLink(this);
+		this.linkId = PhysicalLink.linkIds.getAndIncrement();
+	}
+	
+	
+	public Integer getLinkId() {
+		return linkId;
 	}
 }

@@ -25,6 +25,9 @@ import org.openflow.protocol.action.OFActionDataLayerSource;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
@@ -48,9 +51,14 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	Logger	log = LogManager.getLogger(OVXLink.class.getName());
 	
 	/** The link id. */
+	
+	@SerializedName("linkId")
+	@Expose
 	private final Integer linkId;
 
 	/** The tenant id. */
+	@SerializedName("tenantId")
+	@Expose
 	private final Integer tenantId;
 
 	/**
