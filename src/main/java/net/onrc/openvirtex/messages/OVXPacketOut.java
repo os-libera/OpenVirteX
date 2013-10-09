@@ -106,11 +106,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 		}
 
 		OVXMessageUtil.translateXid(this, inport);
-		if (sw instanceof OVXBigSwitch) {
-			((OVXBigSwitch) sw).sendSouthBS(this, inport);
-		} else {
-			sw.sendSouth(this);
-		}
+		sw.sendSouth(this, inport);
 	}
 
 	private void prependRewriteActions(final OVXSwitch sw) {

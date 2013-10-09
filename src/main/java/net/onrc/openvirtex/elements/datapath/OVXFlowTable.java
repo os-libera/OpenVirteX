@@ -117,15 +117,12 @@ public class OVXFlowTable {
 	    /* Send out FlowMod per flow entry. Since the entries are devirtualized
 	     * already - Handle the sends here so we don't have to process the 
 	     * FlowMod again just so they are sent south. */
+	    OVXPort iport;
 	    for (OVXFlowEntry fe: this.flowTable) {
 		OFMatch match = fe.getMatch();
 		fm.setMatch(match);
-		if (this.vswitch instanceof OVXBigSwitch) {
-		    OVXPort iport = this.vswitch.getPort(match.getInputPort());
-			((OVXBigSwitch) this.vswitch).sendSouthBS(fm, iport);
-		} else {
-			this.vswitch.sendSouth(fm);
-		}
+		iport = this.vswitch.getPort(match.getInputPort());    
+		this.vswitch.sendSouth(fm, iport);
 	    }
 	    this.flowTable.clear();
 	    return false;
@@ -243,7 +240,7 @@ public class OVXFlowTable {
 	for (OVXFlowEntry fe : this.flowTable) {
 	    ret += fe.toString() + "\n";
 	}
-	System.out.println("OVXFlowTable \n========================\n"+ret+"========================\n");
+	log.info("OVXFlowTable \n========================\n"+ret+"========================\n");
     }
 
 }

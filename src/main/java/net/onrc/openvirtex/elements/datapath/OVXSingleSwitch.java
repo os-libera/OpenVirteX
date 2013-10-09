@@ -69,20 +69,23 @@ public class OVXSingleSwitch extends OVXSwitch {
 
 	@Override
 	// TODO: this is probably not optimal
-	public void sendSouth(final OFMessage msg) {
-		final PhysicalSwitch sw = this.map.getPhysicalSwitches(this).get(0);
-		sw.sendMsg(msg, this);
+	public void sendSouth(final OFMessage msg, final OVXPort inPort) {
+		PhysicalSwitch psw = getPhySwitch(inPort);
+		psw.sendMsg(msg, this);
 	}
 
 	@Override
 	public int translate(final OFMessage ofm, final OVXPort inPort) {
 		// get new xid from only PhysicalSwitch tied to this switch
-		PhysicalSwitch psw;
-		if (inPort == null) {
-			psw = this.map.getPhysicalSwitches(this).get(0);
-		} else {
-			psw = inPort.getPhysicalPort().getParentSwitch();
-		}
+		PhysicalSwitch psw = getPhySwitch(inPort);
 		return psw.translate(ofm, this);
+	}
+	
+	private PhysicalSwitch getPhySwitch(OVXPort inPort) {
+		if (inPort == null) {
+			return this.map.getPhysicalSwitches(this).get(0);
+		} else {
+			return inPort.getPhysicalPort().getParentSwitch();
+		}
 	}
 }

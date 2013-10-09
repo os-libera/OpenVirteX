@@ -10,7 +10,6 @@
 package net.onrc.openvirtex.elements.port;
 
 import org.openflow.protocol.OFPortStatus;
-
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
 

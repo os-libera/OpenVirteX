@@ -103,5 +103,4 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 		this.supportedFeatures = psport.getSupportedFeatures();
 		this.peerFeatures = psport.getPeerFeatures();
 	}
-
 }

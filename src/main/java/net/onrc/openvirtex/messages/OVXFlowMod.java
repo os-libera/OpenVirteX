@@ -15,7 +15,6 @@ import java.util.List;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
-import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
@@ -122,11 +121,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		}
 		this.computeLength();
 		if (sw.getFlowTable().handleFlowMods(this)) {
-		    	if (sw instanceof OVXBigSwitch) {
-				((OVXBigSwitch) sw).sendSouthBS(this, inPort);
-			} else {
-				sw.sendSouth(this);
-			}
+			sw.sendSouth(this, inPort);
 		}
 	}
 	

@@ -538,7 +538,6 @@ public class OVXMap implements Mappable {
 	    this.macMap.remove(mac.toStringNoColon());
 	}
 
-
 	@Override
 	public List<PhysicalLink> getRoute(SwitchRoute route) {  
 		return this.routetoLinkMap.get(route);    

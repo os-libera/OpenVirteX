@@ -103,7 +103,7 @@ public class OVXMessageUtil {
 	public static void translateXidAndSend(final OFMessage msg,
 			final OVXPort inPort) {
 		final OVXSwitch vsw = OVXMessageUtil.translateXid(msg, inPort);
-		vsw.sendSouth(msg);
+		vsw.sendSouth(msg, inPort);
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class OVXMessageUtil {
 				msg.setXid(newXid);
 			}
 		} else {
-			vsw.sendSouth(msg);
+			vsw.sendSouth(msg, null);
 		}
 	}
 

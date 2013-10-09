@@ -195,12 +195,11 @@ public class OVXBigSwitch extends OVXSwitch {
 	}
 
 	@Override
-	public void sendSouth(final OFMessage msg) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void sendSouthBS(final OFMessage msg, final OVXPort inPort) {
+	public void sendSouth(final OFMessage msg, final OVXPort inPort) {
+		if (inPort == null) {
+			/* TODO for some OFTypes, we can recover an inport. */    
+	    		return;
+		}
 		final PhysicalSwitch sw = inPort.getPhysicalPort().getParentSwitch();
 		sw.sendMsg(msg, this);
 	}

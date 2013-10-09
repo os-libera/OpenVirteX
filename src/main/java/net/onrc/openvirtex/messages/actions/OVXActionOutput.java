@@ -47,8 +47,6 @@ public class OVXActionOutput extends OFActionOutput implements
     public void virtualize(final OVXSwitch sw,
 	    final List<OFAction> approvedActions, final OVXMatch match)
 	    throws ActionVirtualizationDenied, DroppedMessageException {
-
-
 	final OVXPort inPort = sw.getPort(match.getInputPort());
 	final LinkedList<OVXPort> outPortList = this.fillPortList(
 	        match.getInputPort(), this.getPort(), sw);

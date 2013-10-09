@@ -243,6 +243,4 @@ public interface Mappable {
 	 */
 	public void removeRoute(SwitchRoute route);
 	
-
-
 }

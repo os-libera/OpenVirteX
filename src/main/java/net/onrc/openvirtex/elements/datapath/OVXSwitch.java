@@ -383,5 +383,5 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 
     public abstract int translate(OFMessage ofm, OVXPort inPort);
 
-    public abstract void sendSouth(OFMessage msg);
+    public abstract void sendSouth(OFMessage msg, OVXPort inPort);
 }
