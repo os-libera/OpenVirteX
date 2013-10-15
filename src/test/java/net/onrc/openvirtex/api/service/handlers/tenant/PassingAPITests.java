@@ -60,7 +60,7 @@ public class PassingAPITests extends AbstractAPICalls {
 		Assert.assertNull("CreateOVXNetwork should not return null",
 				resp.getError());
 
-		Assert.assertEquals((long) 1, resp.getResult());
+		Assert.assertEquals((long) 46200400562356225L, resp.getResult());
 
 	}
 
@@ -81,7 +81,7 @@ public class PassingAPITests extends AbstractAPICalls {
 		Assert.assertNull("CreateOVXSwitch should have not returned null",
 				resp.getError());
 
-		Assert.assertEquals((long) 1, resp.getResult());
+		Assert.assertEquals((long) 46200400562356225L, resp.getResult());
 
 	}
 
@@ -164,6 +164,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    p4.setPortNumber((short)2);
 	    sw2.addPort(p4);
 	    PhysicalNetwork.getInstance().createLink(p1, p3);
+	    PhysicalNetwork.getInstance().createLink(p3, p1);
 	    
 	    //set the virtual network (copy of the phy network)
 	    super.createNetwork();
@@ -174,11 +175,11 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.connectHost(1, (long)1, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)2, (short)2, "00:00:00:00:00:02");
 
-	    final JSONRPC2Response resp = super.createSwitchRoute(1, (long)1, (short)1, (short)1, "1/1-2/1");
+	    final JSONRPC2Response resp = super.createSwitchRoute(1, 46200400562356225L, (short)1, (short)2, "1/1-2/1");
 
-	    Assert.assertNull("RemoveOVXSwitch should have not returned null",
+	    Assert.assertNull("CreateOVXSwitchRoute should have not returned null",
 		    resp.getError());
-	    Assert.assertEquals((long)1, resp.getResult());
+	    Assert.assertEquals(46200400562356225L, resp.getResult());
 	}
 	
 	/**
@@ -207,6 +208,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    p4.setPortNumber((short)2);
 	    sw2.addPort(p4);
 	    PhysicalNetwork.getInstance().createLink(p1, p3);
+	    PhysicalNetwork.getInstance().createLink(p3, p1);
 	    
 	    //set the virtual network (copy of the phy network)
 	    super.createNetwork();
@@ -251,6 +253,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    p4.setPortNumber((short)2);
 	    sw2.addPort(p4);
 	    PhysicalNetwork.getInstance().createLink(p1, p3);
+	    PhysicalNetwork.getInstance().createLink(p3, p1);
 	    
 	    //set the virtual network (copy of the phy network)
 	    super.createNetwork();
@@ -260,11 +263,11 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.connectHost(1, (long)2, (short)2, "00:00:00:00:00:02");
 	    super.createLink(1, "1/1-2/1");
 
-	    final JSONRPC2Response resp = super.removeSwitch(1, 1);
+	    final JSONRPC2Response resp = super.removeSwitch(1, 46200400562356225L);
 
 	    Assert.assertNull("RemoveOVXSwitch should have not returned null",
 		    resp.getError());
-	    Assert.assertEquals((long)1, resp.getResult());
+	    Assert.assertEquals((long)46200400562356225L, resp.getResult());
 	}
 	
 	/**
@@ -293,6 +296,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    p4.setPortNumber((short)2);
 	    sw2.addPort(p4);
 	    PhysicalNetwork.getInstance().createLink(p1, p3);
+	    PhysicalNetwork.getInstance().createLink(p3, p1);
 	    
 	    //set the virtual network (copy of the phy network)
 	    super.createNetwork();
@@ -336,6 +340,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    p4.setPortNumber((short)2);
 	    sw2.addPort(p4);
 	    PhysicalNetwork.getInstance().createLink(p1, p3);
+	    PhysicalNetwork.getInstance().createLink(p3, p1);
 	   
 	    //set the virtual network (copy of the phy network)
 	    super.createNetwork();
@@ -345,7 +350,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.connectHost(1, (long)2, (short)2, "00:00:00:00:00:02");
 	    super.createLink(1, "1/1-2/1");
 
-	    final JSONRPC2Response resp = super.disconnectHost(1, (long)1, (short)2, "00:00:00:00:00:01");
+	    final JSONRPC2Response resp = super.disconnectHost(1, (long)46200400562356225L, (short)1, "00:00:00:00:00:01");
 
 	    Assert.assertNull("Disconnect Host should have not returned null",
 		    resp.getError());
@@ -379,6 +384,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    p4.setPortNumber((short)2);
 	    sw2.addPort(p4);
 	    PhysicalNetwork.getInstance().createLink(p1, p3);
+	    PhysicalNetwork.getInstance().createLink(p3, p1);
 	   
 	    //set the virtual network (copy of the phy network)
 	    super.createNetwork();
@@ -388,10 +394,11 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.createSwitch(1, l);
 	    super.connectHost(1, (long)1, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)2, (short)2, "00:00:00:00:00:02");
+	    super.createSwitchRoute(1, 46200400562356225L, (short)1, (short)2, "1/1-2/1");
 
-	    final JSONRPC2Response resp = super.removeSwitchRoute(1, (long)1, (short)2, (short)2);
+	    final JSONRPC2Response resp = super.removeSwitchRoute(1, (long)46200400562356225L, (short)1, (short)2);
 
-	    Assert.assertNull("Disconnect Host should have not returned null",
+	    Assert.assertNull("Remove switch route should have not returned null",
 		    resp.getError());
 
 	    Assert.assertEquals(1, resp.getResult());
@@ -423,6 +430,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	    p4.setPortNumber((short)2);
 	    sw2.addPort(p4);
 	    PhysicalNetwork.getInstance().createLink(p1, p3);
+	    PhysicalNetwork.getInstance().createLink(p3, p1);
 	   
 	    //set the virtual network (copy of the phy network)
 	    super.createNetwork();

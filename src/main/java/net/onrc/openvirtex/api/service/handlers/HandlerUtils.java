@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +28,6 @@ import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.VirtualLinkException;
-import net.onrc.openvirtex.util.MACAddress;
 
 public class HandlerUtils {
 
@@ -61,18 +62,34 @@ public class HandlerUtils {
 	 * @throws ControllerUnavailableException
 	 */
 	public static void isControllerAvailable(final String controllerAddress,
-			final int controllerPort) throws ControllerUnavailableException {
-		for (final OVXNetwork network : OVXMap.getInstance().getNetworkMap()
-				.values()) {
-			final int port = network.getControllerPort();
-			final String host = network.getControllerHost();
-			if (port == controllerPort && host.equals(controllerAddress)) {
-				throw new ControllerUnavailableException(
-						"The controller we are trying to connect is already in use: "
-								+ String.valueOf(controllerPort) + " "
-								+ controllerAddress);
-			}
+		final int controllerPort) throws ControllerUnavailableException {
+	    String newCtrl = "";
+	    String oldCtrl = "";
+	    try {
+		InetAddress address = InetAddress.getByName(controllerAddress);
+		newCtrl = address.getHostAddress();
+	    } catch (UnknownHostException e) {
+		newCtrl = controllerAddress;
+	    } 
+	    
+	    
+	    for (final OVXNetwork network : OVXMap.getInstance().getNetworkMap()
+		    .values()) {
+		final int port = network.getControllerPort();
+		final String host = network.getControllerHost();
+		try {
+		    InetAddress address = InetAddress.getByName(host);
+		    oldCtrl = address.getHostAddress();
+		} catch (UnknownHostException e) {
+		    oldCtrl = host;
 		}
+		if (port == controllerPort && newCtrl.equals(oldCtrl)) {
+		    throw new ControllerUnavailableException(
+			    "The controller we are trying to connect is already in use: "
+				    + String.valueOf(controllerPort) + " "
+				    + controllerAddress);
+		}
+	    }
 	}
 
 	/**
@@ -167,6 +184,27 @@ public class HandlerUtils {
 		}
 	}
 
+	/**
+	 * Check if the ovx port number specified is present on the virtual
+	 * switch, 
+	 * 
+	 * @param tenantId
+	 * @param dpid
+	 * @param portNumber
+	 * @throws InvalidPortException
+	 */
+	public static void isValidOVXPort(final int tenantId, final long dpid,
+		final short portNumber) throws InvalidPortException {
+	    final OVXSwitch sw = OVXMap.getInstance().getVirtualNetwork(tenantId).getSwitch(dpid);
+	    if (sw == null || sw.getPort(portNumber) == null) {
+		throw new InvalidPortException(
+			"The ovx port specified is invalid: tenantId, dpid, port - "
+				+ String.valueOf(tenantId) + ", "
+				+ String.valueOf(dpid) + ", "
+				+ String.valueOf(portNumber));
+	    }
+	}
+	
 	/**
 	 * Check if the physical port number specified is present on the physical
 	 * switch, and that this physical port is actually an edge port on the

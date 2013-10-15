@@ -20,8 +20,9 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
@@ -49,16 +50,19 @@ public class RemoveOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 		    .intValue());
 	    HandlerUtils.isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
-	    final OVXSwitch ovxSwitch = virtualNetwork.getSwitch(dpid.longValue());
+	    final OVXBigSwitch ovxSwitch = (OVXBigSwitch) virtualNetwork.getSwitch(dpid.longValue());
+	    final OVXPort ingress = ovxSwitch.getPort(inPort.shortValue());
+	    final OVXPort egress = ovxSwitch.getPort(outPort.shortValue());
+	    boolean result = ovxSwitch.unregisterRoute(ingress, egress);
+	    if (result)
+		result = ovxSwitch.unregisterRoute(egress, ingress);
 	    
-	    
-	    
-	    if (ovxSwitch == null) {
+	    if (result == false) {
 		resp = new JSONRPC2Response(-1, 0);
 	    } else {
 		this.log.info(
-			"Removed virtual switch route in switch {} in virtual network {}",
-			dpid, virtualNetwork.getTenantId());
+			"Removed virtual switch route between ports {},{} in switch {} in virtual network {}", inPort, outPort,
+			dpid, tenantId);
 		resp = new JSONRPC2Response(1, 0);
 	    }
 

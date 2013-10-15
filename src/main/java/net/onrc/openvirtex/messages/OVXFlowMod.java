@@ -12,11 +12,10 @@ package net.onrc.openvirtex.messages;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.address.OVXIPAddress;
-import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
+import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
@@ -109,14 +108,18 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		if (inPort.isEdge()) {
 		    	this.prependRewriteActions();
 		} else {
-			this.rewriteMatch();
+			IPMapper.rewriteMatch(sw.getTenantId(), this.match);
 			//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
 			if (inPort != null && inPort.isLink()) {
 				//rewrite the OFMatch with the values of the link
 				OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(inPort);
 				OVXLink link = sw.getMap().getVirtualNetwork(sw.getTenantId()).getLink(dstPort, inPort);
-				if (link != null)
-					this.setMatch(link.rewriteMatch(this.match, sw));
+				if (link != null) {
+				    Integer flowId = sw.getMap().getVirtualNetwork(sw.getTenantId()).
+					    getFlowId(this.match.getDataLayerSource(), this.match.getDataLayerDestination());
+				    OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);
+				    lUtils.rewriteMatch(this.getMatch());
+				}
 			}
 		}
 		this.computeLength();
@@ -134,83 +137,29 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	}
 
 	private void prependRewriteActions() {
-		final Mappable map = this.sw.getMap();
-
 		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			final OVXIPAddress vip = new OVXIPAddress(this.sw.getTenantId(),
-					this.match.getNetworkSource());
-			PhysicalIPAddress pip = map.getPhysicalIP(vip,
-					this.sw.getTenantId());
-			if (pip == null) {
-				pip = new PhysicalIPAddress(map.getVirtualNetwork(
-						this.sw.getTenantId()).nextIP());
-				this.log.debug(
-						"Adding IP mapping {} -> {} for tenant {} at switch {}",
-						vip, pip, this.sw.getTenantId(), this.sw.getName());
-				map.addIP(pip, vip);
-			}
 			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-			srcAct.setNetworkAddress(pip.getIp());
+			srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkSource()));
 			this.approvedActions.add(0, srcAct);
 
 		}
 
 		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			final OVXIPAddress vip = new OVXIPAddress(this.sw.getTenantId(),
-					this.match.getNetworkDestination());
-			PhysicalIPAddress pip = map.getPhysicalIP(vip,
-					this.sw.getTenantId());
-			if (pip == null) {
-				pip = new PhysicalIPAddress(map.getVirtualNetwork(
-						this.sw.getTenantId()).nextIP());
-				this.log.debug(
-						"Adding IP mapping {} -> {} for tenant {} at switch {}",
-						vip, pip, this.sw.getTenantId(), this.sw.getName());
-				map.addIP(pip, vip);
-			}
 			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-			dstAct.setNetworkAddress(pip.getIp());
+			dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkDestination()));
 			this.approvedActions.add(0, dstAct);
 
 		}
 	}
 
-	private void rewriteMatch() {
-		final Mappable map = this.sw.getMap();
-
-		// TODO: handle IP ranges
-		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			final OVXIPAddress vip = new OVXIPAddress(this.sw.getTenantId(),
-					this.match.getNetworkSource());
-			PhysicalIPAddress pip = map.getPhysicalIP(vip,
-					this.sw.getTenantId());
-			if (pip == null) {
-				pip = new PhysicalIPAddress(map.getVirtualNetwork(
-						this.sw.getTenantId()).nextIP());
-				this.log.debug(
-						"Adding IP mapping {} -> {} for tenant {} at switch {}",
-						vip, pip, this.sw.getTenantId(), this.sw.getName());
-				map.addIP(pip, vip);
-			}
-			this.getMatch().setNetworkSource(pip.getIp());
-		}
-
-		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			final OVXIPAddress vip = new OVXIPAddress(this.sw.getTenantId(),
-					this.match.getNetworkDestination());
-			PhysicalIPAddress pip = map.getPhysicalIP(vip,
-					this.sw.getTenantId());
-			if (pip == null) {
-				pip = new PhysicalIPAddress(map.getVirtualNetwork(
-						this.sw.getTenantId()).nextIP());
-				this.log.debug(
-						"Adding IP mapping {} -> {} for tenant {} at switch {}",
-						vip, pip, this.sw.getTenantId(), this.sw.getName());
-				map.addIP(pip, vip);
-			}
-			this.getMatch().setNetworkDestination(pip.getIp());
-		}
-
+	public OVXFlowMod clone() {
+	    OVXFlowMod flowMod = null;
+	    try {
+	        flowMod = (OVXFlowMod) super.clone();
+            } catch (CloneNotSupportedException e) {
+        	log.error("Error cloning flowMod: {}" , this);
+            }
+	    return flowMod;
 	}
 
 }

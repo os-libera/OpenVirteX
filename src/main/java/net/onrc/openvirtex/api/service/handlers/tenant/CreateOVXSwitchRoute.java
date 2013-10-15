@@ -26,8 +26,11 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 
 import org.apache.logging.log4j.LogManager;
@@ -58,6 +61,9 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 					TenantHandler.PATH, params, true, null);
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
+			HandlerUtils.isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
+			HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(), inPort.shortValue());
+			HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(), outPort.shortValue());
 
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtNetwork = map.getVirtualNetwork(tenantId
@@ -88,6 +94,8 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 			// find ingress/egress virtual ports to Big Switch
 			final OVXPort ingress = virtSwitch.getPort(inPort.shortValue());
 			final OVXPort egress = virtSwitch.getPort(outPort.shortValue());
+
+			
 
 			final List<PhysicalLink> pathLinks = new ArrayList<PhysicalLink>();
 			final List<PhysicalLink> reverseLinks = new ArrayList<PhysicalLink>();
@@ -151,6 +159,18 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Invalid tenant id : " + e.getMessage()), 0);
+		} catch (final InvalidDPIDException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+						+ ": Invalid virtual switch id : " + e.getMessage()), 0);
+		} catch (final InvalidPortException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+						+ ": Invalid virtual port id : " + e.getMessage()), 0);
+		} catch (final IndexOutOfBoundException e) {
+		    resp = new JSONRPC2Response(new JSONRPC2Error(
+			    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+			    + ": Impossible to create the virtual switch route, too many routes in this virtual switch : " + e.getMessage()), 0);
 		}
 
 		return resp;

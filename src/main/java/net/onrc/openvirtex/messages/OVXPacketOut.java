@@ -9,12 +9,11 @@
 
 package net.onrc.openvirtex.messages;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.address.OVXIPAddress;
-import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
+import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
@@ -32,6 +31,7 @@ import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
 
 public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
@@ -89,7 +89,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 				sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 				return;
 			} catch (final DroppedMessageException e) {
-				this.log.debug("Dropping packetout {}", this);
+				this.log.debug("Dropping packetOut {}", this);
 				return;
 			}
 		}
@@ -110,43 +110,47 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	}
 
 	private void prependRewriteActions(final OVXSwitch sw) {
-		final Mappable map = sw.getMap();
-
 		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			final OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(),
-					this.match.getNetworkSource());
-			PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
-			if (pip == null) {
-				pip = new PhysicalIPAddress(map.getVirtualNetwork(
-						sw.getTenantId()).nextIP());
-				this.log.debug(
-						"Adding IP mapping {} -> {} for tenant {} at switch {}",
-						vip, pip, sw.getTenantId(), sw.getName());
-				map.addIP(pip, vip);
-			}
 			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-			srcAct.setNetworkAddress(pip.getIp());
+			srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkSource()));
 			this.approvedActions.add(0, srcAct);
-
 		}
 
 		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			final OVXIPAddress vip = new OVXIPAddress(sw.getTenantId(),
-					this.match.getNetworkDestination());
-			PhysicalIPAddress pip = map.getPhysicalIP(vip, sw.getTenantId());
-			if (pip == null) {
-				pip = new PhysicalIPAddress(map.getVirtualNetwork(
-						sw.getTenantId()).nextIP());
-				this.log.debug(
-						"Adding IP mapping {} -> {} for tenant {} at switch {}",
-						vip, pip, sw.getTenantId(), sw.getName());
-				map.addIP(pip, vip);
-			}
 			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-			dstAct.setNetworkAddress(pip.getIp());
+			dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkDestination()));
 			this.approvedActions.add(0, dstAct);
-
 		}
 	}
 
+	public OVXPacketOut(final OVXPacketOut pktOut) {
+	    this.bufferId = pktOut.bufferId;
+	    this.inPort = pktOut.inPort;
+	    this.length = pktOut.length;
+	    this.packetData = pktOut.packetData;
+	    this.type = pktOut.type;
+	    this.version = pktOut.version;
+	    this.xid = pktOut.xid;
+	    this.actions = pktOut.actions;
+	    this.actionsLength = pktOut.actionsLength;
+	}
+
+	public OVXPacketOut() {
+	    super();
+	}
+	
+	public OVXPacketOut (final byte[] pktData,
+		final short inPort, final short outPort) {
+	    this.setInPort(inPort);
+	    this.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+	    final OFActionOutput outAction = new OFActionOutput(outPort);
+	    final ArrayList<OFAction> actions = new ArrayList<OFAction>();
+	    actions.add(outAction);
+	    this.setActions(actions);
+	    this.setActionsLength(outAction.getLength());
+	    this.setPacketData(pktData);
+	    this.setLengthU((short) (OFPacketOut.MINIMUM_LENGTH
+		    + this.getPacketData().length + OFActionOutput.MINIMUM_LENGTH));
+	}
+	
 }

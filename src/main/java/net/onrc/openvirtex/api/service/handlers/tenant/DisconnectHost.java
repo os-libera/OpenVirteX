@@ -45,7 +45,8 @@ public class DisconnectHost extends ApiHandler<Map<String, Object>> {
 		    TenantHandler.MAC, params, true, null);
 
 	    HandlerUtils.isValidTenantId(tenantId.intValue());
-	    HandlerUtils.isValidEdgePort(tenantId.intValue(), dpid.longValue(),
+	    
+	    HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
 		    port.shortValue());
 	    final OVXMap map = OVXMap.getInstance();
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId

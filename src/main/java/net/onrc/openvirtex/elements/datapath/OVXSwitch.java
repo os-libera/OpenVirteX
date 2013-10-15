@@ -19,8 +19,11 @@ import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.port.LinkPair;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketIn;
+import net.onrc.openvirtex.util.BitSetIndex;
+import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
@@ -67,7 +70,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 
     private AtomicInteger                            bufferId         = null;
 
-    private final AtomicInteger                      portCounter;
+    private final BitSetIndex                      portCounter;
 
     /**
      * The virtual flow table
@@ -92,7 +95,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	this.resetBackOff();
 	this.bufferMap = new LRULinkedHashMap<Integer, OVXPacketIn>(
 	        OVXSwitch.bufferDimension);
-	this.portCounter = new AtomicInteger(1);
+	this.portCounter = new BitSetIndex(IndexType.PORT_ID);
 	this.bufferId = new AtomicInteger(1);
 	this.flowTable = new OVXFlowTable(this);
 	// this.switchName = "OpenVirteX Virtual Switch 1.0";
@@ -166,38 +169,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	return this.backOffCounter.incrementAndGet();
     }
 
-    // /**
-    // * Gets the new port number.
-    // *
-    // * @return the new port number
-    // */
-    // private Short getNewPortNumber() {
-    // short portNumber = 1;
-    // final Set<Short> keys = this.portMap.keySet();
-    //
-    // if (keys.isEmpty()) {
-    // return portNumber;
-    // } else {
-    // boolean solved = false;
-    // while (solved == false && portNumber < 256) {
-    // if (!keys.contains(portNumber)) {
-    // solved = true;
-    // } else {
-    // portNumber += 1;
-    // }
-    // }
-    // if (solved == true) {
-    // return portNumber;
-    // } else {
-    // return 0;
-    // }
-    // }
-    // }
-
-    // TODO: add check for maximum value
-    // TODO: use bitmap to keep track of released port numbers
-    public short getNextPortNumber() {
-	return (short) this.portCounter.getAndIncrement();
+    public short getNextPortNumber() throws IndexOutOfBoundException {
+	return this.portCounter.getNewIndex().shortValue();
+    }
+    
+    public void relesePortNumber(short portNumber) {
+	this.portCounter.releaseIndex((int) portNumber);
     }
 
     protected void addDefaultPort(final LinkedList<OFPhysicalPort> ports) {
@@ -363,7 +340,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
      * @return
      */
     public OVXFlowMod getFlowMod(final Long cookie) {
-	return this.flowTable.getFlowMod(cookie);
+	return this.flowTable.getFlowMod(cookie).clone();
     }
 
     /**

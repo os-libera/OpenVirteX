@@ -13,14 +13,13 @@ import java.util.LinkedList;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.address.OVXIPAddress;
+import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
-import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.packet.ARP;
@@ -32,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.Wildcards.Flag;
 
 public class OVXPacketIn extends OFPacketIn implements Virtualizable {
@@ -170,7 +170,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     	if (this.tenantId == null) {
     		this.log.warn(
     				"PacketIn {} does not belong to any virtual network; "
-    						+ "dropping and intalling a temporary drop rule",
+    						+ "dropping and installing a temporary drop rule",
     						this);
     		this.installDropRule(sw, match);
     		return;
@@ -197,28 +197,22 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     		this.setInPort(this.ovxPort.getPortNumber());
     		vSwitch.sendMsg(this, sw);
     	}
+    	else if (this.port == null) {
+    	    log.error("The port {} doesn't belong to the physical switch {}", this.getInPort(), sw.getName());
+    	}
+    	else if (this.ovxPort == null) {
+    	    log.error("No virtual port associated to physical port {} in physical switch {} for virtual network {}", 
+    		this.getInPort(), sw.getName(), this.tenantId);
+    	}
     }
 
     private void learnAddresses(final OFMatch match, final Mappable map) {
 	if (match.getDataLayerType() == 0x800
 	        || match.getDataLayerType() == 0x806) {
-	    final OVXNetwork vnet = map.getVirtualNetwork(this.tenantId);
-
-	    OVXIPAddress vip = new OVXIPAddress(this.tenantId,
-		    match.getNetworkSource());
-	    if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)
-		    && map.getPhysicalIP(vip, this.tenantId) == null) {
-		final PhysicalIPAddress pip = new PhysicalIPAddress(
-		        vnet.nextIP());
-		map.addIP(pip, vip);
-	    }
-	    vip = new OVXIPAddress(this.tenantId, match.getNetworkDestination());
-	    if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)
-		    && map.getPhysicalIP(vip, this.tenantId) == null) {
-		final PhysicalIPAddress pip = new PhysicalIPAddress(
-		        vnet.nextIP());
-		map.addIP(pip, vip);
-	    }
+	    if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) 
+		IPMapper.getPhysicalIp(this.tenantId, match.getNetworkSource());
+	    if (!match.getWildcardObj().isWildcarded(Flag.NW_DST))
+		IPMapper.getPhysicalIp(this.tenantId, match.getNetworkDestination());
 	}
     }
 
@@ -251,6 +245,18 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     }
 
     public OVXPacketIn() {
+	super();
+    }
+    
+    public OVXPacketIn (final byte[] data, final short portNumber) {
+	this();
+	this.setInPort(portNumber);
+	this.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+	this.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
+	this.setPacketData(data);
+	this.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + this
+	        .getPacketData().length));
+	this.setLengthU(OFPacketIn.MINIMUM_LENGTH + this.getPacketData().length);
     }
 
 }

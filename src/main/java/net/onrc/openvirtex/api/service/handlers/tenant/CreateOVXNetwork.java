@@ -16,6 +16,7 @@ import net.onrc.openvirtex.elements.address.IPAddress;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.ControllerUnavailableException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 
 import org.apache.logging.log4j.LogManager;
@@ -46,8 +47,7 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
 			final Number netMask = HandlerUtils.<Number> fetchField(
 					TenantHandler.NETMASK, params, true, null);
 
-			HandlerUtils
-					.isControllerAvailable(ctrlAddress, ctrlPort.intValue());
+			HandlerUtils.isControllerAvailable(ctrlAddress, ctrlPort.intValue());
 			final IPAddress addr = new OVXIPAddress(netAddress, -1);
 			final OVXNetwork virtualNetwork = new OVXNetwork(protocol,
 					ctrlAddress, ctrlPort.intValue(), addr,
@@ -67,6 +67,10 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
 					new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
 							this.cmdName() + ": Controller already in use : "
 									+ e.getMessage()), 0);
+		} catch (final IndexOutOfBoundException e) {
+		    resp = new JSONRPC2Response(new JSONRPC2Error(
+			    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+			    + ": Impossible to create the virtual network, too many networks : " + e.getMessage()), 0);
 		}
 
 		return resp;

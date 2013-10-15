@@ -9,8 +9,6 @@
 
 package net.onrc.openvirtex.messages.actions;
 
-
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +16,12 @@ import java.util.Map;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
+import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
@@ -31,8 +31,6 @@ import net.onrc.openvirtex.routing.SwitchRoute;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMatch;
-import org.openflow.protocol.OFPacketIn;
-import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
@@ -61,7 +59,6 @@ public class OVXActionOutput extends OFActionOutput implements
 	     */
 	    
 	    // Retrieve the flowMod from the virtual flow map
-	    // TODO: Ask Ayaka to return a copy of the FlowMod
 	    final OVXFlowMod fm = sw.getFlowMod(match.getCookie());
 	    // TODO: Check if the FM has been retrieved
 	    
@@ -79,7 +76,6 @@ public class OVXActionOutput extends OFActionOutput implements
 		    final LinkedList<OFAction> outActions = new LinkedList<OFAction>();
 
 		    //Retrieve the route between the two OVXPorts
-		    final PhysicalPort outPhyPort = outPort.getPhysicalPort();
 		    final OVXBigSwitch bigSwitch = (OVXBigSwitch) outPort
 			    .getParentSwitch();
 		    final SwitchRoute route = bigSwitch.getRoute(inPort,
@@ -100,8 +96,10 @@ public class OVXActionOutput extends OFActionOutput implements
 			        .getVirtualNetwork(sw.getTenantId())
 			        .getLink(dstPort, inPort);
 			if (link != null) {
-			    approvedActions.addAll(link.unsetLinkFields(match,
-				    sw));
+			    flowId = sw.getMap().getVirtualNetwork(sw.getTenantId()).
+					getFlowId(match.getDataLayerSource(), match.getDataLayerDestination());
+			    OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);
+			    approvedActions.addAll(lUtils.unsetLinkFields());
 			} else {
 			    this.log.error(
 				    "Cannot retrieve the virtual link between ports {} {}, dropping message",
@@ -122,7 +120,7 @@ public class OVXActionOutput extends OFActionOutput implements
 		     */
 		    if (outPort.isEdge()) {
 			outActions.addAll(this.prependUnRewriteActions(match));
-			route.generateRouteFMs(fm, outActions, outPhyPort, sw);
+			route.generateRouteFMs(fm, outActions, inPort, outPort);
 		    } else {
 			final OVXPort dstPort = sw.getMap()
 			        .getVirtualNetwork(sw.getTenantId())
@@ -131,15 +129,21 @@ public class OVXActionOutput extends OFActionOutput implements
 			        .getVirtualNetwork(sw.getTenantId())
 			        .getLink(outPort, dstPort);
 			linkId = link.getLinkId();
-			flowId = sw
-			        .getMap()
-			        .getVirtualNetwork(sw.getTenantId())
-			        .storeFlowValues(match.getDataLayerSource(),
-			                match.getDataLayerDestination());
-			link.generateLinkFMs(fm, flowId, sw);
-			outActions.addAll(link.setLinkFields(sw.getTenantId(),
-			        linkId, flowId));
-			route.generateRouteFMs(fm, outActions, outPhyPort, sw);
+			try {
+	                    flowId = sw
+	                            .getMap()
+	                            .getVirtualNetwork(sw.getTenantId())
+	                            .storeFlowValues(match.getDataLayerSource(),
+	                                    match.getDataLayerDestination());
+	                    link.generateLinkFMs(fm.clone(), flowId);
+	                    outActions.addAll(new OVXLinkUtils(sw.getTenantId(), linkId, flowId).setLinkFields());
+	                    route.generateRouteFMs(fm, outActions, inPort, outPort);
+                        } catch (IndexOutOfBoundException e) {
+                            log.error("Too many host to generate the flow pairs in this virtual network {}. "
+                            	+ "Dropping flow-mod {} ", sw.getTenantId(), fm);
+                            throw new DroppedMessageException();
+                        }
+
 		    }
 		    //add the output action with the physical outPort (srcPort of the route)
 		    if (inPort.getPhysicalPortNumber() != route.getPathSrcPort().getPortNumber())
@@ -171,15 +175,20 @@ public class OVXActionOutput extends OFActionOutput implements
 				    .getVirtualNetwork(sw.getTenantId())
 				    .getLink(outPort, dstPort);
 			    linkId = link.getLinkId();
-			    flowId = sw
-				    .getMap()
-				    .getVirtualNetwork(sw.getTenantId())
-				    .storeFlowValues(
-				            match.getDataLayerSource(),
-				            match.getDataLayerDestination());
-			    link.generateLinkFMs(fm, flowId, sw);
-			    approvedActions.addAll(link.setLinkFields(
-				    sw.getTenantId(), linkId, flowId));
+			    try {
+	                        flowId = sw
+	                            .getMap()
+	                            .getVirtualNetwork(sw.getTenantId())
+	                            .storeFlowValues(
+	                                    match.getDataLayerSource(),
+	                                    match.getDataLayerDestination());
+	                        link.generateLinkFMs(fm.clone(), flowId);
+	                        approvedActions.addAll(new OVXLinkUtils(sw.getTenantId(), linkId, flowId).setLinkFields());
+                            } catch (IndexOutOfBoundException e) {
+                                log.error("Too many host to generate the flow pairs in this virtual network {}. "
+                                    	+ "Dropping flow-mod {} ", sw.getTenantId(), fm);
+                                throw new DroppedMessageException();
+                            }
 			}
 		    } else {
 			if (outPort.isEdge()) {
@@ -199,8 +208,10 @@ public class OVXActionOutput extends OFActionOutput implements
 				    .getVirtualNetwork(sw.getTenantId())
 				    .getLink(dstPort, inPort);
 			    if (link != null) {
-				approvedActions.addAll(link.unsetLinkFields(
-				        match, sw));
+				    flowId = sw.getMap().getVirtualNetwork(sw.getTenantId()).
+						getFlowId(match.getDataLayerSource(), match.getDataLayerDestination());
+				    OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);
+				    approvedActions.addAll(lUtils.unsetLinkFields());
 			    } else {
 				// TODO: substitute all the return with
 				// exceptions
@@ -217,15 +228,20 @@ public class OVXActionOutput extends OFActionOutput implements
 				    .getVirtualNetwork(sw.getTenantId())
 				    .getLink(outPort, dstPort);
 			    linkId = link.getLinkId();
-			    flowId = sw
-				    .getMap()
-				    .getVirtualNetwork(sw.getTenantId())
-				    .storeFlowValues(
-				            match.getDataLayerSource(),
-				            match.getDataLayerDestination());
-			    link.generateLinkFMs(fm, flowId, sw);
-			    approvedActions.addAll(link.setLinkFields(
-				    sw.getTenantId(), linkId, flowId));
+			    try {
+	                        flowId = sw
+	                            .getMap()
+	                            .getVirtualNetwork(sw.getTenantId())
+	                            .storeFlowValues(
+	                                    match.getDataLayerSource(),
+	                                    match.getDataLayerDestination());
+	                        link.generateLinkFMs(fm.clone(), flowId);
+	                        approvedActions.addAll(new OVXLinkUtils(sw.getTenantId(), linkId, flowId).setLinkFields());
+                            } catch (IndexOutOfBoundException e) {
+                                log.error("Too many host to generate the flow pairs in this virtual network {}. "
+                                    	+ "Dropping flow-mod {} ", sw.getTenantId(), fm);
+                                throw new DroppedMessageException();
+                            }
 			}
 		    }
 		    if (inPort.getPhysicalPortNumber() != outPort.getPhysicalPortNumber())
@@ -261,7 +277,7 @@ public class OVXActionOutput extends OFActionOutput implements
 			        .getVirtualNetwork(sw.getTenantId())
 			        .getNeighborPort(outPort);
 			dstPort.getParentSwitch().sendMsg(
-			        this.createPacketIn(match.getPktData(),
+			        new OVXPacketIn(match.getPktData(),
 			                dstPort.getPortNumber()), null);
 			this.log.debug(
 			        "The outPort is of type Link, generate a packetIn from OVX Port {}, phisicalPort {}",
@@ -286,7 +302,7 @@ public class OVXActionOutput extends OFActionOutput implements
 				final PhysicalPort dstPort = outPort
 					.getPhysicalPort();
 				dstPort.getParentSwitch().sendMsg(
-					this.createPacketOut(match.getPktData(),
+					new OVXPacketOut(match.getPktData(),
 						srcPort.getPortNumber(),
 						dstPort.getPortNumber()), null);
 				this.log.debug(
@@ -352,34 +368,4 @@ public class OVXActionOutput extends OFActionOutput implements
 	}
 	return actions;
     }
-
-    private OVXPacketIn createPacketIn(final byte[] data, final short portNumber) {
-	final OVXPacketIn msg = new OVXPacketIn();
-	msg.setInPort(portNumber);
-	msg.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-	msg.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
-	msg.setPacketData(data);
-	msg.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + msg
-	        .getPacketData().length));
-	msg.setLengthU(OFPacketIn.MINIMUM_LENGTH + msg.getPacketData().length);
-	return msg;
-    }
-
-    private OVXPacketOut createPacketOut(final byte[] pktData,
-	    final short inPort, final short outPort) {
-	final OVXPacketOut msg = new OVXPacketOut();
-	msg.setInPort(inPort);
-	msg.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-	final OFActionOutput outAction = new OFActionOutput(outPort);
-	final ArrayList<OFAction> actions = new ArrayList<OFAction>();
-	actions.add(outAction);
-	msg.setActions(actions);
-	msg.setActionsLength(outAction.getLength());
-	msg.setPacketData(pktData);
-	msg.setLengthU((short) (OFPacketOut.MINIMUM_LENGTH
-	        + msg.getPacketData().length + OFActionOutput.MINIMUM_LENGTH));
-	return msg;
-    }
-
-
 }

@@ -8,9 +8,18 @@
 package net.onrc.openvirtex.elements.link;
 
 import java.util.BitSet;
+import java.util.LinkedList;
+import java.util.List;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.util.MACAddress;
+
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionDataLayerDestination;
+import org.openflow.protocol.action.OFActionDataLayerSource;
+import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
 
 /**
  * The Class OVXLinkUtils. This class provides some useful methods to
@@ -199,6 +208,12 @@ public class OVXLinkUtils {
 	return this.vlan;
     }
 
+    public LinkedList<MACAddress> getOriginalMacAddresses() {
+	final LinkedList<MACAddress> macList = OVXMap.getInstance()
+	        .getVirtualNetwork(this.tenantId).getFlowValues(this.flowId);
+	return macList;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -211,4 +226,48 @@ public class OVXLinkUtils {
 	        + ", dstMac = " + this.dstMac + ", vlan = " + this.vlan;
     }
 
+    public void rewriteMatch(final OFMatch match) {
+	final OVXLinkField linkField = OpenVirteXController.getInstance()
+	        .getOvxLinkField();
+	if (linkField == OVXLinkField.MAC_ADDRESS) {
+	    match.setDataLayerSource(this.getSrcMac().toBytes());
+	    match.setDataLayerDestination(this.getDstMac().toBytes());
+	} else
+	    if (linkField == OVXLinkField.VLAN) {
+		match.setDataLayerVirtualLan(this.getVlan());
+	    }
+    }
+
+    public List<OFAction> setLinkFields() {
+	final List<OFAction> actions = new LinkedList<OFAction>();
+	final OVXLinkField linkField = OpenVirteXController.getInstance()
+	        .getOvxLinkField();
+	if (linkField == OVXLinkField.MAC_ADDRESS) {
+	    actions.add(new OFActionDataLayerSource(this.getSrcMac().toBytes()));
+	    actions.add(new OFActionDataLayerDestination(this.getDstMac()
+		    .toBytes()));
+	} else
+	    if (linkField == OVXLinkField.VLAN) {
+		actions.add(new OFActionVirtualLanIdentifier(this.getVlan()));
+	    }
+	return actions;
+    }
+
+    public List<OFAction> unsetLinkFields() {
+	final List<OFAction> actions = new LinkedList<OFAction>();
+	final OVXLinkField linkField = OpenVirteXController.getInstance()
+	        .getOvxLinkField();
+	if (linkField == OVXLinkField.MAC_ADDRESS) {
+	    final LinkedList<MACAddress> macList = this
+		    .getOriginalMacAddresses();
+	    actions.add(new OFActionDataLayerSource(macList.get(0).toBytes()));
+	    actions.add(new OFActionDataLayerDestination(macList.get(1)
+		    .toBytes()));
+	} else
+	    if (linkField == OVXLinkField.VLAN) {
+		// actions.add(new
+		// OFActionVirtualLanIdentifier(getOriginalVlan()));
+	    }
+	return actions;
+    }
 }
