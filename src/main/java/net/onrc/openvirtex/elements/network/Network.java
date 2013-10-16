@@ -159,16 +159,30 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	 * Return switch instance based on its dpid
 	 * 
 	 * @param dpid
-	 * @return
+	 * @return switch
 	 */
 	public T1 getSwitch(final Long dpid) {
 		return this.dpidMap.get(dpid);
 	}
 
+	/**
+	 * Return a set of switches belonging to the network
+	 * 
+	 * @return set of switches
+	 */
 	public Set<T1> getSwitches() {
 		return Collections.unmodifiableSet(this.switchSet);
 	}
 
+	/**
+	 * Return a set of links belonging to the network
+	 * 
+	 * @return set of links
+	 */
+	public Set<T3> getLinks() {
+		return Collections.unmodifiableSet(this.linkSet);
+	}
+	
 	// TODO: optimize this because we iterate over all links
 	public T3 getLink(final T2 srcPort, final T2 dstPort) {
 		for (final T3 link : this.linkSet) {

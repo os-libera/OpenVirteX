@@ -19,9 +19,9 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.Devirtualizable;
-import net.onrc.openvirtex.routing.ManualRoute;
 import net.onrc.openvirtex.routing.Routable;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
+import net.onrc.openvirtex.routing.ShortestPath;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.BitSetIndex;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
@@ -54,8 +54,8 @@ public class OVXBigSwitch extends OVXSwitch {
 
     public OVXBigSwitch(final long switchId, final int tenantId) {
 	super(switchId, tenantId);
-	this.alg = RoutingAlgorithms.NONE;
-	this.routing = new ManualRoute();
+	this.alg = RoutingAlgorithms.SPF;
+	this.routing = new ShortestPath();
 	this.routeMap = new HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>();
 	this.routeCounter = new BitSetIndex(IndexType.ROUTE_ID);
     }
@@ -120,7 +120,7 @@ public class OVXBigSwitch extends OVXSwitch {
 	}
 	return routes;
     }
-	
+
     public HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> getRouteMap() {
 	return this.routeMap;
     }
@@ -174,8 +174,26 @@ public class OVXBigSwitch extends OVXSwitch {
 
     @Override
     public boolean boot() {
+	/**
+	 * If the bigSwitch internal routing mechanism is not manual,
+	 * pre-compute all the path
+	 * between switch ports during the boot. The path is computed only if
+	 * the ovxPorts belong
+	 * to different physical switches.
+	 */
+	if (this.alg != RoutingAlgorithms.NONE) {
+	    for (final OVXPort srcPort : this.portMap.values()) {
+		for (final OVXPort dstPort : this.portMap.values()) {
+		    if (srcPort.getPortNumber() != dstPort.getPortNumber()
+			    && srcPort.getPhysicalPort().getParentSwitch() != dstPort
+			            .getPhysicalPort().getParentSwitch()) {
+			this.getRoute(srcPort, dstPort);
+		    }
+		}
+	    }
+	}
+
 	return super.boot();
-	// TODO: Start the internal routing protocol
     }
 
     public boolean unregisterRoute(final OVXPort inPort, final OVXPort outPort) {
@@ -191,22 +209,22 @@ public class OVXBigSwitch extends OVXSwitch {
 	    for (final OVXPort outPort : this.routeMap.get(inPort).keySet()) {
 		this.map.removeRoute(this.routeMap.get(inPort).get(outPort));
 	    }
-	super.unregister();
+	    super.unregister();
 	}
     }
-	
+
     /**
-     * Tries to gracefully disable the parts of this BVS that map to the 
-     * specified PhysicalSwitch. This method returns true if the shutdown of the 
+     * Tries to gracefully disable the parts of this BVS that map to the
+     * specified PhysicalSwitch. This method returns true if the shutdown of the
      * PhysicalSwitch does not compromise this switch's functions e.g. a
-     * backup path can be found through the switch. 
+     * backup path can be found through the switch.
      * 
      * @param phySwitch
      * @return true for success, false otherwise.
      */
-    public boolean tryRecovery(PhysicalSwitch phySwitch) {
-	//TODO actually do recovery. 	    
-	return false;    
+    public boolean tryRecovery(final PhysicalSwitch phySwitch) {
+	// TODO actually do recovery.
+	return false;
     }
 
     /**
@@ -224,18 +242,18 @@ public class OVXBigSwitch extends OVXSwitch {
     @Override
     public String toString() {
 	return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
-		+ this.switchName + "\n- isConnected: " + this.isConnected
-		+ "\n- tenantId: " + this.tenantId + "\n- missSendLenght: "
-		+ this.missSendLen + "\n- isActive: " + this.isActive
-		+ "\n- capabilities: "
-		+ this.capabilities.getOVXSwitchCapabilities()
-		+ "\n- algorithm: " + this.alg.getValue();
+	        + this.switchName + "\n- isConnected: " + this.isConnected
+	        + "\n- tenantId: " + this.tenantId + "\n- missSendLenght: "
+	        + this.missSendLen + "\n- isActive: " + this.isActive
+	        + "\n- capabilities: "
+	        + this.capabilities.getOVXSwitchCapabilities()
+	        + "\n- algorithm: " + this.alg.getValue();
     }
 
     @Override
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
 	if (inPort == null) {
-	    /* TODO for some OFTypes, we can recover an inport. */    
+	    /* TODO for some OFTypes, we can recover an inport. */
 	    return;
 	}
 	final PhysicalSwitch sw = inPort.getPhysicalPort().getParentSwitch();
@@ -273,7 +291,14 @@ public class OVXBigSwitch extends OVXSwitch {
 	this.addToRouteMap(ingress, egress, rtEntry);
 	this.addToRouteMap(egress, ingress, revRtEntry);
 
-	OVXBigSwitch.log.info("Added route {}", rtEntry);
+	OVXBigSwitch.log
+	        .info("Added route for big-switch {} between ports ({},{}) with path: {}",
+	                this.switchName, ingress.getPortNumber(),
+	                egress.getPortNumber(), path.toString());
+	OVXBigSwitch.log
+	        .info("Added route for big-switch {} between ports ({},{}) with path: {}",
+	                this.switchName, egress.getPortNumber(),
+	                ingress.getPortNumber(), revpath.toString());
 	return routeId;
     }
 

@@ -43,15 +43,17 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	this.hardwareAddress = MACAddress.valueOf((long) 0xa42305 << 24 | this.portNumber).toBytes();
 	this.isEdge = isEdge;
 	// advertise current speed/duplex as 1GB FD, media type copper
-	this.currentFeatures = 160;
-	// advertise current feature + 10GB FD + 10MB FD
-	this.advertisedFeatures = 234;
-	// advertise all the OF1.0 physical port speeds and duplex. Advertise
-	// media type as copper
-	this.supportedFeatures = 255;
+	PortFeatures features = new PortFeatures();
+	features.setCurrentOVXPortFeatures();
+	this.currentFeatures = features.getOVXFeatures();
+	features.setAdvertisedOVXPortFeatures();
+	this.advertisedFeatures = features.getOVXFeatures();
+	features.setSupportedOVXPortFeatures();
+	this.supportedFeatures = features.getOVXFeatures();
+	features.setPeerOVXPortFeatures();
+	this.peerFeatures = features.getOVXFeatures();
 	this.state = OFPortState.OFPPS_STP_BLOCK.getValue();
 	this.config = 0;
-	this.peerFeatures = 0;
 	this.linkId = 0;
     }
 

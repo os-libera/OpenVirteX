@@ -9,11 +9,9 @@
 
 package net.onrc.openvirtex.elements.port;
 
-import net.onrc.openvirtex.messages.OVXPortStatus;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
-import org.openflow.protocol.OFPortStatus.OFPortReason;
 
 /**
  * The Class Port.
@@ -109,6 +107,15 @@ public class Port<T1, T2> extends OFPhysicalPort {
 	 */
 	public LinkPair<T2> getLink() {
 	    return this.portLink;
+	}
+	
+	/**
+	 * 
+	 * @return the highest nominal throughput currently exposed by the port
+	 */
+	public Integer getCurrentThroughput() {
+	    PortFeatures feature = new PortFeatures(this.currentFeatures);
+	    return feature.getHighestThroughput();
 	}
 	
 	@Override

@@ -8,7 +8,7 @@
 package net.onrc.openvirtex.routing;
 
 public enum RoutingAlgorithms {
-	NONE((short) 0), SFP((short) 1);
+	NONE((short) 0), SPF((short) 1);
 
 	protected short value;
 	/** the routable */
