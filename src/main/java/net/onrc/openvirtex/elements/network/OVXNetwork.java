@@ -257,7 +257,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	// create the reverse list of physical links
 	final List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>();
 	for (final PhysicalLink phyLink : Lists.reverse(physicalLinks)) {
-	    reversePhysicalLinks.add(new PhysicalLink(phyLink.getDstPort(),
+	    reversePhysicalLinks.add(PhysicalNetwork.getInstance().getLink(phyLink.getDstPort(),
 		    phyLink.getSrcPort()));
 
 	}
