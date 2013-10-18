@@ -19,6 +19,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.port.Port;
+import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 import org.apache.logging.log4j.LogManager;
@@ -161,7 +162,10 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	 * @param dpid
 	 * @return switch
 	 */
-	public T1 getSwitch(final Long dpid) {
+	public T1 getSwitch(final Long dpid) throws InvalidDPIDException {
+		if (!this.dpidMap.containsKey(dpid)) {
+			throw new InvalidDPIDException("DPID " + dpid + " is unknown ");
+		}
 		return this.dpidMap.get(dpid);
 	}
 

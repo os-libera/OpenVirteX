@@ -30,6 +30,12 @@ public abstract class IPAddress {
 		this.ip = ip;
 	}
 
+	public String toSimpeString() {
+		return (this.ip >> 24) + "."
+				+ (this.ip >> 16 & 0xFF) + "." + (this.ip >> 8 & 0xFF) + "."
+				+ (this.ip & 0xFF);
+	}
+	
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName() + "[" + (this.ip >> 24) + "."

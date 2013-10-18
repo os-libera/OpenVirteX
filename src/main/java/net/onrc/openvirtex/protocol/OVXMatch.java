@@ -11,7 +11,13 @@
 package net.onrc.openvirtex.protocol;
 
 
+import java.util.HashMap;
+
+
 import org.openflow.protocol.OFMatch;
+import org.openflow.util.HexString;
+import org.openflow.util.U16;
+import org.openflow.util.U8;
 
 /**
  * The Class OVXMatch. This class extends the OFMatch class, in order to carry some useful informations for OpenVirteX, 
@@ -116,5 +122,86 @@ public class OVXMatch extends OFMatch {
     public boolean isPacketOut() {
 	return this.pktData != null;
     }
+
+	public static class cidrToIp {
+		public static String cidrToString(final int ip, final int prefix) {
+			String str;
+			if (prefix >= 32) {
+				str = OFMatch.ipToString(ip);
+			} else {
+				// use the negation of mask to fake endian magic
+				final int mask = ~((1 << 32 - prefix) - 1);
+				str = OFMatch.ipToString(ip & mask) + "/" + prefix;
+			}
+
+			return str;
+		}
+	}
+
+	public HashMap<String, Object> toMap() {
+
+		final HashMap<String, Object> ret = new HashMap<String, Object>();
+
+		// l1
+		if ((this.wildcards & OFMatch.OFPFW_IN_PORT) == 0) {
+			ret.put(OFMatch.STR_IN_PORT, U16.f(this.inputPort));
+		}
+
+		// l2
+		if ((this.wildcards & OFMatch.OFPFW_DL_DST) == 0) {
+			ret.put(OFMatch.STR_DL_DST,
+					HexString.toHexString(this.dataLayerDestination));
+		}
+
+		if ((this.wildcards & OFMatch.OFPFW_DL_SRC) == 0) {
+			ret.put(OFMatch.STR_DL_SRC,
+					HexString.toHexString(this.dataLayerSource));
+		}
+
+		if ((this.wildcards & OFMatch.OFPFW_DL_TYPE) == 0) {
+			ret.put(OFMatch.STR_DL_TYPE, U16.f(this.dataLayerType));
+		}
+
+		if ((this.wildcards & OFMatch.OFPFW_DL_VLAN) == 0) {
+			ret.put(OFMatch.STR_DL_VLAN, U16.f(this.dataLayerVirtualLan));
+		}
+
+		if ((this.wildcards & OFMatch.OFPFW_DL_VLAN_PCP) == 0) {
+			ret.put(OFMatch.STR_DL_VLAN_PCP,
+					U8.f(this.dataLayerVirtualLanPriorityCodePoint));
+		}
+
+		// l3
+		if (this.getNetworkDestinationMaskLen() > 0) {
+			ret.put(OFMatch.STR_NW_DST,
+					cidrToIp.cidrToString(this.networkDestination,
+							this.getNetworkDestinationMaskLen()));
+		}
+
+		if (this.getNetworkSourceMaskLen() > 0) {
+			ret.put(OFMatch.STR_NW_SRC,
+					cidrToIp.cidrToString(this.networkSource,
+							this.getNetworkSourceMaskLen()));
+		}
+
+		if ((this.wildcards & OFMatch.OFPFW_NW_PROTO) == 0) {
+			ret.put(OFMatch.STR_NW_PROTO, this.networkProtocol);
+		}
+
+		if ((this.wildcards & OFMatch.OFPFW_NW_TOS) == 0) {
+			ret.put(OFMatch.STR_NW_TOS, this.networkTypeOfService);
+		}
+
+		// l4
+		if ((this.wildcards & OFMatch.OFPFW_TP_DST) == 0) {
+			ret.put(OFMatch.STR_TP_DST, this.transportDestination);
+		}
+
+		if ((this.wildcards & OFMatch.OFPFW_TP_SRC) == 0) {
+			ret.put(OFMatch.STR_TP_SRC, this.transportSource);
+		}
+
+		return ret;
+	}
 
 }

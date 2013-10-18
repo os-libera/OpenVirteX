@@ -7,9 +7,11 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -184,63 +186,77 @@ public class OVXFlowTable {
 	return this.flowmodMap.get(cookie);
     }
     
-    /**
-     * Add a FlowMod to the mapping
-     * @param flowmod
-     * @return the new physical cookie
-     */
-    public long addFlowMod(OVXFlowMod flowmod) {
-	long cookie = generateCookie();
-	this.flowmodMap.put(cookie, flowmod);
-	return cookie;
-    }
-    
-    /**
-     * Remove an entry in the mapping
-     * @param cookie
-     * @return
-     */
-    public OVXFlowMod deleteFlowMod(Long cookie) {
-	synchronized(this.freeList) {
-	    if (this.freeList.size() <= FREELIST_SIZE) {
-		//add/return cookie to freelist IF list is below FREELIST_SIZE
-		this.freeList.add(cookie);
-	    } else {
-		//remove head element, then add
-		this.freeList.remove();
-	    	this.freeList.add(cookie);
-	    }
-	    return this.flowmodMap.remove(cookie);
+
+
+   
+
+	/**
+	 * Add a FlowMod to the mapping
+	 * 
+	 * @param flowmod
+	 * @return the new physical cookie
+	 */
+	public long addFlowMod(final OVXFlowMod flowmod) {
+		final long cookie = this.generateCookie();
+		this.flowmodMap.put(cookie, flowmod);
+		return cookie;
 	}
-    }
-    
-    /**
-     * Fetch a usable cookie for FlowMod storage. If no cookies are available,
-     * generate a new physical cookie from the OVXSwitch tenant ID and
-     * OVXSwitch-unique cookie counter.
-     * 
-     * @return a physical cookie
-     */
-    private long generateCookie() {
-	try {
-	    return this.freeList.remove();
-	} catch (final NoSuchElementException e) {
-	    // none in queue - generate new cookie
-	    // TODO double-check that there's no duplicate in flowmod map.
-	    final long cookie = this.cookieCounter.getAndIncrement();
-	    return (long) this.vswitch.getTenantId() << 32 | cookie;
+
+	/**
+	 * Remove an entry in the mapping
+	 * 
+	 * @param cookie
+	 * @return
+	 */
+	public OVXFlowMod deleteFlowMod(final Long cookie) {
+		synchronized (this.freeList) {
+			if (this.freeList.size() <= OVXFlowTable.FREELIST_SIZE) {
+				// add/return cookie to freelist IF list is below FREELIST_SIZE
+				this.freeList.add(cookie);
+			} else {
+				// remove head element, then add
+				this.freeList.remove();
+				this.freeList.add(cookie);
+			}
+			return this.flowmodMap.remove(cookie);
+		}
 	}
-    }
-    
-    /**
-     * dump the contents of the FlowTable
-     */
-    public void dump() {
-	String ret = "";
-	for (OVXFlowEntry fe : this.flowTable) {
-	    ret += fe.toString() + "\n";
+
+	/**
+	 * Fetch a usable cookie for FlowMod storage. If no cookies are available,
+	 * generate a new physical cookie from the OVXSwitch tenant ID and
+	 * OVXSwitch-unique cookie counter.
+	 * 
+	 * @return a physical cookie
+	 */
+	private long generateCookie() {
+		try {
+			return this.freeList.remove();
+		} catch (final NoSuchElementException e) {
+			// none in queue - generate new cookie
+			// TODO double-check that there's no duplicate in flowmod map.
+			final long cookie = this.cookieCounter.getAndIncrement();
+			return (long) this.vswitch.getTenantId() << 32 | cookie;
+		}
 	}
-	log.info("OVXFlowTable \n========================\n"+ret+"========================\n");
+
+	/**
+	 * dump the contents of the FlowTable
+	 */
+	public void dump() {
+		String ret = "";
+		for (final OVXFlowEntry fe : this.flowTable) {
+			ret += fe.toString() + "\n";
+		}
+		this.log.info("OVXFlowTable \n========================\n" + ret
+				+ "========================\n");
+		
+
+	}
+	
+    public Set<OVXFlowEntry> getFlowTable() {
+    	return Collections.unmodifiableSet(this.flowTable);
     }
+
 
 }

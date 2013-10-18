@@ -53,13 +53,11 @@ public class RemoveOVXLink extends ApiHandler<Map<String, Object>> {
 		link.unregister();
 	    }
 	    //TODO: Karthik doesn't put a return code in the unregister functs... Add it
-	    if (linkList == null) {
-		resp = new JSONRPC2Response(-1, 0);
-	    } else {
+	    
 		this.log.info("Removed virtual link {} in virtual network {}",
 			linkId, tenantId);
 		resp = new JSONRPC2Response(1, 0);
-	    }
+	    
 
 	} catch (final MissingRequiredField e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(

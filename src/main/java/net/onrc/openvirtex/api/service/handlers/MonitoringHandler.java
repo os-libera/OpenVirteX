@@ -11,6 +11,8 @@ import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalTopology;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetSubnet;
+import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualAddressMapping;
+import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualFlowtable;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualLinkMapping;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualSwitchMapping;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualTopology;
@@ -29,6 +31,7 @@ public class MonitoringHandler extends AbstractHandler implements
 
 	public static final String TENANT = "tenantId";
 	public static final String MAC = "mac";
+	public static final String DPID = "dpid";
 
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
@@ -40,8 +43,8 @@ public class MonitoringHandler extends AbstractHandler implements
 			this.put("getVirtualLinkMapping", new GetVirtualLinkMapping());
 			this.put("listHosts", new ListHosts());
 			this.put("getSubnet", new GetSubnet());
-			this.put("removePhysicalLink", null);
-			this.put("getVirtualFlowTable", null);
+			this.put("getVirtualFlowtable", new GetVirtualFlowtable());
+			this.put("getVirtualAddressMapping", new GetVirtualAddressMapping());
 		}
 	};
 

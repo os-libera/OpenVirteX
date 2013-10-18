@@ -156,6 +156,11 @@ public class OVXMap implements Mappable {
 		this.addVirtualLink(virtualLink, physicalLink);
 	}
 
+	public Iterable<CharSequence> getAllKeys() {
+		return this.virtualIPMap.getClosestKeys("");
+	}
+	
+
 	/**
 	 * This is the generic function which takes as arguments the
 	 * PhysicalIPAddress and the OVXIPAddress. This will add the value into both
