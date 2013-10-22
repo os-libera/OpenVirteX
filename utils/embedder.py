@@ -271,7 +271,8 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
   def doBigSwitchNetwork(self, controller, subnet, hosts):
     client = self.server.client
     # request physical topology
-    phyTopo = json.loads(client.getPhysicalTopology())
+    #phyTopo = json.loads(client.getPhysicalTopology())
+    phyTopo = client.getPhysicalTopology()
     # spawn controller if necessary
     # TODO: do proper string comparison
     if controller['type'] == 'default':
@@ -296,18 +297,18 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     hostPortMap = {}
     for host in hosts:
       hostPortMap[host['mac']] = client.connectHost(tenantId, parseDpid(host['dpid']), host['port'], host['mac'])
-    # calculate routing and configure virtual switch
-    routing = Routing(phyTopo)
-    for src_index in xrange(0, len(hosts)):
-      src = hosts[src_index]
-      for dst_index in xrange(src_index + 1, len(hosts)):
-        dst = hosts[dst_index]
-        if src['dpid'] != dst['dpid']:
-          route = routing.getRoute(src['dpid'], dst['dpid'])
-          path = routing.parseRoute(route)
-          srcPort = parseDpid(hostPortMap[src['mac']])
-          dstPort = parseDpid(hostPortMap[dst['mac']])
-          client.createSwitchRoute(tenantId, switchId, srcPort, dstPort, path)
+    # # calculate routing and configure virtual switch
+    # routing = Routing(phyTopo)
+    # for src_index in xrange(0, len(hosts)):
+    #   src = hosts[src_index]
+    #   for dst_index in xrange(src_index + 1, len(hosts)):
+    #     dst = hosts[dst_index]
+    #     if src['dpid'] != dst['dpid']:
+    #       route = routing.getRoute(src['dpid'], dst['dpid'])
+    #       path = routing.parseRoute(route)
+    #       srcPort = parseDpid(hostPortMap[src['mac']])
+    #       dstPort = parseDpid(hostPortMap[dst['mac']])
+    #       client.createSwitchRoute(tenantId, switchId, srcPort, dstPort, path)
     # boot network
     client.startNetwork(tenantId)
 
@@ -316,7 +317,8 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
   def doPhysicalNetwork(self, controller, subnet, hosts):
     client = self.server.client
     # request physical topology
-    phyTopo = json.loads(client.getPhysicalTopology())
+    #phyTopo = json.loads(client.getPhysicalTopology())
+    phyTopo = client.getPhysicalTopology()
     # spawn controller if necessary
     if controller['type'] == 'default':
       proto = self.server.ctrlProto
