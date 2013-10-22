@@ -12,8 +12,10 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXFlowEntry;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
 import org.openflow.protocol.OFMatch;
 
@@ -60,14 +62,19 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Unable to fetch virtual topology : "
 							+ e.getMessage()), 0);
-		}
+		} catch (NetworkMappingException | AddressMappingException e) {
+			this.resp = new JSONRPC2Response(new JSONRPC2Error(
+				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+						+ ": Unable to fetch virtual topology : "
+						+ e.getMessage()), 0);
+                }
 
 		return this.resp;
 
 	}
 
 	private void translate(final Map<String, Object> entry, final OVXMap map,
-			final Integer tid) {
+			final Integer tid) throws AddressMappingException {
 		if (entry.containsKey(OFMatch.STR_NW_SRC)) {
 			entry.put(
 					OFMatch.STR_NW_SRC,

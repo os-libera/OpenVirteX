@@ -14,6 +14,7 @@ import java.util.Collections;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.Virtualizable;
 
 import org.apache.logging.log4j.LogManager;
@@ -49,17 +50,22 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		@Override
 		public void run() {
 	        	// TODO Auto-generated method stub
-			OVXSwitch vsw = psw.map.getVirtualSwitch(psw, tid);
-			if (vsw != null) {
-				/* save = don't destroy the switch, it can be saved */    
-		    		boolean save = false;
-		    		if (vsw instanceof OVXBigSwitch) {    
-					save = ((OVXBigSwitch) vsw).tryRecovery(psw);    	    
-		    		} 
-		    		if (!save) {
-		    			vsw.unregister();
-		    		}
-			}
+			OVXSwitch vsw;
+                        try {
+				vsw = psw.map.getVirtualSwitch(psw, tid);
+				if (vsw != null) {
+					/* save = don't destroy the switch, it can be saved */    
+		    			boolean save = false;
+			    		if (vsw instanceof OVXBigSwitch) {    
+						save = ((OVXBigSwitch) vsw).tryRecovery(psw);    	    
+			    		} 
+		    			if (!save) {
+		    				vsw.unregister();
+		    			}
+				}
+                        } catch (SwitchMappingException e) {
+                    		log.warn("Inconsistency in OVXMap: {}", e.getMessage());
+        	    	}
 		}
 	}
 	
@@ -191,10 +197,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 */
 	@Override
 	public String toString() {
-
-		return "DPID : " + this.featuresReply.getDatapathId()
+		return "DPID : " + this.switchId 
 				+ ", remoteAddr : "
-				+ this.channel.getRemoteAddress().toString();
+				+ ((this.channel == null) ? "None" : this.channel.getRemoteAddress().toString());
 	}
 
 	/**

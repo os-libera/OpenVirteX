@@ -12,6 +12,7 @@ package net.onrc.openvirtex.messages;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
@@ -19,6 +20,7 @@ import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
@@ -105,23 +107,28 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	private void prepAndSendSouth(OVXPort inPort) {
 		this.getMatch().setInputPort(inPort.getPhysicalPortNumber());
 		OVXMessageUtil.translateXid(this, inPort);
-		if (inPort.isEdge()) {
-		    	this.prependRewriteActions();
-		} else {
-			IPMapper.rewriteMatch(sw.getTenantId(), this.match);
-			//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
-			if (inPort != null && inPort.isLink()) {
-				//rewrite the OFMatch with the values of the link
-				OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(inPort);
-				OVXLink link = sw.getMap().getVirtualNetwork(sw.getTenantId()).getLink(dstPort, inPort);
-				if (link != null) {
-				    Integer flowId = sw.getMap().getVirtualNetwork(sw.getTenantId()).
-					    getFlowId(this.match.getDataLayerSource(), this.match.getDataLayerDestination());
-				    OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);
-				    lUtils.rewriteMatch(this.getMatch());
+		try {
+			if (inPort.isEdge()) {
+			    	this.prependRewriteActions();
+			} else {
+				IPMapper.rewriteMatch(sw.getTenantId(), this.match);
+				//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
+				if (inPort != null && inPort.isLink()) {
+					//rewrite the OFMatch with the values of the link
+					OVXNetwork vnet = sw.getMap().getVirtualNetwork(sw.getTenantId());    	
+					OVXPort dstPort = vnet.getNeighborPort(inPort);
+					OVXLink link = vnet.getLink(dstPort, inPort);
+					if (link != null) {
+					    Integer flowId = sw.getMap().getVirtualNetwork(sw.getTenantId()).
+						    getFlowId(this.match.getDataLayerSource(), this.match.getDataLayerDestination());
+					    OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);
+					    lUtils.rewriteMatch(this.getMatch());
+					}
 				}
 			}
-		}
+		} catch (NetworkMappingException e) {
+			log.warn(e);                    
+                }
 		this.computeLength();
 		if (sw.getFlowTable().handleFlowMods(this)) {
 			sw.sendSouth(this, inPort);
@@ -141,14 +148,12 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
 			srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkSource()));
 			this.approvedActions.add(0, srcAct);
-
 		}
 
 		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
 			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
 			dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkDestination()));
 			this.approvedActions.add(0, dstAct);
-
 		}
 	}
 

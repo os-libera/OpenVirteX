@@ -15,6 +15,9 @@ import org.openflow.protocol.OFMatch;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
 public class IPMapper {
     static Logger log = LogManager.getLogger(IPMapper.class.getName());
@@ -22,18 +25,24 @@ public class IPMapper {
     public static Integer getPhysicalIp(Integer tenantId, Integer virtualIP) {
 	final Mappable map = OVXMap.getInstance();
 	final OVXIPAddress vip = new OVXIPAddress(tenantId, virtualIP);
-	PhysicalIPAddress pip = map.getPhysicalIP(vip, tenantId);
-	if (pip == null) {
-	    try {
-	        pip = new PhysicalIPAddress(map.getVirtualNetwork(tenantId).nextIP());
-            } catch (IndexOutOfBoundException e) {
-	        log.error("No available physical IPs for virtual ip {} in tenant {}",vip, tenantId);
-	        return 0;
-            }
-	    log.debug("Adding IP mapping {} -> {} for tenant {}", vip, pip, tenantId);
-	    map.addIP(pip, vip);
+	try {
+	    PhysicalIPAddress pip;
+	    if (map.hasPhysicalIP(vip, tenantId)) {
+		pip = map.getPhysicalIP(vip, tenantId);
+	    } else {
+		pip = new PhysicalIPAddress(map.getVirtualNetwork(tenantId).nextIP());
+		log.debug("Adding IP mapping {} -> {} for tenant {}", vip, pip, tenantId);
+		map.addIP(pip, vip);
+	    }
+	    return pip.getIp();
+	} catch (IndexOutOfBoundException e) {
+	    log.error("No available physical IPs for virtual ip {} in tenant {}",vip, tenantId);
+	} catch (NetworkMappingException e) {
+	    log.error(e);
+	} catch (AddressMappingException e) {
+	    log.error("Inconsistency in Physical-Virtual mapping : {}", e);
 	}
-	return pip.getIp();
+	return 0;
     }
     
     public static void rewriteMatch(Integer tenantId, OFMatch match) {

@@ -19,6 +19,7 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.apache.logging.log4j.LogManager;
@@ -82,6 +83,10 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		    + ": Impossible to create the virtual port, too many ports on this virtual switch : " + e.getMessage()), 0);
+	}  catch (NetworkMappingException e) {
+		resp = new JSONRPC2Response(new JSONRPC2Error(
+			JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
 	}
 
 	return resp;

@@ -13,6 +13,7 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.protocol.OVXMatch;
 import net.onrc.openvirtex.util.MACAddress;
 
@@ -28,13 +29,17 @@ public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
 			final List<OFAction> approvedActions, final OVXMatch match)
 			throws ActionVirtualizationDenied {
 		final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
-		final Integer tid = sw.getMap().getMAC(mac);
-		if (tid != sw.getTenantId()) {
-			throw new ActionVirtualizationDenied("Target mac " + mac
-					+ " is not in virtual network " + sw.getTenantId(),
-					OFBadActionCode.OFPBAC_EPERM);
-		}
-		approvedActions.add(this);
+		final int tid;
+                try {
+			tid = sw.getMap().getMAC(mac);
+                	if (tid != sw.getTenantId()) {
+				throw new ActionVirtualizationDenied("Target mac " + mac
+						+ " is not in virtual network " + sw.getTenantId(),
+						OFBadActionCode.OFPBAC_EPERM);
+			}
+			approvedActions.add(this);
+                } catch (AddressMappingException e) {
+	        }
 	}
 
 }

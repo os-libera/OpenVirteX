@@ -30,6 +30,8 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 
@@ -159,6 +161,15 @@ public class CreateOVXSwitchRoute extends ApiHandler<Map<String, Object>> {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Invalid tenant id : " + e.getMessage()), 0);
+		} catch (NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+						+ ": " + e.getMessage()), 0);
+                } catch (SwitchMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+							+ ": Unable to create virtual switch route : "
+							+ e.getMessage()), 0);
 		} catch (final InvalidDPIDException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()

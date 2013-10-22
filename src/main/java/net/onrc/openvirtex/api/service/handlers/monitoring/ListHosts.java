@@ -20,6 +20,7 @@ import net.onrc.openvirtex.elements.host.HostSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 import net.onrc.openvirtex.util.MACAddressSerializer;
 
@@ -35,32 +36,30 @@ public class ListHosts extends ApiHandler<Map<String, Object>> {
 	public JSONRPC2Response process(final Map<String, Object> params) {
 		Map<String, Object> result;
 		JSONRPC2Response resp = null;
-
+		Number tid = null;
 		try {
-			final Number tid = HandlerUtils.<Number> fetchField(
+			tid = HandlerUtils.<Number> fetchField(
 					MonitoringHandler.TENANT, params, true, null);
 			final OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
 					tid.intValue());
-			if (vnet == null) {
-				resp = new JSONRPC2Response(new JSONRPC2Error(
-						JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-								+ ": Invalid tenantId : " + tid), 0);
-			} else {
-				// TODO: gson objects can be shared with other methods
-				final GsonBuilder gsonBuilder = new GsonBuilder();
-				// gsonBuilder.setPrettyPrinting();
-				gsonBuilder.registerTypeAdapter(Host.class,
-						new HostSerializer());
-				final Gson gson = gsonBuilder.create();
-				result = gson.fromJson(gson.toJson(gson.toJson(vnet.getHosts())), Map.class );
-				resp = new JSONRPC2Response(result, 0);
-			}
-			return resp;
+			
+			// TODO: gson objects can be shared with other methods
+			final GsonBuilder gsonBuilder = new GsonBuilder();
+			// gsonBuilder.setPrettyPrinting();
+			gsonBuilder.registerTypeAdapter(Host.class,
+				new HostSerializer());
+			final Gson gson = gsonBuilder.create();
+			result = gson.fromJson(gson.toJson(gson.toJson(vnet.getHosts())), Map.class );
+			resp = new JSONRPC2Response(result, 0);
 		} catch (ClassCastException | MissingRequiredField e) {
 			resp = new JSONRPC2Response(
 					new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
 							this.cmdName() + ": Unable to fetch host list : "
 									+ e.getMessage()), 0);
+		} catch (NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+							+ ": Invalid tenantId : " + tid), 0);
 		}
 		return resp;
 	}

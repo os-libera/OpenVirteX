@@ -16,6 +16,8 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
 public class GetVirtualSwitchMapping extends ApiHandler<Map<String, Object>> {
 
@@ -36,7 +38,9 @@ public class GetVirtualSwitchMapping extends ApiHandler<Map<String, Object>> {
 			}
 			resp = new JSONRPC2Response(res, 0);
 			
-		} catch (ClassCastException | MissingRequiredField | NullPointerException e) {
+		} catch (ClassCastException | MissingRequiredField | 
+			NullPointerException | NetworkMappingException | 
+			SwitchMappingException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Unable to fetch virtual topology : "

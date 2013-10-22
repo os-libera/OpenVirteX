@@ -28,6 +28,7 @@ import net.onrc.openvirtex.elements.port.OVXPortSerializer;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.elements.port.PhysicalPortSerializer;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -46,9 +47,9 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 	public JSONRPC2Response process(final Map<String, Object> params) {
 		Map<String, Object> result;
 		JSONRPC2Response resp = null;
-
+		Number tid = null;
 		try {
-			Number tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT, params, true, null);
+			tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT, params, true, null);
 			OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(tid.intValue());
 			// TODO: gson objects can be shared with other methods
 			final GsonBuilder gsonBuilder = new GsonBuilder();
@@ -70,6 +71,10 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Unable to fetch virtual topology : "
 							+ e.getMessage()), 0);
+		} catch (NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+						+ ": Invalid tenantId : " + tid), 0);
 		}
 		return resp;
 	}

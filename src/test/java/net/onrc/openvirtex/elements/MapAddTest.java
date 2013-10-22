@@ -18,6 +18,8 @@ import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
 public class MapAddTest extends TestCase {
@@ -46,15 +48,19 @@ public class MapAddTest extends TestCase {
 				this.map.addIP(new PhysicalIPAddress(i), new OVXIPAddress(j, i));
 			}
 		}
-
-		for (int i = 0; i < this.MAXIPS; i++) {
-			for (int j = 0; j < this.MAXTIDS; j++) {
-				Assert.assertEquals(
-						this.map.getVirtualIP(new PhysicalIPAddress(i)),
-						new OVXIPAddress(j, i));
+		try {
+			for (int i = 0; i < this.MAXIPS; i++) {
+				for (int j = 0; j < this.MAXTIDS; j++) {
+			        	Assert.assertEquals(
+	                            		this.map.getVirtualIP(new PhysicalIPAddress(i)),
+	                            		new OVXIPAddress(j, i));
+                            
+				}
 			}
-		}
-
+		} catch (AddressMappingException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }	
 	}
 
 	public void testAddSwitches() {
@@ -71,25 +77,30 @@ public class MapAddTest extends TestCase {
 				this.map.addSwitches(Collections.singletonList(sw), vsw);
 			}
 		}
-
-		for (int i = 0; i < this.MAXPSW; i++) {
-			for (int j = 0; j < this.MAXTIDS; j++) {
-				Assert.assertEquals(this.map.getVirtualSwitch(p_sw.get(i), j),
+		try {
+			for (int i = 0; i < this.MAXPSW; i++) {
+				for (int j = 0; j < this.MAXTIDS; j++) {
+					Assert.assertEquals(this.map.getVirtualSwitch(p_sw.get(i), j),
 						v_sw.remove(0));
+				}
 			}
+		} catch (SwitchMappingException e) {
+			e.printStackTrace();
 		}
-
 	}
 
 	public void testAddMacs() {
 		for (int i = 0; i < this.MAXPSW; i++) {
 			this.map.addMAC(MACAddress.valueOf(i), i % this.MAXTIDS);
 		}
-
-		for (int i = 0; i < this.MAXPSW; i++) {
-			Assert.assertEquals((int) this.map.getMAC(MACAddress.valueOf(i)), i
-					% this.MAXTIDS);
-		}
+		try {
+			for (int i = 0; i < this.MAXPSW; i++) {
+				Assert.assertEquals((int) this.map.getMAC(MACAddress.valueOf(i)), i
+	                    		% this.MAXTIDS);
+                	}
+		} catch (AddressMappingException e) {
+                   	e.printStackTrace();
+                }
 
 	}
 

@@ -23,6 +23,7 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
 public class StopNetwork extends ApiHandler<Map<String, Object>> {
 
@@ -59,7 +60,11 @@ public class StopNetwork extends ApiHandler<Map<String, Object>> {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		            + ": Invalid tenant id : " + e.getMessage()), 0);
-	}
+	} catch (NetworkMappingException e) {
+	    resp = new JSONRPC2Response(new JSONRPC2Error(
+		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+		            + ": " + e.getMessage()), 0);
+        }
 
 	return resp;
     }

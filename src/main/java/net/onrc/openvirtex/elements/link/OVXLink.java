@@ -15,6 +15,12 @@ import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXFlowMod;
@@ -100,10 +106,14 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 
     @Override
     public void unregister() {
-	final Mappable map = this.srcPort.getParentSwitch().getMap();
-	map.removeVirtualLink(this);
-	map.getVirtualNetwork(this.tenantId).removeLink(this);
-	this.srcPort.unregister();
+    	try {
+    	    final Mappable map = this.srcPort.getParentSwitch().getMap();
+    	    map.removeVirtualLink(this);
+    	    map.getVirtualNetwork(this.tenantId).removeLink(this);
+    	    this.srcPort.unregister();
+    	} catch (NetworkMappingException e) {
+    	    log.warn("could not unregister OVXLink: " + e.getMessage() );
+    	}
     }
 
     /**
@@ -135,10 +145,16 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	PhysicalPort outPort = null;
 	fm.setBufferId(OVXPacketOut.BUFFER_ID_NONE);
 
-	final OVXLink reverseLink = this.map.getVirtualNetwork(this.tenantId)
-	        .getLink(this.dstPort, this.srcPort);
-	for (final PhysicalLink phyLink : this.map
-	        .getPhysicalLinks(reverseLink)) {
+	List<PhysicalLink> plinks;
+	try {
+	    final OVXLink reverseLink = this.map.getVirtualNetwork(this.tenantId)
+		        .getLink(this.dstPort, this.srcPort);
+	    plinks = this.map.getPhysicalLinks(reverseLink); 	
+	} catch (LinkMappingException | NetworkMappingException e) {
+		log.warn("No physical Links mapped to OVXLink? : {}", e);
+		return;
+	}
+	for (final PhysicalLink phyLink : plinks) {
 	    if (outPort != null) {
 		inPort = phyLink.getSrcPort();
 		fm.getMatch().setInputPort(inPort.getPortNumber());

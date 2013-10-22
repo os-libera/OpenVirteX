@@ -10,10 +10,7 @@
 
 package net.onrc.openvirtex.protocol;
 
-
 import java.util.HashMap;
-
-
 import org.openflow.protocol.OFMatch;
 import org.openflow.util.HexString;
 import org.openflow.util.U16;

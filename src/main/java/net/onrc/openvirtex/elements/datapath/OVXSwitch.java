@@ -19,12 +19,16 @@ import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.port.LinkPair;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.util.BitSetIndex;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
@@ -35,6 +39,9 @@ import org.openflow.util.LRULinkedHashMap;
  * The Class OVXSwitch.
  */
 public abstract class OVXSwitch extends Switch<OVXPort> {
+    
+    private static Logger log = LogManager.getLogger(OVXSwitch.class
+		.getName());
 
     /**
      * Datapath description string should this be made specific per type of
@@ -224,7 +231,11 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	}
 
 	// remove the switch from the map
-	this.map.getVirtualNetwork(this.tenantId).removeSwitch(this);
+	try {
+	    this.map.getVirtualNetwork(this.tenantId).removeSwitch(this);
+	} catch (NetworkMappingException e) {
+	    log.warn(e.getMessage());
+	}
 	this.map.removeVirtualSwitch(this);
 	this.tearDown();
     }
@@ -328,6 +339,9 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	return false;
     }
 
+    /**
+     * @return This OVXSwitch's flow table
+     */
     public OVXFlowTable getFlowTable() {
 	return this.flowTable;
     }
@@ -370,10 +384,15 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
      * @param msg The OFMessage being translated
      * @param inPort The ingress port 
      * @return the new message XID
+     * @throws SwitchMappingException 
      */
     public abstract int translate(OFMessage msg, OVXPort inPort);
 
     /**
+     * Sends a message towards the physical network, via the PhysicalSwitch mapped to this OVXSwitch. 
+     * 
+     * @param msg The OFMessage being translated
+     * @param inPort The ingress port, used to identify the PhysicalSwitch underlying an OVXBigSwitch. May be null. 
      * Sends a message towards the physical network
      * 
      * @param msg The OFMessage being translated

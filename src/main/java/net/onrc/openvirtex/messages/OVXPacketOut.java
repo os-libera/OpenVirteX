@@ -96,7 +96,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
 		this.setInPort(inport.getPhysicalPortNumber());
 		this.prependRewriteActions(sw);
-		this.setActions(this.approvedActions);
+                this.setActions(this.approvedActions);
 		this.setActionsLength((short) 0);
 		this.setLengthU(OVXPacketOut.MINIMUM_LENGTH + this.packetData.length);
 		for (final OFAction act : this.approvedActions) {

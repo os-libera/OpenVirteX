@@ -20,6 +20,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 
 public class GetVirtualAddressMapping extends ApiHandler<Map<String, Object>> {
@@ -49,7 +50,7 @@ public class GetVirtualAddressMapping extends ApiHandler<Map<String, Object>> {
 			
 			resp = new JSONRPC2Response(res, 0);
 			
-		} catch (ClassCastException | MissingRequiredField e) {
+		} catch (ClassCastException | MissingRequiredField | AddressMappingException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Unable to fetch virtual topology : "

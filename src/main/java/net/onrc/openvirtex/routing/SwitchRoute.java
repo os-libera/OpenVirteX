@@ -19,6 +19,9 @@ import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
@@ -184,43 +187,47 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> {
 
 	final SwitchRoute reverseRoute = ((OVXBigSwitch) ovxInPort
 	        .getParentSwitch()).getRoute(ovxOutPort, ovxInPort);
-	for (final PhysicalLink phyLink : OVXMap.getInstance().getRoute(
-	        reverseRoute)) {
-	    if (outPort != null) {
-		inPort = phyLink.getSrcPort();
-		fm.getMatch().setInputPort(inPort.getPortNumber());
-		fm.setLengthU(OVXFlowMod.MINIMUM_LENGTH
-		        + OVXActionOutput.MINIMUM_LENGTH);
-		fm.setActions(Arrays.asList((OFAction) new OFActionOutput(
-		        outPort.getPortNumber(), (short) 0xffff)));
-		phyLink.getSrcPort().getParentSwitch()
-		        .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
-		this.log.debug(
-		        "Sending big-switch route intermediate fm to sw {}: {}",
-		        phyLink.getSrcPort().getParentSwitch().getName(), fm);
+	try {
+	    for (final PhysicalLink phyLink : OVXMap.getInstance().getRoute(
+	            reverseRoute)) {
+	        if (outPort != null) {
+	    	inPort = phyLink.getSrcPort();
+	    	fm.getMatch().setInputPort(inPort.getPortNumber());
+	    	fm.setLengthU(OVXFlowMod.MINIMUM_LENGTH
+	    	        + OVXActionOutput.MINIMUM_LENGTH);
+	    	fm.setActions(Arrays.asList((OFAction) new OFActionOutput(
+	    	        outPort.getPortNumber(), (short) 0xffff)));
+	    	phyLink.getSrcPort().getParentSwitch()
+	    	        .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
+	    	this.log.debug(
+	    	        "Sending big-switch route intermediate fm to sw {}: {}",
+	    	        phyLink.getSrcPort().getParentSwitch().getName(), fm);
 
-	    } else {
-		/*
-	         * Last fm. Differs from the others because it can apply
-	         * additional actions to the flow
-	         */
-		fm.getMatch()
-		        .setInputPort(phyLink.getSrcPort().getPortNumber());
-		int actLenght = 0;
-		additionalActions.add(new OFActionOutput(ovxOutPort
-		        .getPhysicalPortNumber(), (short) 0xffff));
-		fm.setActions(additionalActions);
-		for (final OFAction act : additionalActions) {
-		    actLenght += act.getLengthU();
-		}
-		fm.setLengthU(OVXFlowMod.MINIMUM_LENGTH + actLenght);
-		phyLink.getSrcPort().getParentSwitch()
-		        .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
-		this.log.debug("Sending big-switch route last fm to sw {}: {}",
-		        phyLink.getSrcPort().getParentSwitch().getName(), fm);
+	        } else {
+	    	/*
+	             * Last fm. Differs from the others because it can apply
+	             * additional actions to the flow
+	             */
+	    	fm.getMatch()
+	    	        .setInputPort(phyLink.getSrcPort().getPortNumber());
+	    	int actLenght = 0;
+	    	additionalActions.add(new OFActionOutput(ovxOutPort
+	    	        .getPhysicalPortNumber(), (short) 0xffff));
+	    	fm.setActions(additionalActions);
+	    	for (final OFAction act : additionalActions) {
+	    	    actLenght += act.getLengthU();
+	    	}
+	    	fm.setLengthU(OVXFlowMod.MINIMUM_LENGTH + actLenght);
+	    	phyLink.getSrcPort().getParentSwitch()
+	    	        .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
+	    	this.log.debug("Sending big-switch route last fm to sw {}: {}",
+	    	        phyLink.getSrcPort().getParentSwitch().getName(), fm);
+	        }
+	        outPort = phyLink.getDstPort();
 	    }
-	    outPort = phyLink.getDstPort();
-	}
+        } catch (LinkMappingException e) {
+	    log.warn("Could not fetch route : {}", e);
+        }
 		
 	// TODO: With POX we need to put a timeout between this flows and the
 	// first flowMod. Check how to solve

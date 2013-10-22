@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -26,7 +27,10 @@ import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidLinkException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.exceptions.VirtualLinkException;
 
 public class HandlerUtils {
@@ -102,7 +106,9 @@ public class HandlerUtils {
 	public static void isValidTenantId(final int tenantId)
 			throws InvalidTenantIdException {
 		final OVXMap map = OVXMap.getInstance();
-		if (map.getVirtualNetwork(tenantId) == null) {
+		try {
+		    map.getVirtualNetwork(tenantId);
+		} catch (NetworkMappingException e) {
 			throw new InvalidTenantIdException(
 					"The tenant id you have provided does not refer to a virtual network. TenantId: "
 							+ String.valueOf(tenantId));
@@ -120,7 +126,14 @@ public class HandlerUtils {
 	public static void isValidLinkId(final int tenantId, final int linkId)
 		throws InvalidTenantIdException {
 	    final OVXMap map = OVXMap.getInstance();
-	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);   
+	    OVXNetwork virtualNetwork;
+            try {
+	        virtualNetwork = map.getVirtualNetwork(tenantId);
+            } catch (NetworkMappingException e) {
+        	throw new InvalidTenantIdException(
+			"The tenant id you have provided does not refer to a virtual network. TenantId: "
+					+ String.valueOf(tenantId));
+            }   
 	    LinkedList<OVXLink> linkList = virtualNetwork.getLinksById(linkId);
 	    if (linkList == null) {
 		throw new InvalidLinkException(
@@ -138,7 +151,14 @@ public class HandlerUtils {
 	 */
 	public static void isValidOVXSwitch(final int tenantId, final long dpid) {
 	    final OVXMap map = OVXMap.getInstance();
-	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);   
+	    OVXNetwork virtualNetwork;
+            try {
+	        virtualNetwork = map.getVirtualNetwork(tenantId);
+            } catch (NetworkMappingException e) {
+        	throw new InvalidTenantIdException(
+			"The tenant id you have provided does not refer to a virtual network. TenantId: "
+					+ String.valueOf(tenantId));
+            }   
 	    OVXSwitch sw = virtualNetwork.getSwitch(dpid);
 	    if (sw == null) {
 		throw new InvalidDPIDException(
@@ -175,12 +195,16 @@ public class HandlerUtils {
 								+ String.valueOf(dpid));
 			}
 
-			if (OVXMap.getInstance().getVirtualSwitch(sw, tenantId) != null) {
+			try {
+				OVXSwitch vsw = OVXMap.getInstance().getVirtualSwitch(sw, tenantId);
+				if (vsw != null) {
 				throw new InvalidDPIDException(
-						"The physical dpid is already part of a "
-								+ "virtual switch in the virtual network you have specified. dpid: "
-								+ String.valueOf(dpid));
-			}
+            				"The physical dpid is already part of a "
+            				+ "virtual switch in the virtual network you have specified. dpid: "
+            				+ String.valueOf(dpid));
+			    	}
+                        } catch (SwitchMappingException e) {
+                        }
 		}
 	}
 
@@ -192,9 +216,10 @@ public class HandlerUtils {
 	 * @param dpid
 	 * @param portNumber
 	 * @throws InvalidPortException
+	 * @throws NetworkMappingException 
 	 */
 	public static void isValidOVXPort(final int tenantId, final long dpid,
-		final short portNumber) throws InvalidPortException {
+		final short portNumber) throws InvalidPortException, NetworkMappingException {
 	    final OVXSwitch sw = OVXMap.getInstance().getVirtualNetwork(tenantId).getSwitch(dpid);
 	    if (sw == null || sw.getPort(portNumber) == null) {
 		throw new InvalidPortException(
@@ -245,15 +270,14 @@ public class HandlerUtils {
 		final OVXMap map = OVXMap.getInstance();
 
 		// Get virtual links that also use first hop of physical path
-		final List<OVXLink> intersection = map.getVirtualLinks(
-				physicalLinks.get(0), tenantId);
+		final List<OVXLink> intersection = fetchOVXLink(map, physicalLinks.get(0), tenantId);
 		if (intersection == null) {
 			return;
 		}
 
 		// Find vlinks which also contain the remaining physical hops
 		for (final PhysicalLink link : physicalLinks) {
-			final List<OVXLink> overlap = map.getVirtualLinks(link, tenantId);
+			final List<OVXLink> overlap = fetchOVXLink(map, link, tenantId);
 			if (overlap == null) {
 				return;
 			}
@@ -269,7 +293,12 @@ public class HandlerUtils {
 		while (iter.hasNext()) {
 			final OVXLink vlink = iter.next();
 			// Check physical path lengths
-			final List<PhysicalLink> path = map.getPhysicalLinks(vlink);
+			List<PhysicalLink> path;
+                        try {
+	                    path = map.getPhysicalLinks(vlink);
+                        } catch (LinkMappingException e) {
+	                    throw new RuntimeException("Unexpected Inconsistency in OXVMap: " + e.getMessage());
+                        }
 			if (path.size() != physicalLinks.size()) {
 				iter.remove();
 				continue;
@@ -289,5 +318,17 @@ public class HandlerUtils {
 
 		throw new VirtualLinkException(
 				"Virtual link already exists. cannot create the same virtual link in the same virtual network.");
+	}
+	
+	protected static List<OVXLink> fetchOVXLink(Mappable map, PhysicalLink phyLink, int tenantId) {
+	    	if (map.hasOVXLinks(phyLink, tenantId)) {
+		    try {
+	                return map.getVirtualLinks(phyLink, tenantId);
+		    } catch (LinkMappingException e) {
+	                throw new RuntimeException("Unexpected Inconsistency in OXVMap: " + e.getMessage());
+		    }
+		} else {
+			return null;
+		}
 	}
 }

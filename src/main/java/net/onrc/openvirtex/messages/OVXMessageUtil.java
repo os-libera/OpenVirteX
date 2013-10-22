@@ -12,6 +12,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.XidPair;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
 import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.OFError.OFBadRequestCode;
@@ -118,15 +119,17 @@ public class OVXMessageUtil {
 		final int newXid = OVXMessageUtil.translateXid(msg, vsw);
 
 		if (vsw instanceof OVXBigSwitch) {
-			// no port info for BigSwitch, to all its PhysicalSwitches. Is this
-			// ok?
-			for (final PhysicalSwitch psw : vsw.getMap().getPhysicalSwitches(
-					vsw)) {
-				final int xid = psw.translate(msg, vsw);
-				msg.setXid(xid);
-				psw.sendMsg(msg, vsw);
-				msg.setXid(newXid);
-			}
+			// no port info for BigSwitch, to all its PhysicalSwitches. Is this ok?
+			try {
+				for (final PhysicalSwitch psw : vsw.getMap().getPhysicalSwitches(vsw)) {
+					final int xid = psw.translate(msg, vsw);
+					msg.setXid(xid);
+					psw.sendMsg(msg, vsw);
+					msg.setXid(newXid);
+				}
+                        } catch (SwitchMappingException e) {
+				//log warning                     
+                        }
 		} else {
 			vsw.sendSouth(msg, null);
 		}

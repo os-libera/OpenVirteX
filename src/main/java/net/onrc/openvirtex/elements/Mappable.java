@@ -18,6 +18,10 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
 
@@ -91,14 +95,16 @@ public interface Mappable {
 	 * @param tenantId
 	 * @return Physical IP address associated with virtual IP and tenant ID
 	 */
-	public PhysicalIPAddress getPhysicalIP(OVXIPAddress ip, Integer tenantId);
+	public PhysicalIPAddress getPhysicalIP(OVXIPAddress ip, Integer tenantId)
+			throws AddressMappingException;
 
 	/**
 	 * 
 	 * @param ip
 	 * @return Virtual IP address associated with physical IP
 	 */
-	public OVXIPAddress getVirtualIP(PhysicalIPAddress ip);
+	public OVXIPAddress getVirtualIP(PhysicalIPAddress ip)
+			throws AddressMappingException;
 
 	/**
 	 * get the virtualSwitch which has been specified by the physicalSwitch and
@@ -112,7 +118,7 @@ public interface Mappable {
 	 *         in the OVXNetwork
 	 */
 	public OVXSwitch getVirtualSwitch(PhysicalSwitch physicalSwitch,
-			Integer tenantId);
+			Integer tenantId) throws SwitchMappingException;
 
 	/**
 	 * Get the list of OVXLinks that are part of virtual network identified by
@@ -126,7 +132,7 @@ public interface Mappable {
 	 *         the OVXNetwork
 	 */
 	public List<OVXLink> getVirtualLinks(PhysicalLink physicalLink,
-			Integer tenantId);
+			Integer tenantId) throws LinkMappingException;
 
 	/**
 	 * get the physicalLinks that all make up a specified virtualLink. Return a
@@ -139,7 +145,8 @@ public interface Mappable {
 	 * @return physicalLinks A List of PhysicalLink objects which represent a
 	 *         single source and destination PhysicalPort and PhysicalSwitch
 	 */
-	public List<PhysicalLink> getPhysicalLinks(OVXLink virtualLink);
+	public List<PhysicalLink> getPhysicalLinks(OVXLink virtualLink)
+			throws LinkMappingException;
 
 	/**
 	 * get the physicalSwitches that are contained in the virtualSwitch. for a
@@ -152,7 +159,8 @@ public interface Mappable {
 	 * @return physicalSwitches A List of PhysicalSwitch objects that are each
 	 *         part of the OVXSwitch specified
 	 */
-	public List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch);
+	public List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch)
+			throws SwitchMappingException;
 
 	/**
 	 * use the tenantId to return the OVXNetwork object.
@@ -164,14 +172,15 @@ public interface Mappable {
 	 * @return virtualNetwork A OVXNetwork object that represents all the
 	 *         information related to a virtual network
 	 */
-	public OVXNetwork getVirtualNetwork(Integer tenantId);
+	public OVXNetwork getVirtualNetwork(Integer tenantId)
+			throws NetworkMappingException;
 
 	/**
 	 * 
 	 * @param mac
 	 * @return tenantId associated with MAC address
 	 */
-	public Integer getMAC(MACAddress mac);
+	public Integer getMAC(MACAddress mac) throws AddressMappingException;
 	
 	
 	/**
@@ -227,14 +236,14 @@ public interface Mappable {
 	 * @param route
 	 * @return A list of PhysicalLinks making up the path for a given SwitchRoute. 
 	 */
-	public List<PhysicalLink> getRoute(SwitchRoute route);
+	public List<PhysicalLink> getRoute(SwitchRoute route) throws LinkMappingException;
 	
 	/**
 	 * @param physicalLink
 	 * @return The routes associated with the supplied PhysicalLink
  	 */
 	public Set<SwitchRoute> getSwitchRoutes(PhysicalLink physicalLink,
-			Integer tenantId);
+			Integer tenantId) throws LinkMappingException;
 	
 	/**
 	 * Removes a SwitchRoute from mappings
@@ -249,5 +258,51 @@ public interface Mappable {
 	 * @param physicalLink
 	 */
 	public void removePhysicalLink(PhysicalLink physicalLink);
+	
+	/**
+	 * Removes a PhysicalSwitch from Mappable mappings. 
+	 * 
+	 * @param physicalSwitch
+	 */
+	public void removePhysicalSwitch(PhysicalSwitch physicalSwitch);
+	
+	
+	/*
+	 * Below: helper functions needed to avoid using error exception for flow control 
+	 */
+	/**
+	 * @param vip Virtual IP address 
+	 * @param tenantId the ID representing a virtual network. 
+	 * @return true if a PhysicalIPAddress exists in this map
+	 */
+	public boolean hasPhysicalIP(OVXIPAddress vip, Integer tenantId);
+
+	/**
+	 * @param ip The physical IP address 
+	 * @return true if a mapping exists 
+	 */
+	public boolean hasVirtualIP(PhysicalIPAddress ip);
+
+	/**
+	 * @param mac
+	 * @return true if a MACAddress exists in this map
+	 */
+	public boolean hasMAC(MACAddress mac);
+
+	/**
+	 * @param physicalLink the PhysicalLink
+	 * @param tenantId the ID representing a virtual network.
+	 * @return true if a PhysicalLink maps to any SwitchRoutes
+	 */
+	public boolean hasSwitchRoutes(final PhysicalLink physicalLink,
+		final Integer tenantId);
+
+	/**
+	 * @param physicalLink the PhysicalLink
+	 * @param tenantId the ID representing a virtual network.
+	 * @return true if a PhysicalLink maps to any OVXLinks
+	 */
+	public boolean hasOVXLinks(final PhysicalLink physicalLink,
+		final Integer tenantId);
 
 }

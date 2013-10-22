@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.Devirtualizable;
 
 import org.apache.logging.log4j.LogManager;
@@ -82,10 +83,16 @@ public class OVXSingleSwitch extends OVXSwitch {
 	}
 	
 	private PhysicalSwitch getPhySwitch(OVXPort inPort) {
+	    	PhysicalSwitch psw = null;
 		if (inPort == null) {
-			return this.map.getPhysicalSwitches(this).get(0);
+			try {
+				psw = this.map.getPhysicalSwitches(this).get(0);
+			} catch (SwitchMappingException e) {
+				log.warn("Cannot recover physical switch : {}", e);
+			}
 		} else {
 			return inPort.getPhysicalPort().getParentSwitch();
 		}
+		return psw;
 	}
 }

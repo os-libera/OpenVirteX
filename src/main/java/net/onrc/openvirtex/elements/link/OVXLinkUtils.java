@@ -13,6 +13,7 @@ import java.util.List;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFMatch;
@@ -208,7 +209,8 @@ public class OVXLinkUtils {
 	return this.vlan;
     }
 
-    public LinkedList<MACAddress> getOriginalMacAddresses() {
+    public LinkedList<MACAddress> getOriginalMacAddresses() 
+	    	throws NetworkMappingException {
 	final LinkedList<MACAddress> macList = OVXMap.getInstance()
 	        .getVirtualNetwork(this.tenantId).getFlowValues(this.flowId);
 	return macList;
@@ -258,11 +260,14 @@ public class OVXLinkUtils {
 	final OVXLinkField linkField = OpenVirteXController.getInstance()
 	        .getOvxLinkField();
 	if (linkField == OVXLinkField.MAC_ADDRESS) {
-	    final LinkedList<MACAddress> macList = this
-		    .getOriginalMacAddresses();
-	    actions.add(new OFActionDataLayerSource(macList.get(0).toBytes()));
-	    actions.add(new OFActionDataLayerDestination(macList.get(1)
-		    .toBytes()));
+	    LinkedList<MACAddress> macList;
+            try {
+	        macList = this.getOriginalMacAddresses();
+	        actions.add(new OFActionDataLayerSource(macList.get(0).toBytes()));
+	        actions.add(new OFActionDataLayerDestination(macList.get(1).toBytes()));
+            } catch (NetworkMappingException e) {
+	        // TODO log error
+	    }
 	} else
 	    if (linkField == OVXLinkField.VLAN) {
 		// actions.add(new

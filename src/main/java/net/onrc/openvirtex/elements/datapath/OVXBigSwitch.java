@@ -169,7 +169,6 @@ public class OVXBigSwitch extends OVXSwitch {
 	} catch (final ClassCastException e) {
 	    OVXBigSwitch.log.error("Received illegal message : " + msg);
 	}
-
     }
 
     @Override
@@ -192,7 +191,6 @@ public class OVXBigSwitch extends OVXSwitch {
 		}
 	    }
 	}
-
 	return super.boot();
     }
 

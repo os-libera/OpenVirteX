@@ -23,6 +23,7 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.VirtualLinkException;
 
 import org.apache.logging.log4j.LogManager;
@@ -85,7 +86,6 @@ public class CreateOVXLink extends ApiHandler<Map<String, Object>> {
 			virtualLink.getLinkId(), virtualNetwork.getTenantId());
 		resp = new JSONRPC2Response(virtualLink.getLinkId(), 0);
 	    }
-
 	} catch (final MissingRequiredField e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
@@ -103,8 +103,11 @@ public class CreateOVXLink extends ApiHandler<Map<String, Object>> {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		    + ": Impossible to create the virtual link, too many links in this virtual network : " + e.getMessage()), 0);
+	} catch (NetworkMappingException e) {
+		resp = new JSONRPC2Response(new JSONRPC2Error(
+			JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
 	}
-
 	return resp;
     }
 

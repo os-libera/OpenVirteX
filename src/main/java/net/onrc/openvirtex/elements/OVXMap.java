@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,10 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
 
@@ -363,18 +368,27 @@ public class OVXMap implements Mappable {
 
 	@Override
 	public PhysicalIPAddress getPhysicalIP(final OVXIPAddress ip,
-			final Integer tenantId) {
+			final Integer tenantId) throws AddressMappingException {
 		final ConcurrentHashMap<Integer, PhysicalIPAddress> ips = this.virtualIPMap
 				.getValueForExactKey(ip.toString());
 		if (ips == null) {
-			return null;
+			throw new AddressMappingException(ip, PhysicalIPAddress.class);        
 		}
-		return ips.get(tenantId);
+		PhysicalIPAddress pip = ips.get(tenantId);
+		if (pip == null) {
+			throw new AddressMappingException(tenantId, PhysicalIPAddress.class);    
+		}
+		return pip; 
 	}
 
 	@Override
-	public OVXIPAddress getVirtualIP(final PhysicalIPAddress ip) {
-		return this.physicalIPMap.getValueForExactKey(ip.toString());
+	public OVXIPAddress getVirtualIP(final PhysicalIPAddress ip) 
+			throws AddressMappingException{
+	    	OVXIPAddress vip = this.physicalIPMap.getValueForExactKey(ip.toString());
+	    	if (vip == null) {
+			throw new AddressMappingException(ip, OVXIPAddress.class);    
+	    	}
+		return vip;  
 	}
 
 	/**
@@ -390,15 +404,17 @@ public class OVXMap implements Mappable {
 	 */
 	@Override
 	public OVXSwitch getVirtualSwitch(final PhysicalSwitch physicalSwitch,
-			final Integer tenantId) {
+			final Integer tenantId) throws SwitchMappingException {
 		final ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap
 				.get(physicalSwitch);
 		if (sws == null) {
-			this.log.warn("No virtual switches for physical switch {}",
-					physicalSwitch);
-			return null;
+			throw new SwitchMappingException(physicalSwitch, OVXSwitch.class);    
 		}
-		return this.physicalSwitchMap.get(physicalSwitch).get(tenantId);
+		OVXSwitch vsw = sws.get(tenantId);
+		if (vsw == null) {
+			throw new SwitchMappingException(tenantId, OVXSwitch.class);        
+		}
+		return vsw; 
 	}
 
 	/**
@@ -414,16 +430,17 @@ public class OVXMap implements Mappable {
 	 */
 	@Override
 	public List<OVXLink> getVirtualLinks(final PhysicalLink physicalLink,
-			final Integer tenantId) {
+			final Integer tenantId) throws LinkMappingException {
 		final ConcurrentHashMap<Integer, List<OVXLink>> linkMap = this.physicalLinkMap
 				.get(physicalLink);
-		if (linkMap != null) {
-			final List<OVXLink> linkList = linkMap.get(tenantId);
-			if (linkList != null) {
-				return linkList;
-			}
+		if (linkMap == null) {
+			throw new LinkMappingException(physicalLink, OVXLink.class);    
 		}
-		return null;
+		final List<OVXLink> linkList = linkMap.get(tenantId);
+		if (linkList == null) {
+			throw new LinkMappingException(tenantId, OVXLink.class);		    
+		}
+		return linkList;
 	}
 
 	/**
@@ -438,9 +455,13 @@ public class OVXMap implements Mappable {
 	 *         single source and destination PhysicalPort and PhysicalSwitch
 	 */
 	@Override
-	public List<PhysicalLink> getPhysicalLinks(final OVXLink virtualLink) {
-
-		return this.virtualLinkMap.get(virtualLink);
+	public List<PhysicalLink> getPhysicalLinks(final OVXLink virtualLink) 
+			throws LinkMappingException{
+		List<PhysicalLink> linkList = this.virtualLinkMap.get(virtualLink);
+		if (linkList == null) {
+			throw new LinkMappingException(virtualLink, PhysicalLink.class);
+		}
+		return linkList;
 	}
 
 	/**
@@ -456,8 +477,12 @@ public class OVXMap implements Mappable {
 	 */
 	@Override
 	public List<PhysicalSwitch> getPhysicalSwitches(
-			final OVXSwitch virtualSwitch) {
-		return this.virtualSwitchMap.get(virtualSwitch);
+			final OVXSwitch virtualSwitch) throws SwitchMappingException {
+		List<PhysicalSwitch> pswList = this.virtualSwitchMap.get(virtualSwitch);
+		if (pswList == null) {
+			throw new SwitchMappingException(virtualSwitch, PhysicalSwitch.class);    	
+		}
+		return this.virtualSwitchMap.get(virtualSwitch); 
 	}
 
 	/**
@@ -471,29 +496,40 @@ public class OVXMap implements Mappable {
 	 *         information related to a virtual network
 	 */
 	@Override
-	public OVXNetwork getVirtualNetwork(final Integer tenantId) {
-		return this.networkMap.get(tenantId);
+	public OVXNetwork getVirtualNetwork(final Integer tenantId) 
+			throws NetworkMappingException{
+		OVXNetwork vnet = this.networkMap.get(tenantId);
+		if (vnet == null) {
+			throw new NetworkMappingException(tenantId);    
+		}
+		return vnet; 
 	}
 
 	@Override
-	public Integer getMAC(final MACAddress mac) {
-		return this.macMap.getValueForExactKey(mac.toStringNoColon());
+	public Integer getMAC(final MACAddress mac) 
+			throws AddressMappingException{
+		Integer macint = this.macMap.getValueForExactKey(mac.toStringNoColon());   
+		if (macint == null) {
+			throw new AddressMappingException(
+				"Given Key " + mac + " not mapped to any values");    
+		}
+		return macint;
 	}
 
 	public Map<Integer, OVXNetwork> getNetworkMap() {
-		return Collections.unmodifiableMap(this.networkMap);
+		return Collections.unmodifiableMap(this.networkMap); // null - will throw a NPE anyways
 	}
 
 	public Map<OVXLink, ArrayList<PhysicalLink>> getVirtualLinkMap() {
-		return Collections.unmodifiableMap(this.virtualLinkMap);
+		return Collections.unmodifiableMap(this.virtualLinkMap); // null - will throw a NPE anyways
 	}
 
 	@Override
 	public Map<Integer, OVXNetwork> listVirtualNetworks() {
-		return Collections.unmodifiableMap(this.networkMap);
+		return Collections.unmodifiableMap(this.networkMap); // null - will throw a NPE anyways
 	}
 	// Remove objects from dictionary
-
+	
 	public void removeNetwork(OVXNetwork network) {
 	    int tenantId = network.getTenantId();
 	    if (this.networkMap.get(tenantId) != null) {
@@ -516,29 +552,36 @@ public class OVXMap implements Mappable {
 	
 	@Override
 	public void removePhysicalLink(PhysicalLink physicalLink) {
-		//TODO : tidy up
 		Map<Integer, List<OVXLink>> lmap = this.physicalLinkMap.get(physicalLink);	
-		if (lmap == null) {
-			return;  	    
-		}
-		for (Map.Entry<Integer, List<OVXLink>> el : lmap.entrySet()) {
-			for (OVXLink vlink : el.getValue()) {
-				this.virtualLinkMap.get(vlink).remove(physicalLink);    
-			}
-		}
-		this.physicalLinkMap.remove(physicalLink);
 		Map<Integer, Set<SwitchRoute>> rmap = this.linktoRouteMap.get(physicalLink);
-		if (rmap == null) {
-			return;
-		}
-		for (Map.Entry<Integer, Set<SwitchRoute>> el : rmap.entrySet()) {
-			for (SwitchRoute vlink : el.getValue()) {
-				this.routetoLinkMap.get(vlink).remove(physicalLink);    
-			}		
-		}
+		this.removePhysicalLink(lmap, this.virtualLinkMap, physicalLink);
+		this.removePhysicalLink(rmap, this.routetoLinkMap, physicalLink);
+		this.physicalLinkMap.remove(physicalLink);
 		this.linktoRouteMap.remove(physicalLink);
 	}
 	
+	/**
+	 * helper function for removing PhysicalLinks from mappings
+	 * 
+	 * @param submap Map containing a Collection of Links mapped to PhysicalLink phylink
+	 * @param map Mapping to remove phylink from 
+	 * @param phylink the PhysicalLink to remove 
+	 */
+	private <T> void removePhysicalLink(
+			Map<Integer, ? extends Collection<T>> submap, 
+			ConcurrentHashMap<T, ? extends Collection<PhysicalLink>> map, 
+			PhysicalLink phylink) {
+		if (submap == null) {
+			return;    
+		}
+		for (Map.Entry<Integer,  ? extends Collection<T>> el : submap.entrySet()) {
+			for (T link : el.getValue()) {
+				map.get(link).remove(phylink);
+			}
+		}
+	}
+	
+	@Override
 	public void removeVirtualSwitch(OVXSwitch virtualSwitch) {
 	    if (this.virtualSwitchMap.containsKey(virtualSwitch)) {
 		ArrayList<PhysicalSwitch> physicalSwitches = this.virtualSwitchMap.get(virtualSwitch);
@@ -551,6 +594,7 @@ public class OVXMap implements Mappable {
 	    }
 	}
 
+	@Override
 	public void removeVirtualIPs(int tenantId){
 	    ArrayList <String> physicalIPs = new ArrayList<String>();
 	    for (ConcurrentHashMap<Integer, PhysicalIPAddress> map : virtualIPMap.getValuesForKeysStartingWith("")) {
@@ -570,18 +614,26 @@ public class OVXMap implements Mappable {
 	}
 
 	@Override
-	public List<PhysicalLink> getRoute(SwitchRoute route) {  
-		return this.routetoLinkMap.get(route);    
+	public List<PhysicalLink> getRoute(SwitchRoute route) throws LinkMappingException {
+	    	List<PhysicalLink> plList = this.routetoLinkMap.get(route);
+	    	if (plList == null) {
+			throw new LinkMappingException(route, PhysicalLink.class);    	    
+	    	}
+		return plList;   // null - no such route 
 	}
 
 	@Override
         public Set<SwitchRoute> getSwitchRoutes(PhysicalLink physicalLink,
-        		Integer tenantId) {
+        		Integer tenantId) throws LinkMappingException {
 		Map<Integer, Set<SwitchRoute>> pair = this.linktoRouteMap.get(physicalLink);
 		if (pair == null) {
-			return null;    
+			throw new LinkMappingException(physicalLink, SwitchRoute.class);    	    
 		}
-		return pair.get(tenantId);
+		Set<SwitchRoute> rList = pair.get(tenantId);
+		if (rList == null) {
+			throw new LinkMappingException(tenantId, SwitchRoute.class);    	    
+		}
+		return rList;
         }
 
 	@Override
@@ -607,4 +659,59 @@ public class OVXMap implements Mappable {
 	   		routes.remove(route);
 		}	    
 	}
+
+	@Override
+        public void removePhysicalSwitch(PhysicalSwitch physicalSwitch) {
+		Map<Integer, OVXSwitch> switches = this.physicalSwitchMap.get(physicalSwitch);
+		if (switches == null) {
+			return;	    
+		}
+		List<PhysicalSwitch> psw;
+		Iterator<Map.Entry<Integer, OVXSwitch>> iter = switches.entrySet().iterator();
+		while(iter.hasNext()) {    
+			psw = this.virtualSwitchMap.get(iter.next().getValue());
+			if (psw == null) {
+				continue;    
+			}
+			psw.remove(physicalSwitch);
+			if (psw.isEmpty()) {    
+				/* no physicalSwitches under vswitch - signal to it eventually 
+				 * for now remove the vswitch */
+				iter.remove();    
+			}
+		}
+		this.physicalSwitchMap.remove(physicalSwitch);
+        }
+	
+	/*
+	 * Below: helper functions needed to avoid using error exception for flow control 
+	 */	
+	public boolean hasPhysicalIP(OVXIPAddress vip, Integer tenantId){
+		final ConcurrentHashMap<Integer, PhysicalIPAddress> ips = 	    
+				this.virtualIPMap.getValueForExactKey(vip.toString());
+		return (ips != null) && (ips.get(tenantId) !=  null);
+	}
+	
+	@Override
+        public boolean hasVirtualIP(PhysicalIPAddress ip) {
+		return this.physicalIPMap.getValueForExactKey(ip.toString()) != null;
+        }
+	
+	public boolean hasMAC(MACAddress mac) {
+		return this.macMap.getValueForExactKey(mac.toStringNoColon()) != null;
+	}
+	
+	public boolean hasSwitchRoutes(final PhysicalLink physicalLink,
+		final Integer tenantId) {
+		Map<Integer, Set<SwitchRoute>> pair = this.linktoRouteMap.get(physicalLink);   
+		return (pair != null) && (pair.get(tenantId) != null);
+	}
+	
+	public boolean hasOVXLinks(final PhysicalLink physicalLink,
+		final Integer tenantId) {
+		final Map<Integer, List<OVXLink>> pair = this.physicalLinkMap
+				.get(physicalLink);
+		return (pair != null) && (pair.get(tenantId) != null);
+	}
+
 }

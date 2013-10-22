@@ -23,6 +23,7 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.LinkPair;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 
 import org.apache.logging.log4j.LogManager;
@@ -49,36 +50,18 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 	    	    	return;
 	    	}
 		List<Map<Integer, OVXPort>> vports = p.getOVXPorts(null);
-    	    	if (this.reason == OFPortReason.OFPPR_DELETE.getReasonCode()) {
+	    	if (this.reason == OFPortReason.OFPPR_DELETE.getReasonCode()) {
 	    		log.info("Received {} from switch {}", this.toString(), sw.getSwitchId());
-    	    	
-			LinkPair<PhysicalLink> lpair = p.getLink();
+    	    		LinkPair<PhysicalLink> lpair = p.getLink();
 			/* phy port associated with a phy link */
 	    	    	if ((lpair != null) && (lpair.exists())) {
-				PhysicalLink plink = lpair.getOutLink();
-				for (Map.Entry<Integer, OVXNetwork> tenant : map.
-						listVirtualNetworks().entrySet()) {
-				    	List<OVXLink> vlinks = map.getVirtualLinks(plink, tenant.getKey());
-				    	Set<SwitchRoute> routes = map.getSwitchRoutes(plink, tenant.getKey());
-				    	/* within one vNet - either route or vLink, or neither */
-				    	if (vlinks != null) {
-						for (OVXLink vlink : vlinks) {
-							//TODO : try to look for backups 
-							/* tear down vlinks and escalate error if no backups */
-								    
-							    
-						}
-				    	} else if (routes != null) {
-						for (SwitchRoute route : routes) {
-							//TODO : try to look for backups    
-							// remove route if not possible 
-						}
-				    	}
-				    	/* shut down other phyport, then phylink */
+				try {	    	    	    
+					handlePhyLink(lpair, map);	
+				} catch (LinkMappingException e) {
+				    
 				}
-				
 			}
-	    	    	/* phy port is mapped to vport */
+			/* phy port is mapped to vport */
 	    	    	for (Map<Integer, OVXPort> vmap : vports) {
 	    	    	    	/* handle per-tenant */
 				for (OVXPort vp : vmap.values() ) {
@@ -128,6 +111,31 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 				}
 			}
 		}	    	
+	}
+	
+	private void handlePhyLink(LinkPair<PhysicalLink> lpair, Mappable map) 
+			throws LinkMappingException {
+		PhysicalLink plink = lpair.getOutLink();
+		for (Map.Entry<Integer, OVXNetwork> tenant : map.
+				listVirtualNetworks().entrySet()) {
+		    	/* within one vNet - either route or vLink, or neither */
+			if (map.hasOVXLinks(plink, tenant.getKey())) {
+				List<OVXLink> vlinks = map.getVirtualLinks(plink, tenant.getKey());
+				for (OVXLink vlink : vlinks) {
+					//TODO : try to look for backups 
+					/* tear down vlinks and escalate error if no backups */
+						    
+					    
+				}
+		    	} else if (map.hasSwitchRoutes(plink, tenant.getKey())) {
+				Set<SwitchRoute> routes = map.getSwitchRoutes(plink, tenant.getKey());
+				for (SwitchRoute route : routes) {
+					//TODO : try to look for backups    
+					// remove route if not possible 
+				}
+		    	}
+		    	/* shut down other phyport, then phylink */
+		}
 	}
 	
 	public boolean isState(OFPortState state) {

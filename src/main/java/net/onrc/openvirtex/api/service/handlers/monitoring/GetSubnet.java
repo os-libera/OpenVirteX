@@ -20,6 +20,7 @@ import net.onrc.openvirtex.elements.host.HostSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 import net.onrc.openvirtex.util.MACAddressSerializer;
 
@@ -43,7 +44,7 @@ public class GetSubnet extends ApiHandler<Map<String, Object>> {
 					tid.intValue());
 			resp = new JSONRPC2Response(vnet.getMask(), 0);
 			return resp;
-		} catch (ClassCastException | MissingRequiredField e) {
+		} catch (ClassCastException | MissingRequiredField | NetworkMappingException e) {
 			resp = new JSONRPC2Response(
 					new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
 							this.cmdName() + ": Unable to fetch host list : "

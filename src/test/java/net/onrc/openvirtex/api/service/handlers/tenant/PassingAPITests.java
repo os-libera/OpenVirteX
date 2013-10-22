@@ -127,6 +127,7 @@ public class PassingAPITests extends AbstractAPICalls {
 		sw2.addPort(p2);
 
 		PhysicalNetwork.getInstance().createLink(p1, p2);
+		PhysicalNetwork.getInstance().createLink(p2, p1);
 
 		final JSONRPC2Response resp = super.createLink(1, "1/0-2/0");
 

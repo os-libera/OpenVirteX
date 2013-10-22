@@ -20,6 +20,8 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.OVXPortStatus;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
 public class OVXPort extends Port<OVXSwitch, OVXLink> {
@@ -33,8 +35,13 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	super(port);
 	this.tenantId = tenantId;
 	this.physicalPort = port;
-	this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(
-		port.getParentSwitch(), tenantId);
+	try {		    
+	    this.parentSwitch = OVXMap.getInstance().getVirtualSwitch(
+		    port.getParentSwitch(), tenantId);
+	} catch (SwitchMappingException e) {
+	    // something pretty wrong if we get here. Not 100% on how to handle this
+	    throw new RuntimeException("Unexpected state in OVXMap: " + e.getMessage());
+	}
 	this.portNumber = this.parentSwitch.getNextPortNumber();
 	/*
 	 * The hardware addr is generated using the ON.Lab OUI (0xA4:23:05) 
@@ -76,7 +83,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
     public void setLinkId(final Integer linkId) {
 	this.linkId = linkId;
     }
-
+	
     public boolean isLink() {
 	if (this.linkId == 0)
 	    return false;
@@ -142,10 +149,14 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	    this.parentSwitch.generateFeaturesReply();
 	}
 	if (this.isEdge) {
-	    OVXNetwork virtualNetwork = this.parentSwitch.getMap().getVirtualNetwork(this.tenantId);
-	    Host host = virtualNetwork.getHost(this);
-	    this.parentSwitch.getMap().removeMAC(host.getMac());
-	    virtualNetwork.removeHost(host.getMac());
+	    try {
+        	OVXNetwork virtualNetwork = this.parentSwitch.getMap().getVirtualNetwork(this.tenantId);
+	        Host host = virtualNetwork.getHost(this);
+	        this.parentSwitch.getMap().removeMAC(host.getMac());
+	        virtualNetwork.removeHost(host.getMac());
+            } catch (NetworkMappingException e) {
+	        throw new RuntimeException("Unexpected state in OVXMap: " + e.getMessage());
+            }
 	}
     }
 

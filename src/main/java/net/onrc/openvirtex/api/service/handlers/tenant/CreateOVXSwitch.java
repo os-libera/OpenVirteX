@@ -21,6 +21,7 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,12 +76,15 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Invalid tenant id : " + e.getMessage()), 0);
+		} catch (NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+						+ ": " + e.getMessage()), 0);
 		} catch (final IndexOutOfBoundException e) {
 		    resp = new JSONRPC2Response(new JSONRPC2Error(
 			    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 			    + ": Impossible to create the virtual switch, too many switches in this virtual network : " + e.getMessage()), 0);
 		}
-
 		return resp;
 
 	}

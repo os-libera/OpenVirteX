@@ -19,6 +19,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,8 +95,14 @@ public class OpenVirteXController implements Runnable {
 	}
 
 	public void registerOVXSwitch(final OVXSwitch sw) {
-		final OVXNetwork ovxNetwork = sw.getMap().getVirtualNetwork(
-				sw.getTenantId());
+		OVXNetwork ovxNetwork;
+                try {
+	            ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId());
+                } catch (NetworkMappingException e) {
+                    OpenVirteXController.this.log.error(
+                	    "Could not connect to controller for switch: " + e.getMessage());
+                    return;
+                }
 		final String host = ovxNetwork.getControllerHost();
 		final Integer port = ovxNetwork.getControllerPort();
 
