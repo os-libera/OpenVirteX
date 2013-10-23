@@ -28,15 +28,20 @@ public class GetVirtualLinkMapping extends ApiHandler<Map<String, Object>> {
 	@Override
 	public JSONRPC2Response process(Map<String, Object> params) {
 		try {
-			Map<Integer, List<Integer>> res = new HashMap<Integer, List<Integer>>();
+			Map<Integer, List<List<Integer>>> res = new HashMap<Integer, List<List<Integer>>>();
 			Number tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT, params, true, null);
 			OVXMap map = OVXMap.getInstance();
-			LinkedList<Integer> list = null;
+			List<Integer> path = null;
 			for (OVXLink vlink : map.getVirtualNetwork(tid.intValue()).getLinkSet()) {
-				list = new LinkedList<Integer>();
+				path = new LinkedList<Integer>();
 				for (PhysicalLink link : map.getPhysicalLinks(vlink))
-					list.add(link.getLinkId());
-				res.put(vlink.getLinkId(), list);
+					path.add(link.getLinkId());
+				List<List<Integer>> list = res.get(vlink.getLinkId());
+				if (list == null) {
+					list = new LinkedList<List<Integer>>();
+					res.put(vlink.getLinkId(), list);
+				}
+				list.add(path);
 			}
 			resp = new JSONRPC2Response(res, 0);
 			
