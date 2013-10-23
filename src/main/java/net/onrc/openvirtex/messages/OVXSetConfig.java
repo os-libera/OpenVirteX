@@ -19,6 +19,11 @@ public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 
 	private final Logger log = LogManager.getLogger(OVXSetConfig.class
 			.getName());
+	
+	/** miss_send_len for a full packet (-1) */
+	public static final short MSL_FULL = (short)0xffff;
+	/** default miss_send_len when unspecified */
+	public static final short MSL_DEFAULT = (short)0x0080;
 
 	@Override
 	public void devirtualize(final OVXSwitch sw) {
@@ -26,9 +31,7 @@ public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 		sw.setMissSendLen(this.missSendLength);
 		this.log.info("Setting miss send length to {} for OVXSwitch {}",
 				this.missSendLength, sw.getSwitchId());
-
-		OVXMessageUtil.translateXid(this, sw);
-		// don't send since we always want full pkt?
+		
 	}
 
 }

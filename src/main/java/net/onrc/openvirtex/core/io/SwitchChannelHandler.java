@@ -27,6 +27,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
+import net.onrc.openvirtex.messages.OVXSetConfig;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
 import org.apache.logging.log4j.LogManager;
@@ -634,7 +635,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 
 		final OFSetConfig configSet = (OFSetConfig) BasicFactory.getInstance()
 				.getMessage(OFType.SET_CONFIG);
-		configSet.setMissSendLength((short) 0xffff).setLengthU(
+		configSet.setMissSendLength(OVXSetConfig.MSL_FULL).setLengthU(
 				OFSwitchConfig.MINIMUM_LENGTH);
 		configSet.setXid(this.handshakeTransactionIds--);
 		msglist.add(configSet);

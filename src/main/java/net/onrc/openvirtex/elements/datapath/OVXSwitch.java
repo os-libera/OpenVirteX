@@ -58,8 +58,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     /** The tenant id. */
     protected Integer                                tenantId         = 0;
 
-    /** The miss send len. */
-    protected Short                                  missSendLen      = 0;
+    /** The miss send len. Default in spec is 128 */
+    protected Short                                  missSendLen      = 128; 
 
     /** The is active. */
     protected boolean                                isActive         = false;

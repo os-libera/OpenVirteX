@@ -9,6 +9,7 @@
 
 package net.onrc.openvirtex.messages;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
@@ -36,6 +37,8 @@ import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.Wildcards.Flag;
+import org.openflow.util.U16;
+import org.openflow.util.U32;
 
 public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
@@ -214,6 +217,11 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     	this.setBufferId(vSwitch.addToBufferMap(this));
     	if (this.port != null && this.ovxPort != null) {
     		this.setInPort(this.ovxPort.getPortNumber());
+    		if ((this.packetData != null) && 
+    			(vSwitch.getMissSendLen() != OVXSetConfig.MSL_FULL)) {
+    		    this.packetData = Arrays.copyOf(this.packetData, U16.f(vSwitch.getMissSendLen()));
+    		    this.setLengthU(OFPacketIn.MINIMUM_LENGTH + this.packetData.length);
+    		}
     		vSwitch.sendMsg(this, sw);
     	}
     	else if (this.port == null) {
