@@ -10,12 +10,18 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.datapath.statistics.StatisticsManager;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.Virtualizable;
+import net.onrc.openvirtex.messages.statistics.OVXPortStatisticsReply;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +38,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
 	/** The Xid mapper */
 	private final XidTranslator translator;
+
+	
+	private StatisticsManager statsMan = null;
+	private AtomicReference<Map<Short, OVXPortStatisticsReply>> portStats;
 
 	/**
 	 * Unregisters OVXSwitches and associated virtual elements mapped to
@@ -78,6 +88,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	public PhysicalSwitch(final long switchId) {
 		super(switchId);
 		this.translator = new XidTranslator();
+		this.portStats = new AtomicReference<Map<Short, OVXPortStatisticsReply>>();
+		this.statsMan = new StatisticsManager(this);
 	}
 
 	/**
@@ -120,6 +132,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	public void tearDown() {
 		this.log.info("Switch disconnected {} ",
 				this.featuresReply.getDatapathId());
+		this.statsMan.stop();
 		this.channel.disconnect();
 
 	}
@@ -163,6 +176,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				this.featuresReply.getDatapathId(),
 				this.desc.getHardwareDescription());
 		this.fillPortMap();
+		this.statsMan.start();
 		return true;
 	}
 
@@ -233,5 +247,17 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 			return null;
 		}
 		return pair;
+	}
+
+	public void setPortStatistics(Map<Short, OVXPortStatisticsReply> stats) {
+		this.portStats.set(stats);
+	}
+
+	public OVXPortStatisticsReply getPortStat(short portNumber) {
+		Map<Short, OVXPortStatisticsReply> stats = this.portStats.get();
+		if (stats != null) {
+			return stats.get(portNumber);
+		}
+		return null;
 	}
 }

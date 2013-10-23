@@ -9,24 +9,33 @@
 
 package net.onrc.openvirtex.messages.statistics;
 
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.messages.OVXMessageUtil;
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 
 import org.openflow.protocol.statistics.OFPortStatisticsReply;
+import org.openflow.protocol.statistics.OFStatistics;
 
-public class OVXPortStatisticsReply extends OFPortStatisticsReply implements
-		VirtualizableStatistic {
+public class OVXPortStatisticsReply extends OFPortStatisticsReply 
+						implements VirtualizableStatistic {
 
+	private Map<Short, OVXPortStatisticsReply> stats = null;
+	
 	@Override
 	public void virtualizeStatistic(final PhysicalSwitch sw,
 			final OVXStatisticsReply msg) {
-		// TODO Auto-generated method stub
-		final OVXSwitch vsw = OVXMessageUtil.untranslateXid(msg, sw);
-		if (vsw == null) {
-
+		stats = new HashMap<Short, OVXPortStatisticsReply>();
+		List<? extends OFStatistics> statList = msg.getStatistics();
+		for (OFStatistics stat : statList) {
+			OVXPortStatisticsReply pStat = (OVXPortStatisticsReply) stat; 
+			stats.put(pStat.getPortNumber(), pStat);
 		}
-	}
-
+		sw.setPortStatistics(stats);
+		
+	}	
 }
+
