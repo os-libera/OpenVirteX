@@ -10,27 +10,23 @@
 package net.onrc.openvirtex.messages.statistics;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.messages.OVXMessageUtil;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 
-import org.openflow.protocol.OFError.OFBadRequestCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.openflow.protocol.statistics.OFQueueStatisticsRequest;
 
 public class OVXQueueStatisticsRequest extends OFQueueStatisticsRequest
 		implements DevirtualizableStatistic {
 
+	Logger log = LogManager.getLogger(OVXQueueStatisticsRequest.class.getName());
+	
 	@Override
 	public void devirtualizeStatistic(final OVXSwitch sw,
 			final OVXStatisticsRequest msg) {
-		// TODO Auto-generated method stub
-		final OVXPort p = sw.getPort(this.portNumber);
-		if (p == null) {
-			sw.sendMsg(OVXMessageUtil.makeErrorMsg(
-					OFBadRequestCode.OFPBRC_EPERM, msg), sw);
-			return;
-		}
-		OVXMessageUtil.translateXid(msg, p);
+		//TODO
+		log.info("Queue statistics handling not yet implemented");
 	}
 
 }
