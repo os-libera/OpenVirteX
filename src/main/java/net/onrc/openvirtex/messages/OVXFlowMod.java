@@ -113,7 +113,9 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 			} else {
 				IPMapper.rewriteMatch(sw.getTenantId(), this.match);
 				//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
-				if (inPort != null && inPort.isLink()) {
+				if (inPort != null && inPort.isLink() 
+					&& (!this.match.getWildcardObj().isWildcarded(Flag.DL_DST) ||
+						!this.match.getWildcardObj().isWildcarded(Flag.DL_SRC))) {
 					//rewrite the OFMatch with the values of the link
 					OVXNetwork vnet = sw.getMap().getVirtualNetwork(sw.getTenantId());    	
 					OVXPort dstPort = vnet.getNeighborPort(inPort);
