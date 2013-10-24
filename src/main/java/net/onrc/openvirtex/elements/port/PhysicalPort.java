@@ -12,12 +12,9 @@ package net.onrc.openvirtex.elements.port;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.messages.OVXPortStatus;
@@ -56,11 +53,17 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 
 	public void setOVXPort(final OVXPort ovxPort) {
 		if (this.ovxPortMap.get(ovxPort.getTenantId()) != null) {
-			this.ovxPortMap.get(ovxPort.getTenantId()).put(ovxPort.getLinkId(),
+		    if (ovxPort.getLink() != null)
+			this.ovxPortMap.get(ovxPort.getTenantId()).put(ovxPort.getLink().getInLink().getLinkId(),
 					ovxPort);
+		    else 
+			this.ovxPortMap.get(ovxPort.getTenantId()).put(0,ovxPort);
 		} else {
 			final HashMap<Integer, OVXPort> portMap = new HashMap<Integer, OVXPort>();
-			portMap.put(ovxPort.getLinkId(), ovxPort);
+			if (ovxPort.getLink() != null)
+			    portMap.put(ovxPort.getLink().getInLink().getLinkId(), ovxPort);
+			else 
+			    portMap.put(0, ovxPort);
 			this.ovxPortMap.put(ovxPort.getTenantId(), portMap);
 		}
 	}

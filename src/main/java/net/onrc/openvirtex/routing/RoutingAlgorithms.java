@@ -7,43 +7,53 @@
  ******************************************************************************/
 package net.onrc.openvirtex.routing;
 
-public enum RoutingAlgorithms {
-	NONE((short) 0), SPF((short) 1);
+import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 
-	protected short value;
-	/** the routable */
-	protected Routable routing;
+public class RoutingAlgorithms {
+    public enum RoutingType {
 
-	/** the types of routable mapping to each */
-	static Routable[] routingmap;
+	NONE("manual"), SPF("spf");
 
-	private RoutingAlgorithms(final short value) {
-		this.value = value;
-		RoutingAlgorithms.setRoutable(this.value, this);
+	protected String value;
+
+	private RoutingType(final String value) {
+	    this.value = value;
 	}
 
-	private static void setRoutable(final Short value,
-			final RoutingAlgorithms algo) {
-		if (RoutingAlgorithms.routingmap == null) {
-			RoutingAlgorithms.routingmap = new Routable[2];
-			RoutingAlgorithms.routingmap[0] = new ManualRoute();
-			RoutingAlgorithms.routingmap[1] = new ShortestPath();
-		}
-		algo.routing = RoutingAlgorithms.routingmap[value];
+	public String getValue() {
+	    return this.value;
 	}
 
-	/**
-	 * @return the value
-	 */
-	public short getValue() {
-		return this.value;
-	}
+    }
 
-	/**
-	 * @return the Routable associated with the algorithm
-	 */
-	public Routable getRoutable() {
-		return this.routing;
+    protected final RoutingType type;
+    protected final Routable routing;
+    protected final byte backups;
+    
+    public RoutingAlgorithms(final String type, final byte backups) throws RoutingAlgorithmException {
+	if (type.equals(RoutingType.NONE.getValue())) {
+	    this.type = RoutingType.NONE;
+	    this.routing = new ManualRoute();
+	} 
+	else if (type.equals(RoutingType.SPF.getValue())) {
+	    this.type = RoutingType.SPF;
+	    this.routing = new ShortestPath();
 	}
+	else throw new RoutingAlgorithmException("The algorithm " + type + " is not supported. Supported values are " 
+	+ RoutingType.NONE.getValue() + ", " + RoutingType.SPF.getValue());
+	this.backups = backups;
+    }
+
+    public RoutingType getRoutingType() {
+	return this.type;
+    }
+    
+    public Routable getRoutable() {
+	return this.routing;
+    }
+
+    public byte getBackups() {
+        return backups;
+    }
 
 }

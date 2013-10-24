@@ -8,7 +8,6 @@
 
 package net.onrc.openvirtex.elements.network;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,15 +30,17 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
-import net.onrc.openvirtex.exceptions.VirtualLinkException;
+import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.lldp.LLDPUtil;
+import net.onrc.openvirtex.routing.RoutingAlgorithms;
+import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.BitSetIndex;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 import net.onrc.openvirtex.util.MACAddress;
+import net.onrc.openvirtex.util.OVXFlowManager;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
@@ -48,7 +49,6 @@ import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 
 /**
@@ -75,9 +75,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     private final BitSetIndex                    dpidCounter;
     private final BitSetIndex                    linkCounter;
     private final BitSetIndex                    ipCounter;
+    private final BitSetIndex                    hostCounter;
     private final List<Host>                     hostList;
-    private final HashBiMap<Integer, BigInteger> flowValues;
-    private final BitSetIndex                    flowCounter;
+    private final OVXFlowManager		 flowManager;
 
     public OVXNetwork(final String protocol, final String controllerHost,
 	    final Integer controllerPort, final IPAddress network,
@@ -93,9 +93,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	this.dpidCounter = new BitSetIndex(IndexType.SWITCH_ID);
 	this.linkCounter = new BitSetIndex(IndexType.LINK_ID);
 	this.ipCounter = new BitSetIndex(IndexType.IP_ID);
+	this.hostCounter = new BitSetIndex(IndexType.HOST_ID);
 	this.hostList = new LinkedList<Host>();
-	this.flowValues = HashBiMap.create();
-	this.flowCounter = new BitSetIndex(IndexType.FLOW_COUNTER);
+	this.flowManager = new OVXFlowManager(this.tenantId, this.hostList);
     }
 
     public String getProtocol() {
@@ -118,12 +118,24 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	return this.network;
     }
 
+    public BitSetIndex getLinkCounter() {
+	return this.linkCounter;
+    }
+    
+    public BitSetIndex getHostCounter() {
+	return this.hostCounter;
+    }
+    
     public MACAddress getGateway(final IPAddress ip) {
 	return this.gwsMap.get(ip);
     }
 
     public short getMask() {
 	return this.mask;
+    }
+
+    public OVXFlowManager getFlowManager() {
+        return flowManager;
     }
 
     public void register() {
@@ -155,16 +167,14 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	}
 	return null;
     }
-
-    /**
-     * Get list of all registered MAC addresses in this virtual network
-     */
-    private List<MACAddress> getMACList() {
-	final List<MACAddress> result = new LinkedList<MACAddress>();
+    
+    public Host getHost(final Integer hostId) {
 	for (final Host host : this.hostList) {
-	    result.add(host.getMac());
+	    if (host.getHostId().equals(hostId)) {
+		return host;
+	    }
 	}
-	return result;
+	return null;
     }
 
     public void unregister() {
@@ -219,7 +229,36 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
 	return virtualSwitch;
     }
+    
+    public OVXPort createPort(final long physicalDpid, final short portNumber) 
+	    throws IndexOutOfBoundException {
+	final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance()
+	        .getSwitch(physicalDpid);
+	final PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
 
+	final OVXPort ovxPort = new OVXPort(this.tenantId, physicalPort, true);
+	ovxPort.register();
+	return ovxPort;
+    }
+    
+    public RoutingAlgorithms setOVXBigSwitchRouting (final long dpid, final String alg, 
+	    final byte numBackups) throws RoutingAlgorithmException {
+	RoutingAlgorithms algorithm = new RoutingAlgorithms(alg, numBackups);
+	((OVXBigSwitch) this.getSwitch(dpid)).setAlg(algorithm);
+	return algorithm;
+    }
+
+    public Host connectHost(final long ovxDpid, final short ovxPort,
+	    final MACAddress mac) throws IndexOutOfBoundException {
+	OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+	port.setActive(true);
+	port.boot();
+	OVXMap.getInstance().addMAC(mac, this.tenantId);
+	final Host host = new Host(mac, port, this.hostCounter.getNewIndex());
+	this.hostList.add(host);
+	return host;
+    }
+    
     /**
      * Create link and add it to the topology. Returns linkId when successful,
      * -1 if source port is already used.
@@ -229,58 +268,107 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
      * @return
      * @throws IndexOutOfBoundException
      */
-    public synchronized OVXLink createLink(
-	    final List<PhysicalLink> physicalLinks)
+    public synchronized OVXLink connectLink(final long ovxSrcDpid, final short ovxSrcPort,
+	    final long ovxDstDpid, final short ovxDstPort, final List<PhysicalLink> physicalLinks, 
+	    final byte priority)
 	    throws IndexOutOfBoundException {
-	// Create and register virtual source and destination ports
-	final PhysicalPort phySrcPort = physicalLinks.get(0).getSrcPort();
-	final OVXPort srcPort = new OVXPort(this.tenantId, phySrcPort, false);
-	final PhysicalPort phyDstPort = physicalLinks.get(
-	        physicalLinks.size() - 1).getDstPort();
-	final OVXPort dstPort = new OVXPort(this.tenantId, phyDstPort, false);
-
+	OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
+	OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
+	srcPort.setActive(true);
+	dstPort.setActive(true);
+	srcPort.setEdge(false);
+	dstPort.setEdge(false);
+	srcPort.boot();
+	dstPort.boot();
 	// Create link, add it to the topology, register it in the map
 	final int linkId = this.linkCounter.getNewIndex();
-	// Set the linkId value inside the src and dst virtual ports
-	srcPort.setLinkId(linkId);
-	dstPort.setLinkId(linkId);
-	srcPort.register();
-	dstPort.register();
-
 	final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
-	        dstPort);
+	        dstPort, priority);
 	final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
-	        srcPort);
+	        srcPort, priority);
 	super.addLink(link);
 	super.addLink(reverseLink);
 	link.register(physicalLinks);
-	// create the reverse list of physical links
+	// create the map to the reverse list of physical links
 	final List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>();
 	for (final PhysicalLink phyLink : Lists.reverse(physicalLinks)) {
 	    reversePhysicalLinks.add(PhysicalNetwork.getInstance().getLink(phyLink.getDstPort(),
 		    phyLink.getSrcPort()));
-
 	}
 	reverseLink.register(reversePhysicalLinks);
 	return link;
     }
-
-    public OVXPort createHost(final long physicalDpid, final short portNumber,
-	    final MACAddress mac) throws IndexOutOfBoundException {
-	// TODO: check if dpid & port exist
-	final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance()
-	        .getSwitch(physicalDpid);
-	final PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
-
-	final OVXPort edgePort = new OVXPort(this.tenantId, physicalPort, true);
-	edgePort.register();
-	OVXMap.getInstance().addMAC(mac, this.tenantId);
-	final Host host = new Host(mac, edgePort);
-	this.hostList.add(host);
-	return edgePort;
-
+    
+    public synchronized SwitchRoute connectRoute(final long ovxDpid, final short ovxSrcPort,
+	    final short ovxDstPort, final List<PhysicalLink> physicalLinks, 
+	    final byte priority)
+	    throws IndexOutOfBoundException {
+	OVXBigSwitch sw = (OVXBigSwitch) this.getSwitch(ovxDpid);
+	OVXPort srcPort = sw.getPort(ovxSrcPort);
+	OVXPort dstPort = sw.getPort(ovxDstPort);
+	
+	List<PhysicalLink> reverseLinks = new LinkedList<PhysicalLink>();
+	for (PhysicalLink link : physicalLinks) {
+	    PhysicalLink revLink = new PhysicalLink(link.getDstPort(), link.getSrcPort());
+	    reverseLinks.add(revLink);
+	}
+	Collections.reverse(reverseLinks);
+	SwitchRoute route = sw.createRoute(srcPort, dstPort, physicalLinks, reverseLinks, priority);
+	return route;
+    }
+    
+    public synchronized void removeSwitch(final long ovxDpid) {
+	this.dpidCounter.releaseIndex((int) (0x000000 << 32 | ovxDpid));
+	OVXSwitch sw = this.getSwitch(ovxDpid);
+	sw.unregister();
+    }
+    
+    public synchronized void removePort(final long ovxDpid, final short ovxPort) {
+	OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+	port.unregister();
     }
 
+    public synchronized void disconnectHost(final int hostId) {
+	Host host = this.getHost(hostId);
+	host.unregister();
+	this.hostCounter.releaseIndex(hostId);
+	this.removeHost(host);
+    }
+    
+    public synchronized void disconnectLink(final int linkId) {
+	LinkedList<OVXLink> linkPair = this.getLinksById(linkId);
+	this.linkCounter.releaseIndex(linkPair.getFirst().getLinkId());
+	for (OVXLink link : linkPair) {
+	    link.unregister();
+	    this.removeLink(link);
+	}
+    }
+    
+    public synchronized void disconnectRoute(final long ovxDpid, final int routeId) {
+	OVXBigSwitch sw = (OVXBigSwitch) this.getSwitch(ovxDpid);
+	sw.unregisterRoute(routeId);
+    }
+    
+    public synchronized void startSwitch(final long ovxDpid) {
+	OVXSwitch sw = this.getSwitch(ovxDpid);
+	sw.boot();
+    }
+    
+    public synchronized void startPort(final long ovxDpid, final short ovxPort) {
+	OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+	port.boot();
+    }
+    
+    public synchronized void stopSwitch(final long ovxDpid) {
+	OVXSwitch sw = this.getSwitch(ovxDpid);
+	sw.tearDown();
+    }
+    
+    public synchronized void stopPort(final long ovxDpid, final short ovxPort) {
+	OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+	port.tearDown();
+    }
+    
     /**
      * Boots the virtual network by booting each virtual switch. TODO: we should
      * roll-back if any switch fails to boot
@@ -291,7 +379,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
     public boolean boot() {
 	boolean result = true;
 	try {
-	    this.generateFlowPairs();
+	    flowManager.boot();
 	} catch (final IndexOutOfBoundException e) {
 	    OVXNetwork.log
 		    .error("Too many host to generate the flow pairs. Tear down the virtual network {}",
@@ -306,69 +394,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	return this.bootState;
     }
 
-    public Integer storeFlowValues(final byte[] srcMac, final byte[] dstMac)
-	    throws IndexOutOfBoundException {
-	// TODO: Optimize flow numbers
-	final BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,
-	        dstMac));
-	Integer flowId = this.flowValues.inverse().get(dualMac);
-	if (flowId == null) {
-	    flowId = this.flowCounter.getNewIndex();
-	    OVXNetwork.log
-		    .debug("virtual net = {}: save flowId = {} that is associated to {} {}",
-		            this.tenantId, flowId, MACAddress.valueOf(srcMac)
-		                    .toString(), MACAddress.valueOf(dstMac)
-		                    .toString());
-	    this.flowValues.put(flowId, dualMac);
-	}
-	return flowId;
-    }
 
-    public LinkedList<MACAddress> getFlowValues(final Integer flowId) {
-	final LinkedList<MACAddress> macList = new LinkedList<MACAddress>();
-	final BigInteger dualMac = this.flowValues.get(flowId);
-	if (dualMac != null) {
-	    final MACAddress srcMac = MACAddress.valueOf(dualMac.shiftRight(48)
-		    .longValue());
-	    final MACAddress dstMac = MACAddress.valueOf(dualMac.longValue());
-	    macList.add(srcMac);
-	    macList.add(dstMac);
-	}
-	return macList;
-    }
-
-    public Integer getFlowId(final byte[] srcMac, final byte[] dstMac) {
-	if (MACAddress.valueOf(srcMac).toLong() == 0 || MACAddress.valueOf(srcMac).toLong() == 0) {
-	    log.warn("virtual net = {}: OVX doens't store flowId associated to mac address == 00:00:00:00:00:00", this.tenantId);
-	    return 0;
-	}
-	else {
-	    final BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,
-		    dstMac));
-	    OVXNetwork.log
-	    .debug("virtual net = {}: retrieving flowId that is associated to {} {}",
-		    this.tenantId, MACAddress.valueOf(srcMac).toString(),
-		    MACAddress.valueOf(dstMac).toString());
-	    final Integer flowId = this.flowValues.inverse().get(dualMac);
-	    if (flowId == 0) {
-		throw new VirtualLinkException("");
-	    }
-	    return flowId;
-	}
-    }
-
-    private void generateFlowPairs() throws IndexOutOfBoundException {
-	final List<MACAddress> macList = this.getMACList();
-	for (final MACAddress srcMac : macList) {
-	    this.storeFlowValues(srcMac.toBytes(), MACAddress.valueOf("ff:ff:ff:ff:ff:ff").toBytes());
-	    for (final MACAddress dstMac : macList) {
-		if (srcMac.toLong() != dstMac.toLong()) {
-		    this.storeFlowValues(srcMac.toBytes(), dstMac.toBytes());
-
-		}
-	    }
-	}
-    }
 
     /**
      * Handle LLDP received from controller.
@@ -404,7 +430,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 		}
 	    }
 	} else {
-	    this.log.debug("Invalid LLDP");
+	    log.debug("Invalid LLDP");
 	}
     }
 
@@ -430,10 +456,10 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 
     }
 
-    public LinkedList<OVXLink> getLinksById(final int linkId) {
+    public LinkedList<OVXLink> getLinksById(final Integer linkId) {
 	final LinkedList<OVXLink> linkList = new LinkedList<OVXLink>();
-	for (final OVXLink link : this.linkSet) {
-	    if (link.getLinkId() == linkId) {
+	for (OVXLink link : this.getLinks()) {
+	    if (link.getLinkId().equals(linkId)) {
 		linkList.add(link);
 	    }
 	}
@@ -457,8 +483,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> {
 	return this.switchSet.remove(ovxSwitch);
     }
 
-    public boolean removeHost(final MACAddress hostAddress) {
-	final Host host = this.getHost(hostAddress);
+    public boolean removeHost(final Host host) {
 	return this.hostList.remove(host);
     }
 }

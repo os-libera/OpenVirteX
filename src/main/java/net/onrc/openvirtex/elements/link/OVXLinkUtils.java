@@ -212,7 +212,7 @@ public class OVXLinkUtils {
     public LinkedList<MACAddress> getOriginalMacAddresses() 
 	    	throws NetworkMappingException {
 	final LinkedList<MACAddress> macList = OVXMap.getInstance()
-	        .getVirtualNetwork(this.tenantId).getFlowValues(this.flowId);
+	        .getVirtualNetwork(this.tenantId).getFlowManager().getFlowValues(this.flowId);
 	return macList;
     }
 

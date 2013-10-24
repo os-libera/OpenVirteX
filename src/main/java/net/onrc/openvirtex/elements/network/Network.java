@@ -79,13 +79,13 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 		final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
 		final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
 		final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
-		srcPort.isEdge(false);
-		dstPort.isEdge(false);
+		srcPort.setEdge(false);
+		dstPort.setEdge(false);
 		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 		neighbours.add(dstSwitch);
 		this.neighborPortMap.put((T2) ((Link) link).getSrcPort(),
 				(T2) ((Link) link).getDstPort());
-		this.log.info("Adding link " + link.toString());
+		this.log.debug("Adding link " + link.toString());
 	}
 
 	/**
@@ -100,8 +100,8 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 		final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
 		final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
 		final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
-		srcPort.isEdge(true);
-		dstPort.isEdge(true);
+		srcPort.setEdge(true);
+		dstPort.setEdge(true);
 		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 		neighbours.remove(dstSwitch);
 		this.neighborPortMap.remove(((Link) link).getSrcPort());

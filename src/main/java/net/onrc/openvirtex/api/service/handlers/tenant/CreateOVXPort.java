@@ -13,14 +13,15 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
-import net.onrc.openvirtex.util.MACAddress;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,9 +30,9 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-public class ConnectHost extends ApiHandler<Map<String, Object>> {
+public class CreateOVXPort extends ApiHandler<Map<String, Object>> {
 
-    Logger log = LogManager.getLogger(ConnectHost.class.getName());
+    Logger log = LogManager.getLogger(CreateOVXPort.class.getName());
 
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
@@ -44,30 +45,24 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
 		    TenantHandler.DPID, params, true, null);
 	    final Number port = HandlerUtils.<Number> fetchField(
 		    TenantHandler.PORT, params, true, null);
-	    final String mac = HandlerUtils.<String> fetchField(
-		    TenantHandler.MAC, params, true, null);
 
 	    HandlerUtils.isValidTenantId(tenantId.intValue());
-	    HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
-		    port.shortValue());
-	    HandlerUtils.isUsedOVXPort(tenantId.intValue(), dpid.longValue(),
-		    port.shortValue());
+	    HandlerUtils.isValidPhysicalPort(tenantId.intValue(),
+		    dpid.longValue(), port.shortValue());
 	    final OVXMap map = OVXMap.getInstance();
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 		    .intValue());
-	    final MACAddress macAddr = MACAddress.valueOf(mac);
-	    final Host host = virtualNetwork.connectHost(dpid.longValue(),
-		    port.shortValue(), macAddr);
-	    if (host == null) {
+	    final OVXPort ovxPort = virtualNetwork.createPort(dpid.longValue(),
+		    port.shortValue());
+	    if (ovxPort == null) {
 		resp = new JSONRPC2Response(-1, 0);
 	    } else {
 		this.log.info(
-		        "Connected host with id {} and mac {} to virtual port {} on virtual switch {} in virtual network {}",
-		        host.getHostId(), host.getMac().toString(), host
-		                .getPort().getPortNumber(), host.getPort()
-		                .getParentSwitch().getSwitchName(),
-		        virtualNetwork.getTenantId());
-		resp = new JSONRPC2Response(host.getHostId(), 0);
+		        "Created virtual port {} on virtual switch {} in virtual network {}",
+		        ovxPort.getPortNumber(), ovxPort.getParentSwitch()
+		                .getSwitchName(), virtualNetwork.getTenantId());
+		resp = new JSONRPC2Response(ovxPort.getParentSwitch()
+		        .getSwitchId() + "," + ovxPort.getPortNumber(), 0);
 	    }
 
 	} catch (final MissingRequiredField e) {
@@ -75,7 +70,7 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
 		    new JSONRPC2Error(
 		            JSONRPC2Error.INVALID_PARAMS.getCode(),
 		            this.cmdName()
-		                    + ": Unable to connect this host to the virtual network : "
+		                    + ": Unable to create this virtual port in the virtual network : "
 		                    + e.getMessage()), 0);
 	} catch (final InvalidPortException e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
@@ -92,12 +87,19 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
 		            this.cmdName()
 		                    + ": Impossible to create the virtual port, too many ports on this virtual switch : "
 		                    + e.getMessage()), 0);
+	} catch (final InvalidDPIDException e) {
+	    resp = new JSONRPC2Response(new JSONRPC2Error(
+		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+		            + ": Invalid physical dpid : " + e.getMessage()), 0);
 	} catch (final NetworkMappingException e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		            + ": " + e.getMessage()), 0);
+	} catch (final SwitchMappingException e) {
+	    resp = new JSONRPC2Response(new JSONRPC2Error(
+		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+		            + ": " + e.getMessage()), 0);
 	}
-
 	return resp;
     }
 

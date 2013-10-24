@@ -10,18 +10,27 @@ package net.onrc.openvirtex.api.service.handlers;
 import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
-import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
+import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
-import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitchRoute;
+import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectHost;
-import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.PauseOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXNetwork;
+import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitch;
-import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitchRoute;
+import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXRoute;
+import net.onrc.openvirtex.api.service.handlers.tenant.ResumeOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.SaveConfig;
-import net.onrc.openvirtex.api.service.handlers.tenant.StartNetwork;
-import net.onrc.openvirtex.api.service.handlers.tenant.StopNetwork;
+import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXBigSwitchRouting;
+import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXNetwork;
+import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXPort;
+import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXSwitch;
+import net.onrc.openvirtex.api.service.handlers.tenant.StopOVXNetwork;
+import net.onrc.openvirtex.api.service.handlers.tenant.StopOVXPort;
+import net.onrc.openvirtex.api.service.handlers.tenant.StopOVXSwitch;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -41,31 +50,49 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	public static final String TENANT = "tenantId";
 	public static final String DPIDS = "dpids";
 	public static final String DPID = "dpid";
-	public static final String LINK = "link";
+	public static final String SRC_DPID = "srcDpid";
+	public static final String DST_DPID = "dstDpid";
+	public static final String LINK = "linkId";
 	public static final String SWITCH_ROUTE = "switch_route";
 	public static final String PORT = "port";
 	public static final String SRC_PORT = "srcPort";
 	public static final String DST_PORT = "dstPort";
+	public static final String PRIORITY = "priority";
 	public static final String MAC = "mac";
 	public static final String PATH = "path";
-
+	public static final String ALGORITHM = "algorithm";
+	public static final String BACKUPS = "backup_num";
+	public static final String HOST = "hostId";
+	public static final String ROUTE = "routeId";
 	
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
 		{
 			this.put("createNetwork", new CreateOVXNetwork());
 			this.put("createSwitch", new CreateOVXSwitch());
+			this.put("createPort", new CreateOVXPort());
+			this.put("setInternalRouting", new SetOVXBigSwitchRouting());
 			this.put("connectHost", new ConnectHost());
-			this.put("createLink", new CreateOVXLink());
-			this.put("startNetwork", new StartNetwork());
-			this.put("saveConfig", new SaveConfig());
-			this.put("createSwitchRoute", new CreateOVXSwitchRoute());
+			this.put("connectLink", new ConnectOVXLink());
+			this.put("connectRoute", new ConnectOVXRoute());
+			
 			this.put("removeNetwork", new RemoveOVXNetwork());
 			this.put("removeSwitch", new RemoveOVXSwitch());
+			this.put("removePort", new RemoveOVXPort());
 			this.put("disconnectHost", new DisconnectHost());
-			this.put("removeLink", new RemoveOVXLink());
-			this.put("stopNetwork", new StopNetwork());
-			this.put("removeSwitchRoute", new RemoveOVXSwitchRoute());
+			this.put("disconnectLink", new DisconnectOVXLink());
+			this.put("disconnectRoute", new DisconnectOVXRoute());
+			
+			this.put("startNetwork", new StartOVXNetwork());
+			this.put("startSwitch", new StartOVXSwitch());
+			this.put("startPort", new StartOVXPort());
+			this.put("stopNetwork", new StopOVXNetwork());
+			this.put("stopSwitch", new StopOVXSwitch());
+			this.put("stopPort", new StopOVXPort());
+			this.put("pauseNetwork", new PauseOVXNetwork());
+			this.put("resumeNetwork", new ResumeOVXNetwork());
+			
+			this.put("saveConfig", new SaveConfig());
 		}
 	};
 

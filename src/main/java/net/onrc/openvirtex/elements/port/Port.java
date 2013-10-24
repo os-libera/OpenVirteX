@@ -72,7 +72,7 @@ public class Port<T1, T2> extends OFPhysicalPort {
 	 * @param isEdge
 	 *            the new checks if is edge
 	 */
-	public void isEdge(final Boolean isEdge) {
+	public void setEdge(final Boolean isEdge) {
 		this.isEdge = isEdge;
 	}
 

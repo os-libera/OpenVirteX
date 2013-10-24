@@ -301,7 +301,7 @@ public class ShortestPath implements Routable {
 	}
 	try {
 	    Collections.reverse(revpath);
-	    vSwitch.createRoute(srcPort, dstPort, path, revpath);
+	    vSwitch.createRoute(srcPort, dstPort, path, revpath, (byte)128);
 	} catch (final IndexOutOfBoundException e) {
 	    ShortestPath.log
 		    .error("Impossible to create the virtual switch route for for big-switch {} "

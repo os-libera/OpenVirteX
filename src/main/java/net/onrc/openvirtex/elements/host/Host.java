@@ -7,16 +7,20 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.host;
 
+import org.openflow.protocol.OFPhysicalPort.OFPortState;
+
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.util.MACAddress;
 
 public class Host {
+    	private final Integer hostId;
 	private final MACAddress mac;
 	private final OVXPort port;
 
-	public Host(final MACAddress mac, final OVXPort port) {
+	public Host(final MACAddress mac, final OVXPort port, final Integer hostId) {
 		this.mac = mac;
 		this.port = port;
+		this.hostId = hostId;
 	}
 
 	public MACAddress getMac() {
@@ -25,5 +29,14 @@ public class Host {
 
 	public OVXPort getPort() {
 		return port;
+	}
+	
+	public Integer getHostId() {
+	    return hostId;
+	}
+	
+	public void unregister() {
+	    this.port.setActive(false);
+	    this.port.tearDown();
 	}
 }

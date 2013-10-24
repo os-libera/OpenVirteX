@@ -57,6 +57,41 @@ public class AbstractAPICalls extends TestCase {
 
 	}
 
+	public JSONRPC2Response createPort(final Integer tenantId,
+		final Long dpid, final Short port) {
+
+	    final CreateOVXPort cp = new CreateOVXPort();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		    this.put(TenantHandler.DPID, dpid);
+		    this.put(TenantHandler.PORT, port);
+		}
+	    };
+
+	    return cp.process(request);
+	}
+	
+	public JSONRPC2Response setInternalRouting(final Integer tenantId,
+		final Long dpid, final String protocol, final byte backups) {
+
+	    final SetOVXBigSwitchRouting sr = new SetOVXBigSwitchRouting();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		    this.put(TenantHandler.DPID, dpid);
+		    this.put(TenantHandler.ALGORITHM, protocol);
+		    this.put(TenantHandler.BACKUPS, backups);
+		}
+	    };
+
+	    return sr.process(request);
+	}
+	
 	public JSONRPC2Response connectHost(final Integer tenantId,
 			final Long dpid, final Short port, final String mac) {
 
@@ -75,38 +110,43 @@ public class AbstractAPICalls extends TestCase {
 		return ch.process(request);
 	}
 
-	public JSONRPC2Response createLink(final int tenantId,
-			final String pathString) {
-		final CreateOVXLink cl = new CreateOVXLink();
+	public JSONRPC2Response connectLink(final int tenantId, final long srcDpid, final short srcPort,
+		final long dstDpid, final short dstPort, final String pathString, final byte priority) {
+		final ConnectOVXLink cl = new ConnectOVXLink();
 
 		@SuppressWarnings("serial")
 		final HashMap<String, Object> request = new HashMap<String, Object>() {
 			{
 				this.put(TenantHandler.TENANT, tenantId);
+				this.put(TenantHandler.SRC_DPID, srcDpid);
+				this.put(TenantHandler.SRC_PORT, srcPort);
+				this.put(TenantHandler.DST_DPID, dstDpid);
+				this.put(TenantHandler.DST_PORT, dstPort);
 				this.put(TenantHandler.PATH, pathString);
+				this.put(TenantHandler.PRIORITY, priority);
 			}
 		};
 
 		return cl.process(request);
 	}
 	
-	public JSONRPC2Response createSwitchRoute(final int tenantId, final long dpid,
-		final short srcPort, final short dstPort,
-		final String pathString) {
-	    final CreateOVXSwitchRoute cr = new CreateOVXSwitchRoute();
+	public JSONRPC2Response connectRoute(final int tenantId, final long dpid, final short srcPort,
+		final short dstPort, final String pathString, final byte priority) {
+		final ConnectOVXRoute cr = new ConnectOVXRoute();
 
-	    @SuppressWarnings("serial")
-	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.SRC_PORT, srcPort);
-		    this.put(TenantHandler.DST_PORT, dstPort);
-		    this.put(TenantHandler.PATH, pathString);
-		}
-	    };
+		@SuppressWarnings("serial")
+		final HashMap<String, Object> request = new HashMap<String, Object>() {
+			{
+				this.put(TenantHandler.TENANT, tenantId);
+				this.put(TenantHandler.DPID, dpid);
+				this.put(TenantHandler.SRC_PORT, srcPort);
+				this.put(TenantHandler.DST_PORT, dstPort);
+				this.put(TenantHandler.PATH, pathString);
+				this.put(TenantHandler.PRIORITY, priority);
+			}
+		};
 
-	    return cr.process(request);
+		return cr.process(request);
 	}
 
 	public JSONRPC2Response removeNetwork(final int tenantId) {
@@ -136,8 +176,37 @@ public class AbstractAPICalls extends TestCase {
 	    return rs.process(request);
 	}
 	
-	public JSONRPC2Response removeLink(final int tenantId, final int linkId) {
-	    final RemoveOVXLink cl = new RemoveOVXLink();
+	public JSONRPC2Response removePort(final int tenantId, final long dpid, final short port) {
+	    final RemoveOVXPort rp = new RemoveOVXPort();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		    this.put(TenantHandler.DPID, dpid);
+		    this.put(TenantHandler.PORT, port);
+		}
+	    };
+
+	    return rp.process(request);
+	}
+	
+	public JSONRPC2Response disconnectHost(final int tenantId, final int hostId) {
+	    final DisconnectHost dh = new DisconnectHost();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		    this.put(TenantHandler.HOST, hostId);
+		}
+	    };
+
+	    return dh.process(request);
+	}
+	
+	public JSONRPC2Response disconnectLink(final int tenantId, final int linkId) {
+	    final DisconnectOVXLink dl = new DisconnectOVXLink();
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
@@ -147,13 +216,54 @@ public class AbstractAPICalls extends TestCase {
 		}
 	    };
 
-	    return cl.process(request);
+	    return dl.process(request);
 	}
 	
-	public JSONRPC2Response disconnectHost(final Integer tenantId,
-		final Long dpid, final Short port, final String mac) {
+	public JSONRPC2Response disconnectRoute(final int tenantId, final long dpid,
+		final int routeId) {
+	    final DisconnectOVXRoute dr = new DisconnectOVXRoute();
 
-	    final DisconnectHost ch = new DisconnectHost();
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		    this.put(TenantHandler.DPID, dpid);
+		    this.put(TenantHandler.ROUTE, routeId);
+		}
+	    };
+
+	    return dr.process(request);
+	}
+	
+	public JSONRPC2Response startNetwork(final int tenantId) {
+	    final StartOVXNetwork sn = new StartOVXNetwork();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		}
+	    };
+
+	    return sn.process(request);
+	}
+	
+	public JSONRPC2Response startSwitch(final int tenantId, final long dpid) {
+	    final StartOVXSwitch ss = new StartOVXSwitch();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		    this.put(TenantHandler.DPID, dpid);
+		}
+	    };
+
+	    return ss.process(request);
+	}
+	
+	public JSONRPC2Response startPort(final int tenantId, final long dpid, final short port) {
+	    final StartOVXPort sp = new StartOVXPort();
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
@@ -161,32 +271,56 @@ public class AbstractAPICalls extends TestCase {
 		    this.put(TenantHandler.TENANT, tenantId);
 		    this.put(TenantHandler.DPID, dpid);
 		    this.put(TenantHandler.PORT, port);
-		    this.put(TenantHandler.MAC, mac);
 		}
 	    };
 
-	    return ch.process(request);
+	    return sp.process(request);
 	}
 	
-	public JSONRPC2Response removeSwitchRoute(final int tenantId, final long dpid,
-		final short srcPort, final short dstPort) {
-	    final RemoveOVXSwitchRoute cl = new RemoveOVXSwitchRoute();
+	public JSONRPC2Response stopNetwork(final int tenantId) {
+	    final StopOVXNetwork sn = new StopOVXNetwork();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		}
+	    };
+
+	    return sn.process(request);
+	}
+	
+	public JSONRPC2Response stopSwitch(final int tenantId, final long dpid) {
+	    final StopOVXSwitch ss = new StopOVXSwitch();
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
 		{
 		    this.put(TenantHandler.TENANT, tenantId);
 		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.SRC_PORT, srcPort);
-		    this.put(TenantHandler.DST_PORT, dstPort);
 		}
 	    };
 
-	    return cl.process(request);
+	    return ss.process(request);
 	}
 	
-	public JSONRPC2Response stopNetwork(final int tenantId) {
-	    final StopNetwork cl = new StopNetwork();
+	public JSONRPC2Response stopPort(final int tenantId, final long dpid, final short port) {
+	    final StopOVXPort sp = new StopOVXPort();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		    this.put(TenantHandler.DPID, dpid);
+		    this.put(TenantHandler.PORT, port);
+		}
+	    };
+
+	    return sp.process(request);
+	}
+	
+	public JSONRPC2Response pauseNetwork(final int tenantId) {
+	    final PauseOVXNetwork pn = new PauseOVXNetwork();
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
@@ -195,6 +329,20 @@ public class AbstractAPICalls extends TestCase {
 		}
 	    };
 
-	    return cl.process(request);
+	    return pn.process(request);
 	}
+	
+	public JSONRPC2Response resumeNetwork(final int tenantId) {
+	    final ResumeOVXNetwork rn = new ResumeOVXNetwork();
+
+	    @SuppressWarnings("serial")
+	    final HashMap<String, Object> request = new HashMap<String, Object>() {
+		{
+		    this.put(TenantHandler.TENANT, tenantId);
+		}
+	    };
+
+	    return rn.process(request);
+	}
+	
 }

@@ -32,6 +32,7 @@ public class BitSetIndex {
 	ROUTE_ID((int)Math.pow(2,24)),
 	PORT_ID(U16.f(OFPort.OFPP_MAX.getValue())),
 	FLOW_ID((int)Math.pow(2,24)),
+	HOST_ID((int)Math.pow(2,32)),
 	FLOW_COUNTER(getLinkMaxValue()),
 	IP_ID((int)Math.pow(2,(32-OpenVirteXController.getInstance().getNumberVirtualNets()))),
 	DEFAULT(1000);
@@ -62,6 +63,7 @@ public class BitSetIndex {
 		    "ROUTE_ID: " + ROUTE_ID.getValue() + "\n" +
 		    "PORT_ID: " + PORT_ID.getValue() + "\n" +
 		    "FLOW_ID: " + FLOW_ID.getValue() + "\n" +
+		    "HOST_ID: " + HOST_ID.getValue() + "\n" +
 		    "FLOW_COUNTER: " + FLOW_COUNTER.getValue() + "\n" +
 		    "IP_ID: " + IP_ID.getValue() + "\n" +
 		    "DEFAULT: " + DEFAULT.getValue();
@@ -75,7 +77,7 @@ public class BitSetIndex {
 	this.set.flip(0);
     }
 
-    public Integer getNewIndex() throws IndexOutOfBoundException {
+    public synchronized Integer getNewIndex() throws IndexOutOfBoundException {
 	Integer index = this.set.nextClearBit(0);
 	if (index < type.getValue()) {
 	    this.set.flip(index);
@@ -84,7 +86,7 @@ public class BitSetIndex {
 	else throw new IndexOutOfBoundException("No available id in range [0," + type.getValue().toString() + "]");
     }
 
-    public boolean releaseIndex(Integer index) {
+    public synchronized boolean releaseIndex(Integer index) {
 	if (this.set.get(index)) {
 	    this.set.flip(index);
 	    return true;

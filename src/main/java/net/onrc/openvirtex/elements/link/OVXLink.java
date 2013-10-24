@@ -26,9 +26,11 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
+import net.onrc.openvirtex.packet.Ethernet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFPhysicalPort.OFPortState;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
@@ -52,6 +54,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
     @SerializedName("tenantId")
     @Expose
     private final Integer tenantId;
+    
+    private final byte priority;
 
     private Mappable      map = null;
 
@@ -66,12 +70,14 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
      *            virtual source port
      * @param dstPort
      *            virtual destination port
+     * @param priority 
      */
     public OVXLink(final Integer linkId, final Integer tenantId,
-	    final OVXPort srcPort, final OVXPort dstPort) {
+	    final OVXPort srcPort, final OVXPort dstPort, byte priority) {
 	super(srcPort, dstPort);
 	this.linkId = linkId;
 	this.tenantId = tenantId;
+	this.priority = priority;
 	srcPort.setOutLink(this);
 	dstPort.setInLink(this);
 	this.map = OVXMap.getInstance();
@@ -95,6 +101,10 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	return this.tenantId;
     }
 
+    public byte getPriority() {
+        return priority;
+    }
+
     /**
      * Register mapping between virtual link and physical path
      * 
@@ -106,14 +116,15 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 
     @Override
     public void unregister() {
-    	try {
-    	    final Mappable map = this.srcPort.getParentSwitch().getMap();
-    	    map.removeVirtualLink(this);
-    	    map.getVirtualNetwork(this.tenantId).removeLink(this);
-    	    this.srcPort.unregister();
-    	} catch (NetworkMappingException e) {
-    	    log.warn("could not unregister OVXLink: " + e.getMessage() );
-    	}
+	final Mappable map = this.srcPort.getParentSwitch().getMap();
+	map.removeVirtualLink(this);
+	this.srcPort.setActive(false);
+	this.srcPort.tearDown();
+    }
+    
+    public void tearDown() {
+	final Mappable map = this.srcPort.getParentSwitch().getMap();
+	map.removeVirtualLink(this);
     }
 
     /**
@@ -135,7 +146,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	final OVXLinkUtils lUtils = new OVXLinkUtils(this.tenantId,
 	        this.linkId, flowId);
 	lUtils.rewriteMatch(fm.getMatch());
-	IPMapper.rewriteMatch(this.tenantId, fm.getMatch());
+	if (fm.getMatch().getDataLayerType() == Ethernet.TYPE_IPv4)
+	    IPMapper.rewriteMatch(this.tenantId, fm.getMatch());
 
 	/*
 	 * Get the list of physical links mapped to this virtual link,

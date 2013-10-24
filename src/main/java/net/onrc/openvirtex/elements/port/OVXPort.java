@@ -9,10 +9,13 @@
 
 package net.onrc.openvirtex.elements.port;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFPortStatus;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
 
+import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.host.Host;
@@ -22,13 +25,15 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.OVXPortStatus;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
-import net.onrc.openvirtex.util.MACAddress;
 
 public class OVXPort extends Port<OVXSwitch, OVXLink> {
+    
+    private static Logger log = LogManager.getLogger(OVXPort.class
+		.getName());
+    
     private final Integer      tenantId;
     private final PhysicalPort physicalPort;
-    /** The link id. */
-    private Integer            linkId;
+    private boolean isActive; 
 
     public OVXPort(final int tenantId, final PhysicalPort port,
 	    final boolean isEdge) throws IndexOutOfBoundException {
@@ -43,13 +48,9 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	    throw new RuntimeException("Unexpected state in OVXMap: " + e.getMessage());
 	}
 	this.portNumber = this.parentSwitch.getNextPortNumber();
-	/*
-	 * The hardware addr is generated using the ON.Lab OUI (0xA4:23:05) 
-	 * plus the portNumber
-	 */
-	this.hardwareAddress = MACAddress.valueOf((long) 0xa42305 << 24 | this.portNumber).toBytes();
+	this.name = "ovxport-"+this.portNumber;
 	this.isEdge = isEdge;
-	// advertise current speed/duplex as 1GB FD, media type copper
+	this.hardwareAddress = port.getHardwareAddress();
 	PortFeatures features = new PortFeatures();
 	features.setCurrentOVXPortFeatures();
 	this.currentFeatures = features.getOVXFeatures();
@@ -59,9 +60,9 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	this.supportedFeatures = features.getOVXFeatures();
 	features.setPeerOVXPortFeatures();
 	this.peerFeatures = features.getOVXFeatures();
-	this.state = OFPortState.OFPPS_STP_BLOCK.getValue();
+	this.state = OFPortState.OFPPS_LINK_DOWN.getValue();
 	this.config = 0;
-	this.linkId = 0;
+	this.isActive = false;
     }
 
     public Integer getTenantId() {
@@ -76,16 +77,16 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	return this.physicalPort.getPortNumber();
     }
 
-    public Integer getLinkId() {
-	return this.linkId;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setLinkId(final Integer linkId) {
-	this.linkId = linkId;
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
     }
 	
     public boolean isLink() {
-	if (this.linkId == 0)
+	if (this.portLink == null)
 	    return false;
 	return true;
     }
@@ -141,31 +142,46 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> {
 	this.peerFeatures = psport.getPeerFeatures();
     }
 
+    public void boot() {
+	this.isActive = true;
+	this.state = OFPortState.OFPPS_STP_FORWARD.getValue();
+	this.parentSwitch.generateFeaturesReply();
+	if (this.parentSwitch.isActive())
+	    sendStatusMsg(OFPortReason.OFPPR_MODIFY);
+    }
+    
+    public void tearDown() {
+	this.isActive = false;
+	this.state = OFPortState.OFPPS_LINK_DOWN.getValue();
+	this.parentSwitch.generateFeaturesReply();
+	if (this.parentSwitch.isActive())
+	    sendStatusMsg(OFPortReason.OFPPR_MODIFY);
+    }
+    
     public void unregister() {
+	OVXNetwork virtualNetwork = null;
+	try {
+	    virtualNetwork = this.parentSwitch.getMap().getVirtualNetwork(this.tenantId);
+	} catch (NetworkMappingException e) {
+	    log.error("Error retrieving the network with id {}. Unregister for OVXPort {}/{} not fully done!", 
+		    this.getTenantId(), this.getParentSwitch().getSwitchName(), this.getPortNumber());
+	    return;
+	}        
 	this.parentSwitch.removePort(this.portNumber);
 	this.physicalPort.removeOVXPort(this);
 	if (this.parentSwitch.isActive()) {
 	    sendStatusMsg(OFPortReason.OFPPR_DELETE);
-	    this.parentSwitch.generateFeaturesReply();
 	}
-	if (this.isEdge) {
-	    try {
-        	OVXNetwork virtualNetwork = this.parentSwitch.getMap().getVirtualNetwork(this.tenantId);
-	        Host host = virtualNetwork.getHost(this);
-	        this.parentSwitch.getMap().removeMAC(host.getMac());
-	        virtualNetwork.removeHost(host.getMac());
-            } catch (NetworkMappingException e) {
-	        throw new RuntimeException("Unexpected state in OVXMap: " + e.getMessage());
-            }
+	if (this.isEdge && this.isActive) {
+	    Host host = virtualNetwork.getHost(this);
+	    this.parentSwitch.getMap().removeMAC(host.getMac());
+	    virtualNetwork.removeHost(host);
 	}
-    }
-
-    @Override
-    public String toString() {
-	String result = super.toString();
-	result += "\n- tenantId: " + this.tenantId + "\n- linkId: "
-		+ this.linkId;
-	return result;
+	else {
+	    this.getLink().egressLink.unregister();
+	    this.getLink().ingressLink.unregister();
+	}
+	this.parentSwitch.generateFeaturesReply();
     }
 
     public boolean equals(final OVXPort port) {

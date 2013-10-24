@@ -129,7 +129,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     				try {    
     					LinkedList<MACAddress> macList = sw.getMap()
     							.getVirtualNetwork(this.ovxPort.getTenantId())
-    							.getFlowValues(lUtils.getFlowId());
+    							.getFlowManager().getFlowValues(lUtils.getFlowId());
     					eth.setSourceMACAddress(macList.get(0).toBytes())
     					.setDestinationMACAddress(macList.get(1).toBytes());
 	    				match.setDataLayerSource(eth.getSourceMACAddress())
@@ -143,12 +143,10 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     			}
     			
     		}   
-    		this.tenantId = this.fetchTenantId(match, map, true);
-		if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
+
+    		if (match.getDataLayerType() == Ethernet.TYPE_ARP) {
     			// ARP packet
     			final ARP arp = (ARP) eth.getPayload();
-    			log.info("ETH " + eth);
-    			log.info("supposed ARP " + arp);
     			this.tenantId = this.fetchTenantId(match, map, true);
     			try {
     				if (map.hasVirtualIP(srcIP)) {

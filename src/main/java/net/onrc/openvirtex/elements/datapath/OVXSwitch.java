@@ -16,8 +16,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
-import net.onrc.openvirtex.elements.link.OVXLink;
-import net.onrc.openvirtex.elements.port.LinkPair;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
@@ -206,30 +205,25 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
     public void unregister() {
 	this.isActive = false;
 	if (this.getPorts() != null) {
+	    OVXNetwork net;
+            try {
+	        net = this.getMap().getVirtualNetwork(this.tenantId);
+            } catch (NetworkMappingException e) {
+	        log.error("Error retrieving the network with id {}. Unregister for OVXSwitch {} not fully done!", this.getTenantId(), this.getSwitchName());
+	        return;
+            }
 	    final Set<Short> portSet = new TreeSet<Short>(this.getPorts()
 		    .keySet());
 	    for (final Short portNumber : portSet) {
-		// TODO: after merging with Ayaka, retrieve link from port and
-		// not from linkId
 		final OVXPort port = this.getPort(portNumber);
 		if (port.isEdge()) {
-		    port.unregister();
+		    net.getHostCounter().releaseIndex(net.getHost(port).getHostId());
 		} else {
-		    LinkPair<OVXLink> links = port.getLink();
-		    if ((links != null) && (links.exists())) {
-			links.getOutLink().unregister();
-			links.getInLink().unregister();
-		    }
-		    /*final OVXNetwork virtualNetwork = this.map
-			    .getVirtualNetwork(this.tenantId);
-		    final OVXPort neighPort = virtualNetwork
-			    .getNeighborPort(port);
-		    virtualNetwork.getLink(port, neighPort).unregister();
-		    virtualNetwork.getLink(neighPort, port).unregister(); */
+		    net.getLinkCounter().releaseIndex(port.getLink().getInLink().getLinkId());
 		}
+		port.unregister();
 	    }
 	}
-
 	// remove the switch from the map
 	try {
 	    this.map.getVirtualNetwork(this.tenantId).removeSwitch(this);

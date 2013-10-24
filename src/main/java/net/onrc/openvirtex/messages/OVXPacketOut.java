@@ -29,9 +29,11 @@ import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
+import org.openflow.protocol.OFPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.util.U16;
 
 public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
@@ -93,8 +95,9 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 				return;
 			}
 		}
-
-		this.setInPort(inport.getPhysicalPortNumber());
+		
+		if (U16.f(this.getInPort()) < U16.f(OFPort.OFPP_MAX.getValue()))
+		    this.setInPort(inport.getPhysicalPortNumber());
 		this.prependRewriteActions(sw);
                 this.setActions(this.approvedActions);
 		this.setActionsLength((short) 0);
@@ -105,7 +108,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 					.getLength()));
 		}
 
-		OVXMessageUtil.translateXid(this, inport);
+		//TODO: Beacon sometimes send msg with inPort == controller, check with Ayaka if it's ok
+		if (U16.f(this.getInPort()) < U16.f(OFPort.OFPP_MAX.getValue()))
+		    OVXMessageUtil.translateXid(this, inport);
+		this.log.debug("Sending packet-out to sw {}: {}", sw.getName(), this);
 		sw.sendSouth(this, inport);
 	}
 

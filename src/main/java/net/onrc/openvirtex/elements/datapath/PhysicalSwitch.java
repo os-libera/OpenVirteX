@@ -172,8 +172,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	@Override
 	public boolean boot() {
 		PhysicalNetwork.getInstance().addSwitch(this);
-		this.log.info("Switch connected {} : {}",
-				this.featuresReply.getDatapathId(),
+		this.log.info("Switch connected with dpid {}, name {} and type {}",
+				this.featuresReply.getDatapathId(), this.getSwitchName(),
 				this.desc.getHardwareDescription());
 		this.fillPortMap();
 		this.statsMan.start();

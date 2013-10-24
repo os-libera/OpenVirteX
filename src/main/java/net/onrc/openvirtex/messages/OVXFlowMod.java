@@ -108,32 +108,33 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		this.getMatch().setInputPort(inPort.getPhysicalPortNumber());
 		OVXMessageUtil.translateXid(this, inPort);
 		try {
-			if (inPort.isEdge()) {
-			    	this.prependRewriteActions();
-			} else {
-				IPMapper.rewriteMatch(sw.getTenantId(), this.match);
-				//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
-				if (inPort != null && inPort.isLink() 
-					&& (!this.match.getWildcardObj().isWildcarded(Flag.DL_DST) ||
-						!this.match.getWildcardObj().isWildcarded(Flag.DL_SRC))) {
-					//rewrite the OFMatch with the values of the link
-					OVXNetwork vnet = sw.getMap().getVirtualNetwork(sw.getTenantId());    	
-					OVXPort dstPort = vnet.getNeighborPort(inPort);
-					OVXLink link = vnet.getLink(dstPort, inPort);
-					if (link != null) {
-					    Integer flowId = sw.getMap().getVirtualNetwork(sw.getTenantId()).
-						    getFlowId(this.match.getDataLayerSource(), this.match.getDataLayerDestination());
-					    OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);
-					    lUtils.rewriteMatch(this.getMatch());
-					}
-				}
+		    if (inPort.isEdge()) {
+			this.prependRewriteActions();
+		    } else {
+			IPMapper.rewriteMatch(sw.getTenantId(), this.match);
+			//TODO: Verify why we have two send points... and if this is the right place for the match rewriting
+			if (inPort != null && inPort.isLink() && 
+					(!this.match.getWildcardObj().isWildcarded(Flag.DL_DST) ||
+    				!this.match.getWildcardObj().isWildcarded(Flag.DL_SRC))) {
+			    //rewrite the OFMatch with the values of the link
+			    OVXPort dstPort = sw.getMap().getVirtualNetwork(sw.getTenantId()).getNeighborPort(inPort);
+			    OVXLink link = sw.getMap().getVirtualNetwork(sw.getTenantId()).getLink(dstPort, inPort);
+			    if (inPort != null && link != null) {
+				Integer flowId = sw.getMap().getVirtualNetwork(sw.getTenantId()).getFlowManager().
+					getFlowId(this.match.getDataLayerSource(), this.match.getDataLayerDestination());
+				OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);
+				lUtils.rewriteMatch(this.getMatch());
+			    }
+
 			}
+		    }
 		} catch (NetworkMappingException e) {
-			log.warn(e);                    
-                }
+		    log.warn("OVXFlowMod. Error retrieving the network with id {} for flowMod {}. Dropping packet...", 
+			    this.sw.getTenantId(), this);                    
+		}
 		this.computeLength();
 		if (sw.getFlowTable().handleFlowMods(this)) {
-			sw.sendSouth(this, inPort);
+		    sw.sendSouth(this, inPort);
 		}
 	}
 	

@@ -48,6 +48,8 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> {
 
     /** The Tenant ID of the switch - makes it unique in the physical network */
     int          tenantid;
+    
+    private final byte priority;
 	
     /** A reference to the PhysicalPort at the start of the path */
     PhysicalPort inPort;
@@ -56,11 +58,12 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> {
     PhysicalPort outPort;
 	
     public SwitchRoute(final OVXPort in, final OVXPort out, final long dpid,
-	    final int routeid, final int tid) {
+	    final int routeid, final int tid, final byte priority) {
 	super(in, out);
 	this.dpid = dpid;
 	this.routeId = routeid;
 	this.tenantid = tid;
+	this.priority = priority;
     }
 
     /**
@@ -79,6 +82,10 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> {
 	return this.routeId;
     }
 
+    public byte getPriority() {
+        return priority;
+    }
+    
     /**
      * Sets the DPID of the parent switch of route
      * 
@@ -173,9 +180,8 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> {
 	 * If the packet has L3 fields (e.g. NOT ARP), change the packet match:
 	 * 1) change the fields where the physical ips are stored
 	 */
-	if (fm.getMatch().getDataLayerType() == Ethernet.TYPE_IPv4) {
+	if (fm.getMatch().getDataLayerType() == Ethernet.TYPE_IPv4)
 	    IPMapper.rewriteMatch(ovxInPort.getTenantId(), fm.getMatch());
-	}
 	
 	/*
 	 * Get the list of physical links mapped to this virtual link,

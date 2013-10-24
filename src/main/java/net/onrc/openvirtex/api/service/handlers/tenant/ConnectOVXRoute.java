@@ -7,20 +7,23 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.host.Host;
+import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
-import net.onrc.openvirtex.util.MACAddress;
+import net.onrc.openvirtex.exceptions.VirtualLinkException;
+import net.onrc.openvirtex.routing.SwitchRoute;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,68 +32,87 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-public class ConnectHost extends ApiHandler<Map<String, Object>> {
-
-    Logger log = LogManager.getLogger(ConnectHost.class.getName());
+public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
+    final Logger log = LogManager.getLogger(ConnectOVXRoute.class.getName());
 
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
+
 	JSONRPC2Response resp = null;
 
 	try {
 	    final Number tenantId = HandlerUtils.<Number> fetchField(
 		    TenantHandler.TENANT, params, true, null);
-	    final Number dpid = HandlerUtils.<Number> fetchField(
+	    final Number dpid = HandlerUtils.<Long> fetchField(
 		    TenantHandler.DPID, params, true, null);
-	    final Number port = HandlerUtils.<Number> fetchField(
-		    TenantHandler.PORT, params, true, null);
-	    final String mac = HandlerUtils.<String> fetchField(
-		    TenantHandler.MAC, params, true, null);
+	    final Number srcPort = HandlerUtils.<Number> fetchField(
+		    TenantHandler.SRC_PORT, params, true, null);
+	    final Number dstPort = HandlerUtils.<Number> fetchField(
+		    TenantHandler.DST_PORT, params, true, null);
+	    final String pathString = HandlerUtils.<String> fetchField(
+		    TenantHandler.PATH, params, true, null);
+	    final Number priority = HandlerUtils.<Number> fetchField(
+		    TenantHandler.PRIORITY, params, true, null);
 
 	    HandlerUtils.isValidTenantId(tenantId.intValue());
+	    HandlerUtils.isValidOVXBigSwitch(tenantId.intValue(),
+		    dpid.longValue());
 	    HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
-		    port.shortValue());
-	    HandlerUtils.isUsedOVXPort(tenantId.intValue(), dpid.longValue(),
-		    port.shortValue());
+		    srcPort.shortValue());
+	    HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
+		    dstPort.shortValue());
+	    final List<PhysicalLink> physicalLinks = HandlerUtils
+		    .getPhysicalPath(pathString);
+	    HandlerUtils.isValidVirtualLink(physicalLinks);
+
 	    final OVXMap map = OVXMap.getInstance();
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 		    .intValue());
-	    final MACAddress macAddr = MACAddress.valueOf(mac);
-	    final Host host = virtualNetwork.connectHost(dpid.longValue(),
-		    port.shortValue(), macAddr);
-	    if (host == null) {
+
+	    final SwitchRoute virtualRoute = virtualNetwork.connectRoute(
+		    dpid.longValue(), srcPort.shortValue(),
+		    dstPort.shortValue(), physicalLinks, priority.byteValue());
+	    if (virtualRoute == null) {
 		resp = new JSONRPC2Response(-1, 0);
 	    } else {
 		this.log.info(
-		        "Connected host with id {} and mac {} to virtual port {} on virtual switch {} in virtual network {}",
-		        host.getHostId(), host.getMac().toString(), host
-		                .getPort().getPortNumber(), host.getPort()
-		                .getParentSwitch().getSwitchName(),
-		        virtualNetwork.getTenantId());
-		resp = new JSONRPC2Response(host.getHostId(), 0);
+		        "Created bi-directional virtual route {} between ports {}{} on virtual big-switch {} in virtual network {}",
+		        virtualRoute.getRouteId(), virtualRoute.getSrcSwitch()
+		                .getSwitchName(), virtualRoute.getSrcPort()
+		                .getPortNumber(), virtualRoute.getDstSwitch()
+		                .getSwitchName(), virtualRoute.getDstPort()
+		                .getPortNumber(), virtualNetwork.getTenantId());
+		resp = new JSONRPC2Response(virtualRoute.getRouteId(), 0);
 	    }
-
 	} catch (final MissingRequiredField e) {
-	    resp = new JSONRPC2Response(
-		    new JSONRPC2Error(
-		            JSONRPC2Error.INVALID_PARAMS.getCode(),
-		            this.cmdName()
-		                    + ": Unable to connect this host to the virtual network : "
-		                    + e.getMessage()), 0);
-	} catch (final InvalidPortException e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invalid port : " + e.getMessage()), 0);
+		            + ": Unable to create virtual switch route : "
+		            + e.getMessage()), 0);
 	} catch (final InvalidTenantIdException e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		            + ": Invalid tenant id : " + e.getMessage()), 0);
+	} catch (final InvalidDPIDException e) {
+	    resp = new JSONRPC2Response(
+		    new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
+		            this.cmdName() + ": Invalid virtual switch id : "
+		                    + e.getMessage()), 0);
+	} catch (final VirtualLinkException e) {
+	    resp = new JSONRPC2Response(new JSONRPC2Error(
+		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+		            + ": Invalid virtual route : " + e.getMessage()), 0);
+	} catch (final InvalidPortException e) {
+	    resp = new JSONRPC2Response(new JSONRPC2Error(
+		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+		            + ": Invalid virtual port id : " + e.getMessage()),
+		    0);
 	} catch (final IndexOutOfBoundException e) {
 	    resp = new JSONRPC2Response(
 		    new JSONRPC2Error(
 		            JSONRPC2Error.INVALID_PARAMS.getCode(),
 		            this.cmdName()
-		                    + ": Impossible to create the virtual port, too many ports on this virtual switch : "
+		                    + ": Unable to create the virtual switch route, too many routes in this virtual switch : "
 		                    + e.getMessage()), 0);
 	} catch (final NetworkMappingException e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
@@ -105,5 +127,4 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
     public JSONRPC2ParamsType getType() {
 	return JSONRPC2ParamsType.OBJECT;
     }
-
 }
