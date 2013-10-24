@@ -14,13 +14,9 @@ import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.messages.OVXMessageUtil;
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
-
-import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.OFPort;
-import org.openflow.protocol.statistics.OFPortStatisticsReply;
 import org.openflow.protocol.statistics.OFPortStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatisticsType;
 

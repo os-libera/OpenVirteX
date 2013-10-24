@@ -9,24 +9,44 @@
 
 package net.onrc.openvirtex.messages.statistics;
 
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.messages.OVXMessageUtil;
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 
 import org.openflow.protocol.statistics.OFFlowStatisticsReply;
+import org.openflow.protocol.statistics.OFStatistics;
 
 public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
 		VirtualizableStatistic {
-
+	
 	@Override
 	public void virtualizeStatistic(final PhysicalSwitch sw,
 			final OVXStatisticsReply msg) {
-		// TODO Auto-generated method stub
-		final OVXSwitch vsw = OVXMessageUtil.untranslateXid(msg, sw);
-		if (vsw == null) {
-
+		
+		HashMap<Integer, List<OVXFlowStatisticsReply>> stats = new HashMap<Integer, List<OVXFlowStatisticsReply>>();
+		
+		for (OFStatistics stat : msg.getStatistics()) {
+			OVXFlowStatisticsReply reply = (OVXFlowStatisticsReply) stat;
+			int tid = getTidFromCookie(reply.getCookie());
+			addToStats(tid, reply, stats);
 		}
+		sw.setFlowStatistics(stats);
+	}
+
+	private void addToStats(int tid, OVXFlowStatisticsReply reply,
+			HashMap<Integer, List<OVXFlowStatisticsReply>> stats) {
+		List<OVXFlowStatisticsReply> statsList = stats.get(tid);
+		if (statsList == null) 
+			statsList = new LinkedList<OVXFlowStatisticsReply>();
+		statsList.add(reply);
+		stats.put(tid, statsList);
+	}
+
+	private int getTidFromCookie(long cookie) {
+		return (int) (cookie >> 32);
 	}
 
 }

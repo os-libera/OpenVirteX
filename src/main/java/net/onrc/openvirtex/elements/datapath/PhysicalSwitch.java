@@ -10,6 +10,8 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,6 +23,7 @@ import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.Virtualizable;
+import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsReply;
 import net.onrc.openvirtex.messages.statistics.OVXPortStatisticsReply;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +45,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	
 	private StatisticsManager statsMan = null;
 	private AtomicReference<Map<Short, OVXPortStatisticsReply>> portStats;
+	private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
 
 	/**
 	 * Unregisters OVXSwitches and associated virtual elements mapped to
@@ -89,6 +93,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		super(switchId);
 		this.translator = new XidTranslator();
 		this.portStats = new AtomicReference<Map<Short, OVXPortStatisticsReply>>();
+		this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
 		this.statsMan = new StatisticsManager(this);
 	}
 
@@ -252,6 +257,19 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	public void setPortStatistics(Map<Short, OVXPortStatisticsReply> stats) {
 		this.portStats.set(stats);
 	}
+	
+	public void setFlowStatistics(
+			Map<Integer, List<OVXFlowStatisticsReply>> stats) {
+		this.flowStats.set(stats);
+		
+	}
+	
+	public List<OVXFlowStatisticsReply> getFlowStats(int tid) {
+		Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
+		if (stats != null && stats.containsKey(tid))
+			return Collections.unmodifiableList(stats.get(tid));
+		return null;
+	}
 
 	public OVXPortStatisticsReply getPortStat(short portNumber) {
 		Map<Short, OVXPortStatisticsReply> stats = this.portStats.get();
@@ -260,4 +278,6 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		}
 		return null;
 	}
+
+	
 }

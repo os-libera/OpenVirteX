@@ -27,12 +27,21 @@ public class OVXStatisticsReply extends OFStatisticsReply implements
 
 	@Override
 	public void virtualize(final PhysicalSwitch sw) {
+		/*
+		 * The entire stat message will be handled in the 
+		 * specific stattype handler. 
+		 * 
+		 * This means that for stattypes that have a list
+		 * of replies the handles will have to call 
+		 * getStatistics to handle them all.
+		 */
 		try {
-		    List<? extends OFStatistics> stats = this.getStatistics();
-		    for (OFStatistics stat : stats) {
-			((VirtualizableStatistic) stat).virtualizeStatistic(sw, this);
-		    }
 			
+			if (this.getStatistics().size() > 0) {
+				VirtualizableStatistic stat = (VirtualizableStatistic) this.getStatistics().get(0);
+				stat.virtualizeStatistic(sw, this);
+			}
+		    
 		} catch (final ClassCastException e) {
 			this.log.error("Statistic received is not virtualizable {}", this);
 		}

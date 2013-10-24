@@ -95,9 +95,10 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 				return;
 			}
 		}
-		
+
 		if (U16.f(this.getInPort()) < U16.f(OFPort.OFPP_MAX.getValue()))
-		    this.setInPort(inport.getPhysicalPortNumber());
+			this.setInPort(inport.getPhysicalPortNumber());
+
 		this.prependRewriteActions(sw);
                 this.setActions(this.approvedActions);
 		this.setActionsLength((short) 0);
