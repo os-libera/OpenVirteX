@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.monitoring;
 
+import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -34,7 +35,7 @@ public class ListHosts extends ApiHandler<Map<String, Object>> {
 
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
-		Map<String, Object> result;
+		List<Object> result;
 		JSONRPC2Response resp = null;
 		Number tid = null;
 		try {
@@ -49,7 +50,7 @@ public class ListHosts extends ApiHandler<Map<String, Object>> {
 			gsonBuilder.registerTypeAdapter(Host.class,
 				new HostSerializer());
 			final Gson gson = gsonBuilder.create();
-			result = gson.fromJson(gson.toJson(gson.toJson(vnet.getHosts())), Map.class );
+			result = gson.fromJson(gson.toJson(vnet.getHosts()), List.class );
 			resp = new JSONRPC2Response(result, 0);
 		} catch (ClassCastException | MissingRequiredField e) {
 			resp = new JSONRPC2Response(
