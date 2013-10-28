@@ -25,14 +25,12 @@ class ERROR_CODE:
   INTERNAL_ERROR = -32603	      # Internal JSON-RPC error.
   INVALID_NETWORK_TYPE = 1
 
-def parseDpid(mac):
-  """Return int value of the string mac, which may be given as long value or as hex string"""
-  if isinstance(mac, int):
-    return mac
-  if not ':' in mac:
-    return int(mac)
-  else:
-    return int(mac.replace(':', ''), 16)
+# Convert dotted hex MAC address to long value
+def hexToLong(mac):
+  return int(mac.replace(':', ''), 16)
+
+def longToHex(l):
+  return '00:' + ':'.join([("%x" % l)[i:i+2] for i in range(0, len(("%x" % l)), 2)])
 
 class Routing():
   def __init__(self, topology):
@@ -173,7 +171,6 @@ class OVXClient():
       authhandler = urllib2.HTTPBasicAuthHandler(passman)
       opener = urllib2.build_opener(authhandler)
       req = self._buildRequest(data, url, cmd)
-      #ph = urllib2.urlopen(req)
       ph = opener.open(req)
       return self._parseResponse(ph.read())
     except urllib2.URLError as e:
@@ -205,12 +202,21 @@ class OVXClient():
     req = {'tenantId': tenantId, 'dpids': dpids}
     ret = self._connect("createSwitch", self.tenant_url, data=req)
     if ret:
-        log.info("Switch with switchId %s has been created" % ret)
+        log.info("Switch with switchId %s has been created" % longToHex(ret))
     return ret
 
-  def createLink(self, tenantId, path):
-    req = {'tenantId': tenantId, 'path': path}
-    ret = self._connect("createLink", self.tenant_url, data=req)
+  def createPort(self, tenantId, dpid, port):
+    req = {'tenantId': tenantId, 'dpid': dpid, 'port': port}
+    ret = self._connect("createPort", self.tenant_url, data=req)
+    # Type conversions needed because ConnectHost returns incorrect JSON
+    switch_id, port_no = [int(x) for x in ret.split(',')]
+    if (switch_id, port_no):
+        log.info("Port on switch %s with port number %s has been created" % (longToHex(switch_id), port_no))
+    return (switch_id, port_no)
+
+  def connectLink(self, tenantId, srcDpid, srcPort, dstDpid, dstPort, path, priority):
+    req = {'tenantId': tenantId, 'srcDpid': srcDpid, 'srcPort': srcPort, 'dstDpid': dstDpid, 'dstPort': dstPort, 'path': path, 'priority': priority}
+    ret = self._connect("connectLink", self.tenant_url, data=req)
     if ret:
         log.info("Link with linkId %s has been created" % ret)
     return ret
@@ -219,7 +225,7 @@ class OVXClient():
     req = {'tenantId': tenantId, 'dpid': dpid, 'port': port, 'mac': mac}
     ret = self._connect("connectHost", self.tenant_url, data=req)
     if ret:
-        log.info("Host %s connected on port %s" % (mac, ret))
+        log.info("Host with hostId %s connected" % (ret))
     return ret
 
   def createSwitchRoute(self, tenantId, switchId, srcPort, dstPort, path):
@@ -271,7 +277,6 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
   def doBigSwitchNetwork(self, controller, subnet, hosts):
     client = self.server.client
     # request physical topology
-    #phyTopo = json.loads(client.getPhysicalTopology())
     phyTopo = client.getPhysicalTopology()
     # spawn controller if necessary
     # TODO: do proper string comparison
@@ -291,25 +296,13 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     # create virtual network
     tenantId = client.createNetwork(proto, host, port, net_address, int(net_mask))
     # create virtual switch with all physical dpids
-    dpids = [parseDpid(dpid) for dpid in phyTopo['switches']]
+    dpids = [hexToLong(dpid) for dpid in phyTopo['switches']]
     switchId = client.createSwitch(tenantId, dpids)
-    # add hosts and save their port numbers
-    hostPortMap = {}
+    # create virtual ports and connect hosts
     for host in hosts:
-      hostPortMap[host['mac']] = client.connectHost(tenantId, parseDpid(host['dpid']), host['port'], host['mac'])
-    # # calculate routing and configure virtual switch
-    # routing = Routing(phyTopo)
-    # for src_index in xrange(0, len(hosts)):
-    #   src = hosts[src_index]
-    #   for dst_index in xrange(src_index + 1, len(hosts)):
-    #     dst = hosts[dst_index]
-    #     if src['dpid'] != dst['dpid']:
-    #       route = routing.getRoute(src['dpid'], dst['dpid'])
-    #       path = routing.parseRoute(route)
-    #       srcPort = parseDpid(hostPortMap[src['mac']])
-    #       dstPort = parseDpid(hostPortMap[dst['mac']])
-    #       client.createSwitchRoute(tenantId, switchId, srcPort, dstPort, path)
-    # boot network
+      (vdpid, vport) = client.createPort(tenantId, hexToLong(host['dpid']), host['port'])
+      client.connectHost(tenantId, vdpid, vport, host['mac'])
+    # Start virtual network
     client.startNetwork(tenantId)
 
     return tenantId
@@ -317,7 +310,6 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
   def doPhysicalNetwork(self, controller, subnet, hosts):
     client = self.server.client
     # request physical topology
-    #phyTopo = json.loads(client.getPhysicalTopology())
     phyTopo = client.getPhysicalTopology()
     # spawn controller if necessary
     if controller['type'] == 'default':
@@ -337,19 +329,32 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     tenantId = client.createNetwork(proto, host, port, net_address, int(net_mask))
     # create virtual switch per physical dpid
     for dpid in phyTopo['switches']:
-      client.createSwitch(tenantId, [parseDpid(dpid)])
-    # add hosts
+      client.createSwitch(tenantId, [hexToLong(dpid)])
+    # create virtual ports and connect hosts
     for host in hosts:
-      client.connectHost(tenantId, parseDpid(host['dpid']), host['port'], host['mac'])
-    # create virtual link per physical link
+      (vdpid, vport) = client.createPort(tenantId, hexToLong(host['dpid']), host['port'])
+      client.connectHost(tenantId, vdpid, vport, host['mac'])
+    # create virtual ports and connect virtual links
     connected = []
     for link in phyTopo['links']:
       if (link['src']['dpid'], link['src']['port']) not in connected:
-        src = "%s/%s" % (parseDpid(link['src']['dpid']), link['src']['port'])
-        dst = "%s/%s" % (parseDpid(link['dst']['dpid']), link['dst']['port'])
+        srcDpid = hexToLong(link['src']['dpid'])
+        # Type conversions needed because OVX JSON output is stringified
+        srcPort = int(link['src']['port'])
+        (srcVDpid, srcVPort) = client.createPort(tenantId, srcDpid, srcPort)
+
+        dstDpid = hexToLong(link['dst']['dpid'])
+        dstPort = int(link['dst']['port'])
+        (dstVDpid, dstVPort) = client.createPort(tenantId, dstDpid, dstPort)
+        
+        src = "%s/%s" % (srcDpid, srcPort)
+        dst = "%s/%s" % (dstDpid, dstPort)
+        
         path = "%s-%s" % (src, dst)
-        client.createLink(tenantId, path)
+        priority = 0
+        client.connectLink(tenantId, srcVDpid, srcVPort, dstVDpid, dstVPort, path, priority)
         connected.append((link['dst']['dpid'], link['dst']['port']))
+      
     # boot network
     client.startNetwork(tenantId)
 
