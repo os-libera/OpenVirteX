@@ -42,7 +42,7 @@ public class GetSubnet extends ApiHandler<Map<String, Object>> {
 					MonitoringHandler.TENANT, params, true, null);
 			final OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
 					tid.intValue());
-			resp = new JSONRPC2Response(vnet.getMask(), 0);
+			resp = new JSONRPC2Response(vnet.getNetwork().toSimpleString() + "/" + vnet.getMask(), 0);
 			return resp;
 		} catch (ClassCastException | MissingRequiredField | NetworkMappingException e) {
 			resp = new JSONRPC2Response(

@@ -10,6 +10,8 @@
  */
 package net.onrc.openvirtex.elements.address;
 
+import org.openflow.util.U8;
+
 import net.onrc.openvirtex.packet.IPv4;
 
 public abstract class IPAddress {
@@ -30,8 +32,8 @@ public abstract class IPAddress {
 		this.ip = ip;
 	}
 
-	public String toSimpeString() {
-		return (this.ip >> 24) + "."
+	public String toSimpleString() {
+		return U8.f((byte) (this.ip >> 24)) + "."
 				+ (this.ip >> 16 & 0xFF) + "." + (this.ip >> 8 & 0xFF) + "."
 				+ (this.ip & 0xFF);
 	}

@@ -44,7 +44,7 @@ public class GetVirtualAddressMapping extends ApiHandler<Map<String, Object>> {
 			for (CharSequence vip : map.getAllKeys()) {
 				String ip = vip.toString().replace("OVXIPAddress[", "").replace("]", "");
 				res.put(ip, map.getPhysicalIP(new OVXIPAddress(ip, 
-						tid.intValue()), tid.intValue()).toSimpeString());
+						tid.intValue()), tid.intValue()).toSimpleString());
 			}
 			
 			

@@ -80,14 +80,14 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 					OFMatch.STR_NW_SRC,
 					map.getVirtualIP(
 							new PhysicalIPAddress((String) entry
-									.get(OFMatch.STR_NW_SRC))).toSimpeString());
+									.get(OFMatch.STR_NW_SRC))).toSimpleString());
 		}
 		if (entry.containsKey(OFMatch.STR_NW_DST)) {
 			entry.put(
 					OFMatch.STR_NW_DST,
 					map.getVirtualIP(
 							new PhysicalIPAddress((String) entry
-									.get(OFMatch.STR_NW_DST))).toSimpeString());
+									.get(OFMatch.STR_NW_DST))).toSimpleString());
 		}
 
 	}
