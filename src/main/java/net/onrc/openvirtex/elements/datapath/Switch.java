@@ -36,6 +36,8 @@ import org.openflow.util.HexString;
 public abstract class Switch<T extends Port> implements OVXEventHandler,
 		OVXSendMsg {
 
+	public static final String DB_KEY = "switches";
+	
 	/** Switch channel status. */
 	protected boolean isConnected = false;
 

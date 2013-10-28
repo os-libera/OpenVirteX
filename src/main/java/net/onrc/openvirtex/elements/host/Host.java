@@ -7,13 +7,19 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.host;
 
-import org.openflow.protocol.OFPhysicalPort.OFPortState;
+import java.util.HashMap;
+import java.util.Map;
 
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.util.MACAddress;
 
-public class Host {
-    	private final Integer hostId;
+public class Host implements Persistable {
+	public static final String DB_KEY = "hosts"; 
+
+	private final Integer hostId;
 	private final MACAddress mac;
 	private final OVXPort port;
 
@@ -30,13 +36,44 @@ public class Host {
 	public OVXPort getPort() {
 		return port;
 	}
-	
-	public Integer getHostId() {
-	    return hostId;
+
+	public void register() {
+		DBManager.getInstance().save(this);
 	}
-	
+
+	@Override
+	public Map<String, Object> getDBIndex() {
+		Map<String, Object> index = new HashMap<String, Object>();
+		index.put(TenantHandler.TENANT, this.port.getTenantId());
+		return index;
+	}
+
+	@Override
+	public String getDBKey() {
+		return Host.DB_KEY;
+	}
+
+	@Override
+	public String getDBName() {
+		return DBManager.DB_VNET;
+	}
+
+	@Override
+	public Map<String, Object> getDBObject() {
+		Map<String, Object> dbObject = new HashMap<String, Object>();
+		dbObject.put(TenantHandler.DPID, this.port.getParentSwitch().getSwitchId());
+		dbObject.put(TenantHandler.PORT, this.port.getPortNumber());
+		dbObject.put(TenantHandler.MAC, this.mac.toLong());
+		dbObject.put(TenantHandler.HOST, this.hostId);
+		return dbObject;
+	}
+
+	public Integer getHostId() {
+		return hostId;
+	}
+
 	public void unregister() {
-	    this.port.setActive(false);
-	    this.port.tearDown();
+		this.port.setActive(false);
+		this.port.tearDown();
 	}
 }

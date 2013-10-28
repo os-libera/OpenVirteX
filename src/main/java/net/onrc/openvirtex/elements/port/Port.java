@@ -9,6 +9,13 @@
 
 package net.onrc.openvirtex.elements.port;
 
+import java.util.Map;
+import java.util.HashMap;
+
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.elements.Persistable;
+import net.onrc.openvirtex.elements.datapath.Switch;
+import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
@@ -21,8 +28,10 @@ import org.openflow.protocol.OFPhysicalPort;
  * @param <T2>
  * 		The Generic Link type
  */
-public class Port<T1, T2> extends OFPhysicalPort {
+public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort implements Persistable {
 
+	public static final String DB_KEY = "ports";
+	
 	protected MACAddress mac;
 	protected Boolean isEdge;
 	protected T1 parentSwitch;
@@ -44,7 +53,7 @@ public class Port<T1, T2> extends OFPhysicalPort {
 		this.advertisedFeatures = ofPort.getAdvertisedFeatures();
 		this.supportedFeatures = ofPort.getSupportedFeatures();
 		this.peerFeatures = ofPort.getPeerFeatures();
-		this.mac = null;
+		this.mac = new MACAddress(this.hardwareAddress);
 		this.isEdge = false;
 		this.parentSwitch = null;
 		this.portLink = null;
@@ -130,4 +139,26 @@ public class Port<T1, T2> extends OFPhysicalPort {
 				+ this.isEdge;
 	}
 
+	@Override
+	public Map<String, Object> getDBIndex() {
+		return null;
+	}
+
+	@Override
+	public String getDBKey() {
+		return null;
+	}
+
+	@Override
+	public String getDBName() {
+		return null;
+	}
+
+	@Override
+	public Map<String, Object> getDBObject() {
+		Map<String, Object> dbObject = new HashMap<String, Object>();
+		dbObject.put(TenantHandler.DPID, this.parentSwitch.getSwitchId()); 
+		dbObject.put(TenantHandler.PORT, this.getPortNumber());
+		return dbObject;
+	}
 }

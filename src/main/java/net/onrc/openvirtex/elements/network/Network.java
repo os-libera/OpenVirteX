@@ -12,6 +12,7 @@ package net.onrc.openvirtex.elements.network;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -40,19 +41,19 @@ import com.google.gson.annotations.SerializedName;
  * @param <T3>
  *            Generic Link type
  */
-public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
+public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link> implements LLDPEventHandler,
 		OVXSendMsg {
 
 
     @SerializedName("switches")
     @Expose
-	protected final HashSet<T1>              switchSet;
+	protected final Set<T1>              switchSet;
     @SerializedName("links")
     @Expose
-	protected final HashSet<T3>              linkSet;
-	protected final HashMap<Long, T1>        dpidMap;
-	protected final HashMap<T2, T2>          neighborPortMap;
-	protected final HashMap<T1, HashSet<T1>> neighborMap;
+	protected final Set<T3>              linkSet;
+	protected final Map<Long, T1>        dpidMap;
+	protected final Map<T2, T2>          neighborPortMap;
+	protected final Map<T1, HashSet<T1>> neighborMap;
 
 	Logger log = LogManager.getLogger(Network.class.getName());
 
@@ -75,17 +76,17 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 		// Actual link creation is in child classes, because creation of generic
 		// types sucks
 		this.linkSet.add(link);
-		final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
-		final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
-		final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
-		final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
+		final T1 srcSwitch = (T1) link.getSrcSwitch();
+		final T1 dstSwitch = (T1) link.getDstSwitch();
+		final Port srcPort = link.getSrcPort();
+		final Port dstPort = link.getSrcPort();
 		srcPort.setEdge(false);
 		dstPort.setEdge(false);
 		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 		neighbours.add(dstSwitch);
-		this.neighborPortMap.put((T2) ((Link) link).getSrcPort(),
-				(T2) ((Link) link).getDstPort());
-		this.log.debug("Adding link " + link.toString());
+		this.neighborPortMap.put((T2) link.getSrcPort(),
+				(T2) link.getDstPort());
+		this.log.info("Adding link " + link.toString());
 	}
 
 	/**
@@ -96,15 +97,15 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	 */
 	protected boolean removeLink(final T3 link) {
 		this.linkSet.remove(link);
-		final T1 srcSwitch = (T1) ((Link) link).getSrcSwitch();
-		final T1 dstSwitch = (T1) ((Link) link).getDstSwitch();
-		final Port srcPort = (Port) (T2) ((Link) link).getSrcPort();
-		final Port dstPort = (Port) (T2) ((Link) link).getSrcPort();
+		final T1 srcSwitch = (T1) link.getSrcSwitch();
+		final T1 dstSwitch = (T1) link.getDstSwitch();
+		final Port srcPort = link.getSrcPort();
+		final Port dstPort = link.getSrcPort();
 		srcPort.setEdge(true);
 		dstPort.setEdge(true);
 		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 		neighbours.remove(dstSwitch);
-		this.neighborPortMap.remove(((Link) link).getSrcPort());
+		this.neighborPortMap.remove(link.getSrcPort());
 		this.log.info("Removing link " + link.toString());
 		return true;
 	}
@@ -116,8 +117,8 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	 */
 	protected void addSwitch(final T1 sw) {
 		if (this.switchSet.add(sw)) {
-			this.dpidMap.put(((Switch) sw).getSwitchId(), sw);
-			this.neighborMap.put(sw, new HashSet());
+			this.dpidMap.put(sw.getSwitchId(), sw);
+			this.neighborMap.put(sw, new HashSet<T1>());
 		}
 	}
 	
@@ -190,8 +191,8 @@ public abstract class Network<T1, T2, T3> implements LLDPEventHandler,
 	// TODO: optimize this because we iterate over all links
 	public T3 getLink(final T2 srcPort, final T2 dstPort) {
 		for (final T3 link : this.linkSet) {
-			if (((Link) link).getSrcPort().equals(srcPort)
-					&& ((Link) link).getDstPort().equals(dstPort)) {
+			if (link.getSrcPort().equals(srcPort)
+					&& link.getDstPort().equals(dstPort)) {
 				return link;
 			}
 		}

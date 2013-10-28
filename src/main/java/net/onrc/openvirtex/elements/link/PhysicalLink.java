@@ -9,11 +9,15 @@
 
 package net.onrc.openvirtex.elements.link;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 
@@ -21,7 +25,7 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
  * The Class PhysicalLink.
  * 
  */
-public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
+public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements Persistable {
 
 	
 	private static AtomicInteger linkIds = new AtomicInteger(0);
@@ -46,7 +50,6 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
 		this.linkId = PhysicalLink.linkIds.getAndIncrement();
 	}
 	
-	
 	public Integer getLinkId() {
 		return linkId;
 	}
@@ -57,4 +60,11 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> {
 		srcPort.setOutLink(null);
 		dstPort.setInLink(null);
 	}
+
+	@Override
+	public Map<String, Object> getDBObject() {
+		Map<String, Object> dbObject = super.getDBObject();
+		dbObject.put(TenantHandler.LINK, this.linkId);
+		return dbObject;
+	}	
 }

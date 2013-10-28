@@ -46,7 +46,7 @@ public class OpenVirteXControllerTest extends TestCase {
 
 	public void testNotNull() {
 		final OpenVirteXController ovx = new OpenVirteXController(null,
-				"localhost", 16633, 8);
+				"localhost", 16633, 8, "localhost", 27017, false);
 		Assert.assertNotNull(OpenVirteXController.getInstance());
 		Assert.assertEquals(ovx, OpenVirteXController.getInstance());
 	}

@@ -55,6 +55,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	public static final String LINK = "linkId";
 	public static final String SWITCH_ROUTE = "switch_route";
 	public static final String PORT = "port";
+	public static final String VPORT = "vport";
 	public static final String SRC_PORT = "srcPort";
 	public static final String DST_PORT = "dstPort";
 	public static final String PRIORITY = "priority";

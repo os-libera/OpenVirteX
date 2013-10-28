@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.datapath.DPIDandPort;
+import net.onrc.openvirtex.elements.datapath.DPIDandPortPair;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
@@ -36,7 +39,7 @@ import org.openflow.protocol.OFMessage;
  */
 public class PhysicalNetwork extends
 		Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
-
+	
 	private static PhysicalNetwork instance;
 	private ArrayList<Uplink> uplinkList;
 	private final ConcurrentHashMap<Long, SwitchDiscoveryManager> discoveryManager;
@@ -82,6 +85,7 @@ public class PhysicalNetwork extends
 		super.addSwitch(sw);
 		this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
 				sw));
+		DBManager.getInstance().addSwitch(sw.getSwitchId());
 	}
 	
 	/**
@@ -89,6 +93,7 @@ public class PhysicalNetwork extends
  	 * @param sw
 	 */
 	public boolean removeSwitch(final PhysicalSwitch sw) {
+		DBManager.getInstance().delSwitch(sw.getSwitchId());
 		SwitchDiscoveryManager sdm = this.discoveryManager.get(sw.getSwitchId());
 		for (PhysicalPort port : sw.getPorts().values()) {
 			/* handle any link mappings */
@@ -143,6 +148,10 @@ public class PhysicalNetwork extends
 		if (neighbourPort == null || !neighbourPort.equals(dstPort)) {
 			final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 			super.addLink(link);
+			DPIDandPortPair dpp = new DPIDandPortPair(
+					new DPIDandPort(srcPort.getParentSwitch().getSwitchId(), srcPort.getPortNumber()),
+					new DPIDandPort(dstPort.getParentSwitch().getSwitchId(), dstPort.getPortNumber()));
+			DBManager.getInstance().addLink(dpp);
 		} else {
 			PhysicalNetwork.log.debug("Tried to create invalid link");
 		}
@@ -159,9 +168,13 @@ public class PhysicalNetwork extends
 		final PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
 		if (neighbourPort.equals(dstPort)) {
 			final PhysicalLink link = super.getLink(srcPort, dstPort);
+			DPIDandPortPair dpp = new DPIDandPortPair(
+					new DPIDandPort(srcPort.getParentSwitch().getSwitchId(), srcPort.getPortNumber()),
+					new DPIDandPort(dstPort.getParentSwitch().getSwitchId(), dstPort.getPortNumber()));
+			DBManager.getInstance().delLink(dpp);
 			super.removeLink(link);
 		} else {
-			this.log.debug("Tried to remove invalid link");
+			PhysicalNetwork.log.debug("Tried to remove invalid link");
 		}
 	}
 
@@ -206,5 +219,4 @@ public class PhysicalNetwork extends
 	public boolean boot() {
 		return true;
 	}
-
 }

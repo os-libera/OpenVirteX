@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import net.onrc.openvirtex.api.server.JettyServer;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
+import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
@@ -43,6 +44,9 @@ public class OpenVirteXController implements Runnable {
 	private String configFile = null;
 	private String ofHost = null;
 	private Integer ofPort = null;
+	private String dbHost = null;
+	private Integer dbPort = null;
+	private Boolean dbClear = null;
 	Thread server;
 
 	private final NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
@@ -58,10 +62,14 @@ public class OpenVirteXController implements Runnable {
     private OVXLinkField	ovxLinkField;
 
 	public OpenVirteXController(final String configFile, final String ofHost,
-			final Integer ofPort, final int maxVirtual) {
+			final Integer ofPort, final int maxVirtual, final String dbHost, final int dbPort,
+			final Boolean dbClear) {
 		this.configFile = configFile;
 		this.ofHost = ofHost;
 		this.ofPort = ofPort;
+		this.dbHost = dbHost;
+		this.dbPort = dbPort;
+		this.dbClear = dbClear;
 		this.maxVirtual = maxVirtual;
 		//by default, use Mac addresses to store vLinks informations
 		this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
@@ -73,6 +81,7 @@ public class OpenVirteXController implements Runnable {
 		Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
 		PhysicalNetwork.getInstance().boot();
 
+		this.startDatabase();
 		this.startServer();
 
 		try {
@@ -162,12 +171,16 @@ public class OpenVirteXController implements Runnable {
 				Executors.newCachedThreadPool(),
 				Executors.newCachedThreadPool()));
 	}
+	
+	private void startDatabase() {
+		DBManager dbManager = DBManager.getInstance();
+		dbManager.init(this.dbHost, this.dbPort, this.dbClear);
+	}
 
 	private void startServer() {
 		// TODO: pass this via cmd args.
 		this.server = new Thread(new JettyServer(8080));
 		this.server.start();
-
 	}
 
 	public void terminate() {
@@ -189,7 +202,9 @@ public class OpenVirteXController implements Runnable {
 		if (this.cfact != null) {
 			this.cfact.releaseExternalResources();
 		}
-
+		
+		this.log.info("Shutting down database connection");
+		DBManager.getInstance().close();
 	}
 
 	public static OpenVirteXController getInstance() {

@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.datapath.statistics.StatisticsManager;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -42,7 +43,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	/** The Xid mapper */
 	private final XidTranslator translator;
 
-	
+
 	private StatisticsManager statsMan = null;
 	private AtomicReference<Map<Short, OVXPortStatisticsReply>> portStats;
 	private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
@@ -53,36 +54,36 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 * is torn down.  
 	 */
 	class DeregAction implements Runnable {
-	    
+
 		PhysicalSwitch psw;   
 		int tid;
 		DeregAction(PhysicalSwitch s, int t) {
 			this.psw = s;
 			this.tid = t;
-	    	}
-	    
+		}
+
 		@Override
 		public void run() {
-	        	// TODO Auto-generated method stub
+			// TODO Auto-generated method stub
 			OVXSwitch vsw;
-                        try {
+			try {
 				vsw = psw.map.getVirtualSwitch(psw, tid);
 				if (vsw != null) {
 					/* save = don't destroy the switch, it can be saved */    
-		    			boolean save = false;
-			    		if (vsw instanceof OVXBigSwitch) {    
+					boolean save = false;
+					if (vsw instanceof OVXBigSwitch) {    
 						save = ((OVXBigSwitch) vsw).tryRecovery(psw);    	    
-			    		} 
-		    			if (!save) {
-		    				vsw.unregister();
-		    			}
+					} 
+					if (!save) {
+						vsw.unregister();
+					}
 				}
-                        } catch (SwitchMappingException e) {
-                    		log.warn("Inconsistency in OVXMap: {}", e.getMessage());
-        	    	}
+			} catch (SwitchMappingException e) {
+				log.warn("Inconsistency in OVXMap: {}", e.getMessage());
+			}
 		}
 	}
-	
+
 	/**
 	 * Instantiates a new physical switch.
 	 * 
@@ -160,7 +161,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		}
 		return result;
 	}
-	
+
 	public boolean removePort(final PhysicalPort port) {
 		final boolean result = super.removePort(port.getPortNumber());
 		if (result) {
@@ -191,7 +192,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 */
 	@Override
 	public void unregister() {
-	    	/* tear down OVXSingleSwitches mapped to this PhysialSwitch */
+		/* tear down OVXSingleSwitches mapped to this PhysialSwitch */
 		for (Integer tid : this.map.listVirtualNetworks().keySet()) {   
 			DeregAction dereg = new DeregAction(this, tid);    
 			new Thread(dereg).start();
@@ -201,7 +202,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		this.portMap.clear();
 		this.tearDown();
 	}
-	
+
 	@Override
 	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 		if (this.isConnected) {
@@ -257,13 +258,13 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	public void setPortStatistics(Map<Short, OVXPortStatisticsReply> stats) {
 		this.portStats.set(stats);
 	}
-	
+
 	public void setFlowStatistics(
 			Map<Integer, List<OVXFlowStatisticsReply>> stats) {
 		this.flowStats.set(stats);
-		
+
 	}
-	
+
 	public List<OVXFlowStatisticsReply> getFlowStats(int tid) {
 		Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
 		if (stats != null && stats.containsKey(tid))
@@ -279,5 +280,5 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		return null;
 	}
 
-	
+
 }

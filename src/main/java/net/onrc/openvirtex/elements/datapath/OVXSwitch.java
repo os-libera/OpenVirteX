@@ -9,13 +9,21 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.Persistable;
+
+import java.util.Set;
+import java.util.TreeSet;
+
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
@@ -37,7 +45,7 @@ import org.openflow.util.LRULinkedHashMap;
 /**
  * The Class OVXSwitch.
  */
-public abstract class OVXSwitch extends Switch<OVXPort> {
+public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 
 	private static Logger log = LogManager.getLogger(OVXSwitch.class
 			.getName());
@@ -200,6 +208,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 
 	public void register(final List<PhysicalSwitch> physicalSwitches) {
 		this.map.addSwitches(physicalSwitches, this);
+		DBManager.getInstance().save(this);
 	}
 
 	public void unregister() {
@@ -233,6 +242,39 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		this.map.removeVirtualSwitch(this);
 		this.tearDown();
 	}
+
+	@Override
+	public Map<String, Object> getDBIndex() {
+		Map<String, Object> index = new HashMap<String, Object>();
+		index.put(TenantHandler.TENANT, this.tenantId);
+		return index;
+	}
+
+	@Override
+	public String getDBKey() {
+		return Switch.DB_KEY;
+	}
+
+	@Override
+	public String getDBName() {
+		return DBManager.DB_VNET;
+	}
+
+	@Override
+	public Map<String, Object> getDBObject() {
+		Map<String, Object> dbObject = new HashMap<String, Object>();
+		dbObject.put(TenantHandler.DPID, this.switchId);
+		List<Long> switches = new ArrayList<Long>();
+		try {
+			for (PhysicalSwitch sw: this.map.getPhysicalSwitches(this)) {
+				switches.add(sw.getSwitchId());
+			}
+		} catch (SwitchMappingException e) {
+			return null;
+		}
+		dbObject.put(TenantHandler.DPIDS, switches);
+		return dbObject;
+	}	
 
 	@Override
 	public void tearDown() {
@@ -333,9 +375,6 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 		return false;
 	}
 
-	/**
-	 * @return This OVXSwitch's flow table
-	 */
 	public OVXFlowTable getFlowTable() {
 		return this.flowTable;
 	}
@@ -348,7 +387,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> {
 	 * @return
 	 */
 	public OVXFlowMod getFlowMod(final Long cookie) {
-		return this.flowTable.getFlowMod(cookie).clone();
+		return this.flowTable.getFlowMod(cookie);
 	}
 
 	/**

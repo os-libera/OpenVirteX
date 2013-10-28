@@ -19,7 +19,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 /**
- * Gte a list of network/tenant ids
+ * Get a list of network/tenant ids
  * 
  * @return list of tenant ids
  */
@@ -34,8 +34,7 @@ public class ListVirtualNetworks extends ApiHandler<Object> {
 		// JSONRPC2Response wants a List, not a Set
 		final List<Integer> list = new ArrayList<Integer>(nets.keySet());
 		resp = new JSONRPC2Response(list, 0);
-		return resp;
-
+		return resp;		
 	}
 
 	@Override

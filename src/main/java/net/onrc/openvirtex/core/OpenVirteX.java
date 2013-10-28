@@ -36,8 +36,9 @@ public class OpenVirteX {
 
 		final OpenVirteXController ctrl = new OpenVirteXController(
 				settings.getConfigFile(), settings.getOFHost(),
-				settings.getOFPort(), settings.getNumberOfVirtualNets());
-		OpenVirteX.log.info("Starting OpenVirtex...");
+				settings.getOFPort(), settings.getNumberOfVirtualNets(),
+				settings.getDBHost(), settings.getDBPort(), settings.getDBClear());
+		OpenVirteX.log.info("Starting OpenVirteX...");
 		ctrl.run();
 	}
 

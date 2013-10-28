@@ -15,12 +15,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.messages.OVXPortStatus;
 
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
+
 
 public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 
@@ -67,7 +70,40 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 			this.ovxPortMap.put(ovxPort.getTenantId(), portMap);
 		}
 	}
-		    
+
+	@Override
+	public Map<String, Object> getDBIndex() {
+		return null;
+	}
+
+	@Override
+	public String getDBKey() {
+		return null;
+	}
+
+	@Override
+	public String getDBName() {
+		return DBManager.DB_VNET;
+	}
+
+	@Override
+	public Map<String, Object> getDBObject() {
+		Map<String, Object> dbObject = new HashMap<String, Object>();
+		dbObject.put(TenantHandler.DPID, this.getParentSwitch().getSwitchId());
+		dbObject.put(TenantHandler.PORT, this.portNumber);
+		return dbObject;
+	}
+	
+	public void removeOVXPort(OVXPort ovxPort) {
+	    if (this.ovxPortMap.containsKey(ovxPort.getTenantId())) {
+		this.ovxPortMap.remove(ovxPort.getTenantId());
+	    }
+	}
+
+	public boolean equals(PhysicalPort port) {
+	    return this.portNumber==port.portNumber && this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId();
+	}
+	    
 	/**
 	 * @param tenant The ID of the tenant of interest
 	 * @return The OVXPorts that map to this PhysicalPort for a given tenant ID, if 
@@ -103,12 +139,6 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 		this.peerFeatures = psport.getPeerFeatures();
 	}
 
-	public void removeOVXPort(OVXPort ovxPort) {
-	    if (this.ovxPortMap.containsKey(ovxPort.getTenantId())) {
-		this.ovxPortMap.remove(ovxPort.getTenantId());
-	    }
-	}
-
 	/**
 	 * unmaps this port from the global mapping and its parent switch. 
 	 */
@@ -119,9 +149,4 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 			this.portLink.ingressLink.unregister();
 		}
 	}
-	
-	public boolean equals(PhysicalPort port) {
-	    return this.portNumber==port.portNumber && this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId();
-	}
-
 }
