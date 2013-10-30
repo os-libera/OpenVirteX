@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsRequest;
 import net.onrc.openvirtex.messages.statistics.OVXPortStatisticsRequest;
@@ -28,7 +29,7 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 	private PhysicalSwitch sw;
 
 	public StatisticsManager(PhysicalSwitch sw) {
-		this.timer = new HashedWheelTimer();
+		this.timer = PhysicalNetwork.getTimer();
 		this.sw = sw;
 		
 		/*

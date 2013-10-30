@@ -55,6 +55,9 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 		this.advertisedFeatures = ofPort.getAdvertisedFeatures();
 		this.supportedFeatures = ofPort.getSupportedFeatures();
 		this.peerFeatures = ofPort.getPeerFeatures();
+		if (this.hardwareAddress == null)
+			this.hardwareAddress =  new byte[] { (byte) 0xDE,(byte) 0xAD, 
+				(byte) 0xBE,(byte) 0xEF,(byte) 0xCA,(byte) 0xFE };
 		this.mac = new MACAddress(this.hardwareAddress);
 		this.isEdge = false;
 		this.parentSwitch = null;

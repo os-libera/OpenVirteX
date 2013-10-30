@@ -50,7 +50,7 @@ public class PhysicalNetwork extends
 
 	private PhysicalNetwork() {
 		PhysicalNetwork.log.info("Starting network discovery...");
-		PhysicalNetwork.timer = new HashedWheelTimer();
+		//PhysicalNetwork.timer = new HashedWheelTimer();
 		this.discoveryManager = new ConcurrentHashMap<Long, SwitchDiscoveryManager>();
 	}
 
@@ -62,6 +62,8 @@ public class PhysicalNetwork extends
 	}
 
 	public static HashedWheelTimer getTimer() {
+		if (PhysicalNetwork.timer == null)
+			PhysicalNetwork.timer = new HashedWheelTimer();
 		return PhysicalNetwork.timer;
 	}
 
