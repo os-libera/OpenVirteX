@@ -237,6 +237,8 @@ public class DBManager {
 	 */
 	@SuppressWarnings("unchecked")
 	private void readOVXSwitches(List<Map<String, Object>> switches, OVXNetworkManager mngr) {
+		if (switches == null)
+			return;
 		// Read explicit switch mappings (virtual to physical)
 		for (Map<String, Object> sw: switches) {
 			List<Long> physwitches = (List<Long>) sw.get(TenantHandler.DPIDS);
@@ -258,6 +260,8 @@ public class DBManager {
 	 */
 	@SuppressWarnings("unchecked")
 	private void readOVXLinks(List<Map<String, Object>> links, OVXNetworkManager mngr) {
+		if (links == null)
+			return;
 		// Register links in the appropriate manager
 		for (Map<String, Object> link: links) {
 			List<Map> path = (List<Map>) link.get(TenantHandler.PATH);
@@ -296,6 +300,8 @@ public class DBManager {
 	 */
 	@SuppressWarnings("unchecked")
 	private void readOVXRoutes(List<Map<String, Object>> routes, OVXNetworkManager mngr) {
+		if (routes == null)
+			return;
 		for (Map<String, Object> route: routes) {
 			List<Map> path = (List<Map>) route.get(TenantHandler.PATH);
 			for (Map<String, Object> hop: path) {

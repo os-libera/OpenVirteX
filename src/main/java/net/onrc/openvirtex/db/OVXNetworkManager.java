@@ -182,6 +182,7 @@ public class OVXNetworkManager {
 
 		// Create OVX switches
 		final List<Map<String, Object>> switches = (List<Map<String, Object>>) this.vnet.get(Switch.DB_KEY);
+		if (switches != null) {
 		for (Map<String, Object> sw: switches) {
 			List<Long> dpids = (List<Long>) sw.get(TenantHandler.DPIDS);
 			long switchId = (long) sw.get(TenantHandler.DPID);
@@ -192,9 +193,11 @@ public class OVXNetworkManager {
 				return;
 			}
 		}
+		}
 
 		// Create OVX ports
 		final List<Map<String, Object>> ports = (List<Map<String, Object>>) this.vnet.get(Port.DB_KEY);
+		if (ports != null) {
 		for (Map<String, Object> port: ports) {
 			long physicalDpid = (Long) port.get(TenantHandler.DPID);
 			short portNumber = ((Integer) port.get(TenantHandler.PORT)).shortValue();
@@ -206,12 +209,15 @@ public class OVXNetworkManager {
 				return;
 			}
 		}
+		}
+		
 
 // DISABLED FOR NOW AS OVXBIGSWITCH ONLY SUPPORTS INTERNAL ROUTING		
 //		// Create OVX big switch routes
 //		final List<Map<String, Object>> routes = (List<Map<String, Object>>) this.vnet.get(SwitchRoute.DB_KEY);
 //		// List of created routeId's per switch
 //		final Map<Long, List<Integer>> routeIds = new HashMap<Long, List<Integer>>();
+//		if (routes != null) {
 //		for (Map<String, Object> route: routes) {
 //			long dpid = (Long) route.get(TenantHandler.DPID);
 //			short srcPort = ((Integer) route.get(TenantHandler.SRC_PORT)).shortValue();
@@ -238,12 +244,14 @@ public class OVXNetworkManager {
 //				OVXNetworkManager.log.error("Error recreating virtual switch route {} from database", routeId);
 //				return;
 //			}
-//		}	
+//		}
+//		}
 		
 		// Create OVX links
 		final List<Map<String, Object>> links = (List<Map<String, Object>>) this.vnet.get(Link.DB_KEY);
 		// Maintain link id's of virtual links we have created - ensure reverse link is not created again
 		final List<Integer> linkIds = new ArrayList<Integer>();
+		if (links != null) {
 		for (Map<String, Object> link: links) {
 			// Skip link if we already handled the reverse
 			Integer linkId = (Integer) link.get(TenantHandler.LINK);
@@ -270,9 +278,11 @@ public class OVXNetworkManager {
 				return;
 			}
 		}
+		}
 
 		// Connect hosts
 		final List<Map<String, Object>> hosts = (List<Map<String, Object>>) this.vnet.get(Host.DB_KEY);
+		if (hosts != null) {
 		for (Map<String, Object> host: hosts) {
 			final long dpid = (Long) host.get(TenantHandler.DPID);
 			final short port = ((Integer) host.get(TenantHandler.PORT)).shortValue();
@@ -283,6 +293,7 @@ public class OVXNetworkManager {
 			} catch (IndexOutOfBoundException e) {
 				OVXNetworkManager.log.error("Failed to create host {}", hostId);
 			}
+		}
 		}
 
 		// Start network
