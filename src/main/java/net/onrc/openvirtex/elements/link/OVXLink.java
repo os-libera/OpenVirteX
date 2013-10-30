@@ -14,26 +14,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openflow.protocol.action.OFAction;
-import org.openflow.protocol.action.OFActionOutput;
-
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.exceptions.LinkMappingException;
-import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
 import net.onrc.openvirtex.packet.Ethernet;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -42,8 +41,11 @@ import com.google.gson.annotations.SerializedName;
  * The Class OVXLink.
  * 
  */
-public class OVXLink extends Link<OVXPort, OVXSwitch> implements Persistable {
-	Logger	log = LogManager.getLogger(OVXLink.class.getName());
+public class OVXLink extends Link<OVXPort, OVXSwitch> {
+	Logger                log = LogManager.getLogger(OVXLink.class.getName());
+
+	/** The link id. */
+
 
 	@SerializedName("linkId")
 	@Expose
@@ -57,6 +59,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Persistable {
 	private final byte priority;
 
 	private Mappable      map = null;
+
 
 	/**
 	 * Instantiates a new virtual link.
@@ -111,6 +114,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Persistable {
 	 */
 	public void register(final List<PhysicalLink> physicalLinks) {
 		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
+		this.srcPort.getPhysicalPort().removeOVXPort(this.srcPort);
+		this.srcPort.getPhysicalPort().setOVXPort(this.srcPort);
 		DBManager.getInstance().save(this);
 	}
 
@@ -192,6 +197,9 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Persistable {
 		final OVXLinkUtils lUtils = new OVXLinkUtils(this.tenantId,
 				this.linkId, flowId);
 		lUtils.rewriteMatch(fm.getMatch());
+		long cookie = tenantId;
+		fm.setCookie(cookie << 32);
+
 		if (fm.getMatch().getDataLayerType() == Ethernet.TYPE_IPv4)
 			IPMapper.rewriteMatch(this.tenantId, fm.getMatch());
 

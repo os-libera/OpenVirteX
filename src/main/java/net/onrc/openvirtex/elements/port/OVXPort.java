@@ -9,7 +9,9 @@
 
 package net.onrc.openvirtex.elements.port;
 
+
 import java.util.Collections;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,6 +19,9 @@ import java.util.Set;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
+
+import java.util.List;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +33,7 @@ import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.link.OVXLink;
@@ -74,7 +80,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		features.setPeerOVXPortFeatures();
 		this.peerFeatures = features.getOVXFeatures();
 		this.state = OFPortState.OFPPS_LINK_DOWN.getValue();
-		this.config = 0;
+		this.config = OFPortConfig.OFPPC_NO_STP.getValue();
 		this.isActive = false;
 	}
 
@@ -100,10 +106,6 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		return isActive;
 	}
 
-	public void setActive(boolean isActive) {
-		this.isActive = isActive;
-	}
-
 	public boolean isLink() {
 		return !this.isEdge; 
 	}
@@ -124,6 +126,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		if (this.parentSwitch.isActive()) {
 			sendStatusMsg(OFPortReason.OFPPR_ADD);
 			this.parentSwitch.generateFeaturesReply();
+
 		}
 		DBManager.getInstance().save(this);
 	}
@@ -160,11 +163,15 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 	}
 
 	public void boot() {
+		if (this.isActive)
+			return;
 		this.isActive = true;
 		this.state = OFPortState.OFPPS_STP_FORWARD.getValue();
 		this.parentSwitch.generateFeaturesReply();
 		if (this.parentSwitch.isActive())
 			sendStatusMsg(OFPortReason.OFPPR_MODIFY);
+		if (this.isLink()) 
+			this.getLink().getOutLink().getDstPort().boot();
 	}
 
 	public void tearDown() {
@@ -175,6 +182,10 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		this.parentSwitch.generateFeaturesReply();
 		if (this.parentSwitch.isActive())
 			sendStatusMsg(OFPortReason.OFPPR_MODIFY);
+		if (this.isLink()) 
+			this.getLink().getOutLink().getDstPort().tearDown();
+			
+		cleanUpFlowMods();
 	}
 
 	public void unregister() {
@@ -199,6 +210,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		}
 		this.unMap();
 		this.parentSwitch.generateFeaturesReply();
+		cleanUpFlowMods();
 	}
 
 	@Override
@@ -224,6 +236,13 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		dbObject.putAll(this.getPhysicalPort().getDBObject());
 		dbObject.put(TenantHandler.VPORT, this.portNumber);
 		return dbObject;
+		
+	}
+	
+	private void cleanUpFlowMods() {
+		log.info("Cleaning up flowmods for sw {} port {}", this.getPhysicalPort().getParentSwitch().getSwitchName(), this.getPhysicalPortNumber());
+		this.getPhysicalPort().parentSwitch.
+				cleanUpTenant(this.tenantId, this.getPhysicalPortNumber());		
 	}
 
 	public boolean equals(final OVXPort port) {

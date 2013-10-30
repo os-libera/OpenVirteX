@@ -303,10 +303,11 @@ VirtualizableAction {
 	}
 
 	private LinkedList<OVXPort> fillPortList(final Short inPort,
-			final Short outPort, final OVXSwitch sw) {
+			final Short outPort, final OVXSwitch sw) throws DroppedMessageException {
 		final LinkedList<OVXPort> outPortList = new LinkedList<OVXPort>();
 		if (U16.f(outPort) < U16.f(OFPort.OFPP_MAX.getValue())) {
-			outPortList.add(sw.getPort(outPort));
+			if (sw.getPort(outPort).isActive())
+				outPortList.add(sw.getPort(outPort));
 		} 
 		else if (U16.f(outPort) == U16.f(OFPort.OFPP_FLOOD.getValue())) {
 			final Map<Short, OVXPort> ports = sw.getPorts();
@@ -326,6 +327,8 @@ VirtualizableAction {
 			log.warn("Output port from controller currently not supported. Short = {}, Exadecimal = 0x{}" , 
 					U16.f(outPort), Integer.toHexString(U16.f(outPort) & 0xffff));
 
+		if (outPortList.size() < 1)
+			throw new DroppedMessageException("No output ports defined; dropping");
 		return outPortList;
 	}
 

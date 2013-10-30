@@ -67,6 +67,7 @@ import com.google.common.collect.Lists;
  * LLDP discovery probes from the controller.
  * 
  */
+
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements Persistable {
 
 	static Logger                                log             = LogManager
@@ -89,6 +90,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	private final BitSetIndex                    hostCounter;
 	private final List<Host>                     hostList;
 	private final OVXFlowManager		 flowManager;
+
 
 	/**
 	 * OVXNetwork constructor.
@@ -119,6 +121,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		this.hostList = new LinkedList<Host>();
 		this.flowManager = new OVXFlowManager(this.tenantId, this.hostList);
 	}
+
 
 	public OVXNetwork(final String protocol, final String controllerHost,
 			final Integer controllerPort, final IPAddress network,
@@ -173,6 +176,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 
 	public void register() {
 		OVXMap.getInstance().addNetwork(this);
+
 		DBManager.getInstance().create(this);
 	}
 
@@ -184,6 +188,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return Collections.unmodifiableList(this.hostList);
 	}
 
+
 	public Host getHost(MACAddress mac) {
 		for (Host host : this.hostList) {
 			if (host.getMac().toLong() == mac.toLong())
@@ -191,6 +196,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		}
 		return null;
 	}
+
 
 	public Host getHost(OVXPort port) {
 		for (Host host : this.hostList) {
@@ -232,6 +238,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 
 	// API-facing methods
 
+
 	public OVXSwitch createSwitch(final List<Long> dpids, final long switchId)
 			throws IndexOutOfBoundException {
 		OVXSwitch virtualSwitch;
@@ -259,6 +266,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return virtualSwitch;
 	}
 
+
 	public OVXSwitch createSwitch(final List<Long> dpids) throws IndexOutOfBoundException {
 		final long switchId = (long) 0xa42305 << 32
 				| this.dpidCounter.getNewIndex();
@@ -270,6 +278,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance()
 				.getSwitch(physicalDpid);
 		final PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
+
 
 		final OVXPort ovxPort;
 		if (vportNumber.length == 0)
@@ -290,7 +299,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public Host connectHost(final long ovxDpid, final short ovxPort,
 			final MACAddress mac, final int hostId) throws IndexOutOfBoundException {
 		OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
-		port.setActive(true);
 		port.boot();
 		OVXMap.getInstance().addMAC(mac, this.tenantId);
 		final Host host = new Host(mac, port, hostId);
@@ -319,8 +327,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 					throws IndexOutOfBoundException {
 		OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
 		OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
-		srcPort.setActive(true);
-		dstPort.setActive(true);
 		srcPort.setEdge(false);
 		dstPort.setEdge(false);
 		srcPort.boot();
@@ -409,6 +415,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		sw.boot();
 	}
 
+
 	public synchronized void startPort(final long ovxDpid, final short ovxPort) {
 		OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
 		port.boot();
@@ -449,6 +456,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return this.bootState;
 	}
 
+
 	/**
 	 * Handle LLDP received from controller.
 	 * 
@@ -483,7 +491,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 				}
 			}
 		} else {
-			OVXNetwork.log.debug("Invalid LLDP");
+			log.debug("Invalid LLDP");
 		}
 	}
 
@@ -548,10 +556,12 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 			if (link.getLinkId().equals(linkId)) {
 				linkList.add(link);
 			}
+
 		}
 		if (linkList.size() == 2) {
 			return linkList;
 		}
+
 		return null;
 	}
 

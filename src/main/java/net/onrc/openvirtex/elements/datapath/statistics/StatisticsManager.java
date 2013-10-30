@@ -41,13 +41,16 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 	@Override
 	public void run(Timeout timeout) throws Exception {
 		sendPortStatistics();
-		sendFlowStatistics();
+		sendFlowStatistics(0, (short) 0);
 		//TODO get value from cmd
-		timeout.getTimer().newTimeout(this, 1, TimeUnit.SECONDS);
+		timeout.getTimer().newTimeout(this, 30, TimeUnit.SECONDS);
 	}
 
-	private void sendFlowStatistics() {
+	private void sendFlowStatistics(int tid, short port) {
 		OVXStatisticsRequest req = new OVXStatisticsRequest();
+		// TODO: stuff like below whould be wrapped into an XIDUtil class
+		int xid = (tid << 16) | port; 
+		req.setXid(xid);
 		req.setStatisticType(OFStatisticsType.FLOW);
 		OVXFlowStatisticsRequest freq = new OVXFlowStatisticsRequest();
 		OVXMatch match = new OVXMatch();
@@ -86,6 +89,10 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 	@Override
 	public String getName() {
 		return "Statistics Manager (" + sw.getName() + ")";
+	}
+
+	public void cleanUpTenant(Integer tenantId, short port) {
+		sendFlowStatistics(tenantId, port);
 	}
 
 

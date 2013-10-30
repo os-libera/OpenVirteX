@@ -14,17 +14,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 
+import org.openflow.protocol.OFPort;
 import org.openflow.protocol.statistics.OFFlowStatisticsReply;
 import org.openflow.protocol.statistics.OFStatistics;
 
 public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
 		VirtualizableStatistic {
 	
+	
 	@Override
 	public void virtualizeStatistic(final PhysicalSwitch sw,
 			final OVXStatisticsReply msg) {
+		if (msg.getXid() != 0) {
+			sw.removeFlowMods(msg);
+			return;
+		}
 		
 		HashMap<Integer, List<OVXFlowStatisticsReply>> stats = new HashMap<Integer, List<OVXFlowStatisticsReply>>();
 		

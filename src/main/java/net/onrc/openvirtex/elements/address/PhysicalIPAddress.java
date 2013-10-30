@@ -8,6 +8,8 @@
 
 package net.onrc.openvirtex.elements.address;
 
+import net.onrc.openvirtex.core.OpenVirteXController;
+
 public class PhysicalIPAddress extends IPAddress {
 
 	public PhysicalIPAddress(final Integer ip) {
@@ -16,6 +18,10 @@ public class PhysicalIPAddress extends IPAddress {
 
 	public PhysicalIPAddress(final String ipAddress) {
 		super(ipAddress);
+	}
+	
+	public Integer getTenantId() {
+		return ip >> (32 - OpenVirteXController.getInstance().getNumberVirtualNets());
 	}
 
 }

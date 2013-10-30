@@ -23,6 +23,8 @@ import net.onrc.openvirtex.elements.datapath.statistics.StatisticsManager;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
+import net.onrc.openvirtex.messages.OVXFlowMod;
+import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import net.onrc.openvirtex.messages.Virtualizable;
 import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsReply;
 import net.onrc.openvirtex.messages.statistics.OVXPortStatisticsReply;
@@ -31,6 +33,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
+import org.openflow.protocol.OFPort;
+import org.openflow.protocol.statistics.OFStatistics;
 
 /**
  * The Class PhysicalSwitch.
@@ -288,5 +292,43 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		}
 		return null;
 	}
+
+
+	public void cleanUpTenant(Integer tenantId, Short port) {
+		this.statsMan.cleanUpTenant(tenantId, port);
+	}
+	
+	
+	public void removeFlowMods(OVXStatisticsReply msg) {
+		int tid = msg.getXid() >> 16;
+		short port = (short) (msg.getXid() & 0xFFFF);
+		for (OFStatistics stat : msg.getStatistics()) {
+			OVXFlowStatisticsReply reply = (OVXFlowStatisticsReply) stat;
+			if (tid != this.getTidFromCookie(reply.getCookie()))
+				continue;
+			if (port != 0) {
+				sendDeleteFlowMod(reply, port);
+				if (reply.getMatch().getInputPort() == port) 
+					sendDeleteFlowMod(reply, OFPort.OFPP_NONE.getValue());
+			} else
+				sendDeleteFlowMod(reply, OFPort.OFPP_NONE.getValue());
+		}
+	}
+
+	private void sendDeleteFlowMod(OVXFlowStatisticsReply reply, short port) {
+		OVXFlowMod dFm = new OVXFlowMod();
+		dFm.setCommand(OVXFlowMod.OFPFC_DELETE_STRICT);
+		dFm.setMatch(reply.getMatch());
+		dFm.setOutPort(port);
+		dFm.setLengthU(OVXFlowMod.MINIMUM_LENGTH);
+		this.sendMsg(dFm, this);
+	}
+
+	private int getTidFromCookie(long cookie) {
+		return (int) (cookie >> 32);
+	}
+	
+	
+
 
 }

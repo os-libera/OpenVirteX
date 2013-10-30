@@ -83,6 +83,7 @@ public class Host implements Persistable {
 		} catch (NetworkMappingException e) {
 			//log object?
 		}
+
 	}
 	
 	public void tearDown() {

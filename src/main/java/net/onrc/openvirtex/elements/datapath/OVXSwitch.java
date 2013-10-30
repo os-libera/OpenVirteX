@@ -242,8 +242,26 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		} catch (NetworkMappingException e) {
 			log.warn(e.getMessage());
 		}
+
+		cleanUpFlowMods(false);
+
 		this.map.removeVirtualSwitch(this);
 		this.tearDown();
+	}
+
+	private void cleanUpFlowMods(boolean isOk) {
+		log.info("Cleaning up flowmods");
+		List<PhysicalSwitch> physicalSwitches;
+		try {
+			physicalSwitches = this.map.getPhysicalSwitches(this);
+		} catch (SwitchMappingException e) {
+			if (!isOk)
+				log.warn("Failed to cleanUp flowmods for tenant {} on switch {}", this.tenantId, this.getSwitchName());
+			return;
+		}
+		for (PhysicalSwitch sw : physicalSwitches) 
+			sw.cleanUpTenant(this.tenantId, (short) 0);
+
 	}
 
 	@Override
@@ -284,6 +302,13 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		this.isActive = false;
 		if (this.channel != null)
 			this.channel.close();
+
+		cleanUpFlowMods(true);
+		for (OVXPort p : getPorts().values()) {
+			if (p.isLink()) 
+				p.tearDown();
+		}
+	
 	}
 
 	/**
@@ -338,6 +363,14 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 				.getInstance();
 		ovxController.registerOVXSwitch(this);
 		this.setActive(true);
+		for (OVXPort p : getPorts().values()) {
+			if (p.isLink()) {
+				p.boot();
+			}
+				
+			
+		}
+		
 		return true;
 	}
 
