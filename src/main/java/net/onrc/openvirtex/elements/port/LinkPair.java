@@ -61,7 +61,7 @@ public class LinkPair <T> {
     	 * @return false if both ingress and egress links are null
     	 */
     	public boolean exists() {
-    	    	return !((this.ingressLink == null) & (this.egressLink == null));
+    	    	return ((this.ingressLink != null) && (this.egressLink != null));
     	}
     	
     	@Override

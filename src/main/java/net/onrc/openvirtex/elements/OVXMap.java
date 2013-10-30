@@ -539,14 +539,15 @@ public class OVXMap implements Mappable {
 
 	public void removeVirtualLink(OVXLink virtualLink) {
 
-	    if (this.virtualLinkMap.get(virtualLink) != null) {
-		ArrayList<PhysicalLink> physicalLinks = this.virtualLinkMap.get(virtualLink);
-		for (PhysicalLink physicalLink : physicalLinks) {
-		    if (this.physicalLinkMap.get(physicalLink).containsKey(virtualLink.getTenantId())) {
-			this.physicalLinkMap.get(physicalLink).remove(virtualLink.getTenantId());
-		    }
-		}
-		this.virtualLinkMap.remove(virtualLink);
+	    if (this.virtualLinkMap.containsKey(virtualLink)) {
+	    	List<PhysicalLink> physicalLinks = 
+				Collections.unmodifiableList(this.virtualLinkMap.get(virtualLink));
+	    	for (PhysicalLink physicalLink : physicalLinks) {
+	    		if (this.physicalLinkMap.get(physicalLink).containsKey(virtualLink.getTenantId())) {
+	    			this.physicalLinkMap.get(physicalLink).remove(virtualLink.getTenantId());
+	    		}
+	    	}
+	    	this.virtualLinkMap.remove(virtualLink);
 	    }
 	}
 	

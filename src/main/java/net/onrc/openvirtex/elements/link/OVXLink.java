@@ -11,36 +11,21 @@ package net.onrc.openvirtex.elements.link;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFMatch;
-import org.openflow.protocol.OFPacketOut;
-import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
-import org.openflow.protocol.action.OFActionDataLayerDestination;
-import org.openflow.protocol.action.OFActionDataLayerSource;
 import org.openflow.protocol.action.OFActionOutput;
-import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
-import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
-import net.onrc.openvirtex.elements.address.OVXIPAddress;
-import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.network.OVXNetwork;
-import net.onrc.openvirtex.exceptions.AddressMappingException;
-import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.elements.port.OVXPort;
@@ -49,10 +34,6 @@ import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
 import net.onrc.openvirtex.packet.Ethernet;
-import net.onrc.openvirtex.protocol.OVXMatch;
-import net.onrc.openvirtex.util.MACAddress;
-
-import org.openflow.protocol.OFPhysicalPort.OFPortState;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -122,7 +103,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Persistable {
 	public byte getPriority() {
 		return priority;
 	}
-
+    
 	/**
 	 * Register mapping between virtual link and physical path
 	 * 
@@ -135,15 +116,22 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Persistable {
 
 	@Override
 	public void unregister() {
-		final Mappable map = this.srcPort.getParentSwitch().getMap();
-		map.removeVirtualLink(this);
-		this.srcPort.setActive(false);
-		this.srcPort.tearDown();
+		try {
+			this.tearDown();
+			final Mappable map = this.srcPort.getParentSwitch().getMap();
+			map.removeVirtualLink(this);
+			map.getVirtualNetwork(this.tenantId).removeLink(this);
+		} catch (NetworkMappingException e) {
+			log.warn("[unregister()]: could not remove this link from map \n{}", e.getMessage());
+		}
 	}    
 
+	/**
+	 * Disables this OVXLink by disabling its endpoints. 
+	 */
 	public void tearDown() {
-		final Mappable map = this.srcPort.getParentSwitch().getMap();
-		map.removeVirtualLink(this);
+		this.srcPort.tearDown();
+		this.dstPort.tearDown();
 	}
 
 	@Override
@@ -248,4 +236,15 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Persistable {
 		} catch (final InterruptedException e) {
 		}
 	}
+
+    /**
+     * Tries to switch link to a backup path, and updates mappings to "correct" 
+     * string of PhysicalLinks to use for this OVXLink.  
+     * @param plink the failed PhysicalLink
+     * @return true if successful
+     */
+    public boolean tryRecovery(PhysicalLink plink) {
+	return false;
+    }
+
 }

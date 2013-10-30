@@ -301,4 +301,14 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 			return null;
 		}
 	}
+    
+    /**
+     * Tries to switch this route to a backup path, and updates mappings to "correct" 
+     * string of PhysicalLinks to use for this SwitchRoute.  
+     * @param plink the failed PhysicalLink
+     * @return true if successful
+     */
+    public boolean tryRecovery(PhysicalLink plink) {
+    	return false;
+    }
 }

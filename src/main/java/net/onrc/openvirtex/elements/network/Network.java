@@ -19,8 +19,10 @@ import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 import org.apache.logging.log4j.LogManager;
@@ -152,9 +154,10 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
 	 * 
 	 * @param port
 	 * @return
+	 * @throws PortMappingException 
 	 */
 	public T2 getNeighborPort(final T2 port) {
-		return this.neighborPortMap.get(port);
+		return this.neighborPortMap.get(port);    
 	}
 
 	/**

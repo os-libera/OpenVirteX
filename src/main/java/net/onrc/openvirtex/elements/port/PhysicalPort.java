@@ -18,6 +18,7 @@ import java.util.Map;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.messages.OVXPortStatus;
 
@@ -124,7 +125,7 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 	 * @param portstat
 	 */
 	public void applyPortStatus(OVXPortStatus portstat) {
-		if (portstat.getReason() != OFPortReason.OFPPR_MODIFY.getReasonCode()) {    	
+		if (!portstat.isReason(OFPortReason.OFPPR_MODIFY)) {    	
 			return;    
 		}
 		OFPhysicalPort psport = portstat.getDesc();

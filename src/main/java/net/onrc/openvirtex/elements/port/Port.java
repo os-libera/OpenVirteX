@@ -16,6 +16,8 @@ import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
+import java.util.Arrays;
+
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
@@ -138,6 +140,22 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 				+ "\n- peerFeatures: " + this.peerFeatures + "\n- isEdge: "
 				+ this.isEdge;
 	}
+	
+	/* should transient features of the Port be taken into account by hashCode()? They 
+	 * prevent ports from being fetched from maps once their status changes. */
+  	@Override
+	public int hashCode() {
+		final int prime = 307;
+		int result = 1;
+		result = prime * result + this.advertisedFeatures;
+		result = prime * result + this.config;
+		result = prime * result + Arrays.hashCode(this.hardwareAddress);
+		result = prime * result
+				+ (this.name == null ? 0 : this.name.hashCode());
+		result = prime * result + this.portNumber;
+		result = prime * result + this.parentSwitch.hashCode();
+		return result;
+	} 
 
 	@Override
 	public Map<String, Object> getDBIndex() {

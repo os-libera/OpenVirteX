@@ -13,7 +13,9 @@ import java.util.Map;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.Persistable;
+import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
 public class Host implements Persistable {
@@ -73,7 +75,18 @@ public class Host implements Persistable {
 	}
 
 	public void unregister() {
-		this.port.setActive(false);
-		this.port.tearDown();
+		try {
+			this.tearDown();
+			Mappable map = this.port.getParentSwitch().getMap();
+			map.removeMAC(this.mac);
+			map.getVirtualNetwork(port.getTenantId()).removeHost(this);
+		} catch (NetworkMappingException e) {
+			//log object?
+		}
 	}
+	
+	public void tearDown() {
+		this.port.tearDown();	
+	}
+	
 }

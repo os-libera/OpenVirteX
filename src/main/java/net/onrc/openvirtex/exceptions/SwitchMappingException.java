@@ -20,7 +20,7 @@ public class SwitchMappingException extends MappingException {
 	}
 	
 	public SwitchMappingException(Integer key, Class value) {
-	    	super(value.getClass().getName() + " not found for tenant with ID " + key);
+	    	super(value.getName() + " not found for tenant with ID " + key);
 	}
 	
 	public SwitchMappingException(Switch key, Class value) {

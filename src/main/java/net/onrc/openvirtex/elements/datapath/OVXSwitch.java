@@ -24,6 +24,7 @@ import net.onrc.openvirtex.elements.Persistable;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
@@ -226,7 +227,9 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 			for (final Short portNumber : portSet) {
 				final OVXPort port = this.getPort(portNumber);
 				if (port.isEdge()) {
-					net.getHostCounter().releaseIndex(net.getHost(port).getHostId());
+					Host h = net.getHost(port);
+					if (h != null) 
+						net.getHostCounter().releaseIndex(h.getHostId());
 				} else {
 					net.getLinkCounter().releaseIndex(port.getLink().getInLink().getLinkId());
 				}
@@ -432,4 +435,5 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	 * @param inPort The ingress port
 	 */
 	public abstract void sendSouth(OFMessage msg, OVXPort inPort);
+
 }

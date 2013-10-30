@@ -24,6 +24,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.messages.OVXMessageFactory;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.lldp.LLDPUtil;
@@ -90,7 +91,13 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 			synchronized (this) {
 				this.log.debug("sending init probe to port {}",
 						port.getPortNumber());
-				final OFPacketOut pkt = this.createLLDPPacketOut(port);
+				OFPacketOut pkt;
+                                try {
+	                            pkt = this.createLLDPPacketOut(port);
+                                } catch (PortMappingException e) {
+                                    log.warn(e.getMessage());
+                                    return;
+                                }
 				this.sendMsg(pkt, this);
 				this.slowPorts.add(port.getPortNumber());
 				this.slowIterator = this.slowPorts.iterator();
@@ -161,8 +168,13 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 	 * 
 	 * @param port
 	 * @return Packet_out message with LLDP data
+	 * @throws PortMappingException 
 	 */
-	private OFPacketOut createLLDPPacketOut(final PhysicalPort port) {
+	private OFPacketOut createLLDPPacketOut(final PhysicalPort port) 
+			throws PortMappingException {
+	    if (port == null) {
+		throw new PortMappingException("Cannot send LLDP associated with a nonexistent port");
+	    }
 		final OFPacketOut packetOut = (OFPacketOut) this.ovxMessageFactory
 				.getMessage(OFType.PACKET_OUT);
 		packetOut.setBufferId(OFPacketOut.BUFFER_ID_NONE);
@@ -249,9 +261,12 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 						.getAndIncrement();
 				if (probeCount < SwitchDiscoveryManager.MAX_PROBE_COUNT) {
 					this.log.debug("sending fast probe to port");
-					final OFPacketOut pkt = this.createLLDPPacketOut(this.sw
-							.getPort(portNumber));
-					this.sendMsg(pkt, this);
+					try {
+					    OFPacketOut pkt = this.createLLDPPacketOut(this.sw.getPort(portNumber));
+	                                    this.sendMsg(pkt, this);
+                                        } catch (PortMappingException e) {
+	                                    log.warn(e.getMessage());
+                                        }
 				} else {
 					// Update fast and slow ports
 					fastIterator.remove();
@@ -275,9 +290,12 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
 				if (this.slowIterator.hasNext()) {
 					final short portNumber = this.slowIterator.next();
 					this.log.debug("sending slow probe to port {}", portNumber);
-					final OFPacketOut pkt = this.createLLDPPacketOut(this.sw
-							.getPort(portNumber));
-					this.sendMsg(pkt, this);
+					try {
+					    OFPacketOut pkt = this.createLLDPPacketOut(this.sw.getPort(portNumber));
+					    this.sendMsg(pkt, this);
+                                        } catch (PortMappingException e) {
+                                            log.warn(e.getMessage());
+                                        }
 				}
 			}
 		}

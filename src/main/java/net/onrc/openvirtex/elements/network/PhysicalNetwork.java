@@ -10,6 +10,7 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -20,6 +21,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
 
 import org.apache.logging.log4j.LogManager;
@@ -96,19 +98,7 @@ public class PhysicalNetwork extends
 		DBManager.getInstance().delSwitch(sw.getSwitchId());
 		SwitchDiscoveryManager sdm = this.discoveryManager.get(sw.getSwitchId());
 		for (PhysicalPort port : sw.getPorts().values()) {
-			/* handle any link mappings */
-			port.unregister();
-			/* remove from topology discovery */
-			if(sdm != null) {
-			    	log.info("removing port {}", port.getPortNumber());
-				sdm.removePort(port);
-			}
-			/* remove from this network's mappings */
-			PhysicalPort dst = this.neighborPortMap.get(port);
-			if (dst != null ) {
-				this.removeLink(port, dst);
-				this.removeLink(dst, port);    
-			}
+			removePort(sdm, port);    	
 		}
 		if(sdm != null) {
 			this.discoveryManager.remove(sw.getSwitchId());
@@ -131,9 +121,18 @@ public class PhysicalNetwork extends
 	 * 
 	 * @param port
 	 */
-	public synchronized void removePort(final PhysicalPort port) {
-		this.discoveryManager.get(port.getParentSwitch().getSwitchId())
-				.removePort(port);
+	public synchronized void removePort(SwitchDiscoveryManager sdm, final PhysicalPort port) {
+		port.unregister();
+		/* remove from topology discovery */
+		if (sdm != null) {
+		    log.info("removing port {}", port.getPortNumber());
+		    sdm.removePort(port);
+		}
+		/* remove from this network's mappings */
+		PhysicalPort dst = this.neighborPortMap.get(port);
+		if (dst != null ) {
+			this.removeLink(port, dst);
+		}
 	}
 	
 	/**
@@ -165,8 +164,8 @@ public class PhysicalNetwork extends
 	 */
 	public synchronized void removeLink(final PhysicalPort srcPort,
 			final PhysicalPort dstPort) {
-		final PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
-		if (neighbourPort.equals(dstPort)) {
+		PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
+		if ((neighbourPort != null) && (neighbourPort.equals(dstPort))) {
 			final PhysicalLink link = super.getLink(srcPort, dstPort);
 			DPIDandPortPair dpp = new DPIDandPortPair(
 					new DPIDandPort(srcPort.getParentSwitch().getSwitchId(), srcPort.getPortNumber()),
@@ -176,7 +175,7 @@ public class PhysicalNetwork extends
 		} else {
 			PhysicalNetwork.log.debug("Tried to remove invalid link");
 		}
-	}
+        }
 
 	/**
 	 * Acknowledge reception of discovery probe to sender port
@@ -219,4 +218,10 @@ public class PhysicalNetwork extends
 	public boolean boot() {
 		return true;
 	}
+
+	//TODO use MappingException to deal with null SDMs. 
+	public SwitchDiscoveryManager getDiscoveryManager(long switchDPID) {
+	    return this.discoveryManager.get(switchDPID);
+	}
+
 }

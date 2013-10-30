@@ -140,7 +140,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				this.featuresReply.getDatapathId());
 		this.statsMan.stop();
 		this.channel.disconnect();
-
+		this.map.removePhysicalSwitch(this);
 	}
 
 	/**
@@ -161,11 +161,20 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		}
 		return result;
 	}
-
+	
+	/**
+	 * removes the specified port from this PhysicalSwitch. This includes
+	 * removal from the switch's port map, topology discovery, and the 
+	 * PhysicalNetwork topology. 
+	 *  
+	 * @param port
+	 * @return
+	 */
 	public boolean removePort(final PhysicalPort port) {
 		final boolean result = super.removePort(port.getPortNumber());
 		if (result) {
-			PhysicalNetwork.getInstance().removePort(port);    
+			PhysicalNetwork pnet = PhysicalNetwork.getInstance();
+			pnet.removePort(pnet.getDiscoveryManager(this.getSwitchId()), port);    
 		}
 		return result;
 	}
@@ -279,6 +288,5 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		}
 		return null;
 	}
-
 
 }
