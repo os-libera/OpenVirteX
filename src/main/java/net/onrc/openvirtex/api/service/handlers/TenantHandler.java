@@ -25,6 +25,7 @@ import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.ResumeOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.SaveConfig;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXBigSwitchRouting;
+import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXLinkPath;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXSwitch;
@@ -65,7 +66,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	public static final String BACKUPS = "backup_num";
 	public static final String HOST = "hostId";
 	public static final String ROUTE = "routeId";
-	
+
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
 		{
@@ -75,15 +76,16 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 			this.put("setInternalRouting", new SetOVXBigSwitchRouting());
 			this.put("connectHost", new ConnectHost());
 			this.put("connectLink", new ConnectOVXLink());
+			this.put("setLinkPath", new SetOVXLinkPath());
 			this.put("connectRoute", new ConnectOVXRoute());
-			
+
 			this.put("removeNetwork", new RemoveOVXNetwork());
 			this.put("removeSwitch", new RemoveOVXSwitch());
 			this.put("removePort", new RemoveOVXPort());
 			this.put("disconnectHost", new DisconnectHost());
 			this.put("disconnectLink", new DisconnectOVXLink());
 			this.put("disconnectRoute", new DisconnectOVXRoute());
-			
+
 			this.put("startNetwork", new StartOVXNetwork());
 			this.put("startSwitch", new StartOVXSwitch());
 			this.put("startPort", new StartOVXPort());
@@ -92,7 +94,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 			this.put("stopPort", new StopOVXPort());
 			this.put("pauseNetwork", new PauseOVXNetwork());
 			this.put("resumeNetwork", new ResumeOVXNetwork());
-			
+
 			this.put("saveConfig", new SaveConfig());
 		}
 	};
@@ -114,8 +116,8 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 					&& m.getType() != req.getParamsType()) {
 				return new JSONRPC2Response(new JSONRPC2Error(
 						JSONRPC2Error.INVALID_PARAMS.getCode(), req.getMethod()
-								+ " requires: " + m.getType() + "; got: "
-								+ req.getParamsType()), req.getID());
+						+ " requires: " + m.getType() + "; got: "
+						+ req.getParamsType()), req.getID());
 			}
 
 			switch (m.getType()) {

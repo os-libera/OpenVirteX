@@ -61,27 +61,6 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements Persis
 		this.dstPort = dstPort;
 	}
 
-	@SuppressWarnings("unchecked")
-	public T2 getSrcSwitch() {
-		return (T2) this.srcPort.getParentSwitch();
-	}
-
-	@SuppressWarnings("unchecked")
-	public T2 getDstSwitch() {
-		return (T2) this.dstPort.getParentSwitch();
-	}
-
-	@Override
-	public String toString() {
-		final String srcSwitch = this.getSrcSwitch().getSwitchId()
-				.toString();
-		final String dstSwitch = this.getDstSwitch().getSwitchId()
-				.toString();
-		final short srcPort = this.srcPort.getPortNumber();
-		final short dstPort = this.dstPort.getPortNumber();
-		return srcSwitch + ":" + srcPort + "-" + dstSwitch + ":" + dstPort;
-	}
-
 	/**
 	 * Gets the source port instance.
 	 * 
@@ -100,19 +79,62 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements Persis
 		return this.dstPort;
 	}
 
-	public boolean equals(final Link link) {
-		if (link.dstPort.equals(this.dstPort)
-				&& link.srcPort.equals(this.srcPort)) {
-			return true;
-		} else {
-			return false;
-		}
+	@SuppressWarnings("unchecked")
+	public T2 getSrcSwitch() {
+		return (T2) this.srcPort.getParentSwitch();
+	}
+
+	@SuppressWarnings("unchecked")
+	public T2 getDstSwitch() {
+		return (T2) this.dstPort.getParentSwitch();
+	}
+
+	@Override
+	public String toString() {
+		final String srcSwitch = this.getSrcSwitch().getSwitchName()
+				.toString();
+		final String dstSwitch = this.getDstSwitch().getSwitchName()
+				.toString();
+		final short srcPort = this.srcPort.getPortNumber();
+		final short dstPort = this.dstPort.getPortNumber();
+		return srcSwitch + "/" + srcPort + "-" + dstSwitch + "/" + dstPort;
 	}
 
 	/**
 	 * Removes mappings and dependencies related to this link.
 	 */
 	public abstract void unregister();
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((dstPort == null) ? 0 : dstPort.hashCode());
+		result = prime * result + ((srcPort == null) ? 0 : srcPort.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Link other = (Link) obj;
+		if (dstPort == null) {
+			if (other.dstPort != null)
+				return false;
+		} else if (!dstPort.equals(other.dstPort))
+			return false;
+		if (srcPort == null) {
+			if (other.srcPort != null)
+				return false;
+		} else if (!srcPort.equals(other.srcPort))
+			return false;
+		return true;
+	}
 
 	/**
 	 * Compute the link metric based on the link nominal throughput, like OSPF
@@ -125,8 +147,6 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements Persis
 	 * @return the link metric
 	 */
 	public Integer getMetric() {
-		// System.out.println("Implement link throughput in Link.java!!!!");
-
 		if (this.srcPort.getCurrentThroughput().equals(
 				this.dstPort.getCurrentThroughput())) {
 			// Throughput is expressed in Mbps.
@@ -173,5 +193,7 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements Persis
 		dbObject.put(TenantHandler.DST_DPID, this.dstPort.getParentSwitch().getSwitchId());
 		dbObject.put(TenantHandler.DST_PORT, this.dstPort.getPortNumber());
 		return dbObject;
-	}	
+	}
+	
+	
 }

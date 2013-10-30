@@ -273,7 +273,9 @@ public class OVXNetworkManager {
 			
 			// Create virtual link
 			try {
-				virtualNetwork.connectLink(srcDpid, srcPort, dstDpid, dstPort, physicalLinks, priority, linkId);
+				virtualNetwork.connectLink(srcDpid, srcPort, dstDpid, dstPort, "spf", (byte)1 , linkId);
+				virtualNetwork.setLinkPath(linkId, physicalLinks, priority);
+				//virtualNetwork.connectLink(srcDpid, srcPort, dstDpid, dstPort, physicalLinks, priority, linkId);
 			} catch (IndexOutOfBoundException e) {
 				OVXNetworkManager.log.error("Error recreating virtual link {} from database", linkId);
 				return;

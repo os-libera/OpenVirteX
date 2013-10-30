@@ -424,7 +424,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	 * @return
 	 */
 	public OVXFlowMod getFlowMod(final Long cookie) {
-		return this.flowTable.getFlowMod(cookie);
+		return this.flowTable.getFlowMod(cookie).clone();
 	}
 
 	/**

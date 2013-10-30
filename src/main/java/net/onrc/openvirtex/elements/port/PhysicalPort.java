@@ -104,8 +104,18 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 	    }
 	}
 
-	public boolean equals(PhysicalPort port) {
-	    return this.portNumber==port.portNumber && this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId();
+	@Override
+	public boolean equals(Object that) {
+		if (that == null)
+			return false;
+		if (this == that)
+			return true;
+		if (!(that instanceof PhysicalPort))
+			return false;
+		
+		PhysicalPort port = (PhysicalPort) that;
+	    return this.portNumber==port.portNumber 
+	    		&& this.parentSwitch.getSwitchId() == port.getParentSwitch().getSwitchId();
 	}
 	    
 	/**

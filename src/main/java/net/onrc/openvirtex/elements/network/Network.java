@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -44,14 +43,14 @@ import com.google.gson.annotations.SerializedName;
  *            Generic Link type
  */
 public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link> implements LLDPEventHandler,
-		OVXSendMsg {
+OVXSendMsg {
 
 
-    @SerializedName("switches")
-    @Expose
+	@SerializedName("switches")
+	@Expose
 	protected final Set<T1>              switchSet;
-    @SerializedName("links")
-    @Expose
+	@SerializedName("links")
+	@Expose
 	protected final Set<T3>              linkSet;
 	protected final Map<Long, T1>        dpidMap;
 	protected final Map<T2, T2>          neighborPortMap;
@@ -88,7 +87,6 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
 		neighbours.add(dstSwitch);
 		this.neighborPortMap.put((T2) link.getSrcPort(),
 				(T2) link.getDstPort());
-		this.log.info("Adding link " + link.toString());
 	}
 
 	/**
@@ -108,7 +106,6 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
 		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
 		neighbours.remove(dstSwitch);
 		this.neighborPortMap.remove(link.getSrcPort());
-		this.log.info("Removing link " + link.toString());
 		return true;
 	}
 
@@ -123,7 +120,7 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
 			this.neighborMap.put(sw, new HashSet<T1>());
 		}
 	}
-	
+
 	/**
 	 * Remove switch from topology
 	 * @param sw
@@ -135,7 +132,7 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
 			return true;
 		}
 		return false;
-        }
+	}
 
 	// Public methods to query topology information
 
@@ -190,7 +187,7 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
 	public Set<T3> getLinks() {
 		return Collections.unmodifiableSet(this.linkSet);
 	}
-	
+
 	// TODO: optimize this because we iterate over all links
 	public T3 getLink(final T2 srcPort, final T2 dstPort) {
 		for (final T3 link : this.linkSet) {

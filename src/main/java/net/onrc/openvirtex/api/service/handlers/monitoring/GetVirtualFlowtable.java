@@ -3,7 +3,7 @@ package net.onrc.openvirtex.api.service.handlers.monitoring;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
@@ -16,6 +16,8 @@ import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
+
+import net.onrc.openvirtex.messages.OVXFlowMod;
 
 import org.openflow.protocol.OFMatch;
 
@@ -43,8 +45,8 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 			final OVXMap map = OVXMap.getInstance();
 			final OVXSwitch vsw = map.getVirtualNetwork(tid.intValue())
 					.getSwitch(dpid.longValue());
-			final Set<OVXFlowEntry> flows = vsw.getFlowTable().getFlowTable();
-			for (final OVXFlowEntry flow : flows) {
+			final Collection<OVXFlowMod> flows = vsw.getFlowTable().getFlowTable();
+			for (final OVXFlowMod flow : flows) {
 				final Map<String, Object> entry = flow.toMap();
 				this.translate(entry, map, tid.intValue());
 				res.add(entry);

@@ -14,7 +14,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.address.IPMapper;
-import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
@@ -98,9 +97,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
 		if (U16.f(this.getInPort()) < U16.f(OFPort.OFPP_MAX.getValue()))
 			this.setInPort(inport.getPhysicalPortNumber());
-
 		this.prependRewriteActions(sw);
-                this.setActions(this.approvedActions);
+		this.setActions(this.approvedActions);
 		this.setActionsLength((short) 0);
 		this.setLengthU(OVXPacketOut.MINIMUM_LENGTH + this.packetData.length);
 		for (final OFAction act : this.approvedActions) {
@@ -111,7 +109,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
 		//TODO: Beacon sometimes send msg with inPort == controller, check with Ayaka if it's ok
 		if (U16.f(this.getInPort()) < U16.f(OFPort.OFPP_MAX.getValue()))
-		    OVXMessageUtil.translateXid(this, inport);
+			OVXMessageUtil.translateXid(this, inport);
 		this.log.debug("Sending packet-out to sw {}: {}", sw.getName(), this);
 		sw.sendSouth(this, inport);
 	}
@@ -131,33 +129,33 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 	}
 
 	public OVXPacketOut(final OVXPacketOut pktOut) {
-	    this.bufferId = pktOut.bufferId;
-	    this.inPort = pktOut.inPort;
-	    this.length = pktOut.length;
-	    this.packetData = pktOut.packetData;
-	    this.type = pktOut.type;
-	    this.version = pktOut.version;
-	    this.xid = pktOut.xid;
-	    this.actions = pktOut.actions;
-	    this.actionsLength = pktOut.actionsLength;
+		this.bufferId = pktOut.bufferId;
+		this.inPort = pktOut.inPort;
+		this.length = pktOut.length;
+		this.packetData = pktOut.packetData;
+		this.type = pktOut.type;
+		this.version = pktOut.version;
+		this.xid = pktOut.xid;
+		this.actions = pktOut.actions;
+		this.actionsLength = pktOut.actionsLength;
 	}
 
 	public OVXPacketOut() {
-	    super();
+		super();
 	}
-	
+
 	public OVXPacketOut (final byte[] pktData,
-		final short inPort, final short outPort) {
-	    this.setInPort(inPort);
-	    this.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-	    final OFActionOutput outAction = new OFActionOutput(outPort);
-	    final ArrayList<OFAction> actions = new ArrayList<OFAction>();
-	    actions.add(outAction);
-	    this.setActions(actions);
-	    this.setActionsLength(outAction.getLength());
-	    this.setPacketData(pktData);
-	    this.setLengthU((short) (OFPacketOut.MINIMUM_LENGTH
-		    + this.getPacketData().length + OFActionOutput.MINIMUM_LENGTH));
+			final short inPort, final short outPort) {
+		this.setInPort(inPort);
+		this.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+		final OFActionOutput outAction = new OFActionOutput(outPort);
+		final ArrayList<OFAction> actions = new ArrayList<OFAction>();
+		actions.add(outAction);
+		this.setActions(actions);
+		this.setActionsLength(outAction.getLength());
+		this.setPacketData(pktData);
+		this.setLengthU((short) (OFPacketOut.MINIMUM_LENGTH
+				+ this.getPacketData().length + OFActionOutput.MINIMUM_LENGTH));
 	}
-	
+
 }

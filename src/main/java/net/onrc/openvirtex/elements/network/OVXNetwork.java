@@ -8,15 +8,12 @@
 
 package net.onrc.openvirtex.elements.network;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.Set;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
@@ -56,8 +53,6 @@ import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
-
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 
 
@@ -187,20 +182,20 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return Collections.unmodifiableList(this.hostList);
 	}
 
-
-	public Host getHost(MACAddress mac) {
-		for (Host host : this.hostList) {
-			if (host.getMac().toLong() == mac.toLong())
+	public Host getHost(final MACAddress mac) {
+		for (final Host host : this.hostList) {
+			if (host.getMac().toLong() == mac.toLong()) {
 				return host;
+			}
 		}
 		return null;
 	}
 
-
-	public Host getHost(OVXPort port) {
-		for (Host host : this.hostList) {
-			if (host.getPort().equals(port))
+	public Host getHost(final OVXPort port) {
+		for (final Host host : this.hostList) {
+			if (host.getPort().equals(port)) {
 				return host;
+			}
 		}
 		return null;
 	}
@@ -322,40 +317,88 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	 * @throws IndexOutOfBoundException
 	 */
 	public synchronized OVXLink connectLink(final long ovxSrcDpid, final short ovxSrcPort,
-			final long ovxDstDpid, final short ovxDstPort, final List<PhysicalLink> physicalLinks, 
-			final byte priority, final int linkId)
+			final long ovxDstDpid, final short ovxDstPort, final String alg, final byte numBackups, final int linkId)
 					throws IndexOutOfBoundException {
+		RoutingAlgorithms algorithm = null;
+		try {
+			algorithm = new RoutingAlgorithms(alg, numBackups);
+		} catch (RoutingAlgorithmException e) {
+			log.error("The algorithm provided ({}) is currently not supported."
+					+ " Use default: shortest-path with one backup route.", alg);
+			try {
+				algorithm = new RoutingAlgorithms("spf", (byte)1);
+			} catch (RoutingAlgorithmException e1) {}
+		}
+
+		//get the virtual end ports
 		OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
 		OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
+
 		srcPort.setEdge(false);
 		dstPort.setEdge(false);
 		// Create link, add it to the topology, register it in the map
-		final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
-				dstPort, priority);
-		final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
-				srcPort, priority);
+		OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
+				dstPort, algorithm);
+		OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
+				srcPort, algorithm);
 		super.addLink(link);
 		super.addLink(reverseLink);
-		
-		link.register(physicalLinks);
-		// create the map to the reverse list of physical links
-		final List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>();
-		for (final PhysicalLink phyLink : Lists.reverse(physicalLinks)) {
-			reversePhysicalLinks.add(PhysicalNetwork.getInstance().getLink(phyLink.getDstPort(),
-					phyLink.getSrcPort()));
-		}
-		reverseLink.register(reversePhysicalLinks);
+
+		log.info("Created bi-directional virtual link {} between ports {}/{} - {}/{} in virtual network {}",
+				link.getLinkId(), link.getSrcSwitch()
+				.getSwitchName(), srcPort.getPortNumber(), link.getDstSwitch().getSwitchName(), dstPort.getPortNumber(), 
+				this.getTenantId());
 		srcPort.boot();
 		dstPort.boot();
 		return link;
 	}
 
 	public synchronized OVXLink connectLink(final long ovxSrcDpid, final short ovxSrcPort,
-			final long ovxDstDpid, final short ovxDstPort, final List<PhysicalLink> physicalLinks, 
-			final byte priority) throws IndexOutOfBoundException {
+			final long ovxDstDpid, final short ovxDstPort, final String alg, final byte numBackups ) 
+					throws IndexOutOfBoundException {
 		final int linkId = this.linkCounter.getNewIndex();
-		return this.connectLink(ovxSrcDpid, ovxSrcPort, ovxDstDpid, ovxDstPort, physicalLinks, priority, linkId);
+		return this.connectLink(ovxSrcDpid, ovxSrcPort, ovxDstDpid, ovxDstPort, alg, numBackups, linkId);
 	}    
+
+	/**
+	 * Create link and add it to the topology. Returns linkId when successful,
+	 * -1 if source port is already used.
+	 * 
+	 * @param srcPort
+	 * @param dstPort
+	 * @return
+	 * @throws IndexOutOfBoundException
+	 */
+	public synchronized OVXLink setLinkPath(final int linkId, final List<PhysicalLink> physicalLinks, 
+			final byte priority)
+					throws IndexOutOfBoundException {
+		// create the map to the reverse list of physical links
+		final List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>();
+		for (final PhysicalLink phyLink : Lists.reverse(physicalLinks)) {
+			reversePhysicalLinks.add(PhysicalNetwork.getInstance().getLink(phyLink.getDstPort(),
+					phyLink.getSrcPort()));
+		}
+
+		List<OVXLink> links = this.getLinksById(linkId);
+		/*
+		 * TODO: links is a list, so i need to check is the first link has to be mapped to the physicalPath or viceversa.
+		 * If we'll split the link creation, don't need this check
+		 */
+		OVXLink link = null; 
+		OVXLink reverseLink = null;
+		if (links.get(0).getSrcPort().getPhysicalPort() == physicalLinks.get(0).getSrcPort()) {
+			link = links.get(0);
+			reverseLink = links.get(1);
+		}
+		else if (links.get(1).getSrcPort().getPhysicalPort() == physicalLinks.get(0).getSrcPort()) {
+			link = links.get(1);
+			reverseLink = links.get(0);
+		}
+		else log.error("Cannot retrieve the virtual links associated to linkId {}",linkId);
+		link.register(physicalLinks, priority);
+		reverseLink.register(reversePhysicalLinks, priority);
+		return link;
+	}
 
 	public synchronized SwitchRoute connectRoute(final long ovxDpid, final short ovxSrcPort,
 			final short ovxDstPort, final List<PhysicalLink> physicalLinks, 
@@ -398,7 +441,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	}
 
 	public synchronized void disconnectLink(final int linkId) {
-		LinkedList<OVXLink> linkPair = this.getLinksById(linkId);
+		LinkedList<OVXLink> linkPair = (LinkedList<OVXLink>) this.getLinksById(linkId);
 		this.linkCounter.releaseIndex(linkPair.getFirst().getLinkId());
 		for (OVXLink link : linkPair) {
 			link.unregister();
@@ -515,12 +558,23 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		OVXNetwork.log
 		.debug("Resetting tenantId counter to initial state. Don't do this at runtime!");
 		OVXNetwork.tenantIdCounter.reset();
+
 	}
 
-//	@Override
-//	public Integer getDBIndex() {
-//		return this.tenantId;
-//	}
+	public List<OVXLink> getLinksById(final Integer linkId) {
+		final List<OVXLink> linkList = new LinkedList<OVXLink>();
+		for (OVXLink link : this.getLinks()) {
+			if (link.getLinkId().equals(linkId)) {
+				linkList.add(link);
+			}
+		}
+		return linkList;
+	}
+
+	//	@Override
+	//	public Integer getDBIndex() {
+	//		return this.tenantId;
+	//	}
 
 	@Override
 	public Map<String, Object> getDBIndex() {
@@ -528,7 +582,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		index.put(TenantHandler.TENANT, this.tenantId);
 		return index;
 	}
-	
+
 	@Override
 	public String getDBKey() {
 		return "vnet";
@@ -551,20 +605,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return dbObject;
 	}
 
-	public LinkedList<OVXLink> getLinksById(final Integer linkId) {
-		final LinkedList<OVXLink> linkList = new LinkedList<OVXLink>();
-		for (OVXLink link : this.getLinks()) {
-			if (link.getLinkId().equals(linkId)) {
-				linkList.add(link);
-			}
-
-		}
-		if (linkList.size() == 2) {
-			return linkList;
-		}
-
-		return null;
-	}
 
 	public Set<OVXLink> getLinkSet() {
 		return Collections.unmodifiableSet(this.linkSet);

@@ -8,8 +8,10 @@
 package net.onrc.openvirtex.routing;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
+import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
@@ -34,4 +36,6 @@ public interface Routable {
 	 * @return The name of the routing policy
 	 */
 	public String getName();
+
+	public void setLinkPath(OVXLink ovxLink);
 }

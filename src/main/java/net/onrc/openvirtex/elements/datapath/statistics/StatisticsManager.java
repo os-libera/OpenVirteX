@@ -75,11 +75,11 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 	}
 	
 	public void start() {
-		timer.start();
+		
 	}
 	
 	public void stop() {
-		timer.stop();
+		
 	}
 
 	@Override

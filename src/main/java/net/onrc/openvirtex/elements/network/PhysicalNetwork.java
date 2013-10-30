@@ -40,8 +40,8 @@ import org.openflow.protocol.OFMessage;
  * 
  */
 public class PhysicalNetwork extends
-		Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
-	
+Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
+
 	private static PhysicalNetwork instance;
 	private ArrayList<Uplink> uplinkList;
 	private final ConcurrentHashMap<Long, SwitchDiscoveryManager> discoveryManager;
@@ -68,8 +68,8 @@ public class PhysicalNetwork extends
 	}
 
 	public static void reset() {
-		PhysicalNetwork.log
-				.debug("PhysicalNetwork has been explicitely reset. Hope you know what you are doing!!");
+		log.debug("PhysicalNetwork has been explicitely reset. "
+				+ "Hope you know what you are doing!!");
 		PhysicalNetwork.instance = null;
 	}
 
@@ -91,10 +91,10 @@ public class PhysicalNetwork extends
 				sw));
 		DBManager.getInstance().addSwitch(sw.getSwitchId());
 	}
-	
+
 	/**
 	 * Remove switch from topology discovery and mappings for this network
- 	 * @param sw
+	 * @param sw
 	 */
 	public boolean removeSwitch(final PhysicalSwitch sw) {
 		DBManager.getInstance().delSwitch(sw.getSwitchId());
@@ -115,7 +115,7 @@ public class PhysicalNetwork extends
 	 */
 	public synchronized void addPort(final PhysicalPort port) {
 		this.discoveryManager.get(port.getParentSwitch().getSwitchId())
-				.addPort(port);
+		.addPort(port);
 	}
 
 	/**
@@ -123,20 +123,22 @@ public class PhysicalNetwork extends
 	 * 
 	 * @param port
 	 */
+
 	public synchronized void removePort(SwitchDiscoveryManager sdm, final PhysicalPort port) {
 		port.unregister();
 		/* remove from topology discovery */
 		if (sdm != null) {
-		    log.info("removing port {}", port.getPortNumber());
-		    sdm.removePort(port);
+			log.info("removing port {}", port.getPortNumber());
+			sdm.removePort(port);
 		}
 		/* remove from this network's mappings */
 		PhysicalPort dst = this.neighborPortMap.get(port);
 		if (dst != null ) {
 			this.removeLink(port, dst);
 		}
+
 	}
-	
+
 	/**
 	 * Create link and add it to the topology.
 	 * 
@@ -149,12 +151,15 @@ public class PhysicalNetwork extends
 		if (neighbourPort == null || !neighbourPort.equals(dstPort)) {
 			final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
 			super.addLink(link);
+			log.info("Adding physical link between {}/{} and {}/{}", link.getSrcSwitch().getSwitchName(),
+					link.getSrcPort().getPortNumber(), link.getDstSwitch().getSwitchName(),
+					link.getDstPort().getPortNumber());
 			DPIDandPortPair dpp = new DPIDandPortPair(
 					new DPIDandPort(srcPort.getParentSwitch().getSwitchId(), srcPort.getPortNumber()),
 					new DPIDandPort(dstPort.getParentSwitch().getSwitchId(), dstPort.getPortNumber()));
 			DBManager.getInstance().addLink(dpp);
 		} else {
-			PhysicalNetwork.log.debug("Tried to create invalid link");
+			log.debug("Tried to create invalid link");
 		}
 	}
 
@@ -174,10 +179,14 @@ public class PhysicalNetwork extends
 					new DPIDandPort(dstPort.getParentSwitch().getSwitchId(), dstPort.getPortNumber()));
 			DBManager.getInstance().delLink(dpp);
 			super.removeLink(link);
+			log.info("Removing physical link between {}/{} and {}/{}", link.getSrcSwitch().getSwitchName(),
+					link.getSrcPort().getPortNumber(), link.getDstSwitch().getSwitchName(),
+					link.getDstPort().getPortNumber());
+			super.removeLink(link);
 		} else {
 			PhysicalNetwork.log.debug("Tried to remove invalid link");
 		}
-        }
+	}
 
 	/**
 	 * Acknowledge reception of discovery probe to sender port
@@ -223,7 +232,7 @@ public class PhysicalNetwork extends
 
 	//TODO use MappingException to deal with null SDMs. 
 	public SwitchDiscoveryManager getDiscoveryManager(long switchDPID) {
-	    return this.discoveryManager.get(switchDPID);
+		return this.discoveryManager.get(switchDPID);
 	}
 
 }

@@ -7,7 +7,6 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
-import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -15,7 +14,6 @@ import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.link.OVXLink;
-import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
@@ -51,10 +49,12 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
 					TenantHandler.DST_DPID, params, true, null);
 			final Number dstPort = HandlerUtils.<Number> fetchField(
 					TenantHandler.DST_PORT, params, true, null);
-			final String pathString = HandlerUtils.<String> fetchField(
-					TenantHandler.PATH, params, true, null);
-			final Number priority = HandlerUtils.<Number> fetchField(
-					TenantHandler.PRIORITY, params, true, null);
+
+			final String alg = HandlerUtils.<String> fetchField(
+					TenantHandler.ALGORITHM, params, true, null);
+			final Number backupNumber = HandlerUtils.<Number> fetchField(
+					TenantHandler.BACKUPS, params, true, null);
+
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 			HandlerUtils.isValidOVXSwitch(tenantId.intValue(),
@@ -65,24 +65,15 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
 					srcDpid.longValue(), srcPort.shortValue());
 			HandlerUtils.isValidOVXPort(tenantId.intValue(),
 					dstDpid.longValue(), dstPort.shortValue());
-			HandlerUtils.isUsedOVXPort(tenantId.intValue(),
-					srcDpid.longValue(), srcPort.shortValue());
-			HandlerUtils.isUsedOVXPort(tenantId.intValue(),
-					dstDpid.longValue(), dstPort.shortValue());
-			final List<PhysicalLink> physicalLinks = HandlerUtils
-					.getPhysicalPath(pathString);
-			HandlerUtils.isValidVirtualLink(physicalLinks);
-			HandlerUtils.areValidLinkEndPoints(tenantId.intValue(),
-					srcDpid.longValue(), srcPort.shortValue(),
-					dstDpid.longValue(), dstPort.shortValue(), physicalLinks);
 
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
+
 			final OVXLink virtualLink = virtualNetwork.connectLink(
 					srcDpid.longValue(), srcPort.shortValue(),
-					dstDpid.longValue(), dstPort.shortValue(), physicalLinks,
-					priority.byteValue());
+					dstDpid.longValue(), dstPort.shortValue(), alg,
+					backupNumber.byteValue());
 			if (virtualLink == null) {
 				resp = new JSONRPC2Response(-1, 0);
 			} else {
@@ -93,6 +84,7 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
 						.getPortNumber(), virtualLink.getDstSwitch()
 						.getSwitchName(), virtualLink.getDstPort()
 						.getPortNumber(), virtualNetwork.getTenantId());
+
 				resp = new JSONRPC2Response(virtualLink.getLinkId(), 0);
 			}
 		} catch (final MissingRequiredField e) {

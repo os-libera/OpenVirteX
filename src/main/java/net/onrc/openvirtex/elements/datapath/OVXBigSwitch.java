@@ -11,13 +11,17 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.messages.Devirtualizable;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
@@ -29,6 +33,7 @@ import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
+import org.openflow.util.U8;
 
 /**
  * The Class OVXBigSwitch.
@@ -134,9 +139,19 @@ public class OVXBigSwitch extends OVXSwitch {
 		if (!this.portMap.containsKey(portNumber)) {
 			return false;
 		} else {
-			this.portMap.remove(portNumber);
-			return true;
+			//TODO: Not removing the routes that have this port as a destination. Do it!
+			this.routeMap.remove(this.portMap.get(portNumber));
+			
+			for (HashMap<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
+				Iterator<Entry<OVXPort, SwitchRoute>> it = portMap.entrySet().iterator();
+				while (it.hasNext()) {
+					Entry<OVXPort, SwitchRoute> entry = it.next();
+					if (entry.getKey().getPortNumber() == portNumber)
+						it.remove();
+				}
+			}
 		}
+		return true; //??
 	}
 
 	/*
@@ -279,30 +294,65 @@ public class OVXBigSwitch extends OVXSwitch {
 	public SwitchRoute createRoute(final OVXPort ingress, final OVXPort egress,
 			final List<PhysicalLink> path, final List<PhysicalLink> revpath, byte priority, int routeId)
 					throws IndexOutOfBoundException {
-		final SwitchRoute rtEntry = new SwitchRoute(ingress, egress,
-				this.switchId, routeId, this.tenantId, priority);
-		final SwitchRoute revRtEntry = new SwitchRoute(egress, ingress,
-				this.switchId, routeId, this.tenantId, priority);
-		this.map.addRoute(rtEntry, path);
-		this.map.addRoute(revRtEntry, revpath);
+		/*
+		 * Check if the big-switch route exists. 
+		 *  - If no, create both routes (normal and reverse)
+		 *  - If yes, compare the priorities:
+		 *  	- If the existing path has an upper priority, keep it as primary, and put the new in the backupMap
+		 *  	- If it has a lower priority, put the new path as primary, and the old as backup
+		 */
+		SwitchRoute rtEntry = null;
+		SwitchRoute revRtEntry = null;
+		try {
+			rtEntry = routeMap.get(ingress).get(egress);
+			revRtEntry = routeMap.get(egress).get(ingress);
+		} catch (NullPointerException e) {}
 
-		this.addToRouteMap(ingress, egress, rtEntry);
-		this.addToRouteMap(egress, ingress, revRtEntry);
+		if (rtEntry == null && revRtEntry == null) {
+			rtEntry = new SwitchRoute(ingress, egress,
+					this.switchId, routeId, this.tenantId, priority);
+			revRtEntry = new SwitchRoute(egress, ingress,
+					this.switchId, routeId, this.tenantId, priority);
+			this.map.addRoute(rtEntry, path);
+			this.map.addRoute(revRtEntry, revpath);
 
-		rtEntry.register();
-		revRtEntry.register();
-		
-		OVXBigSwitch.log
-		.info("Added route for big-switch {} between ports ({},{}) with path: {}",
-				this.switchName, ingress.getPortNumber(),
-				egress.getPortNumber(), path.toString());
-		OVXBigSwitch.log
-		.info("Added route for big-switch {} between ports ({},{}) with path: {}",
-				this.switchName, egress.getPortNumber(),
-				ingress.getPortNumber(), revpath.toString());
+			this.addToRouteMap(ingress, egress, rtEntry);
+			this.addToRouteMap(egress, ingress, revRtEntry);
+
+			log.info("Add route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+					this.switchName, ingress.getPortNumber(),
+					egress.getPortNumber(), U8.f(rtEntry.getPriority()), path.toString());
+			log.info("Add route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+					this.switchName, egress.getPortNumber(),
+					ingress.getPortNumber(), U8.f(revRtEntry.getPriority()), revpath.toString());
+		}
+		else {
+			byte currentPriority = rtEntry.getPriority();
+			if (U8.f(currentPriority) >= U8.f(priority)) {
+				rtEntry.addBackupRoute(priority, path);
+				revRtEntry.addBackupRoute(priority, revpath);
+				log.info("Add backup route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+						this.switchName, ingress.getPortNumber(),
+						egress.getPortNumber(), U8.f(priority), path.toString());
+				log.info("Add backup route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+						this.switchName, egress.getPortNumber(),
+						ingress.getPortNumber(), U8.f(priority), revpath.toString());
+			}
+			else {		
+				rtEntry.replacePrimaryRoute(priority, path);
+				revRtEntry.replacePrimaryRoute(priority, revpath);
+				log.info("Replace primary route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+						this.switchName, ingress.getPortNumber(),
+						egress.getPortNumber(), U8.f(rtEntry.getPriority()), path.toString());
+				log.info("Replace primary route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+						this.switchName, egress.getPortNumber(),
+						ingress.getPortNumber(), U8.f(revRtEntry.getPriority()), revpath.toString());
+			}
+		}
 		return rtEntry;
 	}
-	
+
+
 	public SwitchRoute createRoute(final OVXPort ingress, final OVXPort egress,
 			final List<PhysicalLink> path, final List<PhysicalLink> revpath, byte priority)
 					throws IndexOutOfBoundException {

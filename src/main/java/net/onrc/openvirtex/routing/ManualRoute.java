@@ -9,12 +9,20 @@ package net.onrc.openvirtex.routing;
 
 import java.util.LinkedList;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
+import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
 public class ManualRoute implements Routable {
 
+	/** The log. */
+	private static Logger log = LogManager.getLogger(ManualRoute.class
+			.getName());
+	
 	@Override
 	public LinkedList<PhysicalLink> computePath(final OVXPort srcPort,
 			final OVXPort dstPort) {
@@ -26,7 +34,7 @@ public class ManualRoute implements Routable {
 	public SwitchRoute getRoute(final OVXBigSwitch vSwitch,
 			final OVXPort srcPort, final OVXPort dstPort) {
 		// return route that was set manually
-	    	// TODO : throw 'route not initialized' type of exception if null 
+		// TODO : throw 'route not initialized' type of exception if null 
 		return vSwitch.getRouteMap().get(srcPort).get(dstPort);
 	}
 
@@ -34,4 +42,13 @@ public class ManualRoute implements Routable {
 	public String getName() {
 		return "manual";
 	}
+
+	@Override
+	public void setLinkPath(OVXLink ovxLink) {
+		log.warn("The manual routing should never call the method [setLinkPath(OVXLink)]. "
+				+ "To define a manual path for the virtual link, use the API call [SetLinkPath].");
+
+	}
+
+
 }

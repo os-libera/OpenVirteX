@@ -66,5 +66,6 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements 
 		Map<String, Object> dbObject = super.getDBObject();
 		dbObject.put(TenantHandler.LINK, this.linkId);
 		return dbObject;
-	}	
+	}
+	
 }

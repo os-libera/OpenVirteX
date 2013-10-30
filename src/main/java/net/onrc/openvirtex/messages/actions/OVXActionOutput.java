@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
@@ -66,7 +67,6 @@ VirtualizableAction {
 			 * 	- Other cases, e.g. SingleSwitch and BigSwitch with inPort & outPort belonging to the
 			 * 		same physical switch
 			 */
-
 			// Retrieve the flowMod from the virtual flow map
 			final OVXFlowMod fm = sw.getFlowMod(match.getCookie());
 			fm.setCookie(match.getCookie());
@@ -82,9 +82,6 @@ VirtualizableAction {
 				if (sw instanceof OVXBigSwitch
 						&& inPort.getPhysicalPort().getParentSwitch() != outPort
 						.getPhysicalPort().getParentSwitch()) {
-					// This list includes all the actions that have to be applied at the end of the route
-					final LinkedList<OFAction> outActions = new LinkedList<OFAction>();
-
 					//Retrieve the route between the two OVXPorts
 					final OVXBigSwitch bigSwitch = (OVXBigSwitch) outPort
 							.getParentSwitch();
@@ -113,36 +110,9 @@ VirtualizableAction {
 							return;
 						}
 					}
+					
+					route.generateRouteFMs(fm.clone());
 
-					/*
-					 * Check the outPort:
-					 * 	- if it's an edge, configure the route's last FM to rewrite the IPs 
-					 * 		and generate the route FMs
-					 * 	- if it's a link:
-					 * 		- retrieve the link
-					 * 		- generate the link FMs
-					 * 		- configure the route's last FM to rewrite the MACs
-					 * 		- generate the route FMs
-					 */
-					if (outPort.isEdge()) {
-						outActions.addAll(this.prependUnRewriteActions(match));
-						route.generateRouteFMs(fm, outActions, inPort, outPort);
-					} else {
-						final OVXLink link = outPort.getLink().getOutLink();
-						linkId = link.getLinkId();
-						try {
-							flowId = vnet.getFlowManager()
-									.storeFlowValues(match.getDataLayerSource(),
-											match.getDataLayerDestination());
-							link.generateLinkFMs(fm.clone(), flowId);
-							outActions.addAll(new OVXLinkUtils(sw.getTenantId(), linkId, flowId).setLinkFields());
-							route.generateRouteFMs(fm, outActions, inPort, outPort);
-						} catch (IndexOutOfBoundException e) {
-							log.error("Too many host to generate the flow pairs in this virtual network {}. "
-									+ "Dropping flow-mod {} ", sw.getTenantId(), fm);
-							throw new DroppedMessageException();
-						}
-					}
 					//add the output action with the physical outPort (srcPort of the route)
 					if (inPort.getPhysicalPortNumber() != route.getPathSrcPort().getPortNumber())
 						approvedActions.add(new OFActionOutput(route.getPathSrcPort().getPortNumber()));
@@ -156,9 +126,8 @@ VirtualizableAction {
 				else {
 					if (inPort.isEdge()) {
 						if (outPort.isEdge()) {
-							//TODO: this is logically incorrect, remove and check if the system works 
-							approvedActions.addAll(this
-									.prependUnRewriteActions(match));
+							//TODO: this is logically incorrect, i have to do this because we always add the rewriting actions in the flowMod. Change it.
+							approvedActions.addAll(IPMapper.prependUnRewriteActions(match));
 						} else {
 							/*
 							 * If inPort is edge and outPort is link:
@@ -190,8 +159,7 @@ VirtualizableAction {
 							 * 	- add actions to current FM to restore original IPs
 							 * 	- add actions to current FM to restore packet fields related to the link 
 							 */
-							approvedActions.addAll(this
-									.prependUnRewriteActions(match));
+							approvedActions.addAll(IPMapper.prependUnRewriteActions(match));
 							// rewrite the OFMatch with the values of the link
 							final OVXPort dstPort = vnet.getNeighborPort(inPort);
 							final OVXLink link = dstPort.getLink().getOutLink();
@@ -288,8 +256,7 @@ VirtualizableAction {
 						 * 
 						 */
 						throwException = false;
-						approvedActions.addAll(this
-								.prependUnRewriteActions(match));
+						approvedActions.addAll(IPMapper.prependUnRewriteActions(match));
 						approvedActions.add(new OFActionOutput(outPort
 								.getPhysicalPortNumber()));
 						this.log.debug("Physical ports are on the same physical switch, rewrite only outPort to {}", outPort
@@ -332,18 +299,4 @@ VirtualizableAction {
 		return outPortList;
 	}
 
-	private List<OFAction> prependUnRewriteActions(final OFMatch match) {
-		final List<OFAction> actions = new LinkedList<OFAction>();
-		if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-			srcAct.setNetworkAddress(match.getNetworkSource());
-			actions.add(srcAct);
-		}
-		if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-			dstAct.setNetworkAddress(match.getNetworkDestination());
-			actions.add(dstAct);
-		}
-		return actions;
-	}
 }

@@ -10,9 +10,15 @@ package net.onrc.openvirtex.elements.link;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
@@ -22,17 +28,23 @@ import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
 import net.onrc.openvirtex.packet.Ethernet;
+import net.onrc.openvirtex.routing.RoutingAlgorithms;
+import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.action.OFActionType;
+import org.openflow.util.U8;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -56,7 +68,12 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	@Expose
 	private final Integer tenantId;
 
-	private final byte priority;
+	private byte priority;
+
+	private RoutingAlgorithms alg;
+
+	private final TreeMap<Byte, List<PhysicalLink>> backupLinks;
+	private final TreeMap<Byte, List<PhysicalLink>> unusableLinks;
 
 	private Mappable      map = null;
 
@@ -75,14 +92,19 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @param priority 
 	 */
 	public OVXLink(final Integer linkId, final Integer tenantId,
-			final OVXPort srcPort, final OVXPort dstPort, byte priority) {
+			final OVXPort srcPort, final OVXPort dstPort, RoutingAlgorithms alg) {
 		super(srcPort, dstPort);
 		this.linkId = linkId;
 		this.tenantId = tenantId;
-		this.priority = priority;
 		srcPort.setOutLink(this);
 		dstPort.setInLink(this);
+		this.backupLinks = new TreeMap<>();
+		this.unusableLinks = new TreeMap<>();
+		this.priority = (byte) 0;
+		this.alg = alg;
 		this.map = OVXMap.getInstance();
+		if (this.alg.getRoutingType() != RoutingType.NONE)
+			this.alg.getRoutable().setLinkPath(this);
 	}
 
 	/**
@@ -106,25 +128,61 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	public byte getPriority() {
 		return priority;
 	}
-    
+
+
+	public void setPriority(byte priority) {
+		this.priority = priority;
+	}
+
+	/**
+	 * Gets the alg.
+	 * 
+	 * @return the alg
+	 */
+	public RoutingAlgorithms getAlg() {
+		return this.alg;
+	}
+
+	public void setAlg(final RoutingAlgorithms alg) {
+		this.alg = alg;
+	}
+
+
 	/**
 	 * Register mapping between virtual link and physical path
 	 * 
 	 * @param physicalLinks
+	 * @param priority 
 	 */
-	public void register(final List<PhysicalLink> physicalLinks) {
-		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
-		this.srcPort.getPhysicalPort().removeOVXPort(this.srcPort);
-		this.srcPort.getPhysicalPort().setOVXPort(this.srcPort);
+	public void register(final List<PhysicalLink> physicalLinks, byte priority) {
+		if (U8.f(this.getPriority()) >= U8.f(priority)) {
+			this.backupLinks.put(priority, physicalLinks);
+			log.info("Added virtual link {} backup path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
+					this.getLinkId(), U8.f(priority), this.getSrcSwitch()
+					.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
+					this.getTenantId(), physicalLinks);
+		}
+		else {
+			try {
+				this.backupLinks.put(this.getPriority(), map.getPhysicalLinks(this));
+			}
+			catch (LinkMappingException e) {
+				log.error("Unable to retrieve the list of physical link from the OVXMap associated to the virtual link {}. "
+						+ "If the link has just been created, this is normal." , 
+						this.getLinkId());
+			}
+			this.switchPath(physicalLinks, priority);			
+		}	
+
 		DBManager.getInstance().save(this);
 	}
 
 	@Override
 	public void unregister() {
+
 		try {
 			DBManager.getInstance().remove(this);
 			this.tearDown();
-			final Mappable map = this.srcPort.getParentSwitch().getMap();
 			map.removeVirtualLink(this);
 			map.getVirtualNetwork(this.tenantId).removeLink(this);
 		} catch (NetworkMappingException e) {
@@ -138,6 +196,41 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	public void tearDown() {
 		this.srcPort.tearDown();
 		this.dstPort.tearDown();
+	}
+
+	public void switchPath(List<PhysicalLink> physicalLinks, byte priority) {
+		this.setPriority(priority);
+		this.srcPort.getParentSwitch().getMap().removeVirtualLink(this);
+		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
+		log.info("Replace virtual link {} with a new path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
+				this.getLinkId(), U8.f(priority), this.getSrcSwitch()
+				.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
+				this.getTenantId(), physicalLinks);
+
+		log.info("Switch all existing flow-mods crossing the virtual link {} between ports ({}/{},{}/{}) to new path", 
+				this.getLinkId(), this.getSrcSwitch().getSwitchName(), this.getSrcPort().getPortNumber(),
+				this.getDstSwitch().getSwitchName(), this.getDstPort().getPortNumber());
+		Collection<OVXFlowMod> flows = this.getSrcSwitch().getFlowTable().getFlowTable();
+		for (OVXFlowMod fe : flows) {
+			for(OFAction act : fe.getActions()) {
+				if (act.getType() == OFActionType.OUTPUT) {
+					if (((OFActionOutput) act).getPort() == this.getSrcPort().getPortNumber()) {
+						try {
+							Integer flowId = this.map.getVirtualNetwork(this.tenantId).getFlowManager()
+									.storeFlowValues(fe.getMatch().getDataLayerSource(),
+											fe.getMatch().getDataLayerDestination());
+							this.generateLinkFMs(fe.clone(), flowId);
+						} catch (IndexOutOfBoundException e) {
+							log.error("Too many host to generate the flow pairs in this virtual network {}. "
+									+ "Dropping flow-mod {} ", this.getTenantId(), fe);
+						} catch (NetworkMappingException e) {
+							log.warn("{}: skipping processing of OFAction", e);
+							return;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -211,16 +304,21 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		PhysicalPort inPort = null;
 		PhysicalPort outPort = null;
 		fm.setBufferId(OVXPacketOut.BUFFER_ID_NONE);
-
-		List<PhysicalLink> plinks;
+		fm.setCommand(OFFlowMod.OFPFC_MODIFY);
+		List<PhysicalLink> plinks = new LinkedList<PhysicalLink>();
 		try {
-			final OVXLink reverseLink = this.map.getVirtualNetwork(this.tenantId)
-					.getLink(this.dstPort, this.srcPort);
-			plinks = this.map.getPhysicalLinks(reverseLink); 	
+			final OVXLink link = this.map.getVirtualNetwork(this.tenantId)
+					.getLink(this.srcPort, this.dstPort); 
+			for (final PhysicalLink phyLink : OVXMap.getInstance().getPhysicalLinks(link))
+				plinks.add(new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort()));
+
 		} catch (LinkMappingException | NetworkMappingException e) {
 			log.warn("No physical Links mapped to OVXLink? : {}", e);
 			return;
 		}
+
+		Collections.reverse(plinks);
+
 		for (final PhysicalLink phyLink : plinks) {
 			if (outPort != null) {
 				inPort = phyLink.getSrcPort();
@@ -246,14 +344,28 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		}
 	}
 
-    /**
-     * Tries to switch link to a backup path, and updates mappings to "correct" 
-     * string of PhysicalLinks to use for this OVXLink.  
-     * @param plink the failed PhysicalLink
-     * @return true if successful
-     */
-    public boolean tryRecovery(PhysicalLink plink) {
-	return false;
-    }
+	/**
+	 * Tries to switch link to a backup path, and updates mappings to "correct" 
+	 * string of PhysicalLinks to use for this OVXLink.  
+	 * @param plink the failed PhysicalLink
+	 * @return true if successful
+	 */
+	public boolean tryRecovery(PhysicalLink plink) {
+		log.info("Try recovery for virtual link {} in virtual network {} ", this.linkId, this.tenantId);
+		if (this.backupLinks.size() > 0) {
+			try {
+				this.unusableLinks.put(this.getPriority(), map.getPhysicalLinks(this));
+			} catch (LinkMappingException e) {
+				log.warn("No physical Links mapped to OVXLink? : {}", e);
+				return false;
+			}
+			int index = this.backupLinks.size()-1;
+			byte priority = (byte) this.backupLinks.keySet().toArray()[index];
+			List<PhysicalLink> phyLinks = this.backupLinks.get(priority);
+			this.switchPath(phyLinks, priority);
+			return true;
+		}
+		else return false;
+	}
 
 }

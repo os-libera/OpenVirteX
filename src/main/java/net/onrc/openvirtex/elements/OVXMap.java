@@ -710,8 +710,7 @@ public class OVXMap implements Mappable {
 	
 	public boolean hasOVXLinks(final PhysicalLink physicalLink,
 		final Integer tenantId) {
-		final Map<Integer, List<OVXLink>> pair = this.physicalLinkMap
-				.get(physicalLink);
+		final Map<Integer, List<OVXLink>> pair = this.physicalLinkMap.get(physicalLink);
 		return (pair != null) && (pair.get(tenantId) != null);
 	}
 

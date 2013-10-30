@@ -56,9 +56,9 @@ def pa_createSwitch(args, cmd):
 
 def do_createSwitch(gopts, opts, args):
     if len(args) != 2:
-        print ("createSwitch : must specify: "
-        "virtual network_id and a comma separated list of physical dpids "
-        "(e.g. 00:00:00:00:00:00:00:01) which will be associated to the virtual switch)")
+        print ("createSwitch : must specify: " +
+        "virtual network_id and a comma separated list of physical dpids " +
+        "(e.g. 00:00:00:00:00:00:00:01) which will be associated to the virtual switch")
         sys.exit()
     dpids = [int(dpid.replace(":", ""), 16) for dpid in args[1].split(',')]
     req = { "tenantId" : int(args[0]), "dpids" : dpids }  
@@ -75,9 +75,9 @@ def pa_createPort(args, cmd):
 
 def do_createPort(gopts, opts, args):
     if len(args) != 3:
-        print ("createPort : must specify: "
-        "virtual network_id, physical dpid "
-        "(e.g. 00:00:00:00:00:00:00:01) and physical port)")
+        print ("createPort : must specify: " +
+        "virtual network_id, physical dpid " +
+        "(e.g. 00:00:00:00:00:00:00:01) and physical port")
         sys.exit()
     req = { "tenantId" : int(args[0]), "dpid" : int(args[1].replace(":", ""), 16), "port" : int(args[2]) } 
     result = connect(gopts, "createPort", data=req, passwd=getPasswd(gopts))
@@ -95,8 +95,8 @@ def pa_setInternalRouting(args, cmd):
 
 def do_setInternalRouting(gopts, opts, args):
     if len(args) != 4:
-        print "setInternalRouting : Must specify virtual network_id, virtual switch_id, "
-        "algorithm (spf, manual) and number of backup routes"
+        print ("setInternalRouting : Must specify virtual network_id, virtual switch_id, " +
+        "algorithm (spf, manual) and number of backup routes")
         sys.exit()
     req = { "tenantId" : int(args[0]), "dpid" : int(args[1].replace(":", ""), 16), 
            "algorithm" : args[2], "backup_num" : int(args[3]) } 
@@ -122,7 +122,7 @@ def do_connectHost(gopts, opts, args):
         print "Host (host_id %s) has been connected to virtual port" %(host_id)
         
 def pa_connectLink(args, cmd):
-    usage = "%s <network_id> <src_virtual_dpid> <src_virtual_port> <dst_virtual_dpid> <dst_virtual_port> <physical_path> <priority>" % USAGE.format(cmd)
+    usage = "%s <network_id> <src_virtual_dpid> <src_virtual_port> <dst_virtual_dpid> <dst_virtual_port>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
 
@@ -130,15 +130,31 @@ def pa_connectLink(args, cmd):
 
 def do_connectLink(gopts, opts, args):
     if len(args) != 7:
-        print "connectLink : Must specify network_id, src_virtual_dpid, src_virtual_port, dst_virtual_dpid, dst_virtual_port, "
-        "the physical path that connect the end-points and the priority [0-255]"
+        print ("connectLink : Must specify network_id, src_virtual_dpid, src_virtual_port, dst_virtual_dpid, dst_virtual_port, " 
+        + "algorithm (spf, manual), number of backup routes")
         sys.exit()
     req = { "tenantId" : int(args[0]), "srcDpid" : int(args[1].replace(":", ""), 16), 
            "srcPort" : int(args[2]), "dstDpid" : int(args[3].replace(":", ""), 16), 
-           "dstPort" : int(args[4]),"path" : translate_path(args[5]), "priority" : int(args[6]) }
+           "dstPort" : int(args[4]), "algorithm" : args[5], "backup_num" : int(args[6]) }
     linkId = connect(gopts, "connectLink", data=req, passwd=getPasswd(gopts))
     if linkId:
         print "Virtual link (link_id %s) has been created" %(linkId)
+
+def pa_setLinkPath(args, cmd):
+    usage = "%s <network_id> <link_id> <phisical_path> <priority>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+
+    return parser.parse_args(args)
+
+def do_setLinkPath(gopts, opts, args):
+    if len(args) != 4:
+        print "setLinkPath : Must specify network_id, link_id, the physical path that connect the end-points and the priority [0-255]"
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "linkId" : int(args[1]),"path" : translate_path(args[2]), "priority" : int(args[3]) }
+    linkId = connect(gopts, "setLinkPath", data=req, passwd=getPasswd(gopts))
+    if linkId:
+        print "Virtual link (link_id %s) path has been set" %(linkId)
 
 def pa_connectRoute(args, cmd):
     usage = "%s <network_id> <virtual_dpid> <src_virtual_port> <dst_virtual_port> <physical_path> <priority>" % USAGE.format(cmd)
@@ -148,12 +164,12 @@ def pa_connectRoute(args, cmd):
 
 def do_connectRoute(gopts, opts, args):
     if len(args) != 6:
-        print "connectRoute : Must specify network_id, virtual_dpid, src_virtual_port, dst_virtual_port, "
-        "the physical path that connect the end-points and the priority [0-255]"
+        print ("connectRoute : Must specify network_id, virtual_dpid, src_virtual_port, dst_virtual_port, " + 
+        "the physical path that connect the end-points and the priority [0-255]")
         sys.exit()
     req = { "tenantId" : int(args[0]), "dpid" : int(args[1].replace(":", ""), 16), 
            "srcPort" : int(args[2]), "dstPort" : int(args[3]),
-           "path" : translate_path(args[4]), "priority" : byte(args[5]) }
+           "path" : translate_path(args[4]), "priority" : int(args[5]) }
     routeId = connect(gopts, "connectRoute", data=req, passwd=getPasswd(gopts))
     if routeId:
         print "Big-switch internal route (route_id %s) has been created" %(routeId)
@@ -465,6 +481,7 @@ CMDS = {
     'setInternalRouting': (pa_setInternalRouting, do_setInternalRouting),
     'connectHost': (pa_connectHost, do_connectHost),
     'connectLink': (pa_connectLink, do_connectLink),
+    'setLinkPath': (pa_setLinkPath, do_setLinkPath),
     'connectRoute': (pa_connectRoute, do_connectRoute),
     
     'removeNetwork': (pa_removeNetwork, do_removeNetwork),
@@ -505,9 +522,12 @@ DESCS = {
                         "\nExample: connectHost 1 00:a4:23:05:00:00:00:01 1 00:00:00:00:00:01")),         
     'connectLink' : ("Connect two virtual ports through a virtual link", 
                       ("Connect two virtual ports through a virtual link. Must specify a network_id, a virtual src_switch_id, a virtual src_port_id, " 
-                       "a virtual dst_switch_id, a virtual dst_port_id, a physical path and a priority (0-255)."
-                        "\nExample: connectLink 1 00:a4:23:05:00:00:00:01 1 00:a4:23:05:00:00:00:02 1 00:00:00:00:00:00:00:01/1-00:00:00:00:00:00:00:02/1,"
-                        "00:00:00:00:00:00:00:2/2-00:00:00:00:00:00:00:3/1 128")), 
+                       "a virtual dst_switch_id, a virtual dst_port_id, the routing type (spf, manual) and the number (0-255) of the backup paths that have to be computed."
+                        "\nExample: connectLink 1 00:a4:23:05:00:00:00:01 1 00:a4:23:05:00:00:00:02 1 spf 1")), 
+    'setLinkPath' : ("Set the physical path of a virtual link", 
+                      ("Set the physical path of a virtual link. Must specify a network_id, a virtual link_id, a physical path and a priority (0-255)."
+                        "\nExample: connectLink 1 1 00:00:00:00:00:00:00:01/1-00:00:00:00:00:00:00:02/1,"
+                        "00:00:00:00:00:00:00:2/2-00:00:00:00:00:00:00:3/1 128")),
     'connectRoute' : ("Connect two virtual ports inside a virtual big-switch", 
                       ("Connect two virtual ports inside a virtual big-switch. Must specify a network_id, a virtual switch_id, a virtual src_port_id, " 
                        "a virtual dst_port_id, a physical path and a priority (0-255)."

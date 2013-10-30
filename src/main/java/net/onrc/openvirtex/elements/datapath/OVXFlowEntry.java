@@ -336,6 +336,10 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 		this.cookie = cookie;
 		return this;
 	}
+	
+	public List<OFAction> getActionsList() {
+		return actionsList;
+	}
 
 	/*
 	 * (non-Javadoc)

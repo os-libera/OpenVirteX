@@ -76,12 +76,11 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 		resp = new JSONRPC2Response(-1, 0);
 	    } else {
 		this.log.info(
-		        "Created bi-directional virtual route {} between ports {}{} on virtual big-switch {} in virtual network {}",
-		        virtualRoute.getRouteId(), virtualRoute.getSrcSwitch()
-		                .getSwitchName(), virtualRoute.getSrcPort()
-		                .getPortNumber(), virtualRoute.getDstSwitch()
-		                .getSwitchName(), virtualRoute.getDstPort()
-		                .getPortNumber(), virtualNetwork.getTenantId());
+		        "Created bi-directional virtual route {} between ports ({},{}) on virtual big-switch {} in virtual network {}",
+		        virtualRoute.getRouteId(), virtualRoute.getSrcPort()
+		                .getPortNumber(), virtualRoute.getDstPort()
+		                .getPortNumber(), virtualRoute.getSrcSwitch()
+		                .getSwitchName(), virtualNetwork.getTenantId());
 		resp = new JSONRPC2Response(virtualRoute.getRouteId(), 0);
 	    }
 	} catch (final MissingRequiredField e) {
