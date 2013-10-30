@@ -36,6 +36,7 @@ import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.messages.OVXPacketIn;
@@ -89,6 +90,17 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	private final List<Host>                     hostList;
 	private final OVXFlowManager		 flowManager;
 
+	/**
+	 * OVXNetwork constructor.
+	 * Only use if you have reserved the tenantId beforehand!
+	 * @param tenantId
+	 * @param protocol
+	 * @param controllerHost
+	 * @param controllerPort
+	 * @param network
+	 * @param mask
+	 * @throws IndexOutOfBoundException
+	 */
 	public OVXNetwork(final int tenantId, final String protocol, final String controllerHost,
 			final Integer controllerPort, final IPAddress network,
 			final short mask) throws IndexOutOfBoundException {
@@ -135,6 +147,10 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return this.network;
 	}
 
+	public static void reserveTenantId(Integer tenantId) throws IndexOutOfBoundException, DuplicateIndexException {
+		OVXNetwork.tenantIdCounter.getNewIndex(tenantId);
+	}
+	
 	public BitSetIndex getLinkCounter() {
 		return this.linkCounter;
 	}

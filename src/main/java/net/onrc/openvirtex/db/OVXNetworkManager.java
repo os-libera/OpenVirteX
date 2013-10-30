@@ -19,6 +19,7 @@ import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.Port;
+import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
@@ -44,7 +45,7 @@ public class OVXNetworkManager {
 	private static Logger log = LogManager.getLogger(OVXNetworkManager.class
 			.getName());
 
-	public OVXNetworkManager(Map<String, Object> vnet) {
+	public OVXNetworkManager(Map<String, Object> vnet) throws IndexOutOfBoundException, DuplicateIndexException {
 		this.vnet = vnet;
 		this.tenantId = (Integer) vnet.get(TenantHandler.TENANT);
 		this.offlineSwitches = new HashSet<Long>(); 

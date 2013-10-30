@@ -12,6 +12,9 @@ import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.DPIDandPortPair;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.exceptions.DuplicateIndexException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 
 import org.apache.logging.log4j.LogManager;
@@ -81,7 +84,7 @@ public class DBManager {
 				this.clear(DBManager.DB_VNET);
 			else
 				this.readOVXNetworks();
-			
+
 		} catch (Exception e) {
 			log.error("Failed to initialize database: {}", e.getMessage());
 		} finally {
@@ -211,17 +214,23 @@ public class DBManager {
 			DBCursor cursor = coll.find();
 			log.info("Loading {} virtual networks from database", cursor.size());
 			while (cursor.hasNext()) {
+				OVXNetworkManager mngr = null;
 				Map<String, Object> vnet = cursor.next().toMap();
-				// Create vnet manager for each virtual network
-				OVXNetworkManager mngr = new OVXNetworkManager(vnet);
-				// Accessing DB_KEY field through a class derived from the abstract OVXSwitch
-				List<Map<String, Object>> switches = (List<Map<String, Object>>) vnet.get(Switch.DB_KEY);
-				List<Map<String, Object>> links = (List<Map<String, Object>>) vnet.get(Link.DB_KEY);
-				List<Map<String, Object>> routes = (List<Map<String, Object>>) vnet.get(SwitchRoute.DB_KEY);
-				this.readOVXSwitches(switches, mngr);
-				this.readOVXLinks(links, mngr);
-				this.readOVXRoutes(routes, mngr);
-				DBManager.log.info("Virtual network {} waiting for {} switches and {} links", mngr.getTenantId(), mngr.getSwitchCount(), mngr.getLinkCount());
+				try {
+					// Create vnet manager for each virtual network
+					mngr = new OVXNetworkManager(vnet);
+					OVXNetwork.reserveTenantId(mngr.getTenantId());
+					// Accessing DB_KEY field through a class derived from the abstract OVXSwitch
+					List<Map<String, Object>> switches = (List<Map<String, Object>>) vnet.get(Switch.DB_KEY);
+					List<Map<String, Object>> links = (List<Map<String, Object>>) vnet.get(Link.DB_KEY);
+					List<Map<String, Object>> routes = (List<Map<String, Object>>) vnet.get(SwitchRoute.DB_KEY);
+					this.readOVXSwitches(switches, mngr);
+					this.readOVXLinks(links, mngr);
+					this.readOVXRoutes(routes, mngr);
+					DBManager.log.info("Virtual network {} waiting for {} switches and {} links", mngr.getTenantId(), mngr.getSwitchCount(), mngr.getLinkCount());
+				} catch (IndexOutOfBoundException | DuplicateIndexException e) {
+					DBManager.log.error("Failed to load virtual network {}: {}", mngr.getTenantId(), e.getMessage());					
+				}
 			}
 		} catch (Exception e) {
 			log.error("Failed to load virtual networks from db: {}", e.getMessage());
@@ -277,7 +286,7 @@ public class DBManager {
 				if (mngrs == null)
 					this.linkToMngr.put(dpp, new ArrayList<OVXNetworkManager>());
 				this.linkToMngr.get(dpp).add(mngr);
-				
+
 				// Register switches
 				mngr.registerSwitch(srcDpid);
 				mngr.registerSwitch(dstDpid);
@@ -317,7 +326,7 @@ public class DBManager {
 				if (mngrs == null)
 					this.linkToMngr.put(dpp, new ArrayList<OVXNetworkManager>());
 				this.linkToMngr.get(dpp).add(mngr);
-				
+
 				// Register switches
 				mngr.registerSwitch(srcDpid);
 				mngr.registerSwitch(dstDpid);
@@ -332,7 +341,7 @@ public class DBManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * Add physical switch to the OVXNetworkManagers that are waiting for this switch.  
 	 * This method is called by the PhysicalSwitch.boot() method 

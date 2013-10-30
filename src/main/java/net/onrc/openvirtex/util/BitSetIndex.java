@@ -14,6 +14,7 @@ import org.openflow.util.U16;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
+import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 
 public class BitSetIndex {
@@ -77,13 +78,27 @@ public class BitSetIndex {
 		this.set.flip(0);
 	}
 
-	public synchronized Integer getNewIndex() throws IndexOutOfBoundException {
+	public synchronized Integer getNewIndex()
+			throws IndexOutOfBoundException {
 		Integer index = this.set.nextClearBit(0);
-		if (index < type.getValue()) {
-			this.set.flip(index);
-			return index;
+		try {
+			this.getNewIndex(index);
+		} catch (DuplicateIndexException e) {
+			// Will never happen as we obtained the next index through nextClearBit()
 		}
-		else throw new IndexOutOfBoundException("No available id in range [0," + type.getValue().toString() + "]");
+		return index; 
+	}
+	
+	public synchronized Integer getNewIndex(Integer index)
+			throws IndexOutOfBoundException, DuplicateIndexException {
+		if (index < type.getValue()) {
+			if (!this.set.get(index)) {
+				this.set.flip(index);
+				return index;
+			} else 
+				throw new DuplicateIndexException("Index " + index + " already used");
+		} else
+			throw new IndexOutOfBoundException("No id available in range [0," + type.getValue().toString() + "]");
 	}
 
 	public synchronized boolean releaseIndex(Integer index) {
@@ -98,4 +113,5 @@ public class BitSetIndex {
 		this.set.clear();
 		this.set.flip(0);
 	}
+	
 }
