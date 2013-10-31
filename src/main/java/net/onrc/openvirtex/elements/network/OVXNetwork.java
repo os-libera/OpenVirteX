@@ -329,8 +329,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
 		srcPort.setEdge(false);
 		dstPort.setEdge(false);
-		srcPort.boot();
-		dstPort.boot();
 		// Create link, add it to the topology, register it in the map
 		final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
 				dstPort, priority);
@@ -338,6 +336,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 				srcPort, priority);
 		super.addLink(link);
 		super.addLink(reverseLink);
+		
 		link.register(physicalLinks);
 		// create the map to the reverse list of physical links
 		final List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>();
@@ -346,6 +345,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 					phyLink.getSrcPort()));
 		}
 		reverseLink.register(reversePhysicalLinks);
+		srcPort.boot();
+		dstPort.boot();
 		return link;
 	}
 
