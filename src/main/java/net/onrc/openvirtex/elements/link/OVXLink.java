@@ -122,6 +122,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	@Override
 	public void unregister() {
 		try {
+			DBManager.getInstance().remove(this);
 			this.tearDown();
 			final Mappable map = this.srcPort.getParentSwitch().getMap();
 			map.removeVirtualLink(this);

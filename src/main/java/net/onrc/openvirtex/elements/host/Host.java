@@ -76,6 +76,7 @@ public class Host implements Persistable {
 
 	public void unregister() {
 		try {
+			DBManager.getInstance().remove(this);
 			this.tearDown();
 			Mappable map = this.port.getParentSwitch().getMap();
 			map.removeMAC(this.mac);

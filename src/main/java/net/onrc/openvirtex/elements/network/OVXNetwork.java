@@ -176,8 +176,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 
 	public void register() {
 		OVXMap.getInstance().addNetwork(this);
-
-		DBManager.getInstance().create(this);
+		DBManager.getInstance().createDoc(this);
 	}
 
 	public boolean isBooted() {
@@ -216,6 +215,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	}
 
 	public void unregister() {
+		DBManager.getInstance().removeDoc(this);
 		final LinkedList<Long> dpids = new LinkedList<>();
 		for (final OVXSwitch virtualSwitch : this.getSwitches()) {
 			dpids.add(virtualSwitch.getSwitchId());

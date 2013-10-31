@@ -139,9 +139,9 @@ public class DBManager {
 	}
 
 	/**
-	 * Create persistable object obj
+	 * Create document in db from persistable object obj
 	 */
-	public void create(Persistable obj) {
+	public void createDoc(Persistable obj) {
 		// Suppress error stream when MongoDB raises java.net.ConnectException in another component (and cannot be caught)
 		PrintStream ps = System.err;
 		System.setErr(null);
@@ -154,13 +154,31 @@ public class DBManager {
 			if (e instanceof MongoException.DuplicateKey)
 				log.warn("Skipped saving of virtual network with duplicate tenant id");
 			else
-				log.error("Failed to insert into database: {}", e.getMessage());
+				log.error("Failed to insert document into database: {}", e.getMessage());
 		} finally {
 			// Restore error stream
 			System.setErr(ps);
 		}
 	}
-
+	
+	/**
+	 * Remove document from db
+	 */
+	public void removeDoc(Persistable obj) {
+		// Suppress error stream when MongoDB raises java.net.ConnectException in another component (and cannot be caught)
+		PrintStream ps = System.err;
+		System.setErr(null);
+		try {
+			DBCollection collection = this.collections.get(obj.getDBName());
+			collection.remove(new BasicDBObject(obj.getDBObject()));
+		} catch (Exception e) {
+			log.error("Failed to remove document from database: {}", e.getMessage());
+		} finally {
+			// Restore error stream
+			System.setErr(ps);
+		}		
+	}
+	
 	/**
 	 * Save persistable object obj
 	 * @param obj
@@ -189,11 +207,15 @@ public class DBManager {
 	 * @param coll
 	 */
 	public void remove(Persistable obj) {
+		BasicDBObject query = new BasicDBObject();
+		for (String key: obj.getDBIndex().keySet())
+			query.put(key,  obj.getDBIndex().get(key));
+		BasicDBObject update = new BasicDBObject("$pull", new BasicDBObject(obj.getDBKey(), obj.getDBObject()));
 		PrintStream ps = System.err;
 		System.setErr(null);
 		try {
 			DBCollection collection = this.collections.get(obj.getDBName());		
-			collection.remove(new BasicDBObject(obj.getDBObject()));
+			collection.update(query, update);
 		} catch (Exception e) {
 			log.error("Failed to remove from db: {}", e.getMessage());
 		} finally {
