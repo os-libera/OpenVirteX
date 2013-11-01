@@ -107,6 +107,10 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	}
 
 	private void prepAndSendSouth(OVXPort inPort) {
+		if (!inPort.isActive()) {
+			log.warn("Port {} on switch {} is down.", inPort.getPortNumber(), sw.getSwitchName());
+			return;
+		}
 		this.getMatch().setInputPort(inPort.getPhysicalPortNumber());
 		OVXMessageUtil.translateXid(this, inPort);
 		try {

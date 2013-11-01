@@ -214,7 +214,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 			return;
 		}
 		this.setBufferId(vSwitch.addToBufferMap(this));
-		if (this.port != null && this.ovxPort != null) {
+		if (this.port != null && this.ovxPort != null && this.ovxPort.isActive()) {
 			this.setInPort(this.ovxPort.getPortNumber());
 			if ((this.packetData != null) && 
 					(vSwitch.getMissSendLen() != OVXSetConfig.MSL_FULL)) {
@@ -229,7 +229,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		else if (this.ovxPort == null) {
 			log.error("No virtual port associated to physical port {} in physical switch {} for virtual network {}", 
 					this.getInPort(), sw.getName(), this.tenantId);
-		}
+		} 
 	}
 
 	private void learnAddresses(final OFMatch match, final Mappable map) {

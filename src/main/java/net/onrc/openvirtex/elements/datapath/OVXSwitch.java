@@ -367,11 +367,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		for (OVXPort p : getPorts().values()) {
 			if (p.isLink()) {
 				p.boot();
-			}
-				
-			
+			}	
 		}
-		
 		return true;
 	}
 

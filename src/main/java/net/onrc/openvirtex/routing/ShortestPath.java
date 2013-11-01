@@ -422,6 +422,7 @@ public class ShortestPath implements Routable {
 				ovxLink.getDstPort().getPhysicalPort()) != null) {
 			path.add(PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
 					ovxLink.getDstPort().getPhysicalPort()));
+			ovxLink.register(path, (byte) U8.f(maxPriority) );
 			log.info("Virtual link {} embed to a single-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}
@@ -430,6 +431,7 @@ public class ShortestPath implements Routable {
 					srcPathPort));
 			path.add(PhysicalNetwork.getInstance().getLink(dstPathPort, 
 					ovxLink.getDstPort().getPhysicalPort()));
+			ovxLink.register(path, (byte) U8.f(maxPriority) );
 			log.info("Virtual link {} embed to a dual-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}

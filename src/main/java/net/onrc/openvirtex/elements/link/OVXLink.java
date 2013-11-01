@@ -155,6 +155,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @param priority 
 	 */
 	public void register(final List<PhysicalLink> physicalLinks, byte priority) {
+		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
+		this.srcPort.getPhysicalPort().removeOVXPort(this.srcPort);
 		if (U8.f(this.getPriority()) >= U8.f(priority)) {
 			this.backupLinks.put(priority, physicalLinks);
 			log.info("Added virtual link {} backup path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
