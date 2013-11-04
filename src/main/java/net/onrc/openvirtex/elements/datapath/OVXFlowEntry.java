@@ -20,7 +20,8 @@ import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 
 /**
- * Class representing a virtual flow entry. Loosely based on FlowEntry
+ * Class representing a virtual flow entry - a wrapper for FlowMods 
+ * that enables the flow table to do matching on contents.
  */
 public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 
@@ -31,42 +32,17 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 	public static int INTERSECT = 3;	//mix of wildcards and matching fields
 	public static int DISJOINT = 4;	//non-matching non-wildcarded fields 
 
-	/** of physical switch this entry maps back to */
-	protected long dpid;
+	/** the FlowMod this Entry represents */
+	protected OVXFlowMod flowmod;
+	/** the newly generated cookie for the FlowMod */
+	protected long newcookie;
 
-	/* Flow table match and actions */
-	protected OVXMatch ruleMatch;
-	protected List<OFAction> actionsList;
-
-	/* useful FlowMod fields */
-	protected short priority;
-	protected short outPort;
-	protected short idleTimeout;
-	protected short hardTimeout;
-	protected long cookie;
-
-	/* Flow table statistics */
-	protected int durationSeconds;
-	protected int durationNanoseconds;
-	protected long packetCount;
-	protected long byteCount;
-
-	public OVXFlowEntry(OVXFlowMod fm, long dpid) {
-		/* fields set from FlowMod */
-		this.dpid = dpid;
-		this.priority = fm.getPriority();
-		this.outPort = fm.getOutPort();
-		this.ruleMatch = new OVXMatch(fm.getMatch());
-		this.actionsList = fm.getActions();
-		this.idleTimeout = fm.getIdleTimeout();
-		this.hardTimeout = fm.getHardTimeout();
-		this.cookie = fm.getCookie();
-
-		/* initialise stats */
-		this.durationSeconds = 0;
-		this.durationNanoseconds = 0;
-		this.packetCount = 0;
-		this.byteCount = 0;
+	public OVXFlowEntry() {
+	}
+	
+	public OVXFlowEntry(OVXFlowMod fm, long cookie) {
+		this.flowmod = fm.clone();
+		this.newcookie = cookie;
 	}
 
 	/**
@@ -96,10 +72,10 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 		//to allow pass by reference...in order: equal, superset, subset
 		int [] intersect = new int[] {0, 0, 0};
 
-		OFMatch tmatch = this.ruleMatch;
+		OFMatch tmatch = this.flowmod.getMatch();
 		int twcard = tmatch.getWildcards();
-		int owcard = omatch.getWildcards();
-
+		int owcard = this.convertToWcards(omatch);
+		
 		/* inport */
 		if ((twcard & OFMatch.OFPFW_IN_PORT) == (owcard & OFMatch.OFPFW_IN_PORT)) {
 			if (findDisjoint(twcard, OFMatch.OFPFW_IN_PORT, intersect, 
@@ -186,6 +162,8 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 		} else { /*check if super or subset*/
 			findRelation(twcard, owcard, OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_SRC_MASK, intersect);
 		}
+		
+		/* L4 */
 		if ((twcard & OFMatch.OFPFW_TP_SRC) == (owcard & OFMatch.OFPFW_TP_SRC)) {
 			if (findDisjoint(twcard, OFMatch.OFPFW_TP_SRC, intersect, 
 					tmatch.getTransportSource(), omatch.getTransportSource())) {
@@ -220,6 +198,34 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 			return  SUBSET;
 		}
 		return  INTERSECT;
+	}
+	
+	/**
+	 * Checks for "ANY" values that should be wildcards but aren't, such as 
+	 * NW_SRC/DST 0.0.0.0, and TCP/UDP port 0. 
+	 * 
+	 * @param omatch The OFMatch of the FlowMod we are comparing entries against
+	 * @param owcard The wildcard field of the FlowMod. 
+	 * @return the modified wildcard value (a copy).  
+	 */
+	private int convertToWcards(OFMatch omatch) {
+		int owcard = omatch.getWildcards();
+		if (omatch.getNetworkDestination() == 0) {
+			owcard |= OFMatch.OFPFW_NW_DST_ALL | OFMatch.OFPFW_NW_DST_MASK;
+		}
+		if (omatch.getNetworkSource() == 0) {
+			owcard |= OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_SRC_MASK;
+		}
+		if (omatch.getNetworkProtocol() == 0) {
+			owcard |= OFMatch.OFPFW_NW_PROTO;
+		}
+		if (omatch.getTransportDestination() == 0) {
+			owcard |= OFMatch.OFPFW_TP_DST;
+		}
+		if (omatch.getTransportSource() == 0) {
+			owcard |= OFMatch.OFPFW_TP_SRC;
+		}
+		return owcard;
 	}
 
 	/**
@@ -291,54 +297,53 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 		}
 	}
 
-	/* non-stats fields */
+	/** @return original OFMatch */
 	public OFMatch getMatch() {
-		return this.ruleMatch;
+		return this.flowmod.getMatch();
 	}
-
-	public OVXFlowEntry setMatch(OFMatch match) {
-		this.ruleMatch = new OVXMatch(match);
-		return this;
-	}
-
-	public long getDPID() {
-		return this.dpid;
-	}
-
-	public OVXFlowEntry setDPID(long dpid) {
-		this.dpid = dpid;
-		return this;
-	}
-
+	
+	/** @return the virtual output port */
 	public short getOutport() {
-		return this.outPort;
-	}
-
-	public OVXFlowEntry setOutport(short oport) {
-		this.outPort = oport;
-		return this;
+		return this.flowmod.getOutPort();
 	}
 
 	public short getPriority() {
-		return this.priority;
+		return this.flowmod.getPriority();
 	}
-
-	public OVXFlowEntry setPriority(short prio) {
-		this.priority = prio;
+	
+	public OVXFlowMod getFlowMod() {
+		return this.flowmod;
+	}
+	
+	public OVXFlowEntry setFlowMod(OVXFlowMod fm) {
+		this.flowmod = fm;
 		return this;
 	}
 
-	public long getCookie() {
-		return this.cookie;
+	/**
+	 * @return The new (Physical) cookie
+	 */
+	public long getNewCookie() {
+		return this.newcookie;
 	}
 
-	public OVXFlowEntry setCookie(long cookie) {
-		this.cookie = cookie;
+	/**
+	 * Set the new cookie for this entry
+	 */
+	public OVXFlowEntry setNewCookie(Long cookie) {
+		this.newcookie = cookie;
 		return this;
 	}
 	
+	/**
+	 * @return The original (virtual) cookie
+	 */
+	public long getCookie() {
+		return this.flowmod.getCookie();
+	}
+	
 	public List<OFAction> getActionsList() {
-		return actionsList;
+		return this.flowmod.getActions();
 	}
 
 	/*
@@ -350,12 +355,8 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 	 public int hashCode() {
 		 final int prime = 31;
 		 int result = 1;
-		 result = prime * result
-				 + ((actionsList == null) ? 0 : actionsList.hashCode());
-		 result = prime * result + (int) (dpid ^ (dpid >>> 32));
-		 result = prime * result + priority;
-		 result = prime * result
-				 + ((ruleMatch == null) ? 0 : ruleMatch.hashCode());
+		 result = prime * this.flowmod.hashCode();
+		 result = prime * result + (int) (newcookie ^ (newcookie >>> 32));
 		 return result;
 	 }
 
@@ -376,53 +377,50 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 			 return false;
 		 }
 		 final OVXFlowEntry other = (OVXFlowEntry) obj;
-		 if (this.actionsList == null) {
-			 if (other.actionsList != null) {
+		 if (this.newcookie != other.newcookie) {
+			 return false;
+		 }
+		 if (this.flowmod == null) {
+			 if (other.flowmod != null) {
 				 return false;
 			 }
-		 } else if (!this.actionsList.equals(other.actionsList)) {
-			 return false;
-		 }
-		 if (this.dpid != other.dpid) {
-			 return false;
-		 }
-		 if (this.priority != other.priority) {
-			 return false;
-		 }
-		 if (this.ruleMatch == null) {
-			 if (other.ruleMatch != null) {
-				 return false;
-			 }
-		 } else if (!this.ruleMatch.equals(other.ruleMatch)) {
+		 } else if (!this.flowmod.equals(other.flowmod)) {
 			 return false;
 		 }
 		 return true;
+	 }
+	 
+	 /**
+	  * compare this FlowEntry to another FlowMod. 
+	  * @param other
+	  * @return
+	  */
+	 public boolean equals(final OVXFlowMod other) {
+		 return this.flowmod.equals(other);
 	 }
 
 	 @Override
 	 public int compareTo(final OVXFlowEntry other) {
 		 // sort on priority, tie break on IDs
-		 if (this.priority != other.priority) {
-			 return other.priority - this.priority;
+		 if (this.flowmod.getPriority() != other.flowmod.getPriority()) {
+			 return other.flowmod.getPriority() - this.flowmod.getPriority();
 		 }
 		 return this.hashCode() - other.hashCode();
 	 }
 
 	 public Map<String, Object> toMap() {
 		 final HashMap<String, Object> map = new LinkedHashMap<String, Object>();
-		 if (this.ruleMatch != null) {
-			 map.put("match", this.ruleMatch.toMap());
+		 if (this.flowmod.getMatch() != null) {
+			 map.put("match", ((OVXMatch)this.flowmod.getMatch()).toMap());
 		 }
-		 map.put("actionsList", this.actionsList);
-		 map.put("priority", String.valueOf(this.priority));
+		 map.put("actionsList", this.flowmod.getActions());
+		 map.put("priority", String.valueOf(this.flowmod.getPriority()));
 		 return map;
 	 }
 
 	 @Override
 	 public String toString() {
-		 return "OVXFlowEntry [dpid=" + this.dpid + ", priority=" + this.priority + 
-				 ", outPort=" + this.outPort +", duration=" + this.durationSeconds + 
-				 ", Timeout[hard/idle]" + this.hardTimeout + "/" + this.idleTimeout +
-				 "\n Match=" + this.ruleMatch + "\n Actions="+ this.actionsList + "]";
+		 return "OVXFlowEntry [FlowMod=" +this.flowmod + "\n" + 
+				 "newcookie=" + this.newcookie +"]";
 	 }
 }

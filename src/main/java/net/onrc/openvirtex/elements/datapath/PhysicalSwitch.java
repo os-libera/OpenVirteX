@@ -11,6 +11,7 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,11 +69,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
 			OVXSwitch vsw;
 			try {
-				vsw = psw.map.getVirtualSwitch(psw, tid);
-				if (vsw != null) {
+				if (psw.map.hasVirtualSwitch(psw, tid)) {
+					vsw = psw.map.getVirtualSwitch(psw, tid);
 					/* save = don't destroy the switch, it can be saved */    
 					boolean save = false;
 					if (vsw instanceof OVXBigSwitch) {    
@@ -218,7 +218,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
 	@Override
 	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-		if (this.isConnected) {
+		if ((this.channel.isOpen()) && (this.isConnected)) {
 			this.channel.write(Collections.singletonList(msg));
 		}
 	}
@@ -327,8 +327,5 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	private int getTidFromCookie(long cookie) {
 		return (int) (cookie >> 32);
 	}
-	
-	
-
 
 }

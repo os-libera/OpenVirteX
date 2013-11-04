@@ -425,17 +425,6 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	}
 
 	/**
-	 * Add a FlowMod to the mapping
-	 * 
-	 * @param flowmod
-	 * @return the new physical cookie
-	 */
-
-	public long addFlowMod(final OVXFlowMod flowmod) {
-		return this.flowTable.addFlowMod(flowmod);
-	}
-
-	/**
 	 * Remove an entry in the mapping
 	 * 
 	 * @param cookie

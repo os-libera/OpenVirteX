@@ -62,7 +62,7 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 
 	private void sendFlowStatistics(int tid, short port) {
 		OVXStatisticsRequest req = new OVXStatisticsRequest();
-		// TODO: stuff like below whould be wrapped into an XIDUtil class
+		// TODO: stuff like below should be wrapped into an XIDUtil class
 		int xid = (tid << 16) | port; 
 		req.setXid(xid);
 		req.setStatisticType(OFStatisticsType.FLOW);

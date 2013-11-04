@@ -305,4 +305,11 @@ public interface Mappable {
 	public boolean hasOVXLinks(final PhysicalLink physicalLink,
 		final Integer tenantId);
 
+	/**
+	 * @param psw the PhysicalSwitch mapped to the OVXSwitch we want to check for
+	 * @param tid TenantID of OVXSwitch
+	 * @return true if the OVXSwitch exists
+	 */
+	public boolean hasVirtualSwitch(PhysicalSwitch psw, int tid);
+
 }

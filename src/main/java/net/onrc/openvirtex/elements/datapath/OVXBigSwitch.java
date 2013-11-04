@@ -223,12 +223,13 @@ public class OVXBigSwitch extends OVXSwitch {
 
 	@Override
 	public void unregister() {
-		for (HashMap<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
+		for (HashMap<OVXPort, SwitchRoute> portMap : 
+				Collections.unmodifiableCollection(this.routeMap.values())) {
 			for (final SwitchRoute route : portMap.values()) {
 				this.map.removeRoute(route);
 			}
-			super.unregister();
 		}
+		super.unregister();
 	}
 
 	/**
