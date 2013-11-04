@@ -23,6 +23,7 @@ public class CmdLineSettings {
 	public static final String DEFAULT_DB_HOST = ServerAddress.defaultHost();
 	public static final Integer DEFAULT_DB_PORT = ServerAddress.defaultPort();
 	public static final Boolean DEFAULT_DB_CLEAR = false;
+	public static final Integer DEFAULT_STATS_REFRESH = 30;
 
 	@Option(name = "-cf", aliases = "--configFile", metaVar = "FILE", usage = "OpenVirteX configuration file")
 	private String configFile = CmdLineSettings.DEFAULT_CONFIG_FILE;
@@ -44,6 +45,9 @@ public class CmdLineSettings {
 
 	@Option(name = "--dbClear", usage = "Clear database")
 	private Boolean dbClear = CmdLineSettings.DEFAULT_DB_CLEAR;
+	
+	@Option(name = "--statsRefresh", usage = "Sets what interval to poll statistics with")
+	private Integer statsRefresh = CmdLineSettings.DEFAULT_STATS_REFRESH;
 
 	public String getConfigFile() {
 		return this.configFile;
@@ -71,5 +75,9 @@ public class CmdLineSettings {
 	
 	public Boolean getDBClear() {
 		return this.dbClear;
+	}
+	
+	public Integer getStatsRefresh() {
+		return this.statsRefresh;
 	}
 }

@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
@@ -13,6 +15,8 @@ import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsRequest;
 import net.onrc.openvirtex.messages.statistics.OVXPortStatisticsRequest;
 import net.onrc.openvirtex.protocol.OVXMatch;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timeout;
 import org.jboss.netty.util.TimerTask;
@@ -27,24 +31,33 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 	
 	private HashedWheelTimer timer = null;
 	private PhysicalSwitch sw;
+	
+	Logger log = LogManager.getLogger(StatisticsManager.class.getName());
+	
+	private Integer refreshInterval = 30;
+	private boolean stopTimer = false;
 
 	public StatisticsManager(PhysicalSwitch sw) {
+		/*
+		 * Get the timer from the PhysicalNetwork
+		 * class. 
+		 */
 		this.timer = PhysicalNetwork.getTimer();
 		this.sw = sw;
-		
-		/*
-		 * Initially start polling quickly.
-		 * Then drop down to configured value
-		 */
-		timer.newTimeout(this, 1, TimeUnit.SECONDS);
+		this.refreshInterval = OpenVirteXController.getInstance().getStatsRefresh();
 	}
 
 	@Override
 	public void run(Timeout timeout) throws Exception {
+		log.debug("Collecting stats for {}", this.sw.getSwitchName());
 		sendPortStatistics();
 		sendFlowStatistics(0, (short) 0);
-		//TODO get value from cmd
-		timeout.getTimer().newTimeout(this, 30, TimeUnit.SECONDS);
+		
+		if (!this.stopTimer) {
+			log.debug("Scheduling stats collection in {} seconds for {}", 
+					this.refreshInterval, this.sw.getSwitchName());
+			timeout.getTimer().newTimeout(this, refreshInterval, TimeUnit.SECONDS);	
+		}
 	}
 
 	private void sendFlowStatistics(int tid, short port) {
@@ -76,10 +89,17 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 	
 	public void start() {
 		
+		/*
+		 * Initially start polling quickly.
+		 * Then drop down to configured value
+		 */
+		log.info("Starting Stats collection thread for {}", this.sw.getSwitchName());
+		timer.newTimeout(this, 1, TimeUnit.SECONDS);
 	}
 	
 	public void stop() {
-		
+		log.info("Stopping Stats collection thread for {}", this.sw.getSwitchName());
+		this.stopTimer  = true;
 	}
 
 	@Override

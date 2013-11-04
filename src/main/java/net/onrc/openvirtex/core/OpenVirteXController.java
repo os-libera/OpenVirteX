@@ -61,9 +61,11 @@ public class OpenVirteXController implements Runnable {
 	private int maxVirtual = 0;
     private OVXLinkField	ovxLinkField;
 
+	private Integer statsRefresh = 30;
+
 	public OpenVirteXController(final String configFile, final String ofHost,
 			final Integer ofPort, final int maxVirtual, final String dbHost, final int dbPort,
-			final Boolean dbClear) {
+			final Boolean dbClear, Integer statsRefresh) {
 		this.configFile = configFile;
 		this.ofHost = ofHost;
 		this.ofPort = ofPort;
@@ -73,6 +75,7 @@ public class OpenVirteXController implements Runnable {
 		this.maxVirtual = maxVirtual;
 		//by default, use Mac addresses to store vLinks informations
 		this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
+		this.statsRefresh  = statsRefresh;
 		OpenVirteXController.instance = this;
 	}
 
@@ -225,4 +228,8 @@ public class OpenVirteXController implements Runnable {
     public OVXLinkField getOvxLinkField() {
 		return this.ovxLinkField;
 	}
+    
+    public Integer getStatsRefresh() {
+    	return this.statsRefresh;
+    }
 }
