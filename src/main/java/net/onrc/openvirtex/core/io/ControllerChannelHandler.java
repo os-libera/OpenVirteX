@@ -118,13 +118,13 @@ public class ControllerChannelHandler extends OFChannelHandler {
 				final OFFeaturesReply reply = h.sw.getFeaturesReply();
 				if (reply == null) {
 					h.log.error("OVXSwitch failed to return a featuresReply message: {}"
-							+ h.sw.getSwitchId());
+							+ h.sw.getSwitchName());
 					h.channel.disconnect();
 				}
 				reply.setXid(m.getXid());
 				h.channel.write(Collections.singletonList(reply));
 				h.log.info("Connected dpid {} to controller {}",
-						reply.getDatapathId(), h.channel.getRemoteAddress());
+						h.sw.getSwitchName(), h.channel.getRemoteAddress());
 				h.sw.setConnected(true);
 				h.setState(ACTIVE);
 			}

@@ -141,7 +141,7 @@ def do_connectLink(gopts, opts, args):
         print "Virtual link (link_id %s) has been created" %(linkId)
 
 def pa_setLinkPath(args, cmd):
-    usage = "%s <network_id> <link_id> <phisical_path> <priority>" % USAGE.format(cmd)
+    usage = "%s <network_id> <link_id> <physical_path> <priority>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
 
@@ -151,7 +151,7 @@ def do_setLinkPath(gopts, opts, args):
     if len(args) != 4:
         print "setLinkPath : Must specify network_id, link_id, the physical path that connect the end-points and the priority [0-255]"
         sys.exit()
-    req = { "tenantId" : int(args[0]), "linkId" : int(args[1]),"path" : translate_path(args[2]), "priority" : int(args[3]) }
+    req = { "tenantId" : int(args[0]), "linkId" : int(args[1]), "path" : translate_path(args[2]), "priority" : int(args[3]) }
     linkId = connect(gopts, "setLinkPath", data=req, passwd=getPasswd(gopts))
     if linkId:
         print "Virtual link (link_id %s) path has been set" %(linkId)

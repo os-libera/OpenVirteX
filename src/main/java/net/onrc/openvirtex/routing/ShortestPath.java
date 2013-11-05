@@ -367,7 +367,7 @@ public class ShortestPath implements Routable {
 					return null;
 				}
 				else {
-					log.error("Unable to compute the backup (nr. ) path for for big-switch {} "
+					log.error("Unable to compute the backup (nr. {}) path for for big-switch {} "
 							+ "between ports ({},{}) and ({},{})", i,
 							vSwitch.getSwitchName(), srcPort.getPortNumber(),
 							dstPort.getPortNumber(), dstPort.getPortNumber(), 
@@ -406,7 +406,7 @@ public class ShortestPath implements Routable {
 	@Override
 	public void setLinkPath(OVXLink ovxLink) {
 		/*
-		 * Run Djistra to compute all the path (primary and backups)
+		 * Run Dijkstra to compute all the path (primary and backups)
 		 */
 		this.edges = new ArrayList<PhysicalLink>(PhysicalNetwork.getInstance()
 				.getLinks());
@@ -423,7 +423,7 @@ public class ShortestPath implements Routable {
 			path.add(PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
 					ovxLink.getDstPort().getPhysicalPort()));
 			ovxLink.register(path, (byte) U8.f(maxPriority) );
-			log.info("Virtual link {} embed to a single-hop physical link {}. No automatic backups are possible.", 
+			log.info("Virtual link {} embeds to a single-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}
 		else if (srcPathPort.getParentSwitch() == dstPathPort.getParentSwitch()) {
@@ -432,7 +432,7 @@ public class ShortestPath implements Routable {
 			path.add(PhysicalNetwork.getInstance().getLink(dstPathPort, 
 					ovxLink.getDstPort().getPhysicalPort()));
 			ovxLink.register(path, (byte) U8.f(maxPriority) );
-			log.info("Virtual link {} embed to a dual-hop physical link {}. No automatic backups are possible.", 
+			log.info("Virtual link {} embeds to a dual-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}
 		else {
@@ -445,7 +445,7 @@ public class ShortestPath implements Routable {
 			
 			for (Short i = 0; i <= U8.f(ovxLink.getAlg().getBackups()); i++) {
 				/*
-				 * Remove from the phisical network the shortest-paths already used.
+				 * Remove from the physical network the shortest-paths already used.
 				 * For the primary path, all the physical network is used
 				 */
 				this.edges.removeAll(path);

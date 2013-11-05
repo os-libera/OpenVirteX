@@ -140,7 +140,7 @@ class Routing():
     return path[:-1]
   
 class OVXClient():
-  def __init__(self, host, port, user, password):
+  def __init__(self, host, port, user, password, backup_num):
     self.host = host
     self.port = port
     self.user = user
@@ -148,6 +148,7 @@ class OVXClient():
     self.base_url = "http://%s:%s/" % (self.host, self.port)
     self.tenant_url = self.base_url + 'tenant'
     self.status_url = self.base_url + 'status'
+    self.backup_num = backup_num
   
   def _buildRequest(self, data, url, cmd):
     j = { "id" : "ovxembedder", "method" : cmd, "jsonrpc" : "2.0" }
@@ -214,18 +215,25 @@ class OVXClient():
         log.info("Port on switch %s with port number %s has been created" % (longToHex(switch_id), port_no))
     return (switch_id, port_no)
 
-  def connectLink(self, tenantId, srcDpid, srcPort, dstDpid, dstPort, path, priority):
-    req = {'tenantId': tenantId, 'srcDpid': srcDpid, 'srcPort': srcPort, 'dstDpid': dstDpid, 'dstPort': dstPort, 'path': path, 'priority': priority}
+  def connectLink(self, tenantId, srcDpid, srcPort, dstDpid, dstPort, algorithm):
+    req = {'tenantId': tenantId, 'srcDpid': srcDpid, 'srcPort': srcPort, 'dstDpid': dstDpid, 'dstPort': dstPort, 'algorithm': algorithm, 'backup_num': self.backup_num}
     ret = self._connect("connectLink", self.tenant_url, data=req)
     if ret:
         log.info("Link with linkId %s has been created" % ret)
+    return ret
+
+  def setLinkPath(self, tenantId, linkId, path, priority):
+    req = {'tenantId': tenantId, 'linkId': linkId, 'path': path, 'priority': priority}
+    ret = self._connect("setLinkPath", self.tenant_url, data=req)
+    if ret:
+        log.info("Path on link %s has been set" % linkId)
     return ret
 
   def connectHost(self, tenantId, dpid, port, mac):
     req = {'tenantId': tenantId, 'dpid': dpid, 'port': port, 'mac': mac}
     ret = self._connect("connectHost", self.tenant_url, data=req)
     if ret:
-        log.info("Host with hostId %s connected" % (ret))
+        log.info("Host with hostId %s connected" % ret)
     return ret
 
   def createSwitchRoute(self, tenantId, switchId, srcPort, dstPort, path):
@@ -351,8 +359,8 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
         dst = "%s/%s" % (dstDpid, dstPort)
         
         path = "%s-%s" % (src, dst)
-        priority = 0
-        client.connectLink(tenantId, srcVDpid, srcVPort, dstVDpid, dstVPort, path, priority)
+        # Can albackup_num=1
+        client.connectLink(tenantId, srcVDpid, srcVPort, dstVDpid, dstVPort, algorithm="spf")
         connected.append((link['dst']['dpid'], link['dst']['port']))
       
     # boot network
@@ -429,7 +437,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
 class OVXEmbedderServer(HTTPServer):
   def __init__(self, opts):
     HTTPServer.__init__(self, (opts['host'], opts['port']), OVXEmbedderHandler)
-    self.client = OVXClient(opts['ovxhost'], opts['ovxport'], opts['ovxuser'], opts['ovxpass'])
+    self.client = OVXClient(opts['ovxhost'], opts['ovxport'], opts['ovxuser'], opts['ovxpass'], opts['backup_num'])
     self.ctrlProto = opts['ctrlproto']
     self.ctrlPort = opts['ctrlport']
     self.controllers = []
@@ -486,13 +494,14 @@ class OVXEmbedder(threading.Thread):
 if __name__ == '__main__':
   parser = ArgumentParser(description="OpenVirteX network embedding tool.")
   parser.add_argument('--host', default='localhost', help='OpenVirteX embedder host (default="localhost")')
-  parser.add_argument('--port', default=8000, type=int, help='OpenVirteX embedder port (default="8000")')
+  parser.add_argument('--port', default=8000, type=int, help='OpenVirteX embedder port (default=8000)')
   parser.add_argument('--ovxhost', default='localhost', help='host where OpenVirteX is running (default="localhost")')
-  parser.add_argument('--ovxport', default=8080, type=int, help='port where OpenVirteX is running (default="8080")')
+  parser.add_argument('--ovxport', default=8080, type=int, help='port where OpenVirteX is running (default=8080)')
   parser.add_argument('--ovxuser', default='admin', help='OpenVirteX user (default="admin")')
   parser.add_argument('--ovxpass', default='admin', help='OpenVirteX password (default="admin")')
   parser.add_argument('--ctrlproto', default='tcp', help='default controller protocol (default="tcp")')
-  parser.add_argument('--ctrlport', default=10000, type=int, help='default controller port (default="10000")')
+  parser.add_argument('--ctrlport', default=10000, type=int, help='default controller port (default=10000)')
+  parser.add_argument('--backup_num', default=1, type=int, help='number of backup routes per switch/link (default=1)')
   parser.add_argument('--loglevel', default='INFO', help='log level (default="INFO")')
   parser.add_argument('--version', action='version', version='%(prog)s 0.1')
   args = parser.parse_args()

@@ -59,7 +59,7 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 			} else {
 				this.log.info(
 						"Created virtual switch {} in virtual network {}",
-						ovxSwitch.getSwitchId(), virtualNetwork.getTenantId());
+						ovxSwitch.getSwitchName(), virtualNetwork.getTenantId());
 				resp = new JSONRPC2Response(ovxSwitch.getSwitchId(), 0);
 			}
 

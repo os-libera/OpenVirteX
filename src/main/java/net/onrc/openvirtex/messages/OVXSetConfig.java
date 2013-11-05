@@ -30,7 +30,7 @@ public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 
 		sw.setMissSendLen(this.missSendLength);
 		this.log.info("Setting miss send length to {} for OVXSwitch {}",
-				this.missSendLength, sw.getSwitchId());
+				this.missSendLength, sw.getSwitchName());
 		
 	}
 
