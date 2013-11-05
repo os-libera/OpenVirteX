@@ -48,7 +48,6 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 			final Collection<OVXFlowMod> flows = vsw.getFlowTable().getFlowTable();
 			for (final OVXFlowMod flow : flows) {
 				final Map<String, Object> entry = flow.toMap();
-				this.translate(entry, map, tid.intValue());
 				res.add(entry);
 			}
 
@@ -64,7 +63,7 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": Unable to fetch virtual topology : "
 							+ e.getMessage()), 0);
-		} catch (NetworkMappingException | AddressMappingException e) {
+		} catch (NetworkMappingException  e) {
 			this.resp = new JSONRPC2Response(new JSONRPC2Error(
 				JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 						+ ": Unable to fetch virtual topology : "
@@ -75,24 +74,6 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 
 	}
 
-	private void translate(final Map<String, Object> entry, final OVXMap map,
-			final Integer tid) throws AddressMappingException {
-		if (entry.containsKey(OFMatch.STR_NW_SRC)) {
-			entry.put(
-					OFMatch.STR_NW_SRC,
-					map.getVirtualIP(
-							new PhysicalIPAddress((String) entry
-									.get(OFMatch.STR_NW_SRC))).toSimpleString());
-		}
-		if (entry.containsKey(OFMatch.STR_NW_DST)) {
-			entry.put(
-					OFMatch.STR_NW_DST,
-					map.getVirtualIP(
-							new PhysicalIPAddress((String) entry
-									.get(OFMatch.STR_NW_DST))).toSimpleString());
-		}
-
-	}
 
 	@Override
 	public JSONRPC2ParamsType getType() {

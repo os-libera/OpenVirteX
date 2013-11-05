@@ -9,6 +9,7 @@ package net.onrc.openvirtex.api.service.handlers;
 
 import java.util.HashMap;
 
+import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalFlowtable;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalHosts;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalTopology;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetSubnet;
@@ -46,6 +47,7 @@ public class MonitoringHandler extends AbstractHandler implements
 			this.put("getPhysicalHosts", new GetPhysicalHosts());
 			this.put("getSubnet", new GetSubnet());
 			this.put("getVirtualFlowtable", new GetVirtualFlowtable());
+			this.put("getPhysicalFlowtable", new GetPhysicalFlowtable());
 			this.put("getVirtualAddressMapping", new GetVirtualAddressMapping());
 		}
 	};

@@ -176,7 +176,7 @@ public class OVXFlowTable implements FlowTable {
      */
     private boolean doFlowModModify(OVXFlowMod fm, Long cookie) {
 		/* TODO replace entry that matches on equals(). */
-		this.addFlowMod(fm, cookie);
+		this.addFlowMod(fm.clone(), cookie);
 		return true;
     }
     

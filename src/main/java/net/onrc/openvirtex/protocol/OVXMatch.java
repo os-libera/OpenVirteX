@@ -139,6 +139,8 @@ public class OVXMatch extends OFMatch {
 
 		final HashMap<String, Object> ret = new HashMap<String, Object>();
 
+		ret.put("wildcards", this.wildcards);
+		
 		// l1
 		if ((this.wildcards & OFMatch.OFPFW_IN_PORT) == 0) {
 			ret.put(OFMatch.STR_IN_PORT, U16.f(this.inputPort));

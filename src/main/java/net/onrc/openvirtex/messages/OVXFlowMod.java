@@ -24,11 +24,13 @@ import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.UnknownActionException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 import net.onrc.openvirtex.messages.actions.VirtualizableAction;
 import net.onrc.openvirtex.packet.Ethernet;
 import net.onrc.openvirtex.protocol.OVXMatch;
+import net.onrc.openvirtex.util.OVXUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -180,7 +182,15 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		 if (this.match != null) {
 			 map.put("match", new OVXMatch(match).toMap());
 		 }
-		 map.put("actionsList", this.actions);
+		 LinkedList<HashMap<String,Object>> actions = new LinkedList<HashMap<String,Object>>();
+		 for (OFAction act : this.actions) {
+			 try {
+				actions.add(OVXUtil.actionToMap(act));
+			} catch (UnknownActionException e) {
+				log.warn("Ignoring action {} because {}", act, e.getMessage());
+			}
+		 }
+		 map.put("actionsList", actions);
 		 map.put("priority", String.valueOf(this.priority));
 		 return map;
 	 }
