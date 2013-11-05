@@ -154,14 +154,22 @@ public class PassingAPITests extends AbstractAPICalls {
 		super.createPort(1, (long) 1, (short) 1);
 		super.createPort(1, (long) 2, (short) 1);
 		
-		final JSONRPC2Response resp = super.connectLink(1, (long) 46200400562356225L, (short)1, (long) 46200400562356226L, 
-			(short)1, "1/1-2/1" , (byte)100);
+		JSONRPC2Response resp = super.connectLink(1, (long) 46200400562356225L, (short)1, (long) 46200400562356226L, 
+			(short)1, "manual" , (byte)0);
 
 		Assert.assertNull(
 				resp.getError() == null ? "CreateLink should not return null"
 						: resp.getError().getMessage(), resp.getError());
 
 		Assert.assertEquals(1, resp.getResult());
+		
+		resp = super.setLinkPath(1, 1, "1/1-2/1" , (byte)100);
+		
+		Assert.assertNull(
+				resp.getError() == null ? "SetLinkPath should not return null"
+						: resp.getError().getMessage(), resp.getError());
+
+		Assert.assertEquals(true, resp.getResult());
 
 	}
 
@@ -249,8 +257,8 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.createPort(1, (long) 2, (short) 2);
 	    super.connectHost(1, (long)46200400562356225L, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)46200400562356226L, (short)2, "00:00:00:00:00:02");
-	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "1/1-2/1", (byte) 100);
-	    
+	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "manual", (byte) 0);
+	    super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
 	    final JSONRPC2Response resp = super.removeNetwork(1);
 
 	    Assert.assertNull("RemoveOVXNetwork should have not returned null",
@@ -298,9 +306,8 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.createPort(1, (long) 2, (short) 2);
 	    super.connectHost(1, (long)46200400562356225L, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)46200400562356226L, (short)2, "00:00:00:00:00:02");
-	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "1/1-2/1", (byte) 100);
-
-	    final JSONRPC2Response resp = super.removeSwitch(1, 46200400562356225L);
+	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "manual", (byte) 0);
+	    super.setLinkPath(1, 1, "1/1-2/1", (byte) 100); final JSONRPC2Response resp = super.removeSwitch(1, 46200400562356225L);
 
 	    Assert.assertNull("RemoveOVXSwitch should have not returned null",
 		    resp.getError());
@@ -345,8 +352,8 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.createPort(1, (long) 2, (short) 2);
 	    super.connectHost(1, (long)46200400562356225L, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)46200400562356226L, (short)2, "00:00:00:00:00:02");
-	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "1/1-2/1", (byte) 100);
-	    
+	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "manual", (byte) 0);
+	    super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
 	    final JSONRPC2Response resp = super.removePort(1, 46200400562356225L, (short)1);
 
 	    Assert.assertNull("RemoveOVXSwitch should have not returned null",
@@ -392,7 +399,8 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.createPort(1, (long) 2, (short) 2);
 	    super.connectHost(1, (long)46200400562356225L, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)46200400562356226L, (short)2, "00:00:00:00:00:02");
-	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "1/1-2/1", (byte) 100);
+	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "manual", (byte) 0);
+	    super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
 
 	    final JSONRPC2Response resp = super.disconnectLink(1, 1);
 
@@ -440,7 +448,8 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.createPort(1, (long) 2, (short) 2);
 	    super.connectHost(1, (long)46200400562356225L, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)46200400562356226L, (short)2, "00:00:00:00:00:02");
-	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "1/1-2/1", (byte) 100);
+	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "manual", (byte) 0);
+	    super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
 
 	    final JSONRPC2Response resp = super.disconnectHost(1, 1);
 
@@ -536,8 +545,8 @@ public class PassingAPITests extends AbstractAPICalls {
 	    super.createPort(1, (long) 2, (short) 2);
 	    super.connectHost(1, (long)46200400562356225L, (short)2, "00:00:00:00:00:01");
 	    super.connectHost(1, (long)46200400562356226L, (short)2, "00:00:00:00:00:02");
-	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "1/1-2/1", (byte) 100);
-
+	    super.connectLink(1, (long)46200400562356225L, (short) 1, (long)46200400562356226L, (short) 1, "manual", (byte) 0);
+	    super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
 	    final JSONRPC2Response resp = super.stopNetwork(1);
 
 	    Assert.assertNull("Stop Network should have not returned null",

@@ -111,7 +111,7 @@ public class AbstractAPICalls extends TestCase {
 	}
 
 	public JSONRPC2Response connectLink(final int tenantId, final long srcDpid, final short srcPort,
-		final long dstDpid, final short dstPort, final String pathString, final byte priority) {
+		final long dstDpid, final short dstPort, final String alg, final byte backups) {
 		final ConnectOVXLink cl = new ConnectOVXLink();
 
 		@SuppressWarnings("serial")
@@ -122,13 +122,29 @@ public class AbstractAPICalls extends TestCase {
 				this.put(TenantHandler.SRC_PORT, srcPort);
 				this.put(TenantHandler.DST_DPID, dstDpid);
 				this.put(TenantHandler.DST_PORT, dstPort);
-				this.put(TenantHandler.PATH, pathString);
-				this.put(TenantHandler.PRIORITY, priority);
+				this.put(TenantHandler.ALGORITHM, alg);
+				this.put(TenantHandler.BACKUPS, backups);
 			}
 		};
 
 		return cl.process(request);
 	}
+	
+	public JSONRPC2Response setLinkPath(final int tenantId, final int linkId, final String pathString, final byte priority) {
+			final SetOVXLinkPath sl = new SetOVXLinkPath();
+
+			@SuppressWarnings("serial")
+			final HashMap<String, Object> request = new HashMap<String, Object>() {
+				{
+					this.put(TenantHandler.TENANT, tenantId);
+					this.put(TenantHandler.LINK, linkId);
+					this.put(TenantHandler.PATH, pathString);
+					this.put(TenantHandler.PRIORITY, priority);
+				}
+			};
+
+			return sl.process(request);
+		}
 	
 	public JSONRPC2Response connectRoute(final int tenantId, final long dpid, final short srcPort,
 		final short dstPort, final String pathString, final byte priority) {
