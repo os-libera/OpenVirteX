@@ -141,7 +141,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		}
 		this.computeLength();
 		if (pflag) {
-		    sw.sendSouth(this, inPort);
+			this.flags |= OFFlowMod.OFPFF_SEND_FLOW_REM;
+			sw.sendSouth(this, inPort);
 		}
 	}
 
@@ -167,6 +168,14 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		}
 	}
 
+	/**
+	 * @param flagbit The OFFlowMod flag 
+	 * @return true if the flag is set 
+	 */
+	public boolean hasFlag(short flagbit) {
+		return (this.flags & flagbit) == flagbit;
+	}
+	
 	public OVXFlowMod clone() {
 	    OVXFlowMod flowMod = null;
 	    try {

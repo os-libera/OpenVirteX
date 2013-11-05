@@ -713,7 +713,7 @@ public class OVXMap implements Mappable {
 		final Map<Integer, List<OVXLink>> pair = this.physicalLinkMap.get(physicalLink);
 		return (pair != null) && (pair.get(tenantId) != null);
 	}
-
+	
 	@Override
 	public boolean hasVirtualSwitch(PhysicalSwitch physicalSwitch, int tenantId) {
 		final ConcurrentHashMap<Integer, OVXSwitch> sws 

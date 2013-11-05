@@ -14,9 +14,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,7 +24,6 @@ import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.OFError.OFFlowModFailedCode;
 
-import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXMessageUtil;
@@ -184,10 +180,11 @@ public class OVXFlowTable implements FlowTable {
     /**
      * get a OVXFlowMod out of the map without removing it.
      * @param cookie the physical cookie
-     * @return
+     * @return a clone of the stored FlowMod, if found.
      */
     public OVXFlowMod getFlowMod(Long cookie) {
-    	return this.flowmodMap.get(cookie);
+    	OVXFlowMod fm =  this.flowmodMap.get(cookie);
+    	return (fm == null) ? null : fm.clone();
     }
     
     public long getCookie() {
