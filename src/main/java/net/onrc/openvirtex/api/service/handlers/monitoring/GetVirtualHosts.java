@@ -31,7 +31,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-public class ListHosts extends ApiHandler<Map<String, Object>> {
+public class GetVirtualHosts extends ApiHandler<Map<String, Object>> {
 
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {

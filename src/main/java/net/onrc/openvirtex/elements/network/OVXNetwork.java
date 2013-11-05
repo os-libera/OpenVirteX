@@ -9,6 +9,7 @@
 package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -48,11 +49,13 @@ import net.onrc.openvirtex.util.OVXFlowManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.util.HostMap;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
+
 import com.google.common.collect.Lists;
 
 
@@ -83,7 +86,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	private final BitSetIndex                    linkCounter;
 	private final BitSetIndex                    ipCounter;
 	private final BitSetIndex                    hostCounter;
-	private final List<Host>                     hostList;
+	private final Map<OVXPort, Host>                     hostMap;
 	private final OVXFlowManager		 flowManager;
 
 
@@ -113,8 +116,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		this.linkCounter = new BitSetIndex(IndexType.LINK_ID);
 		this.ipCounter = new BitSetIndex(IndexType.IP_ID);
 		this.hostCounter = new BitSetIndex(IndexType.HOST_ID);
-		this.hostList = new LinkedList<Host>();
-		this.flowManager = new OVXFlowManager(this.tenantId, this.hostList);
+		this.hostMap = new HashMap<OVXPort, Host>();
+		this.flowManager = new OVXFlowManager(this.tenantId, this.hostMap.values());
 	}
 
 
@@ -178,30 +181,27 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return this.bootState;
 	}
 
-	public List<Host> getHosts() {
-		return Collections.unmodifiableList(this.hostList);
+	public Collection<Host> getHosts() {
+		return Collections.unmodifiableCollection(this.hostMap.values());
 	}
 
-	public Host getHost(final MACAddress mac) {
+	
+	
+	/*public Host getHost(final MACAddress mac) {
 		for (final Host host : this.hostList) {
 			if (host.getMac().toLong() == mac.toLong()) {
 				return host;
 			}
 		}
 		return null;
-	}
+	}*/
 
 	public Host getHost(final OVXPort port) {
-		for (final Host host : this.hostList) {
-			if (host.getPort().equals(port)) {
-				return host;
-			}
-		}
-		return null;
+		return this.hostMap.get(port);
 	}
 
 	public Host getHost(final Integer hostId) {
-		for (final Host host : this.hostList) {
+		for (final Host host : this.hostMap.values()) {
 			if (host.getHostId().equals(hostId)) {
 				return host;
 			}
@@ -297,7 +297,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		port.boot();
 		OVXMap.getInstance().addMAC(mac, this.tenantId);
 		final Host host = new Host(mac, port, hostId);
-		this.hostList.add(host);
+		this.hostMap.put(port,host);
 		host.register();
 		return host;
 	}
@@ -620,7 +620,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		return this.switchSet.remove(ovxSwitch);
 	}
 
-	public boolean removeHost(final Host host) {
-		return this.hostList.remove(host);
+	public void removeHost(final Host host) {
+		this.hostMap.remove(host.getPort());
 	}
 }

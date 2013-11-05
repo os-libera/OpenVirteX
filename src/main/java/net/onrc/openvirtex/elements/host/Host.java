@@ -10,20 +10,33 @@ package net.onrc.openvirtex.elements.host;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.Mappable;
+import net.onrc.openvirtex.elements.address.OVXIPAddress;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
 public class Host implements Persistable {
+	
+	static Logger log = LogManager.getLogger(Host.class.getName());
+	
 	public static final String DB_KEY = "hosts"; 
 
 	private final Integer hostId;
 	private final MACAddress mac;
 	private final OVXPort port;
+
+	private OVXIPAddress ipAddress = new OVXIPAddress(0, 0);
 
 	public Host(final MACAddress mac, final OVXPort port, final Integer hostId) {
 		this.mac = mac;
@@ -31,6 +44,14 @@ public class Host implements Persistable {
 		this.hostId = hostId;
 	}
 
+	public void setIPAddress(int ip) {
+		this.ipAddress  = new OVXIPAddress(this.port.getTenantId(), ip);
+	}
+	
+	public OVXIPAddress getIp() {
+		return this.ipAddress;
+	}
+	
 	public MACAddress getMac() {
 		return mac;
 	}
@@ -90,5 +111,59 @@ public class Host implements Persistable {
 	public void tearDown() {
 		this.port.tearDown();	
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((mac == null) ? 0 : mac.hashCode());
+		result = prime * result + ((port == null) ? 0 : port.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Host other = (Host) obj;
+		if (mac == null) {
+			if (other.mac != null)
+				return false;
+		} else if (!mac.equals(other.mac))
+			return false;
+		if (port == null) {
+			if (other.port != null)
+				return false;
+		} else if (!port.equals(other.port))
+			return false;
+		return true;
+	}
+
+	
+	/*
+	 * Super ugly method to convert virtual elements of 
+	 * a host to physical data
+	 */
+	public HashMap<String, Object> convertToPhysical() {
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("hostId", this.hostId);
+		map.put("dpid", this.port.getPhysicalPort().getParentSwitch().getSwitchName());
+		map.put("port", port.getPhysicalPortNumber());
+		map.put("mac", this.mac.toString());
+		
+		if (this.ipAddress.getIp() != 0)
+			try {
+				map.put("ipAddress", OVXMap.getInstance().getPhysicalIP(this.ipAddress, this.port.getTenantId()).toSimpleString());
+			} catch (AddressMappingException e) {
+				log.warn("Unable to fetch physical IP for host");
+			}
+		return map;
+	}
+	
+	 
 	
 }
