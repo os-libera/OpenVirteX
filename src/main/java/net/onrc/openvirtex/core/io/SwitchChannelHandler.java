@@ -135,7 +135,22 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			void processOFError(final SwitchChannelHandler h, final OFError m) {
 				h.log.error("Error waiting for features (type:{}, code:{})",
 						m.getErrorType(), m.getErrorCode());
-				h.channel.disconnect();
+				try {
+					if (m.getOffendingMsg().getType() != OFType.BARRIER_REQUEST) {
+						h.log.error("Error waiting for features (type:{}, code:{})",
+								m.getErrorType(), m.getErrorCode());
+						if (h.channel.isOpen())
+							h.channel.close();
+					} else {
+						h.log.warn("Barrier Request message not understood by switch {}; "
+								+ "if it's an HP switch you are probably ok.", 
+								HexString.toHexString(h.featuresReply.getDatapathId()));
+					}
+						
+				} catch (MessageParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			@Override
