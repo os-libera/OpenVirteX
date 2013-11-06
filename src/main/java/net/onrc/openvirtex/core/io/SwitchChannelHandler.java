@@ -132,24 +132,15 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			}
 
 			@Override
-			void processOFError(final SwitchChannelHandler h, final OFError m) {
-				try {
-					if (m.getOffendingMsg().getType() != OFType.BARRIER_REQUEST) {
-						h.log.error("Error waiting for features (type:{}, code:{})",
-								m.getErrorType(), m.getErrorCode());
-						if (h.channel.isOpen())
-							h.channel.close();
-					} else {
-						h.log.warn("Barrier Request message not understood by switch {}; "
-								+ "if it's an HP switch you are probably ok.", 
-								HexString.toHexString(h.featuresReply.getDatapathId()));
-					}
-						
-				} catch (MessageParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			void processOFError(final SwitchChannelHandler h, final OFError m)
+					throws IOException {
+				h.log.error(
+						"Error waiting for config reply (type:{}, code:{})",
+						m.getErrorType(), m.getErrorCode());
+				h.channel.disconnect();
 			}
+			
+			
 
 			@Override
 			void processOFPortStatus(final SwitchChannelHandler h,
@@ -172,12 +163,23 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			}
 
 			@Override
-			void processOFError(final SwitchChannelHandler h, final OFError m)
-					throws IOException {
-				h.log.error(
-						"Error waiting for config reply (type:{}, code:{})",
-						m.getErrorType(), m.getErrorCode());
-				h.channel.disconnect();
+			void processOFError(final SwitchChannelHandler h, final OFError m) {
+				try {
+					if (m.getOffendingMsg().getType() != OFType.BARRIER_REQUEST) {
+						h.log.error("Error waiting for features (type:{}, code:{})",
+								m.getErrorType(), m.getErrorCode());
+						if (h.channel.isOpen())
+							h.channel.close();
+					} else {
+						h.log.warn("Barrier Request message not understood by switch {}; "
+								+ "if it's an HP switch you are probably ok.", 
+								HexString.toHexString(h.featuresReply.getDatapathId()));
+					}
+						
+				} catch (MessageParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			@Override
