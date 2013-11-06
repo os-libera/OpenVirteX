@@ -32,23 +32,18 @@ import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
-import net.onrc.openvirtex.messages.OVXPacketOut;
-import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
-import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
-import net.onrc.openvirtex.messages.actions.OVXActionOutput;
 import net.onrc.openvirtex.packet.Ethernet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPort;
-import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
@@ -58,7 +53,7 @@ import org.openflow.protocol.action.OFActionType;
  * 
  */
 public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persistable {
-	Logger       log = LogManager.getLogger(OVXSwitch.class.getName());
+	Logger       log = LogManager.getLogger(SwitchRoute.class.getName());
 
 	public static final String DB_KEY = "routes";
 
@@ -227,20 +222,26 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 		//Set the route priority to the new one 
 		this.setPriority(priority);
 
-		log.info("Switch all existing flow-mods crossing the big-switch {} route {} between ports ({},{}) to new path", 
-				this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), this.getSrcPort().getPortNumber(),
-				this.getDstPort().getPortNumber());
+		int counter = 0;
+		log.info("Virtual network {}: switching all existing flow-mods crossing the big-switch {} route {} between ports ({},{}) to the new path: {}", 
+				this.getTenantId(), this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), this.getSrcPort().getPortNumber(),
+				this.getDstPort().getPortNumber(), physicalLinks);
 		Collection<OVXFlowMod> flows = this.getSrcPort().getParentSwitch().getFlowTable().getFlowTable();
 		for (OVXFlowMod fe : flows) {
 			for(OFAction act : fe.getActions()) {
-				if (act.getType() == OFActionType.OUTPUT) {
-					if (((OFActionOutput) act).getPort() == this.getDstPort().getPortNumber()) {
-						this.generateRouteFMs(fe.clone());
-						this.generateFirstFM(fe.clone());
-					}
+				if (act.getType() == OFActionType.OUTPUT && 
+						fe.getMatch().getInputPort() == this.getSrcPort().getPortNumber() && 
+						((OFActionOutput) act).getPort() == this.getDstPort().getPortNumber()) {
+					log.info("Virtual network {}, switch {}, route {}: switch fm {}", this.getTenantId(), 
+							this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), fe);
+					counter++;
+					this.generateRouteFMs(fe.clone());
+					this.generateFirstFM(fe.clone());
 				}
 			}
 		}
+		log.info("Virtual network {}, switch {}, route {}: {} flow-mod switched to the new path", this.getTenantId(), 
+				this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), counter);
 	}
 
 	public void generateRouteFMs(final OVXFlowMod fm) {
@@ -347,6 +348,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	}
 
 	private void generateFirstFM(OVXFlowMod fm) {
+		fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 		final List<OFAction> approvedActions = new LinkedList<OFAction>();
 		if (this.getSrcPort().isLink()) {
 			OVXPort dstPort = null;
@@ -363,21 +365,27 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 					flowId = OVXMap.getInstance().getVirtualNetwork(this.getTenantId()).getFlowManager().
 							getFlowId(fm.getMatch().getDataLayerSource(), fm.getMatch().getDataLayerDestination());
 				} catch (NetworkMappingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.warn("SwitchRoute. Error retrieving the network with id {} for flowMod {}. Dropping packet...", 
+							this.getTenantId(), fm);
+					return;
+				} catch (DroppedMessageException e) {
+					log.warn("SwitchRoute. Error retrieving flowId in network with id {} for flowMod {}. Dropping packet...",
+							this.getTenantId(), fm);
+					return;
 				}
 				OVXLinkUtils lUtils = new OVXLinkUtils(this.getTenantId(), link.getLinkId(), flowId);
 				lUtils.rewriteMatch(fm.getMatch());
+				IPMapper.rewriteMatch(this.getTenantId(), fm.getMatch());
 				approvedActions.addAll(lUtils.unsetLinkFields());
 			} else {
-				this.log.error(
-						"Cannot retrieve the virtual link between ports {} {}, dropping message",
+				this.log.warn(
+						"Cannot retrieve the virtual link between ports {} {}. Dropping packet...",
 						dstPort, this.getSrcPort());
 				return;
 			}
 		}
 		else {
-			IPMapper.rewriteMatch(this.getTenantId(), fm.getMatch());
+			approvedActions.addAll(IPMapper.prependRewriteActions(this.getTenantId(), fm.getMatch()));
 		}
 
 		fm.getMatch().setInputPort(this.getSrcPort().getPhysicalPortNumber());
@@ -458,7 +466,8 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	 * @return true if successful
 	 */
 	public boolean tryRecovery(PhysicalLink plink) {
-		log.info("Try recovery for big-switch {} internal route {} between ports ({},{}) in virtual network {} ", 
+		log.info("Try recovery for virtual network {} big-switch {} internal route {} between ports ({},{}) in virtual network {} ",
+				this.getTenantId(), 
 				this.getSrcPort().getParentSwitch().getSwitchName(), this.routeId, this.getSrcPort().getPortNumber(),
 				this.getDstPort().getPortNumber(), this.getTenantId());
 		if (this.backupRoutes.size() > 0) {

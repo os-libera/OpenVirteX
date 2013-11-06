@@ -39,7 +39,6 @@ import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.util.U16;
-import org.openflow.util.U32;
 
 public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
@@ -59,12 +58,10 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
 		short inport = this.getInPort();
 		port = sw.getPort(inport);
-
 		Mappable map = sw.getMap();
 
 		final OFMatch match = new OFMatch();
 		match.loadFromPacket(this.getPacketData(), inport);
-
 		/*
 		 * Check whether this packet arrived on
 		 * an edge port.

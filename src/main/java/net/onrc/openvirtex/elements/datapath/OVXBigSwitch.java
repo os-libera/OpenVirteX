@@ -320,10 +320,10 @@ public class OVXBigSwitch extends OVXSwitch {
 			this.addToRouteMap(ingress, egress, rtEntry);
 			this.addToRouteMap(egress, ingress, revRtEntry);
 
-			log.info("Add route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+			log.debug("Add route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
 					this.switchName, ingress.getPortNumber(),
 					egress.getPortNumber(), U8.f(rtEntry.getPriority()), path.toString());
-			log.info("Add route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+			log.debug("Add route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
 					this.switchName, egress.getPortNumber(),
 					ingress.getPortNumber(), U8.f(revRtEntry.getPriority()), revpath.toString());
 		}
@@ -332,20 +332,20 @@ public class OVXBigSwitch extends OVXSwitch {
 			if (U8.f(currentPriority) >= U8.f(priority)) {
 				rtEntry.addBackupRoute(priority, path);
 				revRtEntry.addBackupRoute(priority, revpath);
-				log.info("Add backup route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+				log.debug("Add backup route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
 						this.switchName, ingress.getPortNumber(),
 						egress.getPortNumber(), U8.f(priority), path.toString());
-				log.info("Add backup route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+				log.debug("Add backup route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
 						this.switchName, egress.getPortNumber(),
 						ingress.getPortNumber(), U8.f(priority), revpath.toString());
 			}
 			else {		
 				rtEntry.replacePrimaryRoute(priority, path);
 				revRtEntry.replacePrimaryRoute(priority, revpath);
-				log.info("Replace primary route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+				log.debug("Replace primary route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
 						this.switchName, ingress.getPortNumber(),
 						egress.getPortNumber(), U8.f(rtEntry.getPriority()), path.toString());
-				log.info("Replace primary route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
+				log.debug("Replace primary route for big-switch {} between ports ({},{}) with priority: {} and path: {}",
 						this.switchName, egress.getPortNumber(),
 						ingress.getPortNumber(), U8.f(revRtEntry.getPriority()), revpath.toString());
 			}

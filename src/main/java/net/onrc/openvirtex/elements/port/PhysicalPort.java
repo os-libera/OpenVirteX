@@ -21,6 +21,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.messages.OVXPortStatus;
+import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
@@ -68,7 +69,7 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 		} else {
 			final HashMap<Integer, OVXPort> portMap = new HashMap<Integer, OVXPort>();
 			if (ovxPort.getLink() != null)
-			    portMap.put(ovxPort.getLink().getInLink().getLinkId(), ovxPort);
+			    portMap.put(ovxPort.getLink().getOutLink().getLinkId(), ovxPort);
 			else 
 			    portMap.put(0, ovxPort);
 			this.ovxPortMap.put(ovxPort.getTenantId(), portMap);

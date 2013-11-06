@@ -105,6 +105,10 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		this.map = OVXMap.getInstance();
 		if (this.alg.getRoutingType() != RoutingType.NONE)
 			this.alg.getRoutable().setLinkPath(this);
+		
+		//register again the srcPort in the physicalPort map, to update the linkId
+		this.srcPort.getPhysicalPort().removeOVXPort(this.srcPort);
+		this.srcPort.getPhysicalPort().setOVXPort(this.srcPort);
 	}
 
 	/**
@@ -155,11 +159,9 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @param priority 
 	 */
 	public void register(final List<PhysicalLink> physicalLinks, byte priority) {
-		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
-		this.srcPort.getPhysicalPort().removeOVXPort(this.srcPort);
 		if (U8.f(this.getPriority()) >= U8.f(priority)) {
 			this.backupLinks.put(priority, physicalLinks);
-			log.info("Added virtual link {} backup path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
+			log.debug("Add virtual link {} backup path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
 					this.getLinkId(), U8.f(priority), this.getSrcSwitch()
 					.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
 					this.getTenantId(), physicalLinks);
@@ -167,11 +169,19 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		else {
 			try {
 				this.backupLinks.put(this.getPriority(), map.getPhysicalLinks(this));
+				log.debug("Replace virtual link {} with a new primary path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
+						this.getLinkId(), U8.f(priority), this.getSrcSwitch()
+						.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
+						this.getTenantId(), physicalLinks);
+				log.info("Switch all existing flow-mods crossing the virtual link {} between ports ({}/{},{}/{}) to new path", 
+						this.getLinkId(), this.getSrcSwitch().getSwitchName(), this.getSrcPort().getPortNumber(),
+						this.getDstSwitch().getSwitchName(), this.getDstPort().getPortNumber());
 			}
 			catch (LinkMappingException e) {
-				log.error("Unable to retrieve the list of physical link from the OVXMap associated to the virtual link {}. "
-						+ "If the link has just been created, this is normal." , 
-						this.getLinkId());
+				log.debug("Create virtual link {} primary path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
+						this.getLinkId(), U8.f(priority), this.getSrcSwitch()
+						.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
+						this.getTenantId(), physicalLinks);
 			}
 			this.switchPath(physicalLinks, priority);			
 		}	
@@ -201,17 +211,12 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	}
 
 	public void switchPath(List<PhysicalLink> physicalLinks, byte priority) {
-		this.setPriority(priority);
+		//register the primary link in the map
 		this.srcPort.getParentSwitch().getMap().removeVirtualLink(this);
 		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
-		log.info("Replace virtual link {} with a new path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
-				this.getLinkId(), U8.f(priority), this.getSrcSwitch()
-				.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
-				this.getTenantId(), physicalLinks);
+		
+		this.setPriority(priority);
 
-		log.info("Switch all existing flow-mods crossing the virtual link {} between ports ({}/{},{}/{}) to new path", 
-				this.getLinkId(), this.getSrcSwitch().getSwitchName(), this.getSrcPort().getPortNumber(),
-				this.getDstSwitch().getSwitchName(), this.getDstPort().getPortNumber());
 		Collection<OVXFlowMod> flows = this.getSrcSwitch().getFlowTable().getFlowTable();
 		for (OVXFlowMod fe : flows) {
 			for(OFAction act : fe.getActions()) {
@@ -333,7 +338,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 				.sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
 				this.log.debug(
 						"Sending virtual link intermediate fm to sw {}: {}",
-						phyLink.getSrcPort().getParentSwitch().getName(), fm);
+						phyLink.getSrcPort().getParentSwitch().getSwitchName(), fm);
 
 			}
 			outPort = phyLink.getDstPort();

@@ -10,10 +10,6 @@
  */
 package net.onrc.openvirtex.exceptions;
 
-/**
- * @author gerola
- * 
- */
 public class DroppedMessageException extends Exception {
 	/**
      * 

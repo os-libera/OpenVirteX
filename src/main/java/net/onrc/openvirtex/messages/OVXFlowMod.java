@@ -110,7 +110,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 	private void prepAndSendSouth(OVXPort inPort, boolean pflag) {
 		if (!inPort.isActive()) {
-			log.warn("Port {} on switch {} is down.", inPort.getPortNumber(), sw.getSwitchName());
+			log.warn("Virtual network {}: port {} on switch {} is down.", sw.getTenantId(),
+					inPort.getPortNumber(), sw.getSwitchName());
 			return;
 		}
 		this.getMatch().setInputPort(inPort.getPhysicalPortNumber());
@@ -138,6 +139,9 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		} catch (NetworkMappingException e) {
 			log.warn("OVXFlowMod. Error retrieving the network with id {} for flowMod {}. Dropping packet...", 
 					this.sw.getTenantId(), this);                    
+		} catch (DroppedMessageException e) {
+			log.warn("OVXFlowMod. Error retrieving flowId in network with id {} for flowMod {}. Dropping packet...", 
+					this.sw.getTenantId(), this);
 		}
 		this.computeLength();
 		if (pflag) {

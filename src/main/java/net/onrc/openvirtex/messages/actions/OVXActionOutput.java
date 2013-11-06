@@ -99,7 +99,8 @@ VirtualizableAction {
 					if (inPort.isLink()) {
 						final OVXPort dstPort = vnet.getNeighborPort(inPort);
 						final OVXLink link = inPort.getLink().getOutLink();
-						if (link != null) {
+						if (link != null && (!match.getWildcardObj().isWildcarded(Flag.DL_DST) ||
+								!match.getWildcardObj().isWildcarded(Flag.DL_SRC))) {
 							flowId = vnet.getFlowManager().
 									getFlowId(match.getDataLayerSource(), match.getDataLayerDestination());
 							OVXLinkUtils lUtils = new OVXLinkUtils(sw.getTenantId(), link.getLinkId(), flowId);

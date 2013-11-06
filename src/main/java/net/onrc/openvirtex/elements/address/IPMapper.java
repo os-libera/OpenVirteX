@@ -30,45 +30,60 @@ public class IPMapper {
     static Logger log = LogManager.getLogger(IPMapper.class.getName());
 
     public static Integer getPhysicalIp(Integer tenantId, Integer virtualIP) {
-	final Mappable map = OVXMap.getInstance();
-	final OVXIPAddress vip = new OVXIPAddress(tenantId, virtualIP);
-	try {
-	    PhysicalIPAddress pip;
-	    if (map.hasPhysicalIP(vip, tenantId)) {
-		pip = map.getPhysicalIP(vip, tenantId);
-	    } else {
-		pip = new PhysicalIPAddress(map.getVirtualNetwork(tenantId).nextIP());
-		log.debug("Adding IP mapping {} -> {} for tenant {}", vip, pip, tenantId);
-		map.addIP(pip, vip);
-	    }
-	    return pip.getIp();
-	} catch (IndexOutOfBoundException e) {
-	    log.error("No available physical IPs for virtual ip {} in tenant {}",vip, tenantId);
-	} catch (NetworkMappingException e) {
-	    log.error(e);
-	} catch (AddressMappingException e) {
-	    log.error("Inconsistency in Physical-Virtual mapping : {}", e);
-	}
-	return 0;
+    	final Mappable map = OVXMap.getInstance();
+    	final OVXIPAddress vip = new OVXIPAddress(tenantId, virtualIP);
+    	try {
+    		PhysicalIPAddress pip;
+    		if (map.hasPhysicalIP(vip, tenantId)) {
+    			pip = map.getPhysicalIP(vip, tenantId);
+    		} else {
+    			pip = new PhysicalIPAddress(map.getVirtualNetwork(tenantId).nextIP());
+    			log.debug("Adding IP mapping {} -> {} for tenant {}", vip, pip, tenantId);
+    			map.addIP(pip, vip);
+    		}
+    		return pip.getIp();
+    	} catch (IndexOutOfBoundException e) {
+    		log.error("No available physical IPs for virtual ip {} in tenant {}",vip, tenantId);
+    	} catch (NetworkMappingException e) {
+    		log.error(e);
+    	} catch (AddressMappingException e) {
+    		log.error("Inconsistency in Physical-Virtual mapping : {}", e);
+    	}
+    	return 0;
+    }
+
+    public static void rewriteMatch(final Integer tenantId, final OFMatch match) {
+    	match.setNetworkSource(getPhysicalIp(tenantId, match.getNetworkSource()));
+    	match.setNetworkDestination(getPhysicalIp(tenantId, match.getNetworkDestination()));
+    }
+
+    public static List<OFAction> prependRewriteActions(final Integer tenantId, final OFMatch match) {
+    	final List<OFAction> actions = new LinkedList<OFAction>();
+    	if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+    		final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
+    		srcAct.setNetworkAddress(getPhysicalIp(tenantId, match.getNetworkSource()));
+    		actions.add(srcAct);
+    	}
+    	if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
+    		final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
+    		dstAct.setNetworkAddress(getPhysicalIp(tenantId, match.getNetworkDestination()));
+    		actions.add(dstAct);
+    	}
+    	return actions;
     }
     
-    public static void rewriteMatch(Integer tenantId, OFMatch match) {
-	match.setNetworkSource(getPhysicalIp(tenantId, match.getNetworkSource()));
-	match.setNetworkDestination(getPhysicalIp(tenantId, match.getNetworkDestination()));
+    public static List<OFAction> prependUnRewriteActions(final OFMatch match) {
+    	final List<OFAction> actions = new LinkedList<OFAction>();
+    	if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+    		final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
+    		srcAct.setNetworkAddress(match.getNetworkSource());
+    		actions.add(srcAct);
+    	}
+    	if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
+    		final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
+    		dstAct.setNetworkAddress(match.getNetworkDestination());
+    		actions.add(dstAct);
+    	}
+    	return actions;
     }
-    
-	public static List<OFAction> prependUnRewriteActions(final OFMatch match) {
-		final List<OFAction> actions = new LinkedList<OFAction>();
-		if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-			srcAct.setNetworkAddress(match.getNetworkSource());
-			actions.add(srcAct);
-		}
-		if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-			dstAct.setNetworkAddress(match.getNetworkDestination());
-			actions.add(dstAct);
-		}
-		return actions;
-	}
 }

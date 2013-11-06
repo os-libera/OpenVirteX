@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.host.Host;
+import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.VirtualLinkException;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
@@ -71,23 +72,21 @@ public class OVXFlowManager {
 		return macList;
 	}
 
-	public Integer getFlowId(final byte[] srcMac, final byte[] dstMac) {
-		if (MACAddress.valueOf(srcMac).toLong() == 0 || MACAddress.valueOf(srcMac).toLong() == 0) {
-			log.warn("virtual net = {}: OVX doesn't store flowId associated to mac address == 00:00:00:00:00:00", this.tenantId);
-			return 0;
-		}
-		else {
-			final BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,
-					dstMac));
-			log.debug("virtual net = {}: retrieving flowId that is associated to {} {}",
-					this.tenantId, MACAddress.valueOf(srcMac).toString(),
+	public Integer getFlowId(final byte[] srcMac, final byte[] dstMac) 
+			throws DroppedMessageException {
+		final BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,
+				dstMac));
+		final Integer flowId = this.flowValues.inverse().get(dualMac);
+		if (flowId != null && flowId != 0) {
+			log.debug("virtual net = {}: retrieving flowId {} that is associated to {} {}",
+					this.tenantId, flowId, MACAddress.valueOf(srcMac).toString(),
 					MACAddress.valueOf(dstMac).toString());
-			final Integer flowId = this.flowValues.inverse().get(dualMac);
-			if (flowId == 0) {
-				throw new VirtualLinkException("");
-			}
 			return flowId;
 		}
+		throw new DroppedMessageException("virtual net =  " + this.tenantId + 
+				": unable to retrive the flowId associated to these mac addresses: " +
+				MACAddress.valueOf(srcMac).toString() + "-" + MACAddress.valueOf(dstMac).toString() +
+				". Dropping message!");
 	}
 
 	/**

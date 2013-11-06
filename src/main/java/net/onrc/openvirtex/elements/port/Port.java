@@ -136,13 +136,14 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 	@Override
 	public String toString() {
 		return "PORT:\n- portNumber: " + this.portNumber
-				+ "\n- hardwareAddress: " + this.hardwareAddress.toString()
+				+ "\n- parentSwitch: " + this.getParentSwitch().getSwitchName()
+				+ "\n- hardwareAddress: " + MACAddress.valueOf(this.hardwareAddress).toString()
 				+ "\n- config: " + this.config + "\n- state: " + this.state
 				+ "\n- currentFeatures: " + this.currentFeatures
 				+ "\n- advertisedFeatures: " + this.advertisedFeatures
 				+ "\n- supportedFeatures: " + this.supportedFeatures
-				+ "\n- peerFeatures: " + this.peerFeatures + "\n- isEdge: "
-				+ this.isEdge;
+				+ "\n- peerFeatures: " + this.peerFeatures 
+				+ "\n- isEdge: " + this.isEdge;
 	}
 	
 
