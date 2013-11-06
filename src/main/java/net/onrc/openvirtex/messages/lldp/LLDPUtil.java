@@ -10,42 +10,52 @@
  */
 package net.onrc.openvirtex.messages.lldp;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import net.onrc.openvirtex.elements.datapath.DPIDandPort;
-import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
 
 /**
- * Set of utilities for handling LLDP packets Heavily based on FlowVisor 1.2
- * implemenation.
+ * Set of utilities for handling LLDP packets.
+ * Heavily based on FlowVisor 1.2 implementation.
  * 
  */
 public class LLDPUtil {
+	public static final String OVX_NAME = "OpenVirteX";
+	public static final byte ONLAB_OUI[] = { (byte) 0xa4, (byte) 0x23, (byte) 0x05 };
+
+	// Offset of ONLAB_OUI and OVX_NAME in an LLDP packet
+	public static final int OFFSET_ONLAB_OUI = 44;
+	public static final int OFFSET_OVX_NAME = 48;
+
 	final private static int LLDPLen = 128;
 	final static byte lldpSysD[] = { 0x0c, 0x08 }; // Type 6,
 	// length 8
 	final public static short ETHER_LLDP = (short) 0x88cc;
 	final public static short ETHER_VLAN = (short) 0x8100;
 	final public static byte[] LLDP_MULTICAST = { 0x01, 0x23, 0x20, 0x00, 0x00,
-			0x01 };
+		0x01 };
 	final public static int MIN_FV_NAME = 20;
 	final public static byte OUI_TYPE = 127;
 	public final static int FLOWNAMELEN_LEN = 1;
 	public final static int FLOWNAMELEN_NULL = 1;
 
 	/**
-	 * Is this an lldp packet?
+	 * Is this an LLDP packet?
 	 * 
-	 * @param po
-	 * @return
+	 * @param packetArray
+	 * @return True if packet is LLDP, False otherwise
 	 */
 
 	public static boolean checkLLDP(final byte[] packetArray) {
-		if (packetArray == null || packetArray.length < 14) {
-			return false; // not lddp if no packet exists or too short
+		// Not LLDP if no packet exists or too short
+		if (packetArray == null || packetArray.length < (LLDPUtil.OFFSET_OVX_NAME + LLDPUtil.OVX_NAME.length())) {
+			return false;
 		}
+		
+		// Check ethertype
 		final ByteBuffer packet = ByteBuffer.wrap(packetArray);
 		short ether_type = packet.getShort(12);
 		if (ether_type == LLDPUtil.ETHER_VLAN) {
@@ -54,6 +64,21 @@ public class LLDPUtil {
 		if (ether_type != LLDPUtil.ETHER_LLDP) {
 			return false;
 		}
+
+		// Check ON.Lab OUI and name
+		try {
+			byte[] oui = Arrays.copyOfRange(packetArray, LLDPUtil.OFFSET_ONLAB_OUI, LLDPUtil.OFFSET_ONLAB_OUI + LLDPUtil.ONLAB_OUI.length);
+			if (!Arrays.equals(oui, LLDPUtil.ONLAB_OUI)) {
+				return false;
+			}
+			
+			byte[] ovxName = Arrays.copyOfRange(packetArray, LLDPUtil.OFFSET_OVX_NAME, LLDPUtil.OFFSET_OVX_NAME + LLDPUtil.OVX_NAME.length());
+			if (!Arrays.equals(ovxName, LLDPUtil.OVX_NAME.getBytes()))
+				return false;
+		} catch (IndexOutOfBoundsException e) {
+			return false;
+		}
+		
 		return true;
 	}
 
@@ -66,12 +91,10 @@ public class LLDPUtil {
 	public static byte[] makeLLDP(final Port port) {
 		final short portNumber = port.getPortNumber();
 		final byte[] hardwareAddress = port.getHardwareAddress();
-		final long dpid = ((Switch) port.getParentSwitch()).getSwitchId();
-		// TODO: put this somewhere where it makes sense
-		final String ovxName = "OpenVirteX";
+		final long dpid = port.getParentSwitch().getSwitchId();
 
-		final int size = LLDPUtil.LLDPLen; // needs to be some minsize to avoid
-		// ethernet problems
+		// needs to be some minsize to avoid ethernet problems
+		final int size = LLDPUtil.LLDPLen;
 		final byte[] buf = new byte[size];
 		final ByteBuffer bb = ByteBuffer.wrap(buf);
 
@@ -106,29 +129,23 @@ public class LLDPUtil {
 
 		// SysD TLV
 		bb.put(LLDPUtil.lldpSysD);
-		bb.putLong(((Switch) port.getParentSwitch()).getSwitchId());
+		bb.putLong(port.getParentSwitch().getSwitchId());
 
 		// OUI TLV
-		// final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN
-		// + LLDPUtil.FLOWNAMELEN_NULL;
-		final int ouiLen = 4 + ovxName.length() + LLDPUtil.FLOWNAMELEN_LEN;
+		final int ouiLen = 4 + LLDPUtil.OVX_NAME.length() + LLDPUtil.FLOWNAMELEN_LEN;
 		// 4 - length of OUI Id + it's subtype
 		final int ouiHeader = ouiLen & 0x1ff
 				| (LLDPUtil.OUI_TYPE & 0x007f) << 9;
 		bb.putShort((short) ouiHeader);
 
 		// ON.Lab OUI = a42305 and assigning the subtype to 0x01
-		final byte oui[] = { (byte) 0xa4, (byte) 0x23, (byte) 0x05 };
-		bb.put(oui);
+		bb.put(LLDPUtil.ONLAB_OUI);
 		final byte ouiSubtype[] = { 0x01 };
 		bb.put(ouiSubtype);
-		// TODO: what does this do and why does it fail?
-		// StringByteSerializer.writeTo(ChannelBuffers.copiedBuffer(bb),
-		// ovxName.length() + 1, ovxName);
 		// TODO: this is probably not the most portable code
-		bb.put(ovxName.getBytes());
+		bb.put(LLDPUtil.OVX_NAME.getBytes());
 		// bb.put((byte) 0);
-		bb.put((byte) ovxName.length());
+		bb.put((byte) LLDPUtil.OVX_NAME.length());
 
 		// EndOfLLDPDU TLV
 		final byte endType[] = { 0x00 };
