@@ -133,8 +133,6 @@ public class SwitchChannelHandler extends OFChannelHandler {
 
 			@Override
 			void processOFError(final SwitchChannelHandler h, final OFError m) {
-				h.log.error("Error waiting for features (type:{}, code:{})",
-						m.getErrorType(), m.getErrorCode());
 				try {
 					if (m.getOffendingMsg().getType() != OFType.BARRIER_REQUEST) {
 						h.log.error("Error waiting for features (type:{}, code:{})",
