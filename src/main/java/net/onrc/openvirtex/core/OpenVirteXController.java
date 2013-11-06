@@ -59,7 +59,7 @@ public class OpenVirteXController implements Runnable {
 	private ClientChannelPipeline cfact = null;
 
 	private int maxVirtual = 0;
-    private OVXLinkField	ovxLinkField;
+	private OVXLinkField	ovxLinkField;
 
 	private Integer statsRefresh = 30;
 
@@ -97,8 +97,8 @@ public class OpenVirteXController implements Runnable {
 			switchServerBootStrap.setPipelineFactory(this.pfact);
 			final InetSocketAddress sa = this.ofHost == null ? new InetSocketAddress(
 					this.ofPort) : new InetSocketAddress(this.ofHost,
-					this.ofPort);
-			this.sg.add(switchServerBootStrap.bind(sa));
+							this.ofPort);
+					this.sg.add(switchServerBootStrap.bind(sa));
 
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
@@ -108,13 +108,13 @@ public class OpenVirteXController implements Runnable {
 
 	public void registerOVXSwitch(final OVXSwitch sw) {
 		OVXNetwork ovxNetwork;
-                try {
-	            ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId());
-                } catch (NetworkMappingException e) {
-                    OpenVirteXController.this.log.error(
-                	    "Could not connect to controller for switch: " + e.getMessage());
-                    return;
-                }
+		try {
+			ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId());
+		} catch (NetworkMappingException e) {
+			OpenVirteXController.this.log.error(
+					"Could not connect to controller for switch: " + e.getMessage());
+			return;
+		}
 		final String host = ovxNetwork.getControllerHost();
 		final Integer port = ovxNetwork.getControllerPort();
 
@@ -141,7 +141,7 @@ public class OpenVirteXController implements Runnable {
 				} else {
 					OpenVirteXController.this.log.error(
 							"Failed to connect to controller {} for switch {}",
-							remoteAddr, sw.getSwitchId());
+							remoteAddr, sw.getSwitchName());
 				}
 			}
 		});
@@ -174,7 +174,7 @@ public class OpenVirteXController implements Runnable {
 				Executors.newCachedThreadPool(),
 				Executors.newCachedThreadPool()));
 	}
-	
+
 	private void startDatabase() {
 		DBManager dbManager = DBManager.getInstance();
 		dbManager.init(this.dbHost, this.dbPort, this.dbClear);
@@ -205,7 +205,7 @@ public class OpenVirteXController implements Runnable {
 		if (this.cfact != null) {
 			this.cfact.releaseExternalResources();
 		}
-		
+
 		this.log.info("Shutting down database connection");
 		DBManager.getInstance().close();
 	}
@@ -225,11 +225,11 @@ public class OpenVirteXController implements Runnable {
 		return this.maxVirtual;
 	}
 
-    public OVXLinkField getOvxLinkField() {
+	public OVXLinkField getOvxLinkField() {
 		return this.ovxLinkField;
 	}
-    
-    public Integer getStatsRefresh() {
-    	return this.statsRefresh;
-    }
+
+	public Integer getStatsRefresh() {
+		return this.statsRefresh;
+	}
 }
