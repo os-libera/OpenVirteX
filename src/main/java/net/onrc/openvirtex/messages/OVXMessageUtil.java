@@ -59,7 +59,7 @@ public class OVXMessageUtil {
 		err.setErrorType(OFErrorType.OFPET_BAD_REQUEST);
 		err.setErrorCode(code);
 		err.setOffendingMsg(msg);
-
+		err.setXid(msg.getXid());
 		return err;
 	}
 

@@ -19,6 +19,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ControllerStateException;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
+import net.onrc.openvirtex.messages.OVXMessageUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +35,7 @@ import org.openflow.protocol.OFBarrierRequest;
 import org.openflow.protocol.OFEchoReply;
 import org.openflow.protocol.OFEchoRequest;
 import org.openflow.protocol.OFError;
+import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.OFError.OFErrorType;
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFFeaturesRequest;
@@ -256,7 +258,16 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		 */
 		protected void unhandledMessageReceived(
 				final ControllerChannelHandler h, final OFMessage m) {
-			h.log.warn("Received currently unhandled message {}", m);
+			
+			if (m.getType() == OFType.VENDOR) {
+				h.log.warn("Received unhandled VENDOR message, sending unsupported error: {}", m);
+				OFMessage e = OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_VENDOR, m);
+				h.channel.write(Collections.singletonList(e));
+			} else {
+				h.log.warn("Received unhandled message, sending bad type error: {}", m);
+				OFMessage e = OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_TYPE, m);
+				h.channel.write(Collections.singletonList(e));
+			}
 		}
 
 		/**
