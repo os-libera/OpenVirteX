@@ -454,7 +454,7 @@ public class PortFeatures {
      * @return the highest throughput
      */
     public Integer getHighestThroughput() {
-	Integer thr = 0;
+	Integer thr = 1;
 	if (this.speed10MHD) {
 	    thr = 5;
 	}
