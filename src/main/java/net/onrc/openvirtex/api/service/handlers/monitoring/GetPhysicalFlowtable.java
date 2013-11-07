@@ -48,7 +48,8 @@ public class GetPhysicalFlowtable extends ApiHandler<Map<String, Object>> {
 			
 			LinkedList<OVXFlowStatisticsReply> flows = new LinkedList<OVXFlowStatisticsReply>();
 			for (Integer tid : map.listVirtualNetworks().keySet()) {
-				flows.addAll(sw.getFlowStats(tid));
+				if (sw.getFlowStats(tid) != null)
+					flows.addAll(sw.getFlowStats(tid));
 			}
 			
 			for (OVXFlowStatisticsReply frep : flows) {
