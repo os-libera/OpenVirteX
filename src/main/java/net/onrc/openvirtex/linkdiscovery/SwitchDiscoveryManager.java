@@ -226,7 +226,7 @@ TimerTask {
 	public void handleLLDP(final OFMessage msg, final Switch sw) {
 		final OVXPacketIn pi = (OVXPacketIn) msg;
 		final byte[] pkt = pi.getPacketData();
-		if (LLDPUtil.checkLLDP(pkt)) {
+		if (LLDPUtil.checkOVXLLDP(pkt)) {
 			// TODO: check if dpid present
 			final PhysicalPort dstPort = (PhysicalPort) sw.getPort(pi
 					.getInPort());
