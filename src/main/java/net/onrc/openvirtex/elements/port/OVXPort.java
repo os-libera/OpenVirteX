@@ -87,7 +87,8 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 	public OVXPort(final int tenantId, final PhysicalPort port,
 			final boolean isEdge)  throws IndexOutOfBoundException {
 		this(tenantId, port, isEdge, (short) 0);
-		this.portNumber = this.parentSwitch.getNextPortNumber();		
+		this.portNumber = this.parentSwitch.getNextPortNumber();
+		this.name = "ovxport-"+this.portNumber;
 	}
 
 	public Integer getTenantId() {
