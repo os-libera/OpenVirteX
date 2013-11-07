@@ -84,7 +84,7 @@ public class HandlerUtils {
 		} 
 
 
-		for (final OVXNetwork network : OVXMap.getInstance().getNetworkMap()
+		for (final OVXNetwork network : OVXMap.getInstance().listVirtualNetworks()
 				.values()) {
 			final int port = network.getControllerPort();
 			final String host = network.getControllerHost();

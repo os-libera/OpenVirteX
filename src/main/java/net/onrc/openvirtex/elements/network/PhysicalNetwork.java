@@ -114,8 +114,11 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 	 * @param port
 	 */
 	public synchronized void addPort(final PhysicalPort port) {
-		this.discoveryManager.get(port.getParentSwitch().getSwitchId())
-		.addPort(port);
+		SwitchDiscoveryManager sdm 
+				= this.discoveryManager.get(port.getParentSwitch().getSwitchId());
+		if (sdm != null) {
+			sdm.addPort(port);
+		}
 	}
 
 	/**
