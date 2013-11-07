@@ -9,15 +9,18 @@
 
 package net.onrc.openvirtex.messages;
 
+import java.util.HashMap;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsReply;
 import net.onrc.openvirtex.messages.statistics.VirtualizableStatistic;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFStatisticsReply;
 import org.openflow.protocol.statistics.OFStatistics;
+import org.openflow.protocol.statistics.OFStatisticsType;
 
 public class OVXStatisticsReply extends OFStatisticsReply implements
 		Virtualizable {
@@ -40,6 +43,8 @@ public class OVXStatisticsReply extends OFStatisticsReply implements
 			if (this.getStatistics().size() > 0) {
 				VirtualizableStatistic stat = (VirtualizableStatistic) this.getStatistics().get(0);
 				stat.virtualizeStatistic(sw, this);
+			} else if (this.getStatisticType() == OFStatisticsType.FLOW) {
+				sw.setFlowStatistics(null);
 			}
 		    
 		} catch (final ClassCastException e) {
