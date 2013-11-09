@@ -37,9 +37,9 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
+import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
-import net.onrc.openvirtex.messages.lldp.LLDPUtil;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.BitSetIndex;
@@ -49,7 +49,6 @@ import net.onrc.openvirtex.util.OVXFlowManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.util.HostMap;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPacketOut;
@@ -512,7 +511,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public void handleLLDP(final OFMessage msg, final Switch sw) {
 		final OVXPacketOut po = (OVXPacketOut) msg;
 		final byte[] pkt = po.getPacketData();
-		if (LLDPUtil.checkLLDP(pkt)) {
+		if (OVXLLDP.isLLDP(pkt)) {
 			// Create LLDP response for each output action port
 			for (final OFAction action : po.getActions()) {
 				try {

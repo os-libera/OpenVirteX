@@ -19,6 +19,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ControllerStateException;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
+import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXMessageUtil;
 
 import org.apache.logging.log4j.LogManager;
@@ -222,7 +223,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			return String.format(
 					"Controller: [%s], State: [%s], received: [%s]"
 							+ ", details: %s", h.getSwitchInfoString(),
-					this.toString(), m.getType().toString(), details);
+							this.toString(), m.getType().toString(), details);
 		}
 
 		/**
@@ -258,7 +259,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		 */
 		protected void unhandledMessageReceived(
 				final ControllerChannelHandler h, final OFMessage m) {
-			
+
 			if (m.getType() == OFType.VENDOR) {
 				h.log.warn("Received unhandled VENDOR message, sending unsupported error: {}", m);
 				OFMessage e = OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_VENDOR, m);
@@ -309,8 +310,8 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			case VENDOR:
 				this.processOFVendor(h, (OFVendor) m);
 				break;
-			// The following messages are sent to switches. The controller
-			// should never receive them
+				// The following messages are sent to switches. The controller
+				// should never receive them
 			case SET_CONFIG:
 				this.processOFSetConfig(h, (OFSetConfig) m);
 				break;
@@ -483,7 +484,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		if (this.sw != null) {
 
 			this.sw.setConnected(false);
-			
+
 		}
 
 	}
@@ -517,24 +518,18 @@ public class ControllerChannelHandler extends OFChannelHandler {
 					case PACKET_OUT:
 						/*
 						 * Is this packet a packet out? If yes is it an lldp?
-						 * then send it to the PhysicalTopoHandler.
+						 * then send it to the OVXNetwork.
 						 */
 						final byte[] data = ((OFPacketOut) ofm).getPacketData();
-						if (data.length > 14) {
-							if (data[12] == (byte) 0x88
-									&& data[13] == (byte) 0xcc) {
-								final int tenantId = ((OVXSwitch) this.sw)
-										.getTenantId();
-								OVXMap.getInstance()
-										.getVirtualNetwork(tenantId)
-										.handleLLDP(ofm, this.sw);
-								break;
-							} else if (data[12] == (byte) 0x89
-									&& data[13] == (byte) 0x42) {
-								// TODO: think about how to solve this.
-								// probably treat it like a normal LLDP for now.
-								break;
-							}
+						if (OVXLLDP.isLLDP(data)) {
+							final int tenantId = ((OVXSwitch) this.sw).getTenantId();
+							OVXMap.getInstance().getVirtualNetwork(tenantId).handleLLDP(ofm, this.sw);
+							break;
+						} else if (data[12] == (byte) 0x89
+								&& data[13] == (byte) 0x42) {
+							// TODO: think about how to solve this.
+							// probably treat it like a normal LLDP for now.
+							break;
 						}
 					default:
 						// Process all non-packet-ins

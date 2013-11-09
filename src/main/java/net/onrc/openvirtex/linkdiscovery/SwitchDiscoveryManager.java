@@ -25,9 +25,10 @@ import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.PortMappingException;
+import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXMessageFactory;
 import net.onrc.openvirtex.messages.OVXPacketIn;
-import net.onrc.openvirtex.messages.lldp.LLDPUtil;
+import net.onrc.openvirtex.packet.Ethernet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,6 +67,8 @@ TimerTask {
 	private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory
 			.getInstance();
 	Logger log = LogManager.getLogger(SwitchDiscoveryManager.class.getName());
+	OVXLLDP lldpPacket;
+	Ethernet ethPacket;
 
 	public SwitchDiscoveryManager(final PhysicalSwitch sw) {
 		this.sw = sw;
@@ -73,6 +76,13 @@ TimerTask {
 		this.slowPorts = Collections.synchronizedSet(new HashSet<Short>());
 		this.fastPorts = Collections.synchronizedSet(new HashSet<Short>());
 		this.portProbeCount = new HashMap<Short, AtomicInteger>();
+		this.lldpPacket = new OVXLLDP();
+		this.lldpPacket.setSwitch(this.sw);
+		this.ethPacket = new Ethernet();
+		this.ethPacket.setEtherType(Ethernet.TYPE_LLDP);
+		this.ethPacket.setDestinationMACAddress(OVXLLDP.LLDP_NICIRA);
+		this.ethPacket.setPayload(this.lldpPacket);
+		this.ethPacket.setPad(true);
 		PhysicalNetwork.getTimer().newTimeout(this, this.probeRate,
 				TimeUnit.MILLISECONDS);
 		this.log.debug("Started discovery manager for switch {}",
@@ -185,11 +195,12 @@ TimerTask {
 		actionsList.add(out);
 		packetOut.setActions(actionsList);
 		final short alen = SwitchDiscoveryManager.countActionsLen(actionsList);
-		final byte[] lldp = LLDPUtil.makeLLDP(port);
+		this.lldpPacket.setPort(port);
+		this.ethPacket.setSourceMACAddress(port.getHardwareAddress());
+		final byte[] lldp = this.ethPacket.serialize();
 		packetOut.setActionsLength(alen);
 		packetOut.setPacketData(lldp);
-		packetOut
-		.setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
+		packetOut.setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
 		return packetOut;
 	}
 
@@ -199,8 +210,8 @@ TimerTask {
 	}
 
 	/**
-	 * Count the number of actions in an actionsList TODO: why is this needed?
-	 * just use actionsList.size()?
+	 * Count the number of actions in an actionsList
+	 * TODO: why is this needed? just use actionsList.size()?
 	 * 
 	 * @param actionsList
 	 * @return The number of actions
@@ -220,17 +231,17 @@ TimerTask {
 
 	@Override
 	/*
-	 * Handles an incoming LLDP packet. Creates link in topology and sends ack
-	 * to port where LLDP originated.
+	 * Handles an incoming LLDP packet.
+	 * Creates link in topology and sends ACK to port where LLDP originated.
 	 */
 	public void handleLLDP(final OFMessage msg, final Switch sw) {
 		final OVXPacketIn pi = (OVXPacketIn) msg;
 		final byte[] pkt = pi.getPacketData();
-		if (LLDPUtil.checkOVXLLDP(pkt)) {
-			// TODO: check if dpid present
+		
+		if (OVXLLDP.isOVXLLDP(pkt)) {
 			final PhysicalPort dstPort = (PhysicalPort) sw.getPort(pi
 					.getInPort());
-			final DPIDandPort dp = LLDPUtil.parseLLDP(pkt);
+			final DPIDandPort dp = OVXLLDP.parseLLDP(pkt);
 			final PhysicalSwitch srcSwitch = PhysicalNetwork.getInstance()
 					.getSwitch(dp.getDpid());
 			final PhysicalPort srcPort = srcSwitch.getPort(dp.getPort());
@@ -238,7 +249,7 @@ TimerTask {
 			PhysicalNetwork.getInstance().createLink(srcPort, dstPort);
 			PhysicalNetwork.getInstance().ackProbe(srcPort);
 		} else {
-			this.log.debug("Invalid LLDP");
+			this.log.warn("Ignoring unknown LLDP");
 		}
 	}
 

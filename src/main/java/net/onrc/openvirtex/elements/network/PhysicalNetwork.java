@@ -29,6 +29,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPhysicalPort;
+import org.openflow.protocol.OFPhysicalPort.OFPortConfig;
+import org.openflow.protocol.OFPhysicalPort.OFPortFeatures;
+import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFPortStatus;
+import org.openflow.protocol.action.OFAction;
 
 /**
  * 
@@ -118,7 +124,9 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 		SwitchDiscoveryManager sdm 
 				= this.discoveryManager.get(port.getParentSwitch().getSwitchId());
 		if (sdm != null) {
-			sdm.addPort(port);
+			// Do not run discovery on local OpenFlow port
+			if (port.getPortNumber() != OFPort.OFPP_LOCAL.getValue())
+				sdm.addPort(port);
 		}
 	}
 

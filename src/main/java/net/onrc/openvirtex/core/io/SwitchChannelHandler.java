@@ -27,6 +27,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
+import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXSetConfig;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
@@ -139,8 +140,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 						m.getErrorType(), m.getErrorCode());
 				h.channel.disconnect();
 			}
-			
-			
+
+
 
 			@Override
 			void processOFPortStatus(final SwitchChannelHandler h,
@@ -175,7 +176,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 								+ "if it's an HP switch you are probably ok.", 
 								HexString.toHexString(h.featuresReply.getDatapathId()));
 					}
-						
+
 				} catch (MessageParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -266,8 +267,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 				case VENDOR:
 					h.sw.handleIO(m);
 					break;
-				// The following messages are sent to switches. The controller
-				// should never receive them
+					// The following messages are sent to switches. The controller
+					// should never receive them
 				case SET_CONFIG:
 				case GET_CONFIG_REQUEST:
 				case PACKET_OUT:
@@ -456,8 +457,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			case VENDOR:
 				this.processOFVendor(h, (OFVendor) m);
 				break;
-			// The following messages are sent to switches. The controller
-			// should never receive them
+				// The following messages are sent to switches. The controller
+				// should never receive them
 			case SET_CONFIG:
 			case GET_CONFIG_REQUEST:
 			case PACKET_OUT:
@@ -709,21 +710,17 @@ public class SwitchChannelHandler extends OFChannelHandler {
 					case PACKET_IN:
 						/*
 						 * Is this packet a packet in? If yes is it an lldp?
-						 * then send it to the PhysicalTopoHandler.
+						 * then send it to the PhysicalNetwork.
 						 */
 						final byte[] data = ((OFPacketIn) ofm).getPacketData();
-						if (data.length > 14) {
-							if (data[12] == (byte) 0x88
-									&& data[13] == (byte) 0xcc) {
-								if (this.sw != null) {
-									PhysicalNetwork.getInstance().handleLLDP(
-											ofm, this.sw);
-								} else {
-									this.log.warn("Switch has not connected yet; dropping LLDP for now.");
-								}
-								break;
-
+						if (OVXLLDP.isLLDP(data)) {
+							if (this.sw != null) {
+								PhysicalNetwork.getInstance().handleLLDP(
+										ofm, this.sw);
+							} else {
+								this.log.warn("Switch has not connected yet; dropping LLDP for now");
 							}
+							break;
 						}
 					default:
 						// Process all non-packet-ins
