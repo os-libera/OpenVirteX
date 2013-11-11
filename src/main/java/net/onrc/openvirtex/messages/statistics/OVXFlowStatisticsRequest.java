@@ -18,6 +18,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
+import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
@@ -26,8 +27,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.statistics.OFFlowStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatisticsType;
+import org.openflow.util.U16;
 
 public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 		DevirtualizableStatistic {
@@ -50,9 +53,16 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 					for (OVXFlowStatisticsReply stat : reps) {
 						
 						if (!uniqueCookies.contains(stat.getCookie())) {
-							stat.setMatch(sw.getFlowMod(stat.getCookie()).getMatch());
+							OVXFlowMod origFM = sw.getFlowMod(stat.getCookie());
+							stat.setCookie(origFM.getCookie());
+							stat.setMatch(origFM.getMatch());
+							stat.setActions(origFM.getActions());
 							uniqueCookies.add(stat.getCookie());
 							replies.add(stat);
+							stat.setLength(U16.t(OVXFlowStatisticsReply.MINIMUM_LENGTH));
+							for (OFAction act : stat.getActions()) {
+								stat.setLength(U16.t(stat.getLength() + act.getLength()));
+							}
 							length += stat.getLength();
 						}
 					}

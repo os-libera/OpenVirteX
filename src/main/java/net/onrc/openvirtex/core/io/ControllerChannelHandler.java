@@ -387,6 +387,13 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			reply.setLengthU(m.getLengthU());
 			h.channel.write(Collections.singletonList(reply));
 		}
+		
+		void processOFFeaturesRequest(final ControllerChannelHandler h,
+				final OFFeaturesRequest m) {
+			OFFeaturesReply fr = h.sw.getFeaturesReply();
+			fr.setXid(m.getXid());
+			h.channel.write(Collections.singletonList(fr));
+		}
 
 		void processOFEchoReply(final ControllerChannelHandler h,
 				final OFEchoReply m) throws IOException {
@@ -420,11 +427,6 @@ public class ControllerChannelHandler extends OFChannelHandler {
 
 		void processOFStatsRequest(final ControllerChannelHandler h,
 				final OFStatisticsRequest m) {
-			this.illegalMessageReceived(h, m);
-		}
-
-		void processOFFeaturesRequest(final ControllerChannelHandler h,
-				final OFFeaturesRequest m) {
 			this.illegalMessageReceived(h, m);
 		}
 
