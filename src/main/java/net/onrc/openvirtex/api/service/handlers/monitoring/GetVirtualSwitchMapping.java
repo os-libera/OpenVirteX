@@ -13,8 +13,10 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
@@ -26,15 +28,25 @@ public class GetVirtualSwitchMapping extends ApiHandler<Map<String, Object>> {
 	@Override
 	public JSONRPC2Response process(Map<String, Object> params) {
 		try {
-			Map<String, List<String>> res = new HashMap<String, List<String>>();
+			Map<String, Object> res = new HashMap<String, Object>();
 			Number tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT, params, true, null);
 			OVXMap map = OVXMap.getInstance();
 			LinkedList<String> list = null;
+			HashMap<String, Object> subRes = new HashMap<String, Object>();
 			for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue()).getSwitches()) {
+				if (vsw instanceof OVXBigSwitch) {
+					List<Integer> l = new LinkedList<Integer>();
+					for (PhysicalLink li : ((OVXBigSwitch)vsw).getAllLinks())
+						l.add(li.getLinkId());
+					subRes.put("links", l);
+				} else {
+					subRes.put("links", new LinkedList<>());
+				}
 				list = new LinkedList<String>();
 				for (PhysicalSwitch psw : map.getPhysicalSwitches(vsw)) 
 					list.add(psw.getSwitchName());
-				res.put(vsw.getSwitchName(), list);
+				subRes.put("switches", list);
+				res.put(vsw.getSwitchName(), subRes);
 			}
 			resp = new JSONRPC2Response(res, 0);
 			

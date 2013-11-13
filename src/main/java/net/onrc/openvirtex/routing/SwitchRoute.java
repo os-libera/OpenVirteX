@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
@@ -474,6 +475,21 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 			return true;
 		}
 		else return false;
+	}
+	
+	public HashSet<PhysicalLink> getLinks() {
+		
+		HashSet<PhysicalLink> list = new HashSet<PhysicalLink>();
+		try {
+			list.addAll(OVXMap.getInstance().getRoute(this));
+		} catch (LinkMappingException e) {
+			log.warn("Unable to fetch primary route : {}", e.getMessage());
+		}
+		for (List<PhysicalLink> links : backupRoutes.values())
+			list.addAll(links);
+		
+		return list;
+			
 	}
 
 }

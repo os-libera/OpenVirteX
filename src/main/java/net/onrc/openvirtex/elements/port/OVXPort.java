@@ -11,7 +11,6 @@ package net.onrc.openvirtex.elements.port;
 
 
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,7 +20,6 @@ import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
 
 import java.util.List;
-
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -253,7 +251,8 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 				.getSwitchId();
 	}
 
-    /**
+    
+	/**
      * undoes mapping for this port from the OVXSwitch and PhysicalPort. 
      */
     public void unMap() {
@@ -373,4 +372,37 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		    this.isEdge = false;
 		}
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((physicalPort == null) ? 0 : physicalPort.hashCode());
+		result = prime * result
+				+ ((tenantId == null) ? 0 : tenantId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (!(obj instanceof OVXPort))
+			return false;
+		OVXPort other = (OVXPort) obj;
+		if (physicalPort == null) {
+			if (other.physicalPort != null)
+				return false;
+		} else if (!physicalPort.equals(other.physicalPort))
+			return false;
+		if (tenantId == null) {
+			if (other.tenantId != null)
+				return false;
+		} else if (!tenantId.equals(other.tenantId))
+			return false;
+		return super.equals(obj);
+	}
 }

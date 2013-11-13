@@ -398,19 +398,36 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		return this.bufferMap.get(bufId);
 	}
 
-	@Override
-	public boolean equals(final Object other) {
-		// TODO: fix this big shit
-		if (other instanceof OVXSwitch) {
-			final OVXSwitch that = (OVXSwitch) other;
-			return this.switchId == that.switchId
-					&& this.tenantId == that.tenantId;
-		}
-		return false;
-	}
+	
 
 	public OVXFlowTable getFlowTable() {
 		return this.flowTable;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((tenantId == null) ? 0 : tenantId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof OVXSwitch))
+			return false;
+		OVXSwitch other = (OVXSwitch) obj;
+		if (tenantId == null) {
+			if (other.tenantId != null)
+				return false;
+		} 
+		return this.switchId == other.switchId
+				&& this.tenantId == other.tenantId;
 	}
 
 	/**
