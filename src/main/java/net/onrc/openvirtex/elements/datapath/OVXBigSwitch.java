@@ -387,11 +387,8 @@ public class OVXBigSwitch extends OVXSwitch {
 	public HashSet<PhysicalLink> getAllLinks() {
 		HashSet<PhysicalLink> links = new  HashSet<PhysicalLink>();
 		for (OVXPort p1 : getPorts().values()) {
-			for (OVXPort p2 : getPorts().values()) {
-				if (!p1.equals(p2)) {
-					links.addAll(getRoute(p1, p2).getLinks());
-				}
-			}
+			for (SwitchRoute route : getRoutebyPort(p1))
+				links.addAll(route.getLinks());
 		}
 		return links;
 	}
