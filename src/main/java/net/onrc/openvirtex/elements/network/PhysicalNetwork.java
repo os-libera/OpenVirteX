@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.DPIDandPortPair;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -153,6 +154,7 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 		final PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
 		if (neighbourPort == null || !neighbourPort.equals(dstPort)) {
 			final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
+			OVXMap.getInstance().knownLink(link);
 			super.addLink(link);
 			log.info("Adding physical link between {}/{} and {}/{}", link.getSrcSwitch().getSwitchName(),
 					link.getSrcPort().getPortNumber(), link.getDstSwitch().getSwitchName(),

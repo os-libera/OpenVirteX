@@ -18,6 +18,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
@@ -311,5 +312,14 @@ public interface Mappable {
 	 * @return true if the OVXSwitch exists
 	 */
 	public boolean hasVirtualSwitch(PhysicalSwitch psw, int tid);
+	
+	/**
+	 * Sets the linkid back to the original linkid for a physical link that
+	 * previously existed and has gone away and come back.
+	 * 
+	 * @param link - the new link that has just been detected,
+	 * @return a linkId if this link was known, otherwise null
+	 */
+	public void knownLink(PhysicalLink link);
 
 }

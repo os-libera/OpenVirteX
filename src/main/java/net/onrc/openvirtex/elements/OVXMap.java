@@ -12,8 +12,10 @@ package net.onrc.openvirtex.elements;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +29,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
@@ -715,5 +718,19 @@ public class OVXMap implements Mappable {
 				= this.physicalSwitchMap.get(physicalSwitch);
 		return (sws != null) && (sws.get(tenantId) != null);
 	}
+
+	@Override
+	public void knownLink(PhysicalLink that) {
+		Enumeration<PhysicalLink> links = physicalLinkMap.keys();
+		while (links.hasMoreElements()) {
+			PhysicalLink link = links.nextElement();
+			if (link.equals(that)) {
+				that.setLinkId(link.getLinkId());
+				return;
+			}
+		}
+	}
+	
+	
 
 }

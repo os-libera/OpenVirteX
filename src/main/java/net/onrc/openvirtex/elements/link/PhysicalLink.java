@@ -67,5 +67,9 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements 
 		dbObject.put(TenantHandler.LINK, this.linkId);
 		return dbObject;
 	}
+
+	public void setLinkId(Integer id) {
+		this.linkId = id;
+	}
 	
 }
