@@ -31,9 +31,11 @@ public class GetVirtualSwitchMapping extends ApiHandler<Map<String, Object>> {
 			Map<String, Object> res = new HashMap<String, Object>();
 			Number tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT, params, true, null);
 			OVXMap map = OVXMap.getInstance();
-			LinkedList<String> list = null;
+			LinkedList<String> list = new LinkedList<String>();
 			HashMap<String, Object> subRes = new HashMap<String, Object>();
 			for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue()).getSwitches()) {
+				subRes.clear();
+				list.clear();
 				if (vsw instanceof OVXBigSwitch) {
 					List<Integer> l = new LinkedList<Integer>();
 					for (PhysicalLink li : ((OVXBigSwitch)vsw).getAllLinks())
@@ -42,11 +44,10 @@ public class GetVirtualSwitchMapping extends ApiHandler<Map<String, Object>> {
 				} else {
 					subRes.put("links", new LinkedList<>());
 				}
-				list = new LinkedList<String>();
 				for (PhysicalSwitch psw : map.getPhysicalSwitches(vsw)) 
 					list.add(psw.getSwitchName());
-				subRes.put("switches", list);
-				res.put(vsw.getSwitchName(), subRes);
+				subRes.put("switches", list.clone());
+				res.put(vsw.getSwitchName(), subRes.clone());
 			}
 			resp = new JSONRPC2Response(res, 0);
 			
