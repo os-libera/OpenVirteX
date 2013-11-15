@@ -1,35 +1,25 @@
 package net.onrc.openvirtex.api.service.handlers.monitoring;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
-import net.onrc.openvirtex.elements.datapath.OVXFlowEntry;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
-
 import net.onrc.openvirtex.messages.OVXFlowMod;
-
-import org.openflow.protocol.OFMatch;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-/*
- * FIXME: This needs to fixed, currently it returns incorrect data
- * because the virtualflowtable is actually a physical flowtable.
- * 
- */
+
 public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 
 	JSONRPC2Response resp = null;
@@ -37,21 +27,39 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
 		try {
-			final List<Map<String, Object>> res = new LinkedList<Map<String, Object>>();
+			
 			final Number tid = HandlerUtils.<Number> fetchField(
 					MonitoringHandler.TENANT, params, true, null);
 			final Number dpid = HandlerUtils.<Number> fetchField(
-					MonitoringHandler.DPID, params, true, null);
+					MonitoringHandler.DPID, params, false, -1);
 			final OVXMap map = OVXMap.getInstance();
-			final OVXSwitch vsw = map.getVirtualNetwork(tid.intValue())
-					.getSwitch(dpid.longValue());
-			final Collection<OVXFlowMod> flows = vsw.getFlowTable().getFlowTable();
-			for (final OVXFlowMod flow : flows) {
-				final Map<String, Object> entry = flow.toMap();
-				res.add(entry);
+			final LinkedList<Map<String, Object>> flows = new LinkedList<Map<String, Object>>();
+			if (dpid.longValue() == -1) {
+				HashMap<String, Object> res = 
+						new HashMap<String, Object>();
+				for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue()).getSwitches()) {
+					flows.clear();
+					final Collection<OVXFlowMod> fms = vsw.getFlowTable().getFlowTable();
+					for (final OVXFlowMod flow : fms) {
+						final Map<String, Object> entry = flow.toMap();
+						flows.add(entry);
+					}
+					res.put(vsw.getSwitchName(), flows.clone());
+				}
+				this.resp = new JSONRPC2Response(res, 0);
+			} else {
+				
+				final OVXSwitch vsw = map.getVirtualNetwork(tid.intValue())
+						.getSwitch(dpid.longValue());
+				final Collection<OVXFlowMod> fms = vsw.getFlowTable().getFlowTable();
+				for (final OVXFlowMod flow : fms) {
+					final Map<String, Object> entry = flow.toMap();
+					flows.add(entry);
+				}
+				this.resp = new JSONRPC2Response(flows, 0);
 			}
 
-			this.resp = new JSONRPC2Response(res, 0);
+			
 
 		} catch (ClassCastException | MissingRequiredField e) {
 			this.resp = new JSONRPC2Response(new JSONRPC2Error(
