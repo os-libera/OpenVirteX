@@ -2,6 +2,7 @@ package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collection;
 
+import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 
 /**
@@ -23,8 +24,16 @@ public interface FlowTable {
 	 * 
 	 * @param cookie
 	 * @return The FlowMod
+	 * @throws MappingException 
 	 */
-	public OVXFlowMod getFlowMod(Long cookie);
+	public OVXFlowMod getFlowMod(Long cookie) throws MappingException;
+	
+	/**
+	 * Check if a FlowMod exists in the FlowTable
+	 * @param cookie
+	 * @return true if FlowMod exists
+	 */
+	public boolean hasFlowMod(long cookie);
 	
 	/**
 	 * Remove a FlowMod from this table. Assumes a caller who uses 

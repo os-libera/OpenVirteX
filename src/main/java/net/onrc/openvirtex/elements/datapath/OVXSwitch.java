@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
@@ -90,7 +91,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	/**
 	 * The virtual flow table
 	 */
-	protected OVXFlowTable                           flowTable;
+	protected FlowTable                           flowTable;
 
 	/**
 	 * Instantiates a new OVX switch.
@@ -400,7 +401,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 
 	
 
-	public OVXFlowTable getFlowTable() {
+	public FlowTable getFlowTable() {
 		return this.flowTable;
 	}
 
@@ -436,8 +437,9 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	 * @param cookie
 	 *            the physical cookie
 	 * @return
+	 * @throws MappingException 
 	 */
-	public OVXFlowMod getFlowMod(final Long cookie) {
+	public OVXFlowMod getFlowMod(final Long cookie) throws MappingException {
 		return this.flowTable.getFlowMod(cookie);
 	}
 

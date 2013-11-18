@@ -24,6 +24,7 @@ import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.OFError.OFFlowModFailedCode;
 
+import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXMessageUtil;
@@ -181,12 +182,20 @@ public class OVXFlowTable implements FlowTable {
      * get a OVXFlowMod out of the map without removing it.
      * @param cookie the physical cookie
      * @return a clone of the stored FlowMod, if found.
+     * @throws MappingException 
      */
-    public OVXFlowMod getFlowMod(Long cookie) {
+    public OVXFlowMod getFlowMod(Long cookie) throws MappingException {
     	OVXFlowMod fm =  this.flowmodMap.get(cookie);
-    	return (fm == null) ? null : fm.clone();
+    	if (fm == null) {
+    		throw new MappingException(cookie, OVXFlowMod.class);
+    	}
+    	return fm.clone();
     }
     
+    public boolean hasFlowMod(long cookie) {
+		return this.flowmodMap.containsKey(cookie);
+	}
+	
     public long getCookie() {
     	return this.generateCookie();
     }
@@ -243,5 +252,5 @@ public class OVXFlowTable implements FlowTable {
 	public Collection<OVXFlowMod> getFlowTable() {
 		return Collections.unmodifiableCollection(this.flowmodMap.values());
 	}
-	
+
 }

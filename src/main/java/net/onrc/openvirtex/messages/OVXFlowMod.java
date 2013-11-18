@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.elements.datapath.FlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
@@ -55,7 +56,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		}
 
 		this.sw = sw;
-		OVXFlowTable ft = this.sw.getFlowTable();
+		FlowTable ft = this.sw.getFlowTable();
 		
 		int bufferId = OVXPacketOut.BUFFER_ID_NONE;
 		if (sw.getFromBufferMap(this.bufferId) != null) {
@@ -64,7 +65,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		final short inport = this.getMatch().getInputPort();
 
 		OVXMatch ovxMatch = new OVXMatch(this.match);
-		long cookie = ft.getCookie();
+		long cookie = ((OVXFlowTable) ft).getCookie();
 		//Store the virtual flowMod and obtain the physical cookie
 		ovxMatch.setCookie(cookie);
 		boolean pflag = ft.handleFlowMods(this, cookie);

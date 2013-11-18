@@ -23,6 +23,7 @@ import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
+import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
@@ -69,7 +70,13 @@ VirtualizableAction {
 			 * 		same physical switch
 			 */
 			// Retrieve the flowMod from the virtual flow map
-			final OVXFlowMod fm = sw.getFlowMod(match.getCookie());
+			final OVXFlowMod fm; 
+			try {
+				fm = sw.getFlowMod(match.getCookie());
+			} catch (MappingException e) {
+				log.warn("FlowMod not found in our FlowTable");
+				return;
+			}
 			fm.setCookie(match.getCookie());
 			// TODO: Check if the FM has been retrieved
 

@@ -14,20 +14,18 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
+import net.onrc.openvirtex.elements.datapath.FlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
-import net.onrc.openvirtex.messages.OVXMessageUtil;
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFPort;
-import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.statistics.OFAggregateStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
@@ -46,7 +44,7 @@ public class OVXAggregateStatisticsRequest extends OFAggregateStatisticsRequest
 		
 		if ((this.match.getWildcardObj().isFull() || this.match.getWildcards() == -1) // the -1 is for beacon...
 				&& this.outPort == OFPort.OFPP_NONE.getValue()) {
-			OVXFlowTable ft = sw.getFlowTable();
+			FlowTable ft = sw.getFlowTable();
 			stat.setFlowCount(ft.getFlowTable().size());
 			stat.setByteCount(0);
 			stat.setPacketCount(0);
