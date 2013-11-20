@@ -55,6 +55,7 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 							OVXFlowMod origFM;
 							try {
 								origFM = sw.getFlowMod(stat.getCookie());
+								uniqueCookies.add(stat.getCookie());
 							} catch (MappingException e) {
 								log.warn("FlowMod not found in FlowTable for cookie={}", stat.getCookie());
 								continue;
@@ -62,7 +63,6 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 							stat.setCookie(origFM.getCookie());
 							stat.setMatch(origFM.getMatch());
 							stat.setActions(origFM.getActions());
-							uniqueCookies.add(stat.getCookie());
 							replies.add(stat);
 							stat.setLength(U16.t(OVXFlowStatisticsReply.MINIMUM_LENGTH));
 							for (OFAction act : stat.getActions()) {
