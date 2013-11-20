@@ -10,12 +10,8 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -190,10 +186,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 */
 	@Override
 	public boolean boot() {
-		PhysicalNetwork.getInstance().addSwitch(this);
 		this.log.info("Switch connected with dpid {}, name {} and type {}",
 				this.featuresReply.getDatapathId(), this.getSwitchName(),
 				this.desc.getHardwareDescription());
+		PhysicalNetwork.getInstance().addSwitch(this);
 		this.fillPortMap();
 		this.statsMan.start();
 		return true;

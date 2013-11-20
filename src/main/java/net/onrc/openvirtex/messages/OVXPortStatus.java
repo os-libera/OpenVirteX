@@ -6,7 +6,6 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
 
-
 package net.onrc.openvirtex.messages;
 
 import java.util.HashSet;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.onrc.openvirtex.elements.Mappable;
+
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -35,18 +35,18 @@ import org.openflow.protocol.OFPhysicalPort.OFPortState;
 import org.openflow.protocol.OFPortStatus;
 
 public class OVXPortStatus extends OFPortStatus implements Virtualizable {
-    
-    	private final Logger log      = LogManager.getLogger(OVXPortStatus.class);
-    	
+
+	private final Logger log      = LogManager.getLogger(OVXPortStatus.class);
+
 	@Override
 	public void virtualize(final PhysicalSwitch sw) { 
 		Mappable map = sw.getMap();
 		PhysicalPort p = sw.getPort(this.desc.getPortNumber());
 		if (p == null) {
 			handlePortAdd(sw, p); 
-	    	    	return;
-	    	}
-		
+			return;
+		}
+
 		log.info("Received {} from switch {}", this.toString(), sw.getSwitchId());		
 		LinkPair<PhysicalLink> pair = p.getLink();
 		try {
@@ -86,26 +86,26 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 						}
 					}
 				}
-		    }
+			}
 		} catch (NetworkMappingException | LinkMappingException e) {
-                    log.warn("Couldn't process reason={} for PortStatus for port {}", 
-                	    this.reason, p.getPortNumber());
-                    e.printStackTrace();
-                }	
+			log.warn("Couldn't process reason={} for PortStatus for port {}", 
+					this.reason, p.getPortNumber());
+			e.printStackTrace();
+		}	
 	} 
-	
+
 	private void handlePortAdd(PhysicalSwitch sw, PhysicalPort p) {
-	    /* add a new port to PhySwitch if add message, quit otherwise */
-	    if (isReason(OFPortReason.OFPPR_ADD)) {
+		/* add a new port to PhySwitch if add message, quit otherwise */
+		if (isReason(OFPortReason.OFPPR_ADD)) {
 			p = new PhysicalPort(this.desc, sw, false);
 			if (!sw.addPort(p)) {
-			    log.warn("Could not add new port {} to physical switch {}", 
-				    p.getPortNumber(), sw.getSwitchId());
+				log.warn("Could not add new port {} to physical switch {}", 
+						p.getPortNumber(), sw.getSwitchId());
 			}
 			log.info("Added port {} to switch {}", p.getPortNumber(), sw.getSwitchId());		
-	    }
+		}
 	}
-	
+
 	/**
 	 * Handles change in internal link state, e.g a PhysicalPort in, but not at 
 	 * edges of, a OVXLink or SwitchRoute
@@ -181,20 +181,20 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 			}
 		}
 	}
-	
+
 	public boolean isReason(OFPortReason reason) {
-	    return this.reason == reason.getReasonCode();
+		return this.reason == reason.getReasonCode();
 	}
-	
+
 	public boolean isState(OFPortState state) {
 		return this.desc.getState() == state.getValue();    
 	}
-	
+
 	@Override
 	public String toString() {
 		return "OVXPortStatus: reason[" 
-			+ OFPortReason.fromReasonCode(this.reason).name() + "]"
-			+ " port[" + this.desc.getPortNumber() +"]";	    	
+				+ OFPortReason.fromReasonCode(this.reason).name() + "]"
+				+ " port[" + this.desc.getPortNumber() +"]";	    	
 	}
-	
+
 }

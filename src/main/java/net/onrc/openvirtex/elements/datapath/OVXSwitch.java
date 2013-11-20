@@ -6,7 +6,6 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
 
-
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.ArrayList;

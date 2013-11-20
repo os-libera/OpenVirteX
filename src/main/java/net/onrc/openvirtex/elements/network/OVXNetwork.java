@@ -272,7 +272,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 				.getSwitch(physicalDpid);
 		final PhysicalPort physicalPort = physicalSwitch.getPort(portNumber);
 
-
 		final OVXPort ovxPort;
 		if (vportNumber.length == 0)
 			ovxPort = new OVXPort(this.tenantId, physicalPort, true);
@@ -417,6 +416,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 			route = sw.createRoute(srcPort, dstPort, physicalLinks, reverseLinks, priority);
 		else
 			route = sw.createRoute(srcPort, dstPort, physicalLinks, reverseLinks, priority, routeId[0]);
+		
+		route.register();
+		
 		return route;
 	}
 
@@ -506,6 +508,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	 * by the ControllerHandler, port is extracted from the packet_out.
 	 * Packet_in is created based on topology info.
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void handleLLDP(final OFMessage msg, final Switch sw) {
 		final OVXPacketOut po = (OVXPacketOut) msg;

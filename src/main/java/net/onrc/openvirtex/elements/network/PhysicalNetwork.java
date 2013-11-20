@@ -6,11 +6,9 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
 
-
 package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -22,19 +20,14 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.linkdiscovery.SwitchDiscoveryManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.openflow.protocol.OFMessage;
-import org.openflow.protocol.OFPhysicalPort;
-import org.openflow.protocol.OFPhysicalPort.OFPortConfig;
-import org.openflow.protocol.OFPhysicalPort.OFPortFeatures;
 import org.openflow.protocol.OFPort;
-import org.openflow.protocol.OFPortStatus;
-import org.openflow.protocol.action.OFAction;
+
 
 /**
  * 
@@ -127,7 +120,8 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 			// Do not run discovery on local OpenFlow port
 			if (port.getPortNumber() != OFPort.OFPP_LOCAL.getValue())
 				sdm.addPort(port);
-		}
+		}		
+		DBManager.getInstance().addPort(port.toDPIDandPort());
 	}
 
 	/**
@@ -137,6 +131,7 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 	 */
 
 	public synchronized void removePort(SwitchDiscoveryManager sdm, final PhysicalPort port) {
+		DBManager.getInstance().delPort(port.toDPIDandPort());
 		port.unregister();
 		/* remove from topology discovery */
 		if (sdm != null) {
@@ -148,7 +143,6 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 		if (dst != null ) {
 			this.removeLink(port, dst);
 		}
-
 	}
 
 	/**
@@ -218,6 +212,7 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 	 * Handle LLDP packets by passing them on to the appropriate
 	 * SwitchDisoveryManager (which sent the original LLDP packet).
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void handleLLDP(final OFMessage msg, final Switch sw) {
 		// Pass msg to appropriate SwitchDiscoveryManager

@@ -14,6 +14,7 @@ import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.Persistable;
+import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 
@@ -201,5 +202,9 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 		dbObject.put(TenantHandler.DPID, this.parentSwitch.getSwitchId()); 
 		dbObject.put(TenantHandler.PORT, this.getPortNumber());
 		return dbObject;
+	}
+	
+	public DPIDandPort toDPIDandPort() {
+		return new DPIDandPort(this.parentSwitch.getSwitchId(), this.portNumber);
 	}
 }

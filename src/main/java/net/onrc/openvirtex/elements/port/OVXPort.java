@@ -6,20 +6,15 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
 
-
 package net.onrc.openvirtex.elements.port;
-
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
-
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,11 +22,9 @@ import org.openflow.protocol.OFPortStatus;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
 
-import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.link.OVXLink;
@@ -126,7 +119,6 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		if (this.parentSwitch.isActive()) {
 			sendStatusMsg(OFPortReason.OFPPR_ADD);
 			this.parentSwitch.generateFeaturesReply();
-
 		}
 		DBManager.getInstance().save(this);
 	}
@@ -237,7 +229,6 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		dbObject.putAll(this.getPhysicalPort().getDBObject());
 		dbObject.put(TenantHandler.VPORT, this.portNumber);
 		return dbObject;
-
 	}
 
 	private void cleanUpFlowMods() {

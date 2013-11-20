@@ -1,11 +1,8 @@
 package net.onrc.openvirtex.api.service.handlers.monitoring;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Iterables;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -15,11 +12,6 @@ import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.host.Host;
-import net.onrc.openvirtex.elements.link.OVXLink;
-import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 

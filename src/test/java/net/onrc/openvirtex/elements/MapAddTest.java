@@ -72,16 +72,16 @@ public class MapAddTest extends TestCase {
 		try {
 			for (int i = 0; i < this.MAXIPS; i++) {
 				for (int j = 0; j < this.MAXTIDS; j++) {
-			        	Assert.assertEquals(
-	                            		this.map.getVirtualIP(new PhysicalIPAddress(i)),
-	                            		new OVXIPAddress(j, i));
-                            
+					Assert.assertEquals(
+							this.map.getVirtualIP(new PhysicalIPAddress(i)),
+							new OVXIPAddress(j, i));
+
 				}
 			}
 		} catch (AddressMappingException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }	
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 	}
 
 	public void testAddSwitches() {
@@ -102,7 +102,7 @@ public class MapAddTest extends TestCase {
 			for (int i = 0; i < this.MAXPSW; i++) {
 				for (int j = 0; j < this.MAXTIDS; j++) {
 					Assert.assertEquals(this.map.getVirtualSwitch(p_sw.get(i), j),
-						v_sw.remove(0));
+							v_sw.remove(0));
 				}
 			}
 		} catch (SwitchMappingException e) {
@@ -117,20 +117,20 @@ public class MapAddTest extends TestCase {
 		try {
 			for (int i = 0; i < this.MAXPSW; i++) {
 				Assert.assertEquals((int) this.map.getMAC(MACAddress.valueOf(i)), i
-	                    		% this.MAXTIDS);
-                	}
+						% this.MAXTIDS);
+			}
 		} catch (AddressMappingException e) {
-                   	e.printStackTrace();
-                }
+			e.printStackTrace();
+		}
 
 	}
-	
+
 	public void testAddLinks() {
 		PhysicalNetwork pn = PhysicalNetwork.getInstance();
 		Map<Long, PhysicalSwitch> pswmap = new HashMap<Long, PhysicalSwitch>(); /*DPID, PSW*/
 		List<OVXSwitch> vswmap = new ArrayList<OVXSwitch>(); /*TID, VSW*/
 		makeSwitches(pswmap, vswmap, pn);
-		
+
 		OVXLink vlink = null;
 		PhysicalLink plink = null;
 		SwitchRoute route;
@@ -156,9 +156,9 @@ public class MapAddTest extends TestCase {
 							} catch (PortMappingException e) {
 								fail();
 							}
-							route = new SwitchRoute(vsrcp, vdstp, vsrc.getSwitchId(), 
-									1, 1, (byte)0xf);
-							
+							route = new SwitchRoute(vsrc, vsrcp, vdstp, 
+									1, (byte)0xf);
+
 							/* Add to mapping, verify we get back what we placed*/
 							this.map.addLinks(Collections.singletonList(plink), vlink);
 							Assert.assertEquals(vlink, this.map.getVirtualLinks(plink, 1));
@@ -176,7 +176,7 @@ public class MapAddTest extends TestCase {
 			/* silently ignore for now */
 		}
 	}
-	
+
 	/**
 	 * Creates a set of Physical and OVX switches. 
 	 * @param pswmap
@@ -189,7 +189,7 @@ public class MapAddTest extends TestCase {
 		PhysicalPort pport = null;
 		OVXSwitch vsw = null;
 		OVXPort vport = null;
-		
+
 		/* make 5 PSWs with 5 ports */
 		for (long i = 0; i < this.MAXTIDS/2; i++) {
 			psw = new PhysicalSwitch(i); /*DPID*/
@@ -204,7 +204,7 @@ public class MapAddTest extends TestCase {
 			vsw = new OVXSingleSwitch(j, 1); /*DPID, TID*/
 			vswmap.add(vsw);
 		}
-	
+
 		/* add ports to VSW 1:1 physical to virtual */
 		for (OVXSwitch v : vswmap) {
 			psw = pswmap.get(v.getSwitchId());
@@ -219,14 +219,14 @@ public class MapAddTest extends TestCase {
 			}
 		}
 	}
-	
+
 	protected PhysicalPort makePhyPort(short portnum, PhysicalSwitch psw) {
 		OFPhysicalPort ofpp = new OFPhysicalPort();
 		ofpp.setPortNumber(portnum);
 		/* whether edge or not doesn't matter for us */
 		return new PhysicalPort(ofpp, psw, false);
 	}
-	
+
 	protected OVXPort makeOVXPort(short portnum, final int tenant, final PhysicalPort port) {
 		try {
 			/* whether edge or not doesn't matter for us */

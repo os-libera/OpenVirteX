@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.openflow.util.U8;
 
 /**
- * The Class ShortestPath. This class implements the Dijstra Algorithm to compute the shortest path 
+ * The Class ShortestPath. This class implements the Dijkstra Algorithm to compute the shortest path 
  * between two physical switches based on the nominal throughput of the link.
  */
 public class ShortestPath implements Routable {
@@ -294,14 +294,14 @@ public class ShortestPath implements Routable {
 			if (PhysicalNetwork.getInstance().getLink(link.getDstPort(), link.getSrcPort()) == null) 
 				return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Gets the route element that represent a path between to virtual ports.
 	 * If the route has been already compute, returns the instance, otherwise
-	 * it call the dijstra algorithm to compute it.
+	 * it call the dijkstra algorithm to compute it.
 	 * 
 	 * @param vSwitch the virtual big switch
 	 * @param srcPort the virtual source port
@@ -334,7 +334,7 @@ public class ShortestPath implements Routable {
 		LinkedList<PhysicalLink> revpath = new LinkedList<>();
 
 		/*
-		 * Retrieve the list of physical siwtches from the OVXMap and remove from the edges (physical network copy)
+		 * Retrieve the list of physical switches from the OVXMap and remove from the edges (physical network copy)
 		 * all the edges that don't have that switches as src or dst (remove all the links that go outside the big-switch)
 		 */
 		this.edges.clear();
@@ -353,7 +353,7 @@ public class ShortestPath implements Routable {
 
 		for (Short i = 0; i <= U8.f(vSwitch.getAlg().getBackups()); i++) {
 			/*
-			 * Remove from the phisical network the shortest-paths already used.
+			 * Remove from the physical network the shortest-paths already used.
 			 * For the primary path, all the physical network is used
 			 */
 			this.edges.removeAll(path);
@@ -448,7 +448,7 @@ public class ShortestPath implements Routable {
 			this.edges.remove(PhysicalNetwork.getInstance().getLink(dstPathPort, 
 					ovxLink.getDstPort().getPhysicalPort()));
 			this.edges.remove(PhysicalNetwork.getInstance().getLink(ovxLink.getDstPort().getPhysicalPort(),dstPathPort));
-			
+
 			for (Short i = 0; i <= U8.f(ovxLink.getAlg().getBackups()); i++) {
 				/*
 				 * Remove from the physical network the shortest-paths already used.

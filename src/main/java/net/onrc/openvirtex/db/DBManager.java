@@ -12,7 +12,9 @@ import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.DPIDandPortPair;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
+import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.routing.SwitchRoute;
@@ -39,7 +41,8 @@ public class DBManager {
 	private Map<Long, List<OVXNetworkManager>> dpidToMngr; 
 	// Mapping between physical links and a list of vnet managers
 	private Map<DPIDandPortPair, List<OVXNetworkManager>> linkToMngr;
-	// Map between physical (dpid, port)-pair and unique link id
+	// Mapping between physical ports and a list of vnet managers
+	private Map<DPIDandPort, List<OVXNetworkManager>> portToMngr; 
 
 	private static Logger log = LogManager.getLogger(DBManager.class
 			.getName());
@@ -49,6 +52,7 @@ public class DBManager {
 		this.collections = new HashMap<String, DBCollection>();
 		this.dpidToMngr = new HashMap<Long, List<OVXNetworkManager>>();
 		this.linkToMngr = new HashMap<DPIDandPortPair, List<OVXNetworkManager>>();
+		this.portToMngr = new HashMap<DPIDandPort, List<OVXNetworkManager>>();
 	}
 
 	public static DBManager getInstance() {
@@ -98,8 +102,8 @@ public class DBManager {
 		PrintStream ps = System.err;
 		System.setErr(null);
 		try {
-			BasicDBObject index = new BasicDBObject(TenantHandler.TENANT, 1);
 			BasicDBObject options = new BasicDBObject("unique", true);
+			BasicDBObject index = new BasicDBObject(TenantHandler.TENANT, 1);
 			this.collections.get(coll).ensureIndex(index, options);
 		} catch (Exception e) {
 			log.error("Failed to set database index: {}", e.getMessage());
@@ -160,7 +164,7 @@ public class DBManager {
 			System.setErr(ps);
 		}
 	}
-	
+
 	/**
 	 * Remove document from db
 	 */
@@ -178,7 +182,7 @@ public class DBManager {
 			System.setErr(ps);
 		}		
 	}
-	
+
 	/**
 	 * Save persistable object obj
 	 * @param obj
@@ -186,8 +190,7 @@ public class DBManager {
 	 */
 	public void save(Persistable obj) {
 		BasicDBObject query = new BasicDBObject();
-		for (String key: obj.getDBIndex().keySet())
-			query.put(key,  obj.getDBIndex().get(key));
+		query.putAll(obj.getDBIndex());
 		BasicDBObject update = new BasicDBObject("$addToSet", new BasicDBObject(obj.getDBKey(), obj.getDBObject()));
 		PrintStream ps = System.err;
 		System.setErr(null);
@@ -208,8 +211,7 @@ public class DBManager {
 	 */
 	public void remove(Persistable obj) {
 		BasicDBObject query = new BasicDBObject();
-		for (String key: obj.getDBIndex().keySet())
-			query.put(key,  obj.getDBIndex().get(key));
+		query.putAll(obj.getDBIndex());
 		BasicDBObject update = new BasicDBObject("$pull", new BasicDBObject(obj.getDBKey(), obj.getDBObject()));
 		PrintStream ps = System.err;
 		System.setErr(null);
@@ -221,6 +223,44 @@ public class DBManager {
 		} finally {
 			System.setErr(ps);
 		}
+	}
+
+	/**
+	 * Remove all routes of switch for specified tenant
+	 */
+	public void removeSwitchPath(int tenantId, long switchId) {
+		BasicDBObject query = new BasicDBObject();
+		query.put(TenantHandler.TENANT, tenantId);
+		BasicDBObject pull = new BasicDBObject("$pull", new BasicDBObject(SwitchRoute.DB_KEY, new BasicDBObject(TenantHandler.DPID, switchId)));
+		PrintStream ps = System.err;
+		System.setErr(null);
+		try {
+			DBCollection collection = this.collections.get(DB_VNET);
+			collection.update(query, pull);
+		} catch (Exception e) {
+			log.error("Failed to remove from db: {}", e.getMessage());
+		} finally {
+			System.setErr(ps);
+		}
+	}
+
+	/**
+	 * Remove stored path of vlink for specified tenant
+	 */
+	public void removeLinkPath(int tenantId, int linkId) {
+		BasicDBObject query = new BasicDBObject();
+		query.put(TenantHandler.TENANT, tenantId);
+		BasicDBObject pull = new BasicDBObject("$pull", new BasicDBObject(OVXLink.DB_KEY, new BasicDBObject(TenantHandler.LINK, linkId)));
+		PrintStream ps = System.err;
+		System.setErr(null);
+		try {
+			DBCollection collection = this.collections.get(DB_VNET);
+			collection.update(query, pull);
+		} catch (Exception e) {
+			log.error("Failed to remove from db: {}", e.getMessage());
+		} finally {
+			System.setErr(ps);
+		}		
 	}
 
 	/**
@@ -245,11 +285,13 @@ public class DBManager {
 					// Accessing DB_KEY field through a class derived from the abstract OVXSwitch
 					List<Map<String, Object>> switches = (List<Map<String, Object>>) vnet.get(Switch.DB_KEY);
 					List<Map<String, Object>> links = (List<Map<String, Object>>) vnet.get(Link.DB_KEY);
+					List<Map<String, Object>> ports = (List<Map<String, Object>>) vnet.get(Port.DB_KEY);
 					List<Map<String, Object>> routes = (List<Map<String, Object>>) vnet.get(SwitchRoute.DB_KEY);
 					this.readOVXSwitches(switches, mngr);
 					this.readOVXLinks(links, mngr);
+					this.readOVXPorts(ports, mngr);
 					this.readOVXRoutes(routes, mngr);
-					DBManager.log.info("Virtual network {} waiting for {} switches and {} links", mngr.getTenantId(), mngr.getSwitchCount(), mngr.getLinkCount());
+					DBManager.log.info("Virtual network {} waiting for {} switches, {} links and {} ports", mngr.getTenantId(), mngr.getSwitchCount(), mngr.getLinkCount(), mngr.getPortCount());
 				} catch (IndexOutOfBoundException | DuplicateIndexException e) {
 					DBManager.log.error("Failed to load virtual network {}: {}", mngr.getTenantId(), e.getMessage());					
 				}
@@ -295,23 +337,27 @@ public class DBManager {
 			return;
 		// Register links in the appropriate manager
 		for (Map<String, Object> link: links) {
-			List<Map> path = (List<Map>) link.get(TenantHandler.PATH);
+			List<Map<String, Object>> path = (List<Map<String, Object>>) link.get(TenantHandler.PATH);
 			for (Map<String, Object> hop: path) {
+				// Fetch link
 				Long srcDpid = (Long) hop.get(TenantHandler.SRC_DPID);
 				Short srcPort = ((Integer) hop.get(TenantHandler.SRC_PORT)).shortValue();
 				Long dstDpid = (Long) hop.get(TenantHandler.DST_DPID);
 				Short dstPort = ((Integer) hop.get(TenantHandler.DST_PORT)).shortValue();
 				DPIDandPortPair dpp = new DPIDandPortPair(new DPIDandPort(srcDpid, srcPort),
 						new DPIDandPort(dstDpid, dstPort));
+				// Register link in current manager
 				mngr.registerLink(dpp);
+				// Update list of managers that wait for this link
 				List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
 				if (mngrs == null)
 					this.linkToMngr.put(dpp, new ArrayList<OVXNetworkManager>());
 				this.linkToMngr.get(dpp).add(mngr);
 
-				// Register switches
+				// Register src/dst switches of this link
 				mngr.registerSwitch(srcDpid);
 				mngr.registerSwitch(dstDpid);
+				// Update list of managers that wait for these switches
 				mngrs = this.dpidToMngr.get(srcDpid);
 				if (mngrs == null)
 					this.dpidToMngr.put(srcDpid, new ArrayList<OVXNetworkManager>());
@@ -325,6 +371,30 @@ public class DBManager {
 	}
 
 	/**
+	 * Read OVX links from a list of maps in db format and register them in their manager.
+	 * Also read switches that form a virtual link and register them.
+	 * @param links
+	 * @param mngr
+	 */
+	private void readOVXPorts(List<Map<String, Object>> ports, OVXNetworkManager mngr) {
+		if (ports == null)
+			return;
+		for (Map<String, Object> port: ports) {
+			// Read dpid and port number
+			Long dpid = (Long) port.get(TenantHandler.DPID);
+			Short portNumber = ((Integer) port.get(TenantHandler.PORT)).shortValue();
+			DPIDandPort p = new DPIDandPort(dpid, portNumber);
+			// Register port in current manager
+			mngr.registerPort(p);
+			// Update list of managers that wait for this port
+			List<OVXNetworkManager> mngrs = this.portToMngr.get(p);
+			if (mngrs == null)
+				this.portToMngr.put(p, new ArrayList<OVXNetworkManager>());
+			this.portToMngr.get(p).add(mngr);
+		}
+	}	
+
+	/**
 	 * Read OVX routes from a list of maps in db format and register the switches and links in their manager.
 	 * @param links
 	 * @param mngr
@@ -334,7 +404,7 @@ public class DBManager {
 		if (routes == null)
 			return;
 		for (Map<String, Object> route: routes) {
-			List<Map> path = (List<Map>) route.get(TenantHandler.PATH);
+			List<Map<String, Object>> path = (List<Map<String, Object>>) route.get(TenantHandler.PATH);
 			for (Map<String, Object> hop: path) {
 				Long srcDpid = (Long) hop.get(TenantHandler.SRC_DPID);
 				Short srcPort = ((Integer) hop.get(TenantHandler.SRC_PORT)).shortValue();
@@ -365,18 +435,26 @@ public class DBManager {
 	}
 
 	/**
-	 * Add physical switch to the OVXNetworkManagers that are waiting for this switch.  
+	 * Add physical switch to the OVXNetworkManagers that are waiting for this switch.
+	 * Remove OVXNetworkManagers that were booted after adding this switch.  
 	 * This method is called by the PhysicalSwitch.boot() method 
 	 */
 	public void addSwitch(final Long dpid) {
 		// Disregard physical switch creation if OVX was started with --dbClear
 		if (!this.clear) {
-			// Lookup virtual networks that use this physical switch
-			List<OVXNetworkManager> mngrs = this.dpidToMngr.get(dpid);
-			if (mngrs != null) {
-				for (OVXNetworkManager mngr: mngrs)
-					mngr.setSwitch(dpid);
+			List<OVXNetworkManager> completedMngrs = new ArrayList<OVXNetworkManager>();
+			synchronized(this.dpidToMngr) {
+				// Lookup virtual networks that use this physical switch
+				List<OVXNetworkManager> mngrs = this.dpidToMngr.get(dpid);
+				if (mngrs != null) {
+					for (OVXNetworkManager mngr: mngrs) {
+						mngr.setSwitch(dpid);
+						if (mngr.getStatus())
+							completedMngrs.add(mngr);
+					}
+				}
 			}
+			this.removeOVXNetworkManagers(completedMngrs);
 		}
 	}
 
@@ -387,27 +465,37 @@ public class DBManager {
 	public void delSwitch(final Long dpid) {
 		// Disregard physical switch deletion if OVX was started with --dbClear
 		if (!this.clear) {
-			// Lookup virtual networks that use this physical switch
-			List<OVXNetworkManager> mngrs = this.dpidToMngr.get(dpid);
-			if (mngrs != null) {
-				for (OVXNetworkManager mngr: mngrs)
-					mngr.unsetSwitch(dpid);
+			synchronized(this.dpidToMngr) {
+				// Lookup virtual networks that use this physical switch
+				List<OVXNetworkManager> mngrs = this.dpidToMngr.get(dpid);
+				if (mngrs != null) {
+					for (OVXNetworkManager mngr: mngrs)
+						mngr.unsetSwitch(dpid);
+				}
 			}
 		}
 	}
 
 	/**
 	 * Add physical link to the OVXNetworkManagers that are waiting for this link.  
+	 * Remove OVXNetworkManagers that were booted after adding this link.  
 	 */
 	public void addLink(final DPIDandPortPair dpp) {
 		// Disregard physical link creation if OVX was started with --dbClear
 		if (!this.clear) {
-			// Lookup virtual networks that use this physical link
-			List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
-			if (mngrs != null) {
-				for (OVXNetworkManager mngr: mngrs)
-					mngr.setLink(dpp);
+			List<OVXNetworkManager> completedMngrs = new ArrayList<OVXNetworkManager>();
+			synchronized(this.linkToMngr) {
+				// Lookup virtual networks that use this physical link
+				List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
+				if (mngrs != null) {
+					for (OVXNetworkManager mngr: mngrs) {
+						mngr.setLink(dpp);
+						if (mngr.getStatus())
+							completedMngrs.add(mngr);
+					}
+				}
 			}
+			this.removeOVXNetworkManagers(completedMngrs);
 		}
 	}
 
@@ -417,11 +505,75 @@ public class DBManager {
 	public void delLink(final DPIDandPortPair dpp) {
 		// Disregard physical link deletion if OVX was started with --dbClear
 		if (!this.clear) {
-			// Lookup virtual networks that use this physical link
-			List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
-			if (mngrs != null) {
-				for (OVXNetworkManager mngr: mngrs)
-					mngr.unsetLink(dpp);
+			synchronized(this.linkToMngr) {
+				// Lookup virtual networks that use this physical link
+				List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
+				if (mngrs != null) {
+					for (OVXNetworkManager mngr: mngrs)
+						mngr.unsetLink(dpp);
+				}
+			}
+		}
+	}
+
+
+	/**
+	 * Add physical port to the OVXNetworkManagers that are waiting for this port.
+	 * Remove OVXNetworkManagers that were booted after adding this port.  
+	 */
+	public void addPort(final DPIDandPort port) {
+		// Disregard physical port creation if OVX was started with --dbClear
+		if (!this.clear) {
+			List<OVXNetworkManager> completedMngrs = new ArrayList<OVXNetworkManager>();
+			synchronized(this.portToMngr) {
+				// Lookup virtual networks that use this physical port
+				List<OVXNetworkManager> mngrs = this.portToMngr.get(port);
+				if (mngrs != null) {
+					for (OVXNetworkManager mngr: mngrs) {
+						mngr.setPort(port);
+						if (mngr.getStatus())
+							completedMngrs.add(mngr);
+					}
+				}
+			}
+			this.removeOVXNetworkManagers(completedMngrs);
+		}
+	}
+
+	/**
+	 * Delete physical port from the OVXNetworkManagers that are waiting for this switch.  
+	 */
+	public void delPort(final DPIDandPort port) {
+		// Disregard physical link deletion if OVX was started with --dbClear
+		if (!this.clear) {
+			synchronized(this.dpidToMngr) {
+				// Lookup virtual networks that use this physical link
+				List<OVXNetworkManager> mngrs = this.portToMngr.get(port);
+				if (mngrs != null) {
+					for (OVXNetworkManager mngr: mngrs)
+						mngr.unsetPort(port);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Remove network managers that were waiting for switches, links or ports.
+	 * @param mngrs
+	 */
+	private void removeOVXNetworkManagers(List<OVXNetworkManager> mngrs) {
+		for (OVXNetworkManager mngr: mngrs) {
+			synchronized(this.dpidToMngr) {
+				for (Long dpid: this.dpidToMngr.keySet())
+					this.dpidToMngr.get(dpid).remove(mngr);
+			}
+			synchronized(this.linkToMngr) {
+				for (DPIDandPortPair dpp: this.linkToMngr.keySet())
+					this.linkToMngr.get(dpp).remove(mngr);
+			}
+			synchronized(this.portToMngr) {
+				for (DPIDandPort dp: this.portToMngr.keySet())
+					this.portToMngr.get(dp).remove(mngr);
 			}
 		}
 	}

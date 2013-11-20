@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
@@ -208,7 +209,7 @@ public class OVXBigSwitch extends OVXSwitch {
 					if (srcPort.getPortNumber() != dstPort.getPortNumber()
 							&& srcPort.getPhysicalPort().getParentSwitch() != dstPort
 							.getPhysicalPort().getParentSwitch()) {
-						this.getRoute(srcPort, dstPort);
+						this.getRoute(srcPort, dstPort).register();;
 					}
 				}
 			}
@@ -338,11 +339,11 @@ public class OVXBigSwitch extends OVXSwitch {
 			revRtEntry = routeMap.get(egress).get(ingress);
 		} catch (NullPointerException e) {}
 
-		if (rtEntry == null || revRtEntry == null) {
-			rtEntry = new SwitchRoute(ingress, egress,
-					this.switchId, routeId, this.tenantId, priority);
-			revRtEntry = new SwitchRoute(egress, ingress,
-					this.switchId, routeId, this.tenantId, priority);
+		if (rtEntry == null && revRtEntry == null) {
+			rtEntry = new SwitchRoute(this, ingress, egress,
+					routeId, priority);
+			revRtEntry = new SwitchRoute(this, egress, ingress,
+					routeId, priority);
 			this.map.addRoute(rtEntry, path);
 			this.map.addRoute(revRtEntry, revpath);
 
@@ -432,5 +433,19 @@ public class OVXBigSwitch extends OVXSwitch {
 			}
 		}
 		return links;
+	}
+
+	/**
+	 * Overriddden because big switches have a routing algorithm and number of backup routes
+	**/
+	@Override
+	public Map<String, Object> getDBObject() {
+		Map<String, Object> dbObject = new HashMap<String, Object>();
+		dbObject.putAll(super.getDBObject());
+
+		dbObject.put(TenantHandler.ALGORITHM, this.alg.getRoutingType().getValue());
+		dbObject.put(TenantHandler.BACKUPS, this.alg.getBackups());
+		
+		return dbObject;
 	}
 }

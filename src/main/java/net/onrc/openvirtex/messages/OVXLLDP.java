@@ -51,7 +51,7 @@ public class OVXLLDP extends LLDP {
 			putShort(NAME_TLV_HEADER).put(ONLAB_OUI).put(NAME_TLV_SUBTYPE).put(OVX_NAME.getBytes()).array();
 
 	private static byte DPID_TLV_TYPE = 127;
-	private static byte DPID_TLV_SIZE = (byte) (14);		// 12 = OUI (3) + subtype (1) + dpid (8)  
+	private static byte DPID_TLV_SIZE = (byte) (12);		// 12 = OUI (3) + subtype (1) + dpid (8)  
 	private static byte DPID_TLV_SUBTYPE = 2;
 	private static short DPID_TLV_HEADER = (short) ((DPID_TLV_TYPE << 9) | DPID_TLV_SIZE);
 	// Contents of dpid TLV

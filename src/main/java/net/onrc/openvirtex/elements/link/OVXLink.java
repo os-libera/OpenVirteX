@@ -17,9 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
@@ -265,12 +263,14 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 			Map<String, Object> dbObject = super.getDBObject(); 
 			dbObject.put(TenantHandler.LINK, this.linkId);
 			dbObject.put(TenantHandler.PRIORITY, this.priority);
+			dbObject.put(TenantHandler.ALGORITHM, this.alg.getRoutingType().getValue());
+			dbObject.put(TenantHandler.BACKUPS, this.alg.getBackups());
 			// Build path list
 			List<PhysicalLink> links = map.getPhysicalLinks(this);
 			List<Map<String, Object>> path = new ArrayList<Map<String, Object>>();
 			for (PhysicalLink link: links) {
 				// Physical link id's are meaningless when restarting OVX
-				Map obj = link.getDBObject();
+				Map<String, Object> obj = link.getDBObject();
 				obj.remove(TenantHandler.LINK);
 				path.add(obj);
 			}

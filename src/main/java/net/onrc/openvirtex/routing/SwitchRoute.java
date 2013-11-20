@@ -60,14 +60,11 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 
 	public static final String DB_KEY = "routes";
 
-	/** unique route identifier */
+	/** Unique route identifier */
 	int          routeId;
 
-	/** DPID of parent virtual switch */
-	long         dpid;
-
-	/** The Tenant ID of the switch - makes it unique in the physical network */
-	int          tenantid;
+	/** Parent virtual switch */
+	OVXSwitch         sw;
 
 	private byte priority;
 
@@ -80,12 +77,11 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	/** A reference to the PhysicalPort at the start of the path */
 	PhysicalPort outPort;
 
-	public SwitchRoute(final OVXPort in, final OVXPort out, final long dpid,
-			final int routeid, final int tid, final byte priority) {
+	public SwitchRoute(final OVXSwitch sw, final OVXPort in, final OVXPort out,
+			final int routeid, final byte priority) {
 		super(in, out);
-		this.dpid = dpid;
+		this.sw = sw;
 		this.routeId = routeid;
-		this.tenantid = tid;
 		this.priority = priority;
 		this.backupRoutes = new TreeMap<>();
 		this.unusableRoutes = new TreeMap<>();
@@ -116,32 +112,14 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	}
 
 	/**
-	 * Sets the DPID of the parent switch of route
-	 * 
-	 * @param dpid
-	 */
-	public void setSwitchId(final long dpid) {
-		this.dpid = dpid;
-	}
-
-	/**
-	 * @return the DPID of the virtual switch
+	 * @return The DPID of the virtual switch
 	 */
 	public long getSwitchId() {
-		return this.dpid;
-	}
-
-	/**
-	 * Sets the tenant ID of this route's parent switch
-	 * 
-	 * @param tid
-	 */
-	public void setTenantId(final int tid) {
-		this.tenantid = tid;
+		return this.sw.getSwitchId();
 	}
 
 	public Integer getTenantId() {
-		return this.tenantid;
+		return this.sw.getTenantId();
 	}
 
 	/**
@@ -194,7 +172,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 
 	@Override
 	public String toString() {
-		return "routeId: " + this.routeId + " dpid: " + this.dpid + " inPort: "
+		return "routeId: " + this.routeId + " dpid: " + this.getSwitchId() + " inPort: "
 				+ this.srcPort == null ? "" : this.srcPort.toString()
 						+ " outPort: " + this.dstPort == null ? "" : this.dstPort
 								.toString();
@@ -423,7 +401,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	@Override
 	public Map<String, Object> getDBIndex() {
 		Map<String, Object> index = new HashMap<String, Object>();
-		index.put(TenantHandler.TENANT, this.tenantid);
+		index.put(TenantHandler.TENANT, this.getTenantId());
 		return index;
 	}
 
@@ -441,7 +419,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	public Map<String, Object> getDBObject() {
 		try {
 			Map<String, Object> dbObject = new HashMap<String, Object>();
-			dbObject.put(TenantHandler.DPID, this.dpid);
+			dbObject.put(TenantHandler.DPID, this.getSwitchId());
 			dbObject.put(TenantHandler.SRC_PORT, this.srcPort.getPortNumber());
 			dbObject.put(TenantHandler.DST_PORT, this.dstPort.getPortNumber());
 			dbObject.put(TenantHandler.PRIORITY, this.priority);
@@ -450,8 +428,9 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 			List<PhysicalLink> links = OVXMap.getInstance().getRoute(this);
 			List<Map<String, Object>> path = new ArrayList<Map<String, Object>>();
 			for (PhysicalLink link: links) {
-				Map obj = link.getDBObject();
-				// Physical link id's are meaningless when restarting OVX
+				Map<String, Object> obj = link.getDBObject();
+				// Physical link id's are meaningless when restarting OVX,
+				// as these depend on the order in which the links are discovered
 				obj.remove(TenantHandler.LINK);
 				path.add(obj);
 			}

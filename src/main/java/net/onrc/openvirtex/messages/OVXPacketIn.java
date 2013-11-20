@@ -75,7 +75,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 			if (this.tenantId == null) {
 				this.log.warn(
 						"PacketIn {} does not belong to any virtual network; "
-								+ "dropping and intalling a temporary drop rule",
+								+ "dropping and installing a temporary drop rule",
 								this);
 				this.installDropRule(sw, match);
 				return;

@@ -34,10 +34,10 @@ import org.openflow.util.HexString;
  *            generic type (Port) that is casted in the subclasses
  */
 public abstract class Switch<T extends Port> implements OVXEventHandler,
-		OVXSendMsg {
+OVXSendMsg {
 
 	public static final String DB_KEY = "switches";
-	
+
 	/** Switch channel status. */
 	protected boolean isConnected = false;
 
@@ -168,11 +168,11 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 	 * @return true, if successful
 	 */
 	public boolean removePort(Short portNumber) {
-	    if (this.portMap.containsKey(portNumber)) {
-		this.portMap.remove(portNumber);
-		return true;
-	    }
-	    return false;
+		if (this.portMap.containsKey(portNumber)) {
+			this.portMap.remove(portNumber);
+			return true;
+		}
+		return false;
 	};
 
 	/*
@@ -205,7 +205,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 		this.channel = channel;
 
 	}
-	
+
 	/**
 	 * Starts up the switch. 
 	 * 
@@ -220,7 +220,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 	 * a PhysicalSwitch).   
 	 */
 	public abstract void unregister();
-	
+
 	/**
 	 * Tear down.
 	 */

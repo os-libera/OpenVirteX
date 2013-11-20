@@ -229,11 +229,12 @@ TimerTask {
 		return "SwitchDiscoveryManager " + this.sw.getName();
 	}
 
-	@Override
 	/*
 	 * Handles an incoming LLDP packet.
 	 * Creates link in topology and sends ACK to port where LLDP originated.
 	 */
+	@SuppressWarnings("rawtypes")
+	@Override
 	public void handleLLDP(final OFMessage msg, final Switch sw) {
 		final OVXPacketIn pi = (OVXPacketIn) msg;
 		final byte[] pkt = pi.getPacketData();

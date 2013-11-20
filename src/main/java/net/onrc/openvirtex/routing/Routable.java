@@ -8,7 +8,6 @@
 package net.onrc.openvirtex.routing;
 
 import java.util.LinkedList;
-import java.util.List;
 
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;

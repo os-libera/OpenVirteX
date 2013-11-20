@@ -6,20 +6,14 @@
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  ******************************************************************************/
 
-
 package net.onrc.openvirtex.messages;
 
-import java.util.HashMap;
-import java.util.List;
-
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsReply;
 import net.onrc.openvirtex.messages.statistics.VirtualizableStatistic;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFStatisticsReply;
-import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
 public class OVXStatisticsReply extends OFStatisticsReply implements
