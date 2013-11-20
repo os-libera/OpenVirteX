@@ -388,7 +388,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			reply.setLengthU(m.getLengthU());
 			h.channel.write(Collections.singletonList(reply));
 		}
-		
+
 		void processOFFeaturesRequest(final ControllerChannelHandler h,
 				final OFFeaturesRequest m) {
 			OFFeaturesReply fr = h.sw.getFeaturesReply();
@@ -521,15 +521,17 @@ public class ControllerChannelHandler extends OFChannelHandler {
 						 * then send it to the OVXNetwork.
 						 */
 						final byte[] data = ((OFPacketOut) ofm).getPacketData();
-						if (OVXLLDP.isLLDP(data)) {
-							final int tenantId = ((OVXSwitch) this.sw).getTenantId();
-							OVXMap.getInstance().getVirtualNetwork(tenantId).handleLLDP(ofm, this.sw);
-							break;
-						} else if (data[12] == (byte) 0x89
-								&& data[13] == (byte) 0x42) {
-							// TODO: think about how to solve this.
-							// probably treat it like a normal LLDP for now.
-							break;
+						if (data.length >= 14) {
+							if (OVXLLDP.isLLDP(data)) {
+								final int tenantId = ((OVXSwitch) this.sw).getTenantId();
+								OVXMap.getInstance().getVirtualNetwork(tenantId).handleLLDP(ofm, this.sw);
+								break;
+							} else if (data[12] == (byte) 0x89
+									&& data[13] == (byte) 0x42) {
+								// TODO: think about how to solve this.
+								// probably treat it like a normal LLDP for now.
+								break;
+							}
 						}
 					default:
 						// Process all non-packet-ins
