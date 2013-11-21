@@ -11,6 +11,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -20,7 +21,7 @@ import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
-import org.jboss.netty.util.HashedWheelTimer;
+
 
 public class ClientChannelPipeline extends OpenflowChannelPipeline {
 
@@ -35,7 +36,7 @@ public class ClientChannelPipeline extends OpenflowChannelPipeline {
 		super();
 		this.ctrl = openVirteXController;
 		this.pipelineExecutor = pipelineExecutor;
-		this.timer = new HashedWheelTimer();
+		this.timer = PhysicalNetwork.getTimer();
 		this.idleHandler = new IdleStateHandler(this.timer, 20, 25, 0);
 		this.readTimeoutHandler = new ReadTimeoutHandler(this.timer, 30);
 		this.bootstrap = bootstrap;

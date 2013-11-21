@@ -12,6 +12,7 @@ package net.onrc.openvirtex.core.io;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.Channels;
@@ -29,7 +30,7 @@ public class SwitchChannelPipeline extends OpenflowChannelPipeline {
 		super();
 		this.ctrl = openVirteXController;
 		this.pipelineExecutor = pipelineExecutor;
-		this.timer = new HashedWheelTimer();
+		this.timer = PhysicalNetwork.getTimer();
 		this.idleHandler = new IdleStateHandler(this.timer, 20, 25, 0);
 		this.readTimeoutHandler = new ReadTimeoutHandler(this.timer, 30);
 	}
