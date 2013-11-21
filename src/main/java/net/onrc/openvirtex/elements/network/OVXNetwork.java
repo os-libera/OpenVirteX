@@ -36,6 +36,7 @@ import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXPacketIn;
@@ -314,10 +315,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	 * @param dstPort
 	 * @return
 	 * @throws IndexOutOfBoundException
+	 * @throws PortMappingException 
 	 */
 	public synchronized OVXLink connectLink(final long ovxSrcDpid, final short ovxSrcPort,
 			final long ovxDstDpid, final short ovxDstPort, final String alg, final byte numBackups, final int linkId)
-					throws IndexOutOfBoundException {
+					throws IndexOutOfBoundException, PortMappingException {
 		RoutingAlgorithms algorithm = null;
 		try {
 			algorithm = new RoutingAlgorithms(alg, numBackups);
@@ -333,8 +335,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
 		OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
 
-		srcPort.setEdge(false);
-		dstPort.setEdge(false);
 		// Create link, add it to the topology, register it in the map
 		OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
 				dstPort, algorithm);
@@ -342,11 +342,12 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 				srcPort, algorithm);
 		super.addLink(link);
 		super.addLink(reverseLink);
-		
 		log.info("Created bi-directional virtual link {} between ports {}/{} - {}/{} in virtual network {}",
 				link.getLinkId(), link.getSrcSwitch()
 				.getSwitchName(), srcPort.getPortNumber(), link.getDstSwitch().getSwitchName(), dstPort.getPortNumber(), 
 				this.getTenantId());
+		srcPort.setEdge(false);
+		dstPort.setEdge(false);
 		srcPort.boot();
 		dstPort.boot();
 		return link;
@@ -354,7 +355,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 
 	public synchronized OVXLink connectLink(final long ovxSrcDpid, final short ovxSrcPort,
 			final long ovxDstDpid, final short ovxDstPort, final String alg, final byte numBackups ) 
-					throws IndexOutOfBoundException {
+					throws IndexOutOfBoundException, PortMappingException {
 		final int linkId = this.linkCounter.getNewIndex();
 		return this.connectLink(ovxSrcDpid, ovxSrcPort, ovxDstDpid, ovxDstPort, alg, numBackups, linkId);
 	}    

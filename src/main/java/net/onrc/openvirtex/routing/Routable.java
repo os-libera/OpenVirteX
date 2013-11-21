@@ -14,6 +14,7 @@ import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 
 public interface Routable {
 
@@ -37,5 +38,10 @@ public interface Routable {
 	 */
 	public String getName();
 
-	public void setLinkPath(OVXLink ovxLink);
+	/**
+	 * Sets end-points to a route 
+	 * @param ovxLink The link representing the end-points of a route
+	 * @throws PortMappingException
+	 */
+	public void setLinkPath(OVXLink ovxLink) throws PortMappingException;
 }

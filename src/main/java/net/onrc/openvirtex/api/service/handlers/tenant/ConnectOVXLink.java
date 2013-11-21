@@ -19,8 +19,8 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
+import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
-import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.VirtualLinkException;
 
 import org.apache.logging.log4j.LogManager;
@@ -116,7 +116,7 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
 					new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
 							this.cmdName() + ": Invalid virtual switch id : "
 									+ e.getMessage()), 0);
-		} catch (final NetworkMappingException e) {
+		} catch (final MappingException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": " + e.getMessage()), 0);

@@ -26,6 +26,7 @@ import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
 import org.apache.logging.log4j.LogManager;
@@ -404,7 +405,7 @@ public class ShortestPath implements Routable {
 	}
 
 	@Override
-	public void setLinkPath(OVXLink ovxLink) {
+	public void setLinkPath(OVXLink ovxLink) throws PortMappingException {
 		/*
 		 * Run Dijkstra to compute all the path (primary and backups)
 		 */
@@ -412,12 +413,14 @@ public class ShortestPath implements Routable {
 				.getLinks());
 
 		LinkedList<PhysicalLink> path = new LinkedList<>();
-
 		PhysicalPort srcPathPort = PhysicalNetwork.getInstance().
 				getNeighborPort(ovxLink.getSrcPort().getPhysicalPort());
 		PhysicalPort dstPathPort = PhysicalNetwork.getInstance().
 				getNeighborPort(ovxLink.getDstPort().getPhysicalPort());
-
+		if ((srcPathPort == null) || (dstPathPort == null)) {
+			throw new PortMappingException("Virtual link is mapped to missing endpoint(s)");
+		}
+		
 		if (PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
 				ovxLink.getDstPort().getPhysicalPort()) != null) {
 			path.add(PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
@@ -476,4 +479,5 @@ public class ShortestPath implements Routable {
 		}
 
 	}
+	
 }

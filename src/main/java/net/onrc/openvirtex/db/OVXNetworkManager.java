@@ -21,6 +21,7 @@ import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
 
@@ -276,7 +277,7 @@ public class OVXNetworkManager {
 					virtualNetwork.connectLink(srcDpid, srcPort, dstDpid, dstPort, "spf", (byte)1 , linkId);
 					virtualNetwork.setLinkPath(linkId, physicalLinks, priority);
 					//virtualNetwork.connectLink(srcDpid, srcPort, dstDpid, dstPort, physicalLinks, priority, linkId);
-				} catch (IndexOutOfBoundException e) {
+				} catch (IndexOutOfBoundException | PortMappingException e) {
 					OVXNetworkManager.log.error("Error recreating virtual link {} from database", linkId);
 					return;
 				}

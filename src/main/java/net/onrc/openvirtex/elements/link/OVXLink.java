@@ -31,6 +31,7 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.messages.actions.OVXActionOutput;
@@ -90,9 +91,11 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @param dstPort
 	 *            virtual destination port
 	 * @param priority 
+	 * @throws PortMappingException 
 	 */
 	public OVXLink(final Integer linkId, final Integer tenantId,
-			final OVXPort srcPort, final OVXPort dstPort, RoutingAlgorithms alg) {
+			final OVXPort srcPort, final OVXPort dstPort, RoutingAlgorithms alg) 
+					throws PortMappingException {
 		super(srcPort, dstPort);
 		this.linkId = linkId;
 		this.tenantId = tenantId;
@@ -103,10 +106,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		this.priority = (byte) 0;
 		this.alg = alg;
 		this.map = OVXMap.getInstance();
-		if (this.alg.getRoutingType() != RoutingType.NONE)
+		if (this.alg.getRoutingType() != RoutingType.NONE) 
 			this.alg.getRoutable().setLinkPath(this);
-		
-		//register again the srcPort in the physicalPort map, to update the linkId
 		this.srcPort.getPhysicalPort().removeOVXPort(this.srcPort);
 		this.srcPort.getPhysicalPort().setOVXPort(this.srcPort);
 	}

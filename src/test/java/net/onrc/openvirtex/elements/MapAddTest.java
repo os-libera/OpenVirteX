@@ -34,6 +34,7 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
@@ -149,8 +150,12 @@ public class MapAddTest extends TestCase {
 							}
 							OVXPort vdstp = vdst.getPort(dstp.getPortNumber());
 							plink = new PhysicalLink(srcp, dstp);
-							vlink = new OVXLink((int)dstp.getPortNumber(), 1, vsrcp, vdstp, 
-									new RoutingAlgorithms("none", (byte)0));
+							try {
+								vlink = new OVXLink((int)dstp.getPortNumber(), 1, vsrcp, vdstp, 
+										new RoutingAlgorithms("none", (byte)0));
+							} catch (PortMappingException e) {
+								fail();
+							}
 							route = new SwitchRoute(vsrcp, vdstp, vsrc.getSwitchId(), 
 									1, 1, (byte)0xf);
 							
