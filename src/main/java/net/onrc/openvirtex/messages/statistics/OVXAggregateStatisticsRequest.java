@@ -69,7 +69,7 @@ public class OVXAggregateStatisticsRequest extends OFAggregateStatisticsRequest
 		
 		OVXStatisticsReply reply = new OVXStatisticsReply();
 		reply.setXid(msg.getXid());
-		reply.setStatisticType(OFStatisticsType.FLOW);
+		reply.setStatisticType(OFStatisticsType.AGGREGATE);
 		reply.setStatistics(Collections.singletonList(stat));
 			
 		reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + stat.getLength());
