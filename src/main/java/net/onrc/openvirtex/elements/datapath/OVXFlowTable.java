@@ -242,8 +242,8 @@ public class OVXFlowTable implements FlowTable {
 	 */
 	public void dump() {
 		String ret = "";
-		for (final OVXFlowMod fe : this.flowmodMap.values()) {
-			ret += fe.toString() + "\n";
+		for (final Map.Entry<Long, OVXFlowMod> fe : this.flowmodMap.entrySet()) {
+			ret += "cookie["+fe.getKey() + "] :" + fe.getValue().toString() + "\n";
 		}
 		this.log.info("OVXFlowTable \n========================\n" + ret
 				+ "========================\n");

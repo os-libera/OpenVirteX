@@ -9,6 +9,7 @@
 
 package net.onrc.openvirtex.messages;
 
+import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.exceptions.MappingException;
@@ -25,27 +26,25 @@ public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 	@Override
 	public void virtualize(final PhysicalSwitch sw) {
 		
-		long ck = this.cookie;
-		int tid = (int) (ck >> 32);
+		int tid = (int) (this.cookie >> 32);
+		
+		/* a PhysSwitch can be a OVXLink */
 		if (!(sw.getMap().hasVirtualSwitch(sw, tid))) {
 			return;
 		}
-		
 		try {
 			OVXSwitch vsw = sw.getMap().getVirtualSwitch(sw, tid);
-			/* can be null if we are a Big Switch, and receive multiple same-cookie FR's
-			 * from multiple PhysicalSwitches */
+			/* If we are a Big Switch we might receive multiple same-cookie FR's
+			 * from multiple PhysicalSwitches. Only handle if the FR's newly seen */
 			if (vsw.getFlowTable().hasFlowMod(this.cookie)) {
-				return;
+				OVXFlowMod fm = vsw.getFlowMod(this.cookie);
+				/* send north ONLY if tenant controller wanted a FlowRemoved for the FlowMod*/
+				vsw.deleteFlowMod(this.cookie);
+				if (fm.hasFlag(OFFlowMod.OFPFF_SEND_FLOW_REM)) {
+					writeFields(fm);
+					vsw.sendMsg(this, sw);
+				}
 			}
-			OVXFlowMod fm = vsw.getFlowMod(this.cookie);
-			
-			/* send north ONLY if tenant controller wanted a FlowRemoved for the FlowMod*/
-			if (fm.hasFlag(OFFlowMod.OFPFF_SEND_FLOW_REM)) {
-				writeFields(fm);
-				vsw.sendMsg(this, sw);
-			}
-			vsw.deleteFlowMod(ck);
 		} catch (MappingException e) {
 			log.warn("Exception fetching FlowMod from FlowTable: {}", e);
 		}
