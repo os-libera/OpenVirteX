@@ -13,6 +13,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 import junit.framework.TestSuite;
+import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
@@ -23,13 +24,15 @@ import org.openflow.protocol.OFPhysicalPort;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-public class PassingAPITests extends AbstractAPICalls {
+public class PassingAPITest extends AbstractAPICalls {
 
+	OpenVirteXController ctrl;
+	
 	/**
 	 * @return the suite of tests being tested
 	 */
 	public static TestSuite suite() {
-		return new TestSuite(PassingAPITests.class);
+		return new TestSuite(PassingAPITest.class);
 	}
 
 	/**
@@ -86,7 +89,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	}
 
 	public void testCreatePort() {
-		final PhysicalSwitch sw = new PhysicalSwitch(1);
+		final TestSwitch sw = new TestSwitch(1);
 		PhysicalNetwork.getInstance().addSwitch(sw);
 		final PhysicalPort port = new PhysicalPort(new OFPhysicalPort(), sw,
 			true);
@@ -107,7 +110,7 @@ public class PassingAPITests extends AbstractAPICalls {
 	}
 	
 	public void testConnectHost() {
-		final PhysicalSwitch sw1 = new PhysicalSwitch(1);
+		final TestSwitch sw1 = new TestSwitch(1);
 		PhysicalNetwork.getInstance().addSwitch(sw1);
 		final PhysicalPort port = new PhysicalPort(new OFPhysicalPort(), sw1,
 				true);
@@ -131,8 +134,8 @@ public class PassingAPITests extends AbstractAPICalls {
 
 	public void testConnectLink() {
 		super.createNetwork();
-		final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-		final PhysicalSwitch sw2 = new PhysicalSwitch(2);
+		final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
 		PhysicalNetwork.getInstance().addSwitch(sw1);
 		PhysicalNetwork.getInstance().addSwitch(sw2);
 		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
@@ -178,9 +181,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testConnectRoutePass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+	    final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -224,9 +227,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testRemoveNetPass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+		final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -273,9 +276,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testRemoveSwitchPass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+		final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -319,9 +322,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testRemovePortPass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+	    final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -366,9 +369,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testDisconnectLinkPass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+	    final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -415,9 +418,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testDisconnectHostPass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+	    final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -464,9 +467,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testDisconnectRoutePass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+		final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -512,9 +515,9 @@ public class PassingAPITests extends AbstractAPICalls {
 	 */
 	public void testStopNetPass() {
 	    // set the physical network (linear 2 sws with 1 host x sw)
-	    final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-	    final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-	    PhysicalNetwork.getInstance().addSwitch(sw1);
+		final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		PhysicalNetwork.getInstance().addSwitch(sw1);
 	    PhysicalNetwork.getInstance().addSwitch(sw2);
 	    final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 	    p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
@@ -555,6 +558,10 @@ public class PassingAPITests extends AbstractAPICalls {
 	    Assert.assertEquals(true, resp.getResult());
 	}
 	
+	@Override
+	protected void setUp() throws Exception {
+		this.ctrl = new OpenVirteXController("", "", null, 0, "", 0, null, null);
+	}
 	
 	@Override
 	protected void tearDown() throws Exception {

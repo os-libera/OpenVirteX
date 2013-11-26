@@ -20,7 +20,11 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
+import net.onrc.openvirtex.exceptions.DuplicateIndexException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.util.BitSetIndex;
+import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +44,9 @@ public class OpenVirteXController implements Runnable {
 
 	private static final int SEND_BUFFER_SIZE = 1024 * 1024;
 	private static OpenVirteXController instance = null;
-
+	/* maybe track used tenant IDs here */
+	private static BitSetIndex tenantIdCounter = null;
+	
 	private String configFile = null;
 	private String ofHost = null;
 	private Integer ofPort = null;
@@ -77,6 +83,7 @@ public class OpenVirteXController implements Runnable {
 		this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
 		this.statsRefresh  = statsRefresh;
 		OpenVirteXController.instance = this;
+		OpenVirteXController.tenantIdCounter = new BitSetIndex(IndexType.TENANT_ID);
 	}
 
 	@Override
@@ -232,4 +239,13 @@ public class OpenVirteXController implements Runnable {
 	public Integer getStatsRefresh() {
 		return this.statsRefresh;
 	}
+
+	public static BitSetIndex getTenantCounter() {
+		if (OpenVirteXController.instance == null) {
+			throw new RuntimeException(
+					"The OpenVirtexController has not been initialized; quitting.");
+		}
+		return tenantIdCounter;
+	}
+	
 }

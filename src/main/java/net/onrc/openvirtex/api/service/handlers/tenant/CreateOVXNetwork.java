@@ -32,8 +32,8 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
 
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
-
-	JSONRPC2Response resp = null;
+    	
+    JSONRPC2Response resp = null;
 
 	try {
 	    final String protocol = HandlerUtils.<String> fetchField(
@@ -76,7 +76,6 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
 		                    + ": Impossible to create the virtual network, too many networks : "
 		                    + e.getMessage()), 0);
 	}
-
 	return resp;
     }
 

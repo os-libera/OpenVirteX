@@ -15,7 +15,7 @@ public class APITests {
 	public static Test suite() {
 		final TestSuite suite = new TestSuite(APITests.class.getName());
 		// $JUnit-BEGIN$
-		suite.addTest(PassingAPITests.suite());
+		suite.addTest(PassingAPITest.suite());
 		// $JUnit-END$
 		return suite;
 	}

@@ -80,8 +80,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	private final short                          mask;
 	private HashMap<IPAddress, MACAddress>       gwsMap;
 	private boolean                              bootState;
-	private static BitSetIndex                   tenantIdCounter = new BitSetIndex(
-			IndexType.TENANT_ID);
 	private final BitSetIndex                    dpidCounter;
 	private final BitSetIndex                    linkCounter;
 	private final BitSetIndex                    ipCounter;
@@ -124,7 +122,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public OVXNetwork(final String protocol, final String controllerHost,
 			final Integer controllerPort, final IPAddress network,
 			final short mask) throws IndexOutOfBoundException {
-		this(OVXNetwork.tenantIdCounter.getNewIndex(), protocol, controllerHost,
+		this(OpenVirteXController.getTenantCounter().getNewIndex(), protocol, controllerHost,
 				controllerPort, network, mask);
 	}
 
@@ -149,7 +147,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	}
 
 	public static void reserveTenantId(Integer tenantId) throws IndexOutOfBoundException, DuplicateIndexException {
-		OVXNetwork.tenantIdCounter.getNewIndex(tenantId);
+		OpenVirteXController.getTenantCounter().getNewIndex(tenantId);
 	}
 	
 	public BitSetIndex getLinkCounter() {
@@ -221,7 +219,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		// remove the network from the Map
 		OVXMap.getInstance().removeVirtualIPs(this.tenantId);
 		OVXMap.getInstance().removeNetwork(this);
-		OVXNetwork.tenantIdCounter.releaseIndex(this.tenantId);
+		OpenVirteXController.getTenantCounter().releaseIndex(this.tenantId);
 	}
 
 	public void stop() {
@@ -557,7 +555,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public static void reset() {
 		OVXNetwork.log
 		.debug("Resetting tenantId counter to initial state. Don't do this at runtime!");
-		OVXNetwork.tenantIdCounter.reset();
+		OpenVirteXController.getTenantCounter().reset();
 
 	}
 
