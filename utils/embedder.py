@@ -140,7 +140,7 @@ class Routing():
     return path[:-1]
   
 class OVXClient():
-  def __init__(self, host, port, user, password, backup_num):
+  def __init__(self, host, port, user, password):
     self.host = host
     self.port = port
     self.user = user
@@ -148,7 +148,6 @@ class OVXClient():
     self.base_url = "http://%s:%s/" % (self.host, self.port)
     self.tenant_url = self.base_url + 'tenant'
     self.status_url = self.base_url + 'status'
-    self.backup_num = backup_num
   
   def _buildRequest(self, data, url, cmd):
     j = { "id" : "ovxembedder", "method" : cmd, "jsonrpc" : "2.0" }
@@ -215,8 +214,8 @@ class OVXClient():
         log.info("Port on switch %s with port number %s has been created" % (longToHex(switch_id), port_no))
     return (switch_id, port_no)
 
-  def connectLink(self, tenantId, srcDpid, srcPort, dstDpid, dstPort, algorithm):
-    req = {'tenantId': tenantId, 'srcDpid': srcDpid, 'srcPort': srcPort, 'dstDpid': dstDpid, 'dstPort': dstPort, 'algorithm': algorithm, 'backup_num': self.backup_num}
+  def connectLink(self, tenantId, srcDpid, srcPort, dstDpid, dstPort, algorithm, backup_num):
+    req = {'tenantId': tenantId, 'srcDpid': srcDpid, 'srcPort': srcPort, 'dstDpid': dstDpid, 'dstPort': dstPort, 'algorithm': algorithm, 'backup_num': backup_num}
     ret = self._connect("connectLink", self.tenant_url, data=req)
     if ret:
         log.info("Link with linkId %s has been created" % ret)
@@ -256,6 +255,13 @@ class OVXClient():
         log.info("Physical network topology received")
     return ret
 
+  def setInternalRouting(self, tenantId, dpid, algorithm, backup_num):
+    req = {'tenantId': tenantId, 'dpid': dpid, 'algorithm': algorithm, 'backup_num': backup_num}
+    ret = self._connect("setInternalRouting", self.tenant_url, data=req)
+    if ret:
+        log.info("Internal routing of switch %s has been set to %s" % (dpid, algorithm))
+    return ret
+
 class OVXEmbedderHandler(BaseHTTPRequestHandler):
   """
   Implementation of JSON-RPC API, defines all API handler methods.
@@ -282,7 +288,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
       res['data'] = data
     return res
 
-  def doBigSwitchNetwork(self, controller, subnet, hosts):
+  def doBigSwitchNetwork(self, controller, routing, subnet, hosts):
     client = self.server.client
     # request physical topology
     phyTopo = client.getPhysicalTopology()
@@ -306,6 +312,8 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     # create virtual switch with all physical dpids
     dpids = [hexToLong(dpid) for dpid in phyTopo['switches']]
     switchId = client.createSwitch(tenantId, dpids)
+    # set routing algorithm and number of backups
+    client.setInternalRouting(tenantId, switchId, routing['algorithm'], routing['backup_num'])
     # create virtual ports and connect hosts
     for host in hosts:
       (vdpid, vport) = client.createPort(tenantId, hexToLong(host['dpid']), host['port'])
@@ -315,7 +323,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
 
     return tenantId
 
-  def doPhysicalNetwork(self, controller, subnet, hosts):
+  def doPhysicalNetwork(self, controller, routing, subnet, hosts):
     client = self.server.client
     # request physical topology
     phyTopo = client.getPhysicalTopology()
@@ -359,8 +367,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
         dst = "%s/%s" % (dstDpid, dstPort)
         
         path = "%s-%s" % (src, dst)
-        # Can albackup_num=1
-        client.connectLink(tenantId, srcVDpid, srcVPort, dstVDpid, dstVPort, algorithm="spf")
+        client.connectLink(tenantId, srcVDpid, srcVPort, dstVDpid, dstVPort, routing['algorithm'], routing['backup_num'])
         connected.append((link['dst']['dpid'], link['dst']['port']))
       
     # boot network
@@ -376,9 +383,9 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
     
     # check type
     if p['type'] == 'bigswitch':
-      tenantId = self.doBigSwitchNetwork(p['controller'], p['subnet'], p['hosts'])
+      tenantId = self.doBigSwitchNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'])
     elif p['type'] == 'physical':
-      tenantId = self.doPhysicalNetwork(p['controller'], p['subnet'], p['hosts'])
+      tenantId = self.doPhysicalNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'])
     elif p['type'] == 'custom':
       pass
     else:
@@ -437,7 +444,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
 class OVXEmbedderServer(HTTPServer):
   def __init__(self, opts):
     HTTPServer.__init__(self, (opts['host'], opts['port']), OVXEmbedderHandler)
-    self.client = OVXClient(opts['ovxhost'], opts['ovxport'], opts['ovxuser'], opts['ovxpass'], opts['backup_num'])
+    self.client = OVXClient(opts['ovxhost'], opts['ovxport'], opts['ovxuser'], opts['ovxpass'])
     self.ctrlProto = opts['ctrlproto']
     self.ctrlPort = opts['ctrlport']
     self.controllers = []
@@ -501,7 +508,6 @@ if __name__ == '__main__':
   parser.add_argument('--ovxpass', default='admin', help='OpenVirteX password (default="admin")')
   parser.add_argument('--ctrlproto', default='tcp', help='default controller protocol (default="tcp")')
   parser.add_argument('--ctrlport', default=10000, type=int, help='default controller port (default=10000)')
-  parser.add_argument('--backup_num', default=1, type=int, help='number of backup routes per switch/link (default=1)')
   parser.add_argument('--loglevel', default='INFO', help='log level (default="INFO")')
   parser.add_argument('--version', action='version', version='%(prog)s 0.1')
   args = parser.parse_args()
