@@ -209,16 +209,25 @@ public class OVXBigSwitch extends OVXSwitch {
 	}
 
 	public boolean unregisterRoute(final Integer routeId) {
+		boolean result = false;
 		for (HashMap<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
 			for (SwitchRoute route : portMap.values()) {
 				if (route.getRouteId() == routeId.intValue()) {
 					this.routeCounter.releaseIndex(routeId);
 					this.map.removeRoute(route);
-					return this.routeMap.get(route.getSrcPort()).remove(route.getDstPort()) != null;
+					/*
+					 * This operation has to be done twice for both direction. 
+					 * Set result to false if the route doesn't exists
+					 */
+					if (this.routeMap.get(route.getSrcPort()) == null || 
+							this.routeMap.get(route.getSrcPort()).remove(route.getDstPort()) == null)
+						return false;
+					else
+						result = true;
 				}
 			}
 		}
-		return false;
+		return result;
 	}
 
 	@Override
@@ -309,7 +318,7 @@ public class OVXBigSwitch extends OVXSwitch {
 			revRtEntry = routeMap.get(egress).get(ingress);
 		} catch (NullPointerException e) {}
 
-		if (rtEntry == null && revRtEntry == null) {
+		if (rtEntry == null || revRtEntry == null) {
 			rtEntry = new SwitchRoute(ingress, egress,
 					this.switchId, routeId, this.tenantId, priority);
 			revRtEntry = new SwitchRoute(egress, ingress,

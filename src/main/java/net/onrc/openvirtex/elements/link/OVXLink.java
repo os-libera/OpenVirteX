@@ -367,10 +367,10 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 				log.warn("No physical Links mapped to OVXLink? : {}", e);
 				return false;
 			}
-			int index = this.backupLinks.size()-1;
-			byte priority = (byte) this.backupLinks.keySet().toArray()[index];
+			byte priority = this.backupLinks.lastKey();
 			List<PhysicalLink> phyLinks = this.backupLinks.get(priority);
 			this.switchPath(phyLinks, priority);
+			this.backupLinks.remove(priority);
 			return true;
 		}
 		else return false;

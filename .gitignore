@@ -11,3 +11,6 @@
 
 /.settings/
 /target
+
+.project
+.pydevproject

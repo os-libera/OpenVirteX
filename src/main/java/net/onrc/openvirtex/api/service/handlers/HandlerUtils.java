@@ -31,6 +31,7 @@ import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidHostException;
 import net.onrc.openvirtex.exceptions.InvalidLinkException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
+import net.onrc.openvirtex.exceptions.InvalidPriorityException;
 import net.onrc.openvirtex.exceptions.InvalidRouteException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
@@ -301,6 +302,19 @@ public class HandlerUtils {
 							+ String.valueOf(tenantId) + ", "
 							+ String.valueOf(dpid) + ", "
 							+ String.valueOf(portNumber));
+		}
+	}
+	
+	/**
+	 * Check if the priority specified is in the allowed range [0,127]
+	 * 
+	 * @param priority
+	 * @throws InvalidPriorityException
+	 */
+	public static void isValidPriority(final int priority) throws InvalidPriorityException {
+		if (priority < 0 || priority > 127) {
+			throw new InvalidPriorityException(
+					"The priority specified is invalid: allowed priorities are in range [0, 127]");
 		}
 	}
 

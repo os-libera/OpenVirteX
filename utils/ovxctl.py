@@ -259,13 +259,12 @@ def pa_disconnectRoute(args, cmd):
 
 def do_disconnectRoute(gopts, opts, args):
     if len(args) != 3:
-        print "disconnectRoute : Must specify a a virtual network_id and a route_id"
+        print "disconnectRoute : Must specify a virtual network_id, switch_id and a route_id"
         sys.exit()
     req = { "tenantId" : int(args[0]), "dpid" : int(args[1].replace(":", ""), 16) , "routeId" : int(args[2]) } 
     result = connect(gopts, "disconnectRoute", data=req, passwd=getPasswd(gopts)) 
     if result:
-        print "Route (route_id %s) in virtual big-switch (switch_id %s) has been disconnected "
-        "from the virtual network (network_id %s)" %(args[2], args[1], args[0])
+        print "Route (route_id %s) in virtual big-switch (switch_id %s) has been disconnected from the virtual network (network_id %s)" %(args[2], args[1], args[0])
 
 #Runtime operations
 

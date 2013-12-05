@@ -19,6 +19,7 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
+import net.onrc.openvirtex.exceptions.InvalidPriorityException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
@@ -64,6 +65,7 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 	    final List<PhysicalLink> physicalLinks = HandlerUtils
 		    .getPhysicalPath(pathString);
 	    HandlerUtils.isValidVirtualLink(physicalLinks);
+	    HandlerUtils.isValidPriority(priority.intValue());
 
 	    final OVXMap map = OVXMap.getInstance();
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
@@ -117,8 +119,11 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		            + ": " + e.getMessage()), 0);
+	} catch (final InvalidPriorityException e) {
+	    resp = new JSONRPC2Response(new JSONRPC2Error(
+			    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+			            + ": " + e.getMessage()), 0);
 	}
-
 	return resp;
     }
 

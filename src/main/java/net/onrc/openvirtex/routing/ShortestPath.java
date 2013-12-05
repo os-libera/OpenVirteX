@@ -38,7 +38,9 @@ import org.openflow.util.U8;
  * between two physical switches based on the nominal throughput of the link.
  */
 public class ShortestPath implements Routable {
-	private static final byte maxPriority = (byte) 128;
+	
+	//set the max priority usable by SPF to 64
+	private static final byte MAXPRIORITY = (byte) 64;
 
 	/** The log. */
 	private static Logger log = LogManager.getLogger(ShortestPath.class
@@ -384,7 +386,7 @@ public class ShortestPath implements Routable {
 				}
 				Collections.reverse(revpath);
 				try {
-					vSwitch.createRoute(srcPort, dstPort, path, revpath, (byte) (U8.f(maxPriority) - i));
+					vSwitch.createRoute(srcPort, dstPort, path, revpath, (byte) (U8.f(MAXPRIORITY) - i));
 				} catch (final IndexOutOfBoundException e) {
 					log.error("Unable to create the virtual switch route for for big-switch {} "
 							+ "between ports ({},{}), too many routes in this virtual switch",
@@ -425,7 +427,7 @@ public class ShortestPath implements Routable {
 				ovxLink.getDstPort().getPhysicalPort()) != null) {
 			path.add(PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
 					ovxLink.getDstPort().getPhysicalPort()));
-			ovxLink.register(path, (byte) U8.f(maxPriority) );
+			ovxLink.register(path, (byte) U8.f(MAXPRIORITY) );
 			log.debug("Virtual link {} embeds to a single-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}
@@ -434,7 +436,7 @@ public class ShortestPath implements Routable {
 					srcPathPort));
 			path.add(PhysicalNetwork.getInstance().getLink(dstPathPort, 
 					ovxLink.getDstPort().getPhysicalPort()));
-			ovxLink.register(path, (byte) U8.f(maxPriority) );
+			ovxLink.register(path, (byte) U8.f(MAXPRIORITY) );
 			log.debug("Virtual link {} embeds to a dual-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}
@@ -473,7 +475,7 @@ public class ShortestPath implements Routable {
 							srcPathPort));
 					path.add(PhysicalNetwork.getInstance().getLink(dstPathPort, 
 							ovxLink.getDstPort().getPhysicalPort()));
-					ovxLink.register(path, (byte) (U8.f(maxPriority) - i));
+					ovxLink.register(path, (byte) (U8.f(MAXPRIORITY) - i));
 				}
 			}
 		}

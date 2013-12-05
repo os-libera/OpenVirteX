@@ -477,10 +477,10 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 				log.warn("No physical Links mapped to SwitchRoute? : {}", e);
 				return false;
 			}
-			int index = this.backupRoutes.size()-1;
-			byte priority = (byte) this.backupRoutes.keySet().toArray()[index];
+			byte priority = this.backupRoutes.lastKey();
 			List<PhysicalLink> phyLinks = this.backupRoutes.get(priority);
 			this.switchPath(phyLinks, priority);
+			this.backupRoutes.remove(priority);
 			return true;
 		}
 		else return false;
