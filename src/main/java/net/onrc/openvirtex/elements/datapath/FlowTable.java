@@ -1,6 +1,7 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collection;
+import java.util.Map;
 
 import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;

@@ -296,6 +296,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		 * 1) change the fields where the virtual link info are stored
 		 * 2) change the fields where the physical ips are stored
 		 */
+		fm.setPhysicalCookie();
 		final OVXLinkUtils lUtils = new OVXLinkUtils(this.tenantId,
 				this.linkId, flowId);
 		lUtils.rewriteMatch(fm.getMatch());

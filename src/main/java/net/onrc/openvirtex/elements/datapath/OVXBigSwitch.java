@@ -55,8 +55,11 @@ public class OVXBigSwitch extends OVXSwitch {
 
 	public OVXBigSwitch(final long switchId, final int tenantId) {
 		super(switchId, tenantId);
-		try {this.alg = new RoutingAlgorithms("spf", (byte)1);
-		} catch (RoutingAlgorithmException e) {log.error("Routing algorithm not set for big-switch " + this.getSwitchName());}
+		try {
+			this.alg = new RoutingAlgorithms("spf", (byte)1);
+		} catch (RoutingAlgorithmException e) {
+			log.error("Routing algorithm not set for big-switch " + this.getSwitchName());
+		}
 		this.routeMap = new HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>();
 		this.routeCounter = new BitSetIndex(IndexType.ROUTE_ID);
 	}
@@ -141,7 +144,7 @@ public class OVXBigSwitch extends OVXSwitch {
 		} else {
 			//TODO: Not removing the routes that have this port as a destination. Do it!
 			this.routeMap.remove(this.portMap.get(portNumber));
-			
+
 			for (HashMap<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
 				Iterator<Entry<OVXPort, SwitchRoute>> it = portMap.entrySet().iterator();
 				while (it.hasNext()) {
@@ -233,7 +236,7 @@ public class OVXBigSwitch extends OVXSwitch {
 	@Override
 	public void unregister() {
 		for (HashMap<OVXPort, SwitchRoute> portMap : 
-				Collections.unmodifiableCollection(this.routeMap.values())) {
+			Collections.unmodifiableCollection(this.routeMap.values())) {
 			for (final SwitchRoute route : portMap.values()) {
 				this.map.removeRoute(route);
 			}

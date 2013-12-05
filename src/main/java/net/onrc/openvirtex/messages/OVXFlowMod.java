@@ -47,6 +47,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 	private OVXSwitch sw = null;
 	private final List<OFAction> approvedActions = new LinkedList<OFAction>();
+	
+	private long ovxCookie = -1;
 
 	@Override
 	public void devirtualize(final OVXSwitch sw) {
@@ -65,10 +67,10 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		final short inport = this.getMatch().getInputPort();
 
 		OVXMatch ovxMatch = new OVXMatch(this.match);
-		long cookie = ((OVXFlowTable) ft).getCookie();
+		ovxCookie = ((OVXFlowTable) ft).getCookie();
 		//Store the virtual flowMod and obtain the physical cookie
-		ovxMatch.setCookie(cookie);
-		boolean pflag = ft.handleFlowMods(this, cookie);
+		ovxMatch.setCookie(ovxCookie);
+		boolean pflag = ft.handleFlowMods(this, ovxCookie);
 		this.setCookie(ovxMatch.getCookie());
 		
 		for (final OFAction act : this.getActions()) {
@@ -208,5 +210,19 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		 map.put("priority", String.valueOf(this.priority));
 		 return map;
 	 }
+	
+	public void setPhysicalCookie() {
+		long tmp = this.cookie;
+		this.cookie = this.ovxCookie;
+		this.ovxCookie = tmp;
+	}
+	
+	public void setVirtualCookie() {
+		long tmp = this.ovxCookie;
+		this.ovxCookie = this.cookie;
+		this.cookie = tmp;
+	}
+	
+	
 
 }
