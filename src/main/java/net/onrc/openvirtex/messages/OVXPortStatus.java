@@ -92,12 +92,12 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 	private void handlePortAdd(PhysicalSwitch sw, PhysicalPort p) {
 	    /* add a new port to PhySwitch if add message, quit otherwise */
 	    if (isReason(OFPortReason.OFPPR_ADD)) {
-		p = new PhysicalPort(this.desc, sw, false);
-		if (!sw.addPort(p)) {
-		    log.warn("Could not add new port {} to physical switch {}", 
-			    p.getPortNumber(), sw.getSwitchId());
-		}
-		log.info("Added port {} to switch {}", p.getPortNumber(), sw.getSwitchId());		
+			p = new PhysicalPort(this.desc, sw, false);
+			if (!sw.addPort(p)) {
+			    log.warn("Could not add new port {} to physical switch {}", 
+				    p.getPortNumber(), sw.getSwitchId());
+			}
+			log.info("Added port {} to switch {}", p.getPortNumber(), sw.getSwitchId());		
 	    }
 	}
 	
@@ -137,7 +137,11 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 							((plink.getSrcPort().getState() & 
 									OFPortState.OFPPS_LINK_DOWN.getValue()) == 0)) {
 						log.debug("enabling OVXLink mapped to port {}");
-						vlink.getSrcPort().handlePortEnable(this);
+						/* try to switch back to original path, 
+						 * if not just bring up and hope it's working */
+						if (!vlink.tryRevert(plink)) {
+							vlink.getSrcPort().handlePortEnable(this);
+						}
 					} 
 				}
 			}
@@ -154,6 +158,7 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 				} else if (!isState(OFPortState.OFPPS_LINK_DOWN) && 
 						((plink.getSrcPort().getState() & 
 								OFPortState.OFPPS_LINK_DOWN.getValue()) == 0)) {
+					route.tryRevert(plink);
 				}
 			}
 		}

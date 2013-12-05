@@ -377,4 +377,14 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		else return false;
 	}
 
+	/**
+	 * Attempts to switch this link back to the original path.
+	 * @param plink
+	 * @return true for success, false otherwise. 
+	 */
+	public boolean tryRevert(PhysicalLink plink) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

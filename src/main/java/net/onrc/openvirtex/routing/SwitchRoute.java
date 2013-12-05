@@ -504,4 +504,14 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 			
 	}
 
+	/**
+	 * Attempts to switch this route back to the original path.
+	 * @param plink
+	 * @return true for success, false otherwise. 
+	 */
+	public boolean tryRevert(PhysicalLink plink) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
