@@ -13,8 +13,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.TreeMap;
 import java.util.Map;
 
@@ -47,6 +49,7 @@ import org.openflow.protocol.OFPort;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
+import org.openflow.util.U8;
 
 /**
  * Route within a Big Switch abstraction
@@ -475,7 +478,9 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 				this.getDstPort().getPortNumber(), this.getTenantId());
 		if (this.backupRoutes.size() > 0) {
 			try {
-				this.unusableRoutes.put(this.getPriority(), OVXMap.getInstance().getRoute(this));
+				List<PhysicalLink> unusableLinks = new ArrayList<>(OVXMap.getInstance().getRoute(this));
+				Collections.copy(unusableLinks, OVXMap.getInstance().getRoute(this));
+				this.unusableRoutes.put(this.getPriority(), unusableLinks);
 			} catch (LinkMappingException e) {
 				log.warn("No physical Links mapped to SwitchRoute? : {}", e);
 				return false;
@@ -510,8 +515,34 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	 * @return true for success, false otherwise. 
 	 */
 	public boolean tryRevert(PhysicalLink plink) {
-		// TODO Auto-generated method stub
-		return false;
+		Iterator<Byte> it = this.unusableRoutes.descendingKeySet().iterator();
+		while (it.hasNext()) {
+			Byte curPriority = it.next();
+			if (this.unusableRoutes.get(curPriority).contains(plink)) {
+				log.info("Reactivate all inactive paths for virtual network {} big-switch {} internal route {} between ports ({},{}) in virtual network {} ",
+						this.getTenantId(), 
+						this.getSrcPort().getParentSwitch().getSwitchName(), this.routeId, this.getSrcPort().getPortNumber(),
+						this.getDstPort().getPortNumber(), this.getTenantId());
+				
+				if (U8.f(this.getPriority()) >= U8.f(curPriority)) {
+					this.backupRoutes.put(curPriority, this.unusableRoutes.get(curPriority));
+				}
+				else {
+					
+					try {
+						List<PhysicalLink> backupLinks = new ArrayList<>(OVXMap.getInstance().getRoute(this));
+						Collections.copy(backupLinks,OVXMap.getInstance().getRoute(this));
+						this.backupRoutes.put(this.getPriority(), backupLinks);
+						this.switchPath(this.unusableRoutes.get(curPriority), curPriority);
+					} catch (LinkMappingException e) {
+						log.warn("No physical Links mapped to SwitchRoute? : {}", e);
+						return false;
+					}
+				}
+				it.remove();
+			}
+		}
+		return true;
 	}
 
 }

@@ -17,9 +17,11 @@ import java.util.Set;
 
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.LinkPair;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -115,6 +117,23 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 			LinkPair<PhysicalLink> pair, int tid) 
 					throws LinkMappingException, NetworkMappingException {
 		PhysicalLink plink = pair.getOutLink();
+		
+		if (!isState(OFPortState.OFPPS_LINK_DOWN) && 
+				((plink.getSrcPort().getState() & 
+						OFPortState.OFPPS_LINK_DOWN.getValue()) == 0)) {
+			OVXNetwork net = map.getVirtualNetwork(tid);
+			for (OVXLink link : net.getLinks())
+				link.tryRevert(plink);
+			for (OVXSwitch ovxSw : net.getSwitches()) {
+				if (ovxSw instanceof OVXBigSwitch) {
+					for (Map<OVXPort, SwitchRoute> routeMap : ((OVXBigSwitch) ovxSw).getRouteMap().values()) {
+						for (SwitchRoute route : routeMap.values())
+							route.tryRevert(plink);
+					}
+				}
+			}
+		}
+		
 		if (map.hasOVXLinks(plink, tid)) {
 			List<OVXLink> vlinks = map.getVirtualLinks(plink, tid);
 			for (OVXLink vlink : vlinks) {
@@ -155,11 +174,7 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 					if (!route.tryRecovery(plink)) {
 						route.getSrcPort().handleRouteDisable(this);
 					}
-				} else if (!isState(OFPortState.OFPPS_LINK_DOWN) && 
-						((plink.getSrcPort().getState() & 
-								OFPortState.OFPPS_LINK_DOWN.getValue()) == 0)) {
-					route.tryRevert(plink);
-				}
+				} 
 			}
 		}
 	}

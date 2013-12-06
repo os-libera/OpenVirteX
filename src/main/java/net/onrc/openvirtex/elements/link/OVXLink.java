@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -363,7 +364,9 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		log.info("Try recovery for virtual link {} in virtual network {} ", this.linkId, this.tenantId);
 		if (this.backupLinks.size() > 0) {
 			try {
-				this.unusableLinks.put(this.getPriority(), map.getPhysicalLinks(this));
+				List<PhysicalLink> unusableLinks = new ArrayList<>(map.getPhysicalLinks(this));
+				Collections.copy(unusableLinks, map.getPhysicalLinks(this));
+				this.unusableLinks.put(this.getPriority(), unusableLinks);
 			} catch (LinkMappingException e) {
 				log.warn("No physical Links mapped to OVXLink? : {}", e);
 				return false;
@@ -383,8 +386,31 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @return true for success, false otherwise. 
 	 */
 	public boolean tryRevert(PhysicalLink plink) {
-		// TODO Auto-generated method stub
-		return false;
+		Iterator<Byte> it = this.unusableLinks.descendingKeySet().iterator();
+		while (it.hasNext()) {
+			Byte curPriority = it.next();
+			if (this.unusableLinks.get(curPriority).contains(plink)) {
+				log.info("Reactivate all inactive paths for virtual link {} in virtual network {} ", this.linkId, this.tenantId);
+				
+				if (U8.f(this.getPriority()) >= U8.f(curPriority)) {
+					this.backupLinks.put(curPriority, this.unusableLinks.get(curPriority));
+				}
+				else {
+					
+					try {
+						List<PhysicalLink> backupLinks = new ArrayList<>(map.getPhysicalLinks(this));
+						Collections.copy(backupLinks,map.getPhysicalLinks(this));
+						this.backupLinks.put(this.getPriority(), backupLinks);
+						this.switchPath(this.unusableLinks.get(curPriority), curPriority);
+					} catch (LinkMappingException e) {
+						log.warn("No physical Links mapped to SwitchRoute? : {}", e);
+						return false;
+					}
+				}
+				it.remove();
+			}
+		}
+		return true;
 	}
 
 }
