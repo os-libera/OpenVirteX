@@ -44,7 +44,6 @@ public class OpenVirteXController implements Runnable {
 
 	private static final int SEND_BUFFER_SIZE = 1024 * 1024;
 	private static OpenVirteXController instance = null;
-	/* maybe track used tenant IDs here */
 	private static BitSetIndex tenantIdCounter = null;
 	
 	private String configFile = null;

@@ -35,6 +35,7 @@ public class AbstractAPICalls extends TestCase {
 				this.put(TenantHandler.NETMASK, 24);
 			}
 		};
+		
 		return cn.process(request);
 
 	}
@@ -63,11 +64,11 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.PORT, port);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			    this.put(TenantHandler.PORT, port);
+			}
 	    };
 
 	    return cp.process(request);
@@ -80,12 +81,12 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.ALGORITHM, protocol);
-		    this.put(TenantHandler.BACKUPS, backups);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			    this.put(TenantHandler.ALGORITHM, protocol);
+			    this.put(TenantHandler.BACKUPS, backups);
+			}
 	    };
 
 	    return sr.process(request);
@@ -169,9 +170,9 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			}
 	    };
 
 	    return rn.process(request);
@@ -182,10 +183,10 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			}
 	    };
 
 	    return rs.process(request);
@@ -196,11 +197,11 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.PORT, port);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			    this.put(TenantHandler.PORT, port);
+			}
 	    };
 
 	    return rp.process(request);
@@ -211,10 +212,10 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.HOST, hostId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.HOST, hostId);
+			}
 	    };
 
 	    return dh.process(request);
@@ -225,10 +226,10 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.LINK, linkId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.LINK, linkId);
+			}
 	    };
 
 	    return dl.process(request);
@@ -240,11 +241,11 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.ROUTE, routeId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			    this.put(TenantHandler.ROUTE, routeId);
+			}
 	    };
 
 	    return dr.process(request);
@@ -255,9 +256,9 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			}
 	    };
 
 	    return sn.process(request);
@@ -268,10 +269,10 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			}
 	    };
 
 	    return ss.process(request);
@@ -282,11 +283,11 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.PORT, port);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			    this.put(TenantHandler.PORT, port);
+			}
 	    };
 
 	    return sp.process(request);
@@ -297,9 +298,9 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			}
 	    };
 
 	    return sn.process(request);
@@ -310,10 +311,10 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			}
 	    };
 
 	    return ss.process(request);
@@ -324,11 +325,11 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		    this.put(TenantHandler.DPID, dpid);
-		    this.put(TenantHandler.PORT, port);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			    this.put(TenantHandler.DPID, dpid);
+			    this.put(TenantHandler.PORT, port);
+			}
 	    };
 
 	    return sp.process(request);
@@ -339,9 +340,9 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			}
 	    };
 
 	    return pn.process(request);
@@ -352,12 +353,17 @@ public class AbstractAPICalls extends TestCase {
 
 	    @SuppressWarnings("serial")
 	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-		{
-		    this.put(TenantHandler.TENANT, tenantId);
-		}
+			{
+			    this.put(TenantHandler.TENANT, tenantId);
+			}
 	    };
 
 	    return rn.process(request);
+	}
+	
+	public void testPassing() {
+		/* Make JUnit happy */
+		/* http://junit.sourceforge.net/doc/faq/faq.htm#running_11 */
 	}
 	
 }

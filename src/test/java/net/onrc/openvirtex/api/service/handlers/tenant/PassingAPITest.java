@@ -26,7 +26,9 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class PassingAPITest extends AbstractAPICalls {
 
-	OpenVirteXController ctrl;
+	static final int MAX_TENANTS = 4;
+	static final OpenVirteXController ctrl = 
+			new OpenVirteXController("", "", null, MAX_TENANTS, "", 0, null, null);
 	
 	/**
 	 * @return the suite of tests being tested
@@ -556,11 +558,6 @@ public class PassingAPITest extends AbstractAPICalls {
 		    resp.getError());
 
 	    Assert.assertEquals(true, resp.getResult());
-	}
-	
-	@Override
-	protected void setUp() throws Exception {
-		this.ctrl = new OpenVirteXController("", "", null, 0, "", 0, null, null);
 	}
 	
 	@Override
