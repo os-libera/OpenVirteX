@@ -18,7 +18,6 @@ import java.util.Set;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
@@ -42,6 +41,7 @@ import com.google.gson.annotations.SerializedName;
  * @param <T3>
  *            Generic Link type
  */
+@SuppressWarnings("rawtypes")
 public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link> implements LLDPEventHandler,
 OVXSendMsg {
 
@@ -73,6 +73,7 @@ OVXSendMsg {
 	 * 
 	 * @param link
 	 */
+	@SuppressWarnings("unchecked")
 	protected void addLink(final T3 link) {
 		// Actual link creation is in child classes, because creation of generic
 		// types sucks
@@ -95,6 +96,7 @@ OVXSendMsg {
 	 * @param link
 	 * @return 
 	 */
+	@SuppressWarnings("unchecked")
 	protected boolean removeLink(final T3 link) {
 		this.linkSet.remove(link);
 		final T1 srcSwitch = (T1) link.getSrcSwitch();

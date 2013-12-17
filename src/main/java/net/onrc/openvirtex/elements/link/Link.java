@@ -14,7 +14,6 @@ import java.util.Map;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.datapath.Switch;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.elements.port.Port;
 
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +30,7 @@ import com.google.gson.annotations.SerializedName;
  * @param <T2>
  *            the generic type (Switch)
  */
+@SuppressWarnings("rawtypes")
 public abstract class Link<T1 extends Port, T2 extends Switch> implements Persistable {
 
 	Logger       log     = LogManager.getLogger(Link.class.getName());

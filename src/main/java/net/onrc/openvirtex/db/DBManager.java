@@ -399,7 +399,7 @@ public class DBManager {
 	 * @param links
 	 * @param mngr
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	private void readOVXRoutes(List<Map<String, Object>> routes, OVXNetworkManager mngr) {
 		if (routes == null)
 			return;

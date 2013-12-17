@@ -4,6 +4,7 @@ package net.onrc.openvirtex.exceptions;
 /**
  * Exception thrown when tenant networks are not found in the map. 
  */
+@SuppressWarnings("rawtypes")
 public class NetworkMappingException extends MappingException {
     
 	private static final long serialVersionUID = 798688L;

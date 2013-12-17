@@ -16,7 +16,6 @@ import java.util.List;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
-import net.onrc.openvirtex.exceptions.VirtualLinkException;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 
 import org.apache.commons.lang.ArrayUtils;

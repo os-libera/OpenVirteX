@@ -13,19 +13,10 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.elements.datapath.OVXSwitchSerializer;
-import net.onrc.openvirtex.elements.host.Host;
-import net.onrc.openvirtex.elements.host.HostSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
-import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
-import net.onrc.openvirtex.util.MACAddress;
-import net.onrc.openvirtex.util.MACAddressSerializer;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -34,7 +25,7 @@ public class GetSubnet extends ApiHandler<Map<String, Object>> {
 
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
-		Map<String, Object> result;
+
 		JSONRPC2Response resp = null;
 
 		try {

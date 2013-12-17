@@ -7,6 +7,7 @@ import net.onrc.openvirtex.elements.address.IPAddress;
  * Exception thrown when addresses are not found in mappings. Addresses
  * include IP(virtual and physical) and hardware addresses (MACs).  
  */
+@SuppressWarnings("rawtypes")
 public class AddressMappingException extends MappingException {
     
 	private static final long serialVersionUID = 798688L;

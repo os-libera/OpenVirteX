@@ -32,8 +32,10 @@ public class PauseOVXNetwork extends ApiHandler<Map<String, Object>> {
 			final Number tenantId = HandlerUtils.<Number> fetchField(
 					TenantHandler.TENANT, params, true, null);
 			final boolean result = false;
-			if (result == false) {
-				resp = new JSONRPC2Response(false, 0);
+
+			if (!result) {
+				resp = new JSONRPC2Response(tenantId, 0);
+
 			} else {
 				this.log.info("");
 				resp = new JSONRPC2Response(false, 0);

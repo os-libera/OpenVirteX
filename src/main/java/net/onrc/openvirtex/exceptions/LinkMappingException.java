@@ -6,6 +6,7 @@ import net.onrc.openvirtex.elements.link.Link;
  * Exception thrown when links are not found in the map. Links 
  * refer to OVXLink, PhysicalLink, and SwitchRoute.  
  */
+@SuppressWarnings("rawtypes")
 public class LinkMappingException extends MappingException {
 
 	private static final long serialVersionUID = 798688L;

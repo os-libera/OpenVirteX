@@ -3,9 +3,6 @@ package net.onrc.openvirtex.api.service.handlers.monitoring;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
@@ -14,6 +11,10 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
+
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class GetVirtualAddressMapping extends ApiHandler<Map<String, Object>> {
 

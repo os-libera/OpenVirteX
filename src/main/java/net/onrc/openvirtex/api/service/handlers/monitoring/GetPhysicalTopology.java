@@ -29,6 +29,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
  */
 public class GetPhysicalTopology extends ApiHandler<Object> {
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public JSONRPC2Response process(final Object params) {
 		Map<String, Object> result;

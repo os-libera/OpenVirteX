@@ -32,6 +32,8 @@ import org.openflow.protocol.OFPhysicalPort;
  * @param <T2>
  * 		The Generic Link type
  */
+
+@SuppressWarnings("rawtypes")
 public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort implements Persistable {
 
 	public static final String DB_KEY = "ports";

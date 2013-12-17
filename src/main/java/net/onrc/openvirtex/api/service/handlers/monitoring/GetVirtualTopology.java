@@ -15,18 +15,9 @@ import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitchSerializer;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.datapath.PhysicalSwitchSerializer;
-import net.onrc.openvirtex.elements.link.OVXLink;
-
-import net.onrc.openvirtex.elements.link.PhysicalLink;
-
 import net.onrc.openvirtex.elements.network.OVXNetwork;
-import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.OVXPortSerializer;
-import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.elements.port.PhysicalPortSerializer;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
@@ -43,6 +34,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
  */
 public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
 		Map<String, Object> result;

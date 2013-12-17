@@ -2,12 +2,9 @@ package net.onrc.openvirtex.db;
 
 import java.net.UnknownHostException;
 
-import net.onrc.openvirtex.api.service.handlers.TenantHandler;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 

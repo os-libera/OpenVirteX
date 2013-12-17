@@ -23,6 +23,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class ResumeOVXNetwork extends ApiHandler<Map<String, Object>> {
+
 	Logger log = LogManager.getLogger(ResumeOVXNetwork.class.getName());
 
 	@Override
@@ -33,8 +34,8 @@ public class ResumeOVXNetwork extends ApiHandler<Map<String, Object>> {
 			final Number tenantId = HandlerUtils.<Number> fetchField(
 					TenantHandler.TENANT, params, true, null);
 			final boolean result = false;
-			if (result == false) {
-				resp = new JSONRPC2Response(false, 0);
+			if (!result) {
+				resp = new JSONRPC2Response(tenantId, 0);
 			} else {
 				this.log.info("");
 				resp = new JSONRPC2Response(true, 0);

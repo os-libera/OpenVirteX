@@ -20,8 +20,6 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
-import net.onrc.openvirtex.exceptions.DuplicateIndexException;
-import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.BitSetIndex;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
@@ -46,6 +44,7 @@ public class OpenVirteXController implements Runnable {
 	private static OpenVirteXController instance = null;
 	private static BitSetIndex tenantIdCounter = null;
 	
+	@SuppressWarnings("unused")
 	private String configFile = null;
 	private String ofHost = null;
 	private Integer ofPort = null;

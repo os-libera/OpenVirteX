@@ -20,8 +20,6 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
@@ -33,6 +31,8 @@ import org.openflow.util.HexString;
  * @param <T>
  *            generic type (Port) that is casted in the subclasses
  */
+
+@SuppressWarnings("rawtypes")
 public abstract class Switch<T extends Port> implements OVXEventHandler,
 OVXSendMsg {
 
@@ -63,9 +63,6 @@ OVXSendMsg {
 
 	/** The switch id (DPID). */
 	protected Long switchId = (long) 0;
-
-	/** The log. */
-	private final Logger log = LogManager.getLogger(this.getClass().getName());
 
 	/**
 	 * Instantiates a new switch (should be never used).

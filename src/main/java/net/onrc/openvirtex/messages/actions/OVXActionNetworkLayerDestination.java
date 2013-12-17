@@ -12,6 +12,7 @@ package net.onrc.openvirtex.messages.actions;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.protocol.OVXMatch;
@@ -31,7 +32,9 @@ public class OVXActionNetworkLayerDestination extends
 	public void virtualize(final OVXSwitch sw,
 			final List<OFAction> approvedActions, final OVXMatch match)
 			throws ActionVirtualizationDenied {
+		
 		this.networkAddress = IPMapper.getPhysicalIp(sw.getTenantId(), this.networkAddress);
+		log.debug("Allocating Physical IP {}", new PhysicalIPAddress(networkAddress));
 		approvedActions.add(this);
 	}
 

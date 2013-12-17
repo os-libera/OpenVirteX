@@ -5,6 +5,7 @@ package net.onrc.openvirtex.exceptions;
  * a provided key is not mapped to any value. Intended to be a superclass 
  * for a class of Mappable-related fetch failures that return null.   
  */
+@SuppressWarnings("rawtypes")
 public class MappingException extends Exception {
 						     /*OVX*/
 	private static final long serialVersionUID = 798688L; 

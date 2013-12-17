@@ -7,6 +7,7 @@ import net.onrc.openvirtex.elements.datapath.Switch;
  * Exception thrown when OVX/Physical switches or their attributes (ports) are not found 
  * in a map. 
  */
+@SuppressWarnings("rawtypes")
 public class SwitchMappingException extends MappingException {
     
 	private static final long serialVersionUID = 798688L;

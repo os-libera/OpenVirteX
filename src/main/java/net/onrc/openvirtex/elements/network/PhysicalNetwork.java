@@ -28,7 +28,6 @@ import org.jboss.netty.util.HashedWheelTimer;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPort;
 
-
 /**
  * 
  * Singleton class for physical network. Maintains SwitchDiscoveryManager for

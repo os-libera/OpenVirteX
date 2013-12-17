@@ -2,11 +2,9 @@ package net.onrc.openvirtex.elements.datapath.statistics;
 
 
 import java.util.Collections;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
-import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;

@@ -23,9 +23,11 @@ import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
+
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 import net.onrc.openvirtex.routing.SwitchRoute;
+
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.apache.logging.log4j.LogManager;
@@ -193,7 +195,9 @@ public class OVXNetworkManager {
 	 * @param path
 	 * @return
 	 */
-	private List<PhysicalLink> pathToPhyLinkList(List<Map<String, Object>> path) {
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private List<PhysicalLink> pathToPhyLinkList(List<Map> path) {
 		// Build list of physical links
 		final List<PhysicalLink> result = new ArrayList<PhysicalLink>();
 		for (Map<String, Object> hop: path) {
@@ -221,7 +225,8 @@ public class OVXNetworkManager {
 	 * Creates OVX network and elements based on persistent storage, boots network afterwards. 
 	 * TODO: proper error handling (roll-back?)
 	 */
-	@SuppressWarnings("unchecked")
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void createNetwork() {
 		
 		OVXNetworkManager.log.info("Virtual network {} ready for boot", this.tenantId);
@@ -313,7 +318,7 @@ public class OVXNetworkManager {
 							else
 								visited.add(routeId);
 
-							List<Map<String, Object>> path = (List<Map<String, Object>>) route.get(TenantHandler.PATH);
+							List<Map> path = (List<Map>) route.get(TenantHandler.PATH);
 							List<PhysicalLink> physicalLinks = this.pathToPhyLinkList(path);
 
 							try {
@@ -352,7 +357,7 @@ public class OVXNetworkManager {
 				byte backups = ((Integer) link.get(TenantHandler.BACKUPS)).byteValue();
 
 				// Build list of physical links
-				List<Map<String, Object>> path = (List<Map<String, Object>>) link.get(TenantHandler.PATH);
+				List<Map> path = (List<Map>) link.get(TenantHandler.PATH);
 				List<PhysicalLink> physicalLinks = this.pathToPhyLinkList(path);
 
 				// Create virtual link

@@ -19,6 +19,7 @@ import net.onrc.openvirtex.packet.LLDPTLV;
  * Refer to IEEE Std 802.1ABTM-2009 for more information.
  *
  */
+@SuppressWarnings("rawtypes")
 public class OVXLLDP extends LLDP {
 
 	// ON.Lab OUI and OVX name for organizationally specific TLVs  

@@ -18,7 +18,6 @@ import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
@@ -80,10 +79,12 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 				this.installDropRule(sw, match);
 				return;
 			}
+			
+			
+			/*
+			 * Checks on vSwitch and the virtual port done in swndPkt.
+			 */
 			vSwitch = this.fetchOVXSwitch(sw, vSwitch, map);
-			if (vSwitch == null)  {
-				return;
-			}
 			this.ovxPort = this.port.getOVXPort(this.tenantId, 0);
 			this.sendPkt(vSwitch, match, sw);
 			this.learnHostIP(match, map);
@@ -95,6 +96,13 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
 		/*
 		 * Below handles packets traveling in the core.
+		 * 
+		 * 
+		 * The idea here si to rewrite the packets such that the controller is able to recognize them.
+		 * 
+		 * For IPv4 packets and ARP packets this means rewriting the IP fields and possibly the mac
+		 * address fields if these packets are at the egress point of a virtual link.
+		 * 
 		 */
 
 		if (match.getDataLayerType() == Ethernet.TYPE_IPv4 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
@@ -109,7 +117,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 			if (lUtils.isValid()) {
 				OVXPort srcPort = port.getOVXPort(lUtils.getTenantId(), lUtils.getLinkId());
 				if (srcPort == null) {
-					this.log.error("Virtual Src Port Unknown: {}, port {} with this match {}", 
+					this.log.error("Virtual Src Port Unknown: {}, port {} with this match {}; dropping packet", 
 							sw.getName(), match.getInputPort(), match);
 					return;
 				}
@@ -141,6 +149,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 				else if (linkField == OVXLinkField.VLAN) {
 					// TODO
 					log.warn("VLAN virtual links not yet implemented.");
+					return;
 				}
 
 			}   
@@ -243,8 +252,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		else if (this.port == null) {
 			log.error("The port {} doesn't belong to the physical switch {}", this.getInPort(), sw.getName());
 		}
-		else if (this.ovxPort == null) {
-			log.error("No virtual port associated to physical port {} in physical switch {} for virtual network {}", 
+		else if (this.ovxPort == null || !this.ovxPort.isActive()) {
+			log.error("Virtual port associated to physical port {} in physical switch {} for "
+					+ "virtual network {} is not defined or inactive", 
 					this.getInPort(), sw.getName(), this.tenantId);
 		} 
 	}

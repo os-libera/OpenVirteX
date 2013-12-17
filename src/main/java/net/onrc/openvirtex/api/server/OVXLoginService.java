@@ -55,6 +55,7 @@ public class OVXLoginService implements LoginService {
 	public class OpenVirteXAuthenticatedUser implements Authentication.User {
 
 		private final String user;
+		@SuppressWarnings("unused")
 		private final String password;
 
 		public OpenVirteXAuthenticatedUser(final String username,

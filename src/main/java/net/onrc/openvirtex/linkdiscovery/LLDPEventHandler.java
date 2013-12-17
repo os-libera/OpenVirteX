@@ -13,6 +13,7 @@ import net.onrc.openvirtex.elements.datapath.Switch;
 
 import org.openflow.protocol.OFMessage;
 
+@SuppressWarnings("rawtypes")
 public interface LLDPEventHandler {
 
 	public void handleLLDP(OFMessage msg, Switch sw);

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFPhysicalPort;
 
 import junit.framework.Assert;
@@ -25,7 +24,6 @@ import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
@@ -39,7 +37,6 @@ import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.SwitchRoute;
-import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 import net.onrc.openvirtex.util.MACAddress;
 
 public class MapAddTest extends TestCase {
@@ -49,6 +46,7 @@ public class MapAddTest extends TestCase {
 
 	private final int MAXPSW = 1000;
 
+	@SuppressWarnings("unused")
 	private OpenVirteXController ctl = null; 
 	private Mappable map = null;
 
