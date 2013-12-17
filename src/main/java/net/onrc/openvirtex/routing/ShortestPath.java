@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
@@ -314,8 +315,9 @@ public class ShortestPath implements Routable {
 		/*
 		 * Try to check if the route has been already computed
 		 */
-		final Map<OVXPort, Map<OVXPort, SwitchRoute>> routeMap = vSwitch.getRouteMap();
-		Map<OVXPort, SwitchRoute> portRouteMap = null;
+		final ConcurrentHashMap<OVXPort, ConcurrentHashMap<OVXPort, SwitchRoute>> routeMap = 
+					vSwitch.getRouteMap();
+		ConcurrentHashMap<OVXPort, SwitchRoute> portRouteMap = null;
 		SwitchRoute route = null;
 		if ((portRouteMap = routeMap.get(srcPort)) != null) {
 			if ((route = portRouteMap.get(dstPort)) != null) {

@@ -154,7 +154,6 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	 * @return the PhysicalPort at start of the route.
 	 */
 	public PhysicalPort getPathSrcPort() {
-		/* have to go fetch the map for the links, bit convoluted */
 		return this.inPort;
 	}
 
@@ -171,7 +170,6 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	 * @return the PhysicalPort at end of the route.
 	 */
 	public PhysicalPort getPathDstPort() {
-		/* have to go fetch the map for the links, bit convoluted */
 		return this.outPort;
 	}
 
