@@ -424,9 +424,10 @@ public class OVXBigSwitch extends OVXSwitch {
 				if (!p1.equals(p2)) {
 					try {
 						links.addAll(getRouteMap().get(p1).get(p2).getLinks());
+						links.addAll(getRouteMap().get(p2).get(p1).getLinks());
 					} catch (NullPointerException npe) {
-						log.warn("No route defined on switch {} between ports {} and {}", 
-								this.getSwitchName(), p1.getPortNumber(), p2.getPortNumber());
+						log.warn("No route defined on switch {} in virtual network {} between ports {} and {}", 
+								this.getSwitchName(), this.getTenantId(), p1.getPortNumber(), p2.getPortNumber());
 						continue;
 					}
 				}

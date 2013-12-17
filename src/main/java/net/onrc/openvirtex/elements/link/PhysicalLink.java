@@ -23,7 +23,7 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
  * The Class PhysicalLink.
  * 
  */
-public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements Persistable {
+public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements Persistable, Comparable<PhysicalLink> {
 
 	
 	private static AtomicInteger linkIds = new AtomicInteger(0);
@@ -69,5 +69,17 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements 
 	public void setLinkId(Integer id) {
 		this.linkId = id;
 	}
+
+	@Override
+	public int compareTo(PhysicalLink o) {
+		Long sum1 = this.getSrcSwitch().getSwitchId() + this.getSrcPort().getPortNumber();
+		Long sum2 = o.getSrcSwitch().getSwitchId() + o.getSrcPort().getPortNumber();
+		if (sum1 == sum2)
+			return (int) (this.getSrcSwitch().getSwitchId() - o.getSrcSwitch().getSwitchId());
+		else
+			return (int) (sum1 - sum2);
+	}
+	
+	
 	
 }

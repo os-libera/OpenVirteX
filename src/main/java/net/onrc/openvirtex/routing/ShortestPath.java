@@ -11,12 +11,12 @@ package net.onrc.openvirtex.routing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
@@ -39,7 +39,7 @@ import org.openflow.util.U8;
  * between two physical switches based on the nominal throughput of the link.
  */
 public class ShortestPath implements Routable {
-	
+
 	//set the max priority usable by SPF to 64
 	private static final byte MAXPRIORITY = (byte) 64;
 
@@ -95,10 +95,10 @@ public class ShortestPath implements Routable {
 	private List<PhysicalLink>         edges;
 
 	/** The settled nodes. */
-	private Set<PhysicalSwitch>              settledNodes;
+	private LinkedHashSet<PhysicalSwitch>              settledNodes;
 
 	/** The un settled nodes. */
-	private Set<PhysicalSwitch>              unSettledNodes;
+	private LinkedHashSet<PhysicalSwitch>              unSettledNodes;
 
 	/** The predecessors. */
 	private Map<PhysicalSwitch, Predecessor> predecessors;
@@ -125,8 +125,8 @@ public class ShortestPath implements Routable {
 	 * time we call computePath. A solution is to store this info. Evaluate pros/cons
 	 */
 	public void execute(final PhysicalSwitch source) {
-		this.settledNodes = new HashSet<PhysicalSwitch>();
-		this.unSettledNodes = new HashSet<PhysicalSwitch>();
+		this.settledNodes = new LinkedHashSet<PhysicalSwitch>();
+		this.unSettledNodes = new LinkedHashSet<PhysicalSwitch>();
 		this.distance = new HashMap<PhysicalSwitch, Integer>();
 		this.predecessors = new HashMap<PhysicalSwitch, Predecessor>();
 		this.distance.put(source, 0);
@@ -204,7 +204,7 @@ public class ShortestPath implements Routable {
 	 * @param list of physical neighbours
 	 * @return the closest switch
 	 */
-	private PhysicalSwitch getMinimum(final Set<PhysicalSwitch> vertexes) {
+	private PhysicalSwitch getMinimum(final LinkedHashSet<PhysicalSwitch> vertexes) {
 		PhysicalSwitch minimum = null;
 		for (final PhysicalSwitch vertex : vertexes) {
 			if (minimum == null) {
@@ -330,6 +330,7 @@ public class ShortestPath implements Routable {
 		 */
 		List<PhysicalLink> phyLinkList = new ArrayList<PhysicalLink>(PhysicalNetwork.getInstance()
 				.getLinks());
+		Collections.sort(phyLinkList);
 		LinkedList<PhysicalLink> path = new LinkedList<>();
 		LinkedList<PhysicalLink> revpath = new LinkedList<>();
 
@@ -364,18 +365,18 @@ public class ShortestPath implements Routable {
 			if (checkPath(path) == false) {
 				if (i == 0) {
 					log.warn("Unable to compute the PRIMARY path for for big-switch {} "
-							+ "between ports ({},{}) and ({},{}). Check that at least on physical link exists between the switches that belongs to the big-switch",
+							+ "between ports ({},{}) and ({},{}) in virtual network {}. Check that at least on physical link exists between the switches that belongs to the big-switch",
 							vSwitch.getSwitchName(), srcPort.getPortNumber(),
 							dstPort.getPortNumber(), dstPort.getPortNumber(), 
-							srcPort.getPortNumber());
+							srcPort.getPortNumber(), vSwitch.getTenantId());
 					return null;
 				}
 				else {
 					log.warn("Unable to compute the backup (nr. {}) path for for big-switch {} "
-							+ "between ports ({},{}) and ({},{})", i,
+							+ "between ports ({},{}) and ({},{}) in virtual network {}.", i,
 							vSwitch.getSwitchName(), srcPort.getPortNumber(),
 							dstPort.getPortNumber(), dstPort.getPortNumber(), 
-							srcPort.getPortNumber());
+							srcPort.getPortNumber(), vSwitch.getTenantId());
 					break;
 				}
 			}
@@ -390,9 +391,9 @@ public class ShortestPath implements Routable {
 					vSwitch.createRoute(srcPort, dstPort, path, revpath, (byte) (U8.f(MAXPRIORITY) - i));
 				} catch (final IndexOutOfBoundException e) {
 					log.error("Unable to create the virtual switch route for for big-switch {} "
-							+ "between ports ({},{}), too many routes in this virtual switch",
+							+ "between ports ({},{})  in virtual network {}, too many routes in this virtual switch",
 							vSwitch.getSwitchName(), srcPort.getPortNumber(),
-							dstPort.getPortNumber());
+							dstPort.getPortNumber(), vSwitch.getTenantId());
 				}
 			}
 		}
@@ -414,7 +415,7 @@ public class ShortestPath implements Routable {
 		 */
 		this.edges = new ArrayList<PhysicalLink>(PhysicalNetwork.getInstance()
 				.getLinks());
-
+		Collections.sort(this.edges);
 		LinkedList<PhysicalLink> path = new LinkedList<>();
 		PhysicalPort srcPathPort = PhysicalNetwork.getInstance().
 				getNeighborPort(ovxLink.getSrcPort().getPhysicalPort());
@@ -423,7 +424,7 @@ public class ShortestPath implements Routable {
 		if ((srcPathPort == null) || (dstPathPort == null)) {
 			throw new PortMappingException("Virtual link is mapped to missing endpoint(s)");
 		}
-		
+
 		if (PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
 				ovxLink.getDstPort().getPhysicalPort()) != null) {
 			path.add(PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
@@ -460,15 +461,15 @@ public class ShortestPath implements Routable {
 				if (path == null) {
 					if (i == 0)
 						log.warn("Unable to compute the PRIMARY path for for link {} "
-								+ "between ports ({}/{}-{}/{}). Check that at least on physical path exists between the link end-points",
+								+ "between ports ({}/{}-{}/{}) in virtual network {}. Check that at least on physical path exists between the link end-points",
 								ovxLink.getLinkId(), ovxLink.getSrcSwitch().getSwitchName(),
 								ovxLink.getSrcPort().getPortNumber(), ovxLink.getDstSwitch().getSwitchName(),
-								ovxLink.getDstPort().getPortNumber());
+								ovxLink.getDstPort().getPortNumber(), ovxLink.getTenantId());
 					else 
-						log.warn("Unable to compute the the backup (nr. ) path for for link {} between ports ({}/{}-{}/{}).",
+						log.warn("Unable to compute the the backup (nr. ) path for for link {} between ports ({}/{}-{}/{}) in virtual network {}.",
 								i, ovxLink.getLinkId(), ovxLink.getSrcSwitch().getSwitchName(),
 								ovxLink.getSrcPort().getPortNumber(), ovxLink.getDstSwitch().getSwitchName(),
-								ovxLink.getDstPort().getPortNumber());
+								ovxLink.getDstPort().getPortNumber(), ovxLink.getTenantId());
 					break;
 				}
 				else {
@@ -482,5 +483,5 @@ public class ShortestPath implements Routable {
 		}
 
 	}
-	
+
 }
