@@ -13,6 +13,7 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidRouteException;
@@ -52,13 +53,14 @@ public class DisconnectOVXRoute extends ApiHandler<Map<String, Object>> {
 	    final OVXMap map = OVXMap.getInstance();
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 		    .intValue());
-
+	    final OVXSwitch sw = virtualNetwork.getSwitch(dpid.longValue());
+	    
 	    virtualNetwork
 		    .disconnectRoute(dpid.longValue(), routeId.intValue());
 
 	    this.log.info(
 		    "Removed virtual switch route {} belonging to big-switch {} in virtual network {}",
-		    routeId, dpid, tenantId);
+		    routeId, sw.getSwitchName(), tenantId);
 	    resp = new JSONRPC2Response(true, 0);
 
 	} catch (final MissingRequiredField e) {

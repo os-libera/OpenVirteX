@@ -314,9 +314,8 @@ public class ShortestPath implements Routable {
 		/*
 		 * Try to check if the route has been already computed
 		 */
-		final HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> routeMap = vSwitch
-				.getRouteMap();
-		HashMap<OVXPort, SwitchRoute> portRouteMap = null;
+		final Map<OVXPort, Map<OVXPort, SwitchRoute>> routeMap = vSwitch.getRouteMap();
+		Map<OVXPort, SwitchRoute> portRouteMap = null;
 		SwitchRoute route = null;
 		if ((portRouteMap = routeMap.get(srcPort)) != null) {
 			if ((route = portRouteMap.get(dstPort)) != null) {

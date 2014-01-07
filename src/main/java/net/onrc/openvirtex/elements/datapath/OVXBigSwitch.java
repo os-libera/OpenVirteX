@@ -16,12 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
-import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.messages.Devirtualizable;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
@@ -51,7 +51,7 @@ public class OVXBigSwitch extends OVXSwitch {
 	private final BitSetIndex                                     routeCounter;
 
 	/** The calculated routes */
-	private final HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> routeMap;
+	private final Map<OVXPort, Map<OVXPort, SwitchRoute>> routeMap;
 
 	public OVXBigSwitch(final long switchId, final int tenantId) {
 		super(switchId, tenantId);
@@ -60,7 +60,7 @@ public class OVXBigSwitch extends OVXSwitch {
 		} catch (RoutingAlgorithmException e) {
 			log.error("Routing algorithm not set for big-switch " + this.getSwitchName());
 		}
-		this.routeMap = new HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>>();
+		this.routeMap = new HashMap<OVXPort, Map<OVXPort, SwitchRoute>>();
 		this.routeCounter = new BitSetIndex(IndexType.ROUTE_ID);
 	}
 
@@ -119,7 +119,7 @@ public class OVXBigSwitch extends OVXSwitch {
 	 */
 	public Set<SwitchRoute> getRoutebyId(final Integer routeId) {
 		final Set<SwitchRoute> routes = new HashSet<SwitchRoute>();
-		for (HashMap<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
+		for (Map<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
 			for (SwitchRoute route : portMap.values()) {
 				if (route.getRouteId() == routeId.intValue())
 					routes.add(route);
@@ -128,7 +128,7 @@ public class OVXBigSwitch extends OVXSwitch {
 		return routes;
 	}
 
-	public HashMap<OVXPort, HashMap<OVXPort, SwitchRoute>> getRouteMap() {
+	public Map<OVXPort, Map<OVXPort, SwitchRoute>> getRouteMap() {
 		return this.routeMap;
 	}
 
@@ -145,7 +145,7 @@ public class OVXBigSwitch extends OVXSwitch {
 			//TODO: Not removing the routes that have this port as a destination. Do it!
 			this.routeMap.remove(this.portMap.get(portNumber));
 
-			for (HashMap<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
+			for (Map<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
 				Iterator<Entry<OVXPort, SwitchRoute>> it = portMap.entrySet().iterator();
 				while (it.hasNext()) {
 					Entry<OVXPort, SwitchRoute> entry = it.next();
@@ -211,17 +211,23 @@ public class OVXBigSwitch extends OVXSwitch {
 		return super.boot();
 	}
 
+	/**
+	 * Unregister route identified by routeId: release routeId index,
+	 * remove virtual/physical route mappings from map, and remove
+	 * virtual port-pair to route mapping from the switch. 
+	 * @param routeId
+	 * @return True if successful, false if route doesn't exist.
+	 */
 	public boolean unregisterRoute(final Integer routeId) {
 		boolean result = false;
-		for (HashMap<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
+		for (Map<OVXPort, SwitchRoute> portMap : this.routeMap.values()) {
 			for (SwitchRoute route : portMap.values()) {
 				if (route.getRouteId() == routeId.intValue()) {
 					this.routeCounter.releaseIndex(routeId);
 					this.map.removeRoute(route);
-					/*
-					 * This operation has to be done twice for both direction. 
-					 * Set result to false if the route doesn't exists
-					 */
+					// This operation has to be done twice for both directions. 
+					// Set result to false if the route doesn't exist.
+					// TODO: clean up source ports if their mapping becomes empty
 					if (this.routeMap.get(route.getSrcPort()) == null || 
 							this.routeMap.get(route.getSrcPort()).remove(route.getDstPort()) == null)
 						return false;
@@ -235,7 +241,7 @@ public class OVXBigSwitch extends OVXSwitch {
 
 	@Override
 	public void unregister() {
-		for (HashMap<OVXPort, SwitchRoute> portMap : 
+		for (Map<OVXPort, SwitchRoute> portMap : 
 			Collections.unmodifiableCollection(this.routeMap.values())) {
 			for (final SwitchRoute route : portMap.values()) {
 				this.map.removeRoute(route);
@@ -375,9 +381,9 @@ public class OVXBigSwitch extends OVXSwitch {
 
 	private void addToRouteMap(final OVXPort in, final OVXPort out,
 			final SwitchRoute entry) {
-		HashMap<OVXPort, SwitchRoute> rtmap = this.routeMap.get(in);
+		Map<OVXPort, SwitchRoute> rtmap = this.routeMap.get(in);
 		if (rtmap == null) {
-			rtmap = new HashMap<OVXPort, SwitchRoute>();
+			rtmap = new ConcurrentHashMap<OVXPort, SwitchRoute>();
 			this.routeMap.put(in, rtmap);
 		}
 		rtmap.put(out, entry);
