@@ -11,11 +11,13 @@ import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import net.onrc.openvirtex.core.OpenVirteXController;
 
 import org.openflow.protocol.OFHello;
 
 public class TranslatorTest extends TestCase {
 
+	OpenVirteXController ctl = null;
 	private XidTranslator translator;
 
 	public TranslatorTest(final String name) {
@@ -51,8 +53,9 @@ public class TranslatorTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		this.translator = new XidTranslator();
 		super.setUp();
+    	ctl = new OpenVirteXController(" ", " ", null, 0, " ", 0, null, null);
+		this.translator = new XidTranslator();
 	}
 
 	@Override
