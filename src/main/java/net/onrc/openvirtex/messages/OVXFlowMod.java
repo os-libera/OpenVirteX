@@ -80,10 +80,13 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 			} catch (final ActionVirtualizationDenied e) {
 				this.log.warn("Action {} could not be virtualized; error: {}",
 						act, e.getMessage());
+				ft.deleteFlowMod(ovxCookie);
 				sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
 				return;
 			} catch (final DroppedMessageException e) {
-				this.log.debug("Dropping flowmod {}", this);
+				this.log.warn("Dropping flowmod {}", this);
+				ft.deleteFlowMod(ovxCookie);
+				//TODO perhaps send error message to controller
 				return;
 			}
 		}

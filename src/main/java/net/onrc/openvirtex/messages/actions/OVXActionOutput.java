@@ -34,7 +34,6 @@ import net.onrc.openvirtex.routing.SwitchRoute;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPort;
 import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.action.OFAction;
@@ -50,7 +49,7 @@ VirtualizableAction {
 			final List<OFAction> approvedActions, final OVXMatch match)
 					throws ActionVirtualizationDenied, DroppedMessageException {
 		final OVXPort inPort = sw.getPort(match.getInputPort());
-		
+
 		final LinkedList<OVXPort> outPortList = this.fillPortList(
 				match.getInputPort(), this.getPort(), sw);
 		final OVXNetwork vnet;
@@ -99,7 +98,7 @@ VirtualizableAction {
 						this.log.error(
 								"Cannot retrieve the bigswitch internal route between ports {} {}, dropping message",
 								inPort, outPort);
-						return;
+						throw new DroppedMessageException("No such internal route");
 					}
 
 					//If the inPort belongs to an OVXLink, add rewrite actions to unset the packet link fields
@@ -119,7 +118,7 @@ VirtualizableAction {
 							return;
 						}
 					}
-					
+
 					route.generateRouteFMs(fm.clone());
 
 					//add the output action with the physical outPort (srcPort of the route)
@@ -247,17 +246,18 @@ VirtualizableAction {
 					 * Big-switch management. Generate a packetOut to the physical outPort
 					 */
 					else if (sw instanceof OVXBigSwitch) {
-						final PhysicalPort dstPort = outPort
-								.getPhysicalPort();
-						dstPort.getParentSwitch().sendMsg(
-								new OVXPacketOut(match.getPktData(),
-										OFPort.OFPP_NONE.getValue(),
-										dstPort.getPortNumber()), null);
-						this.log.debug(
-								"PacketOut for a bigSwitch port, "
-										+ "generate a packet from Physical Port {}/{}",
-										dstPort.getParentSwitch().getSwitchName(), dstPort.getPortNumber());
-
+						// Only generate pkt_out if a route is configured between in and output port
+						if ((inPort == null) || (((OVXBigSwitch) sw).getRoute(inPort, outPort) != null)) {
+							final PhysicalPort dstPort = outPort.getPhysicalPort();
+							dstPort.getParentSwitch().sendMsg(
+									new OVXPacketOut(match.getPktData(),
+											OFPort.OFPP_NONE.getValue(),
+											dstPort.getPortNumber()), null);
+							this.log.debug(
+									"PacketOut for a bigSwitch port, "
+											+ "generate a packet from Physical Port {}/{}",
+											dstPort.getParentSwitch().getSwitchName(), dstPort.getPortNumber());
+						}
 					}
 					else { 
 						/**
