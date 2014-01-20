@@ -262,13 +262,17 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 	}
 
 	/**
-	 * if this is an edge, try to un-map any attached hosts. 
+	 * Removes a host from this port, if it's an edge
 	 * @throws NetworkMappingException 
 	 */
 	public void unMapHost() throws NetworkMappingException {
 		if (this.isEdge) {
 			OVXNetwork virtualNetwork = this.parentSwitch.getMap().getVirtualNetwork(this.tenantId);
-			virtualNetwork.getHost(this).unregister();
+			Host host = virtualNetwork.getHost(this);
+			/* need this check since a port can be created but not have anything attached to it */
+			if (host != null) {
+				host.unregister();
+			}
 		}
 	}
 

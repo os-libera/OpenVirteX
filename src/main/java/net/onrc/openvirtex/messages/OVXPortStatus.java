@@ -66,6 +66,9 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 					}
 					for (Map.Entry<Integer, OVXPort> p_map : mp.entrySet()) {
 						OVXPort vport = p_map.getValue();
+						if (vport == null) {
+							continue;
+						}
 						if (isReason(OFPortReason.OFPPR_DELETE)) {
 							/* try to remove OVXPort, vLinks, routes */
 							vport.unMapHost();
