@@ -335,32 +335,6 @@ public class AbstractAPICalls extends TestCase {
 	    return sp.process(request);
 	}
 	
-	public JSONRPC2Response pauseNetwork(final int tenantId) {
-	    final PauseOVXNetwork pn = new PauseOVXNetwork();
-
-	    @SuppressWarnings("serial")
-	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-			{
-			    this.put(TenantHandler.TENANT, tenantId);
-			}
-	    };
-
-	    return pn.process(request);
-	}
-	
-	public JSONRPC2Response resumeNetwork(final int tenantId) {
-	    final ResumeOVXNetwork rn = new ResumeOVXNetwork();
-
-	    @SuppressWarnings("serial")
-	    final HashMap<String, Object> request = new HashMap<String, Object>() {
-			{
-			    this.put(TenantHandler.TENANT, tenantId);
-			}
-	    };
-
-	    return rn.process(request);
-	}
-	
 	public void testPassing() {
 		/* Make JUnit happy */
 		/* http://junit.sourceforge.net/doc/faq/faq.htm#running_11 */

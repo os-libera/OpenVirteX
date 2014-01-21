@@ -357,36 +357,6 @@ def do_stopPort(gopts, opts, args):
     result = connect(gopts, "stopPort", data=req, passwd=getPasswd(gopts)) 
     if result:
         print "Port (port_id %s) has been shutdown in virtual switch (network_id %s, switch_id %s)" %(args[2], args[0], args[1])
-
-def pa_pauseNetwork(args, cmd):
-    usage = "%s <network_id>" % USAGE.format(cmd)
-    (sdesc, ldesc) = DESCS[cmd]
-    parser = OptionParser(usage=usage, description=ldesc)
-    return parser.parse_args(args)    
-
-def do_pauseNetwork(gopts, opts, args):
-    if len(args) != 1:
-        print "pauseNetwork : Must specify a network_id"
-        sys.exit()
-    req = { "tenantId" : int(args[0]) }
-    result = connect(gopts, "stopNetwork", data=req, passwd=getPasswd(gopts)) 
-    if result:
-        print "Network (network_id %s) has been paused" %(args[0])
-        
-def pa_resumeNetwork(args, cmd):
-    usage = "%s <network_id>" % USAGE.format(cmd)
-    (sdesc, ldesc) = DESCS[cmd]
-    parser = OptionParser(usage=usage, description=ldesc)
-    return parser.parse_args(args)    
-
-def do_resumeNetwork(gopts, opts, args):
-    if len(args) != 1:
-        print "resumeNetwork : Must specify a network_id"
-        sys.exit()
-    req = { "tenantId" : int(args[0]) }
-    result = connect(gopts, "stopNetwork", data=req, passwd=getPasswd(gopts)) 
-    if result:
-        print "Network (network_id %s) has been booted" %(args[0])
         
 # Other methods
 
@@ -496,8 +466,6 @@ CMDS = {
     'stopNetwork': (pa_stopNetwork, do_stopNetwork),
     'stopSwitch': (pa_stopSwitch, do_stopSwitch),
     'stopPort': (pa_stopPort, do_stopPort), 
-    'pauseNetwork': (pa_pauseNetwork, do_pauseNetwork),
-    'resumeNetwork': (pa_resumeNetwork, do_resumeNetwork),
     
     'help' : (pa_help, do_help)
 }
@@ -569,13 +537,7 @@ DESCS = {
                         "\nExample: stopSwitch 1 00:a4:23:05:00:00:00:01")),
     'stopPort' : ("Shutdown a virtual port",
                      ("Shutdown a virtual port. Must specify a network_id, a virtual switch_id and a virtual port_id."
-                        "\nExample: stopPort 1 00:a4:23:05:00:00:00:01 1")),   
-    'pauseNetwork' : ("Pause a virtual network",
-                     ("Pause a virtual network. Must specify a network_id."
-                        "\nExample: pauseNetwork 1")), 
-    'resumeNetwork' : ("Resume a virtual network",
-                     ("Resume a virtual network. Must specify a network_id."
-                        "\nExample: resumeNetwork 1")), 
+                        "\nExample: stopPort 1 00:a4:23:05:00:00:00:01 1"))
 }
 
 USAGE="%prog {}"
@@ -664,10 +626,6 @@ if __name__ == '__main__':
       print "stopSwitch: int, string"  
     elif function=='stopPort':
       print "stopPort: int, string , short"
-    elif function=='resumeNetwork':
-      print "pauseNetwork: int"  
-    elif function=='resumeNetwork':
-      print "resumeNetwork: int"  
       
   except IndexError, e:
     print "%s is an unknown command" % sys.argv[-1]

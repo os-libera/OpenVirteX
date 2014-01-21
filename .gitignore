@@ -14,3 +14,6 @@
 
 .project
 .pydevproject
+
+# Emacs backup files
+*~
