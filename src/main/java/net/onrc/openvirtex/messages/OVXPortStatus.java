@@ -15,11 +15,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.onrc.openvirtex.elements.Mappable;
-
-
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;

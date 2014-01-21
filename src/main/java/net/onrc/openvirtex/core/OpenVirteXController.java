@@ -11,8 +11,11 @@ package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.api.server.JettyServer;
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.db.DBManager;
@@ -35,6 +38,7 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 public class OpenVirteXController implements Runnable {
 
@@ -43,7 +47,7 @@ public class OpenVirteXController implements Runnable {
 	private static final int SEND_BUFFER_SIZE = 1024 * 1024;
 	private static OpenVirteXController instance = null;
 	private static BitSetIndex tenantIdCounter = null;
-	
+
 	@SuppressWarnings("unused")
 	private String configFile = null;
 	private String ofHost = null;
@@ -56,6 +60,9 @@ public class OpenVirteXController implements Runnable {
 	private final NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
 			Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
 
+	private ThreadPoolExecutor clientThreads = null;
+	private ThreadPoolExecutor serverThreads = null;
+
 	private final ChannelGroup sg = new DefaultChannelGroup();
 	private final ChannelGroup cg = new DefaultChannelGroup();
 
@@ -65,21 +72,30 @@ public class OpenVirteXController implements Runnable {
 	private int maxVirtual = 0;
 	private OVXLinkField	ovxLinkField;
 
-	private Integer statsRefresh = 30;
+	private Integer statsRefresh;
 
-	public OpenVirteXController(final String configFile, final String ofHost,
-			final Integer ofPort, final int maxVirtual, final String dbHost, final int dbPort,
-			final Boolean dbClear, Integer statsRefresh) {
-		this.configFile = configFile;
-		this.ofHost = ofHost;
-		this.ofPort = ofPort;
-		this.dbHost = dbHost;
-		this.dbPort = dbPort;
-		this.dbClear = dbClear;
-		this.maxVirtual = maxVirtual;
+	private Integer nClientThreads;
+
+	private Integer nServerThreads;
+
+	public OpenVirteXController(CmdLineSettings settings) {
+		this.configFile = settings.getConfigFile();
+		this.ofHost = settings.getOFHost();
+		this.ofPort = settings.getOFPort();
+		this.dbHost = settings.getDBHost();
+		this.dbPort = settings.getDBPort();
+		this.dbClear = settings.getDBClear();
+		this.maxVirtual = settings.getNumberOfVirtualNets();
+		this.statsRefresh  = settings.getStatsRefresh();
+		this.nClientThreads = settings.getClientThreads();
+		this.nServerThreads= settings.getServerThreads();
 		//by default, use Mac addresses to store vLinks informations
 		this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
-		this.statsRefresh  = statsRefresh;
+		this.clientThreads = new OrderedMemoryAwareThreadPoolExecutor(
+				nClientThreads, 1048576, 1048576, 5, TimeUnit.SECONDS);
+		this.serverThreads = new OrderedMemoryAwareThreadPoolExecutor(
+				nServerThreads, 1048576, 1048576, 5, TimeUnit.SECONDS);
+		this.pfact = new SwitchChannelPipeline(this, this.serverThreads);
 		OpenVirteXController.instance = this;
 		OpenVirteXController.tenantIdCounter = new BitSetIndex(IndexType.TENANT_ID);
 	}
@@ -98,7 +114,7 @@ public class OpenVirteXController implements Runnable {
 
 			this.setServerBootStrapParams(switchServerBootStrap);
 
-			this.pfact = new SwitchChannelPipeline(this, null);
+
 			switchServerBootStrap.setPipelineFactory(this.pfact);
 			final InetSocketAddress sa = this.ofHost == null ? new InetSocketAddress(
 					this.ofPort) : new InetSocketAddress(this.ofHost,
@@ -128,7 +144,7 @@ public class OpenVirteXController implements Runnable {
 		final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
 		clientBootStrap.setOption("remoteAddress", remoteAddr);
 
-		this.cfact = new ClientChannelPipeline(this, this.cg, null,
+		this.cfact = new ClientChannelPipeline(this, this.cg, this.clientThreads,
 				clientBootStrap, sw);
 		clientBootStrap.setPipelineFactory(this.cfact);
 
@@ -245,5 +261,5 @@ public class OpenVirteXController implements Runnable {
 		}
 		return tenantIdCounter;
 	}
-	
+
 }

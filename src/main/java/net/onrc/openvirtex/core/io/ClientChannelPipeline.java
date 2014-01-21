@@ -18,7 +18,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 
@@ -58,10 +57,7 @@ public class ClientChannelPipeline extends OpenflowChannelPipeline {
 		pipeline.addLast("timeout", this.readTimeoutHandler);
 		pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
 				handler, this.timer, 15));
-		if (this.pipelineExecutor == null) {
-			this.pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
-					16, 1048576, 1048576);
-		}
+		
 		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
 				this.pipelineExecutor));
 		pipeline.addLast("handler", handler);

@@ -14,6 +14,7 @@ import java.util.List;
 import junit.framework.Assert;
 import junit.framework.TestSuite;
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
@@ -28,7 +29,7 @@ public class PassingAPITest extends AbstractAPICalls {
 
 	static final int MAX_TENANTS = 4;
 	static final OpenVirteXController ctrl = 
-			new OpenVirteXController("", "", null, MAX_TENANTS, "", 0, null, null);
+			new OpenVirteXController(new CmdLineSettings());
 	
 	/**
 	 * @return the suite of tests being tested

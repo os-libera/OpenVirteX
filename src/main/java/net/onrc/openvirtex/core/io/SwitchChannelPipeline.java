@@ -17,12 +17,13 @@ import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler;
 
 public class SwitchChannelPipeline extends OpenflowChannelPipeline {
 
+	private ExecutionHandler eh = null;
+	
 	public SwitchChannelPipeline(
 			final OpenVirteXController openVirteXController,
 			final ThreadPoolExecutor pipelineExecutor) {
@@ -32,6 +33,7 @@ public class SwitchChannelPipeline extends OpenflowChannelPipeline {
 		this.timer = PhysicalNetwork.getTimer();
 		this.idleHandler = new IdleStateHandler(this.timer, 20, 25, 0);
 		this.readTimeoutHandler = new ReadTimeoutHandler(this.timer, 30);
+		this.eh = new ExecutionHandler(this.pipelineExecutor);
 	}
 
 	@Override
@@ -45,12 +47,8 @@ public class SwitchChannelPipeline extends OpenflowChannelPipeline {
 		pipeline.addLast("timeout", this.readTimeoutHandler);
 		pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
 				handler, this.timer, 15));
-		if (this.pipelineExecutor == null) {
-			this.pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
-					16, 1048576, 1048576);
-		}
-		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-				this.pipelineExecutor));
+		
+		pipeline.addLast("pipelineExecutor", eh);
 		pipeline.addLast("handler", handler);
 		return pipeline;
 	}

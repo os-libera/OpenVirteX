@@ -24,30 +24,38 @@ public class CmdLineSettings {
 	public static final Integer DEFAULT_DB_PORT = ServerAddress.defaultPort();
 	public static final Boolean DEFAULT_DB_CLEAR = false;
 	public static final Integer DEFAULT_STATS_REFRESH = 30;
+	public static final Integer DEFAULT_SERVER_THREADS = 32;
+	public static final Integer DEFAULT_CLIENT_THREADS = 32;
 
-	@Option(name = "-cf", aliases = "--configFile", metaVar = "FILE", usage = "OpenVirteX configuration file")
+	@Option(name = "-cf", aliases = "--config-file", metaVar = "FILE", usage = "OpenVirteX configuration file")
 	private String configFile = CmdLineSettings.DEFAULT_CONFIG_FILE;
 
-	@Option(name = "-p", aliases = "--ofPort", metaVar = "INT", usage = "OpenVirteX OpenFlow listen port")
+	@Option(name = "-p", aliases = "--of-port", metaVar = "INT", usage = "OpenVirteX OpenFlow listen port")
 	private Integer ofPort = CmdLineSettings.DEFAULT_OF_PORT;
 
-	@Option(name = "-h", aliases = "--ofHost", metaVar = "String", usage = "OpenVirteX host")
+	@Option(name = "-h", aliases = "--of-host", metaVar = "String", usage = "OpenVirteX host")
 	private String ofHost = CmdLineSettings.DEFAULT_OF_HOST;
 
-	@Option(name = "-n", aliases = "--numVirtual", metaVar = "INT", usage = "The number of virtual networks")
+	@Option(name = "-n", aliases = "--num-virtual", metaVar = "INT", usage = "The number of virtual networks")
 	private Integer numVirtual = CmdLineSettings.DEFAULT_NUMBER_VIRT_NETS;
 	
-	@Option(name = "-dh", aliases = "--dbHost", metaVar = "String", usage = "Database host")
+	@Option(name = "-dh", aliases = "--db-host", metaVar = "String", usage = "Database host")
 	private String dbHost = CmdLineSettings.DEFAULT_DB_HOST;
 
-	@Option(name = "-dp", aliases = "--dbPort", metaVar = "INT", usage = "Database port")
+	@Option(name = "-dp", aliases = "--db-port", metaVar = "INT", usage = "Database port")
 	private Integer dbPort = CmdLineSettings.DEFAULT_DB_PORT;
 
-	@Option(name = "--dbClear", usage = "Clear database")
+	@Option(name = "--db-clear", usage = "Clear database")
 	private Boolean dbClear = CmdLineSettings.DEFAULT_DB_CLEAR;
 	
-	@Option(name = "--statsRefresh", usage = "Sets what interval to poll statistics with")
+	@Option(name = "--stats-refresh", usage = "Sets what interval to poll statistics with")
 	private Integer statsRefresh = CmdLineSettings.DEFAULT_STATS_REFRESH;
+	
+	@Option(name = "--ct", aliases = "--client-threads", metaVar = "INT", usage = "Number of threads handles controller connections")
+	private Integer clientThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
+	
+	@Option(name = "--st", aliases = "--server-threads", metaVar = "INT", usage = "Number of threads handles switch connections")
+	private Integer serverThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
 
 	public String getConfigFile() {
 		return this.configFile;
@@ -80,4 +88,13 @@ public class CmdLineSettings {
 	public Integer getStatsRefresh() {
 		return this.statsRefresh;
 	}
+	
+	public Integer getClientThreads() {
+		return this.clientThreads;
+	}
+	
+	public Integer getServerThreads() {
+		return this.serverThreads;
+	}
+	
 }

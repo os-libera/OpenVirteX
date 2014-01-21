@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.core;
 
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -45,8 +46,7 @@ public class OpenVirteXControllerTest extends TestCase {
 	}
 
 	public void testNotNull() {
-		final OpenVirteXController ovx = new OpenVirteXController(null,
-				"localhost", 16633, 8, "localhost", 27017, false, 30);
+		final OpenVirteXController ovx = new OpenVirteXController(new CmdLineSettings());
 		Assert.assertNotNull(OpenVirteXController.getInstance());
 		Assert.assertEquals(ovx, OpenVirteXController.getInstance());
 	}

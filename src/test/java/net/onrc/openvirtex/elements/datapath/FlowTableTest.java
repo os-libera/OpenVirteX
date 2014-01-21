@@ -14,6 +14,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 
@@ -202,7 +203,7 @@ public class FlowTableTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
     	super.setUp();
-    	ctl = new OpenVirteXController(" ", " ", null, 0, " ", 0, null, null);
+    	ctl = new OpenVirteXController(new CmdLineSettings());
     }
 
     @Override

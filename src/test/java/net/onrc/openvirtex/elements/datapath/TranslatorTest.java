@@ -12,6 +12,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 
 import org.openflow.protocol.OFHello;
 
@@ -54,7 +55,7 @@ public class TranslatorTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-    	ctl = new OpenVirteXController(" ", " ", null, 0, " ", 0, null, null);
+    	ctl = new OpenVirteXController(new CmdLineSettings());
 		this.translator = new XidTranslator();
 	}
 

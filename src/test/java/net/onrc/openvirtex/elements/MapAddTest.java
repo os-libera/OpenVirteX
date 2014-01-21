@@ -19,6 +19,7 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
@@ -238,7 +239,7 @@ public class MapAddTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		this.map = OVXMap.getInstance();
-		this.ctl = new OpenVirteXController("", "", 0, 0, "", 0, false, 0);
+		this.ctl = new OpenVirteXController(new CmdLineSettings());
 
 	}
 
