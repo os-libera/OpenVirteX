@@ -573,28 +573,28 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			final ExceptionEvent e) throws Exception {
 		if (e.getCause() instanceof ReadTimeoutException) {
 			// switch timeout
-			this.log.error("Disconnecting switch {} due to read timeout ",
+			this.log.error("Disconnecting ctrl {} due to read timeout ",
 					this.getSwitchInfoString(), e.getCause());
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof HandshakeTimeoutException) {
 			this.log.error(
-					"Disconnecting switch {} failed to complete handshake ",
+					"Disconnecting ctrl {} failed to complete handshake ",
 					this.getSwitchInfoString(), e.getCause());
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof ClosedChannelException) {
-			this.log.error("Channel for sw {} already closed",
+			this.log.error("Channel for ctrl {} already closed",
 					this.getSwitchInfoString(), e.getCause());
 		} else if (e.getCause() instanceof IOException) {
-			this.log.error("Disconnecting switch {} due to IO Error.",
+			this.log.error("Disconnecting ctrl {} due to IO Error.",
 					this.getSwitchInfoString(), e.getCause());
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof SwitchStateException) {
-			this.log.error("Disconnecting switch {} due to switch state error",
+			this.log.error("Disconnecting ctrl {} due to switch state error",
 					this.getSwitchInfoString(), e.getCause());
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof MessageParseException) {
 			this.log.error(
-					"Disconnecting switch {} due to message parse failure",
+					"Disconnecting ctrl {} due to message parse failure",
 					this.getSwitchInfoString(), e.getCause());
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof RejectedExecutionException) {

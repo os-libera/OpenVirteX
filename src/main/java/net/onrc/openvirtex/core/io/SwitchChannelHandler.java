@@ -748,41 +748,49 @@ public class SwitchChannelHandler extends OFChannelHandler {
 		if (e.getCause() instanceof ReadTimeoutException) {
 			// switch timeout
 			this.log.error("Disconnecting switch {} due to read timeout ",
-					this.getSwitchInfoString(), e.getCause());
+					this.getSwitchInfoString());
+			
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof HandshakeTimeoutException) {
 			this.log.error(
 					"Disconnecting switch {} failed to complete handshake ",
-					this.getSwitchInfoString(), e.getCause());
+					this.getSwitchInfoString());
+			
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof ClosedChannelException) {
-			this.log.error("Channel for sw {} already closed",
-					this.getSwitchInfoString(), e.getCause());
+			this.log.error("Channel for sw {} already closed; switch needs to reconnect",
+					this.getSwitchInfoString());
+			
 		} else if (e.getCause() instanceof IOException) {
 			this.log.error("Disconnecting switch {} due to IO Error.",
-					this.getSwitchInfoString(), e.getCause());
+					this.getSwitchInfoString());
+			
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof SwitchStateException) {
 			this.log.error("Disconnecting switch {} due to switch state error",
-					this.getSwitchInfoString(), e.getCause());
+					this.getSwitchInfoString());
+			
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof MessageParseException) {
 			this.log.error(
 					"Disconnecting switch {} due to message parse failure",
-					this.getSwitchInfoString(), e.getCause());
+					this.getSwitchInfoString());
+			
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof RejectedExecutionException) {
 			this.log.error("Could not process message: queue full",
 					e.getCause());
+			
 		} else {
 
 			this.log.error(
 					"Error while processing message from switch {} state {}",
 					this.getSwitchInfoString(), this.state, e.getCause());
-
+			
 			ctx.getChannel().close();
 			throw new RuntimeException(e.getCause());
 		}
+		this.log.debug(e.getCause());
 	}
 
 	/*
