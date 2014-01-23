@@ -252,7 +252,7 @@ public class OVXNetworkManager {
 		if (switches != null) {
 			for (Map<String, Object> sw: switches) {
 				List<Long> dpids = (List<Long>) sw.get(TenantHandler.DPIDS);
-				long switchId = (long) sw.get(TenantHandler.DPID);
+				long switchId = (long) sw.get(TenantHandler.VDPID);
 				try {
 					virtualNetwork.createSwitch(dpids, switchId);
 				} catch (IndexOutOfBoundException e) {
@@ -281,7 +281,7 @@ public class OVXNetworkManager {
 		// Create OVX big switch routes if manual
 		if (switches != null) {
 			for (Map<String, Object> sw: switches) {
-				long switchId = (long) sw.get(TenantHandler.DPID);
+				long switchId = (long) sw.get(TenantHandler.VDPID);
 				String alg = (String) sw.get(TenantHandler.ALGORITHM);
 				Integer backups = (Integer) sw.get(TenantHandler.BACKUPS);
 				// Don't bother with switch routes if not a bigswitch
@@ -302,7 +302,7 @@ public class OVXNetworkManager {
 					final Map<Long, List<Integer>> routeIds = new HashMap<Long, List<Integer>>();
 					if (routes != null) {
 						for (Map<String, Object> route: routes) {
-							long dpid = (Long) route.get(TenantHandler.DPID);
+							long dpid = (Long) route.get(TenantHandler.VDPID);
 							short srcPort = ((Integer) route.get(TenantHandler.SRC_PORT)).shortValue();
 							short dstPort = ((Integer) route.get(TenantHandler.DST_PORT)).shortValue();
 							byte priority = ((Integer) route.get(TenantHandler.PRIORITY)).byteValue();
@@ -381,8 +381,8 @@ public class OVXNetworkManager {
 		final List<Map<String, Object>> hosts = (List<Map<String, Object>>) this.vnet.get(Host.DB_KEY);
 		if (hosts != null) {
 			for (Map<String, Object> host: hosts) {
-				final long dpid = (Long) host.get(TenantHandler.DPID);
-				final short port = ((Integer) host.get(TenantHandler.PORT)).shortValue();
+				final long dpid = (Long) host.get(TenantHandler.VDPID);
+				final short port = ((Integer) host.get(TenantHandler.VPORT)).shortValue();
 				final MACAddress macAddr = MACAddress.valueOf((Long) host.get(TenantHandler.MAC));
 				final int hostId = (Integer) host.get(TenantHandler.HOST);
 				try {

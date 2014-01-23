@@ -209,7 +209,7 @@ public class OVXBigSwitch extends OVXSwitch {
 					if (srcPort.getPortNumber() != dstPort.getPortNumber()
 							&& srcPort.getPhysicalPort().getParentSwitch() != dstPort
 							.getPhysicalPort().getParentSwitch()) {
-						this.getRoute(srcPort, dstPort).register();;
+						this.getRoute(srcPort, dstPort).register();						
 					}
 				}
 			}

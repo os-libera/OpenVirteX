@@ -8,6 +8,7 @@
 
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -15,6 +16,7 @@ import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
@@ -39,9 +41,9 @@ public class StopOVXPort extends ApiHandler<Map<String, Object>> {
 			final Number tenantId = HandlerUtils.<Number> fetchField(
 					TenantHandler.TENANT, params, true, null);
 			final Number dpid = HandlerUtils.<Number> fetchField(
-					TenantHandler.DPID, params, true, null);
+					TenantHandler.VDPID, params, true, null);
 			final Number port = HandlerUtils.<Number> fetchField(
-					TenantHandler.PORT, params, true, null);
+					TenantHandler.VPORT, params, true, null);
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 			HandlerUtils
@@ -58,7 +60,11 @@ public class StopOVXPort extends ApiHandler<Map<String, Object>> {
 			this.log.info(
 					"Stop virtual port {} on virtual switch {} in virtual network {}",
 					port, dpid, virtualNetwork.getTenantId());
-			resp = new JSONRPC2Response(true, 0);
+			OVXPort ovxPort = virtualNetwork.getSwitch(dpid.longValue()).getPort(port.shortValue());
+			Map<String, Object> reply = new HashMap<String, Object>(ovxPort.getDBObject());
+			reply.put(TenantHandler.VDPID,  ovxPort.getParentSwitch().getSwitchId());
+			reply.put(TenantHandler.TENANT, ovxPort.getTenantId());
+			resp = new JSONRPC2Response(reply, 0);
 
 		} catch (final MissingRequiredField e) {
 			resp = new JSONRPC2Response(

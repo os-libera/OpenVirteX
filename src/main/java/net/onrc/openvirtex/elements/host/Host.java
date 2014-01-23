@@ -82,8 +82,8 @@ public class Host implements Persistable {
 	@Override
 	public Map<String, Object> getDBObject() {
 		Map<String, Object> dbObject = new HashMap<String, Object>();
-		dbObject.put(TenantHandler.DPID, this.port.getParentSwitch().getSwitchId());
-		dbObject.put(TenantHandler.PORT, this.port.getPortNumber());
+		dbObject.put(TenantHandler.VDPID, this.port.getParentSwitch().getSwitchId());
+		dbObject.put(TenantHandler.VPORT, this.port.getPortNumber());
 		dbObject.put(TenantHandler.MAC, this.mac.toLong());
 		dbObject.put(TenantHandler.HOST, this.hostId);
 		return dbObject;

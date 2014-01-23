@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -45,7 +46,8 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
 
 	    virtualNetwork.stop();
 	    this.log.info("Stop virtual network {}", tenantId);
-	    resp = new JSONRPC2Response(true, 0);
+		Map<String, Object> reply = new HashMap<String, Object>(virtualNetwork.getDBObject());
+		resp = new JSONRPC2Response(reply, 0);
 
 	} catch (final MissingRequiredField e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(

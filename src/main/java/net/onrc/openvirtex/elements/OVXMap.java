@@ -515,10 +515,6 @@ public class OVXMap implements Mappable {
 		return macint;
 	}
 
-	public Map<OVXLink, ArrayList<PhysicalLink>> getVirtualLinkMap() {
-		return Collections.unmodifiableMap(this.virtualLinkMap);
-	}
-
 	@Override
 	public Map<Integer, OVXNetwork> listVirtualNetworks() {
 		return Collections.unmodifiableMap(this.networkMap);

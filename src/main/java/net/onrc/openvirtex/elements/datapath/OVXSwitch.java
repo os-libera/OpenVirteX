@@ -285,7 +285,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	@Override
 	public Map<String, Object> getDBObject() {
 		Map<String, Object> dbObject = new HashMap<String, Object>();
-		dbObject.put(TenantHandler.DPID, this.switchId);
+		dbObject.put(TenantHandler.VDPID, this.switchId);
 		List<Long> switches = new ArrayList<Long>();
 		try {
 			for (PhysicalSwitch sw: this.map.getPhysicalSwitches(this)) {

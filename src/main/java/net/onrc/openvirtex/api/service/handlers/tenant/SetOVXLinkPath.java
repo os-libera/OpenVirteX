@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,9 +67,11 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
 					linkId.intValue(), physicalLinks,
 					priority.byteValue());
 			if (virtualLink == null) {
-				resp = new JSONRPC2Response(false, 0);
+				resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INTERNAL_ERROR.getCode(), this.cmdName()), 0);
 			} else {
-				resp = new JSONRPC2Response(true, 0);
+				Map<String, Object> reply = new HashMap<String, Object>(virtualLink.getDBObject());
+				reply.put(TenantHandler.TENANT, virtualLink.getTenantId());
+				resp = new JSONRPC2Response(reply, 0);
 			}
 		} catch (final MissingRequiredField e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
@@ -104,9 +107,9 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": " + e.getMessage()), 0);
 		} catch (final InvalidPriorityException e) {
-		    resp = new JSONRPC2Response(new JSONRPC2Error(
-				    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-				            + ": " + e.getMessage()), 0);
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
 		}
 		return resp;
 	}

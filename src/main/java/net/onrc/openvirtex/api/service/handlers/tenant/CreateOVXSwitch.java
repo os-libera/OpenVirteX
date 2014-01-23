@@ -8,6 +8,7 @@
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,7 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 					TenantHandler.DPIDS, params, true, null);
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
+			
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
@@ -52,21 +54,25 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 			for (final Number dpid : dpids) {
 				longDpids.add(dpid.longValue());
 			}
+			
 			HandlerUtils.isValidDPID(tenantId.intValue(), longDpids);
 			final OVXSwitch ovxSwitch = virtualNetwork.createSwitch(longDpids);
+			
 			if (ovxSwitch == null) {
-				resp = new JSONRPC2Response(-1, 0);
+				resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INTERNAL_ERROR.getCode(), this.cmdName()), 0);
 			} else {
 				this.log.info(
 						"Created virtual switch {} in virtual network {}",
 						ovxSwitch.getSwitchName(), virtualNetwork.getTenantId());
-				resp = new JSONRPC2Response(ovxSwitch.getSwitchId(), 0);
+				Map<String, Object> reply = new HashMap<String, Object>(ovxSwitch.getDBObject());
+				reply.put(TenantHandler.TENANT,  ovxSwitch.getTenantId());
+				resp = new JSONRPC2Response(reply, 0);
 			}
 
 		} catch (final MissingRequiredField e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": Unable to create virtual network : "
+					+ ": Unable to create virtual switch : "
 					+ e.getMessage()), 0);
 		} catch (final InvalidDPIDException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(

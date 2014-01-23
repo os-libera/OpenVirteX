@@ -28,55 +28,57 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class DisconnectOVXLink extends ApiHandler<Map<String, Object>> {
 
-    Logger log = LogManager.getLogger(DisconnectOVXLink.class.getName());
+	Logger log = LogManager.getLogger(DisconnectOVXLink.class.getName());
 
-    @Override
-    public JSONRPC2Response process(final Map<String, Object> params) {
-	JSONRPC2Response resp = null;
+	@Override
+	public JSONRPC2Response process(final Map<String, Object> params) {
+		JSONRPC2Response resp = null;
 
-	try {
-	    final Number tenantId = HandlerUtils.<Number> fetchField(
-		    TenantHandler.TENANT, params, true, null);
-	    final Number linkId = HandlerUtils.<Number> fetchField(
-		    TenantHandler.LINK, params, true, null);
+		try {
+			final Number tenantId = HandlerUtils.<Number> fetchField(
+					TenantHandler.TENANT, params, true, null);
+			final Number linkId = HandlerUtils.<Number> fetchField(
+					TenantHandler.LINK, params, true, null);
 
-	    HandlerUtils.isValidTenantId(tenantId.intValue());
-	    HandlerUtils.isValidLinkId(tenantId.intValue(), linkId.intValue());
+			HandlerUtils.isValidTenantId(tenantId.intValue());
+			HandlerUtils.isValidLinkId(tenantId.intValue(), linkId.intValue());
 
-	    final OVXMap map = OVXMap.getInstance();
-	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
-		    .intValue());
-	    virtualNetwork.disconnectLink(linkId.intValue());
-	    this.log.info(
-		    "Removed bi-directional virtual link {} in virtual network {}",
-		    linkId, tenantId);
-	    resp = new JSONRPC2Response(true, 0);
+			final OVXMap map = OVXMap.getInstance();
+			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
+					.intValue());
 
-	} catch (final MissingRequiredField e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Unable to disconnect virtual link : "
-		            + e.getMessage()), 0);
-	} catch (final InvalidLinkException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invalid virtual link : " + e.getMessage()), 0);
-	} catch (final InvalidTenantIdException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invalid tenant id : " + e.getMessage()), 0);
-	} catch (final NetworkMappingException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": " + e.getMessage()), 0);
+			virtualNetwork.disconnectLink(linkId.intValue());
+
+			this.log.info(
+					"Removed bi-directional virtual link {} in virtual network {}",
+					linkId, tenantId);
+			resp = new JSONRPC2Response(0);
+
+		} catch (final MissingRequiredField e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Unable to disconnect virtual link : "
+					+ e.getMessage()), 0);
+		} catch (final InvalidLinkException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid virtual link : " + e.getMessage()), 0);
+		} catch (final InvalidTenantIdException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid tenant id : " + e.getMessage()), 0);
+		} catch (final NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
+		}
+
+		return resp;
 	}
 
-	return resp;
-    }
-
-    @Override
-    public JSONRPC2ParamsType getType() {
-	return JSONRPC2ParamsType.OBJECT;
-    }
+	@Override
+	public JSONRPC2ParamsType getType() {
+		return JSONRPC2ParamsType.OBJECT;
+	}
 
 }

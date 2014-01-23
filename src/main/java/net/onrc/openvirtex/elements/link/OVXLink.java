@@ -214,7 +214,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		//register the primary link in the map
 		this.srcPort.getParentSwitch().getMap().removeVirtualLink(this);
 		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
-		
+
 		this.setPriority(priority);
 
 		Collection<OVXFlowMod> flows = this.getSrcSwitch().getFlowTable().getFlowTable();
@@ -259,12 +259,12 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 
 	@Override
 	public Map<String, Object> getDBObject() {
+		Map<String, Object> dbObject = super.getDBObject(); 
+		dbObject.put(TenantHandler.LINK, this.linkId);
+		dbObject.put(TenantHandler.PRIORITY, this.priority);
+		dbObject.put(TenantHandler.ALGORITHM, this.alg.getRoutingType().getValue());
+		dbObject.put(TenantHandler.BACKUPS, this.alg.getBackups());
 		try {
-			Map<String, Object> dbObject = super.getDBObject(); 
-			dbObject.put(TenantHandler.LINK, this.linkId);
-			dbObject.put(TenantHandler.PRIORITY, this.priority);
-			dbObject.put(TenantHandler.ALGORITHM, this.alg.getRoutingType().getValue());
-			dbObject.put(TenantHandler.BACKUPS, this.alg.getBackups());
 			// Build path list
 			List<PhysicalLink> links = map.getPhysicalLinks(this);
 			List<Map<String, Object>> path = new ArrayList<Map<String, Object>>();
@@ -275,10 +275,10 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 				path.add(obj);
 			}
 			dbObject.put(TenantHandler.PATH, path);
-			return dbObject;
 		} catch (LinkMappingException e) {
-			return null;
+			;
 		}
+		return dbObject;
 	}
 
 	/**
@@ -391,12 +391,12 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 			Byte curPriority = it.next();
 			if (this.unusableLinks.get(curPriority).contains(plink)) {
 				log.info("Reactivate all inactive paths for virtual link {} in virtual network {} ", this.linkId, this.tenantId);
-				
+
 				if (U8.f(this.getPriority()) >= U8.f(curPriority)) {
 					this.backupLinks.put(curPriority, this.unusableLinks.get(curPriority));
 				}
 				else {
-					
+
 					try {
 						List<PhysicalLink> backupLinks = new ArrayList<>(map.getPhysicalLinks(this));
 						Collections.copy(backupLinks,map.getPhysicalLinks(this));

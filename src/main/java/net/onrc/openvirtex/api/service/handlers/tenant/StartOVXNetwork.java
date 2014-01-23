@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -27,43 +28,46 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class StartOVXNetwork extends ApiHandler<Map<String, Object>> {
 
-    Logger log = LogManager.getLogger(StartOVXNetwork.class.getName());
+	Logger log = LogManager.getLogger(StartOVXNetwork.class.getName());
 
-    @Override
-    public JSONRPC2Response process(final Map<String, Object> params) {
-	JSONRPC2Response resp = null;
+	@Override
+	public JSONRPC2Response process(final Map<String, Object> params) {
+		JSONRPC2Response resp = null;
 
-	try {
-	    final Number tenantId = HandlerUtils.<Number> fetchField(
-		    TenantHandler.TENANT, params, true, null);
+		try {
+			final Number tenantId = HandlerUtils.<Number> fetchField(
+					TenantHandler.TENANT, params, true, null);
 
-	    HandlerUtils.isValidTenantId(tenantId.intValue());
-	    final OVXMap map = OVXMap.getInstance();
-	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
-		    .intValue());
-	    this.log.info("Booted virtual network {}",
-		    virtualNetwork.getTenantId());
-	    resp = new JSONRPC2Response(virtualNetwork.boot(), 0);
+			HandlerUtils.isValidTenantId(tenantId.intValue());
 
-	} catch (final MissingRequiredField e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Unable to create virtual network : "
-		            + e.getMessage()), 0);
-	} catch (final InvalidTenantIdException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invlaid tenant id : " + e.getMessage()), 0);
-	} catch (final NetworkMappingException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": " + e.getMessage()), 0);
+			final OVXMap map = OVXMap.getInstance();
+			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
+					.intValue());
+
+			virtualNetwork.boot();
+			this.log.info("Booted virtual network {}", virtualNetwork.getTenantId());
+			Map<String, Object> reply = new HashMap<String, Object>(virtualNetwork.getDBObject());
+			resp = new JSONRPC2Response(reply, 0);
+
+		} catch (final MissingRequiredField e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Unable to start virtual network : "
+					+ e.getMessage()), 0);
+		} catch (final InvalidTenantIdException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid tenant id : " + e.getMessage()), 0);
+		} catch (final NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
+		}
+		return resp;
 	}
-	return resp;
-    }
 
-    @Override
-    public JSONRPC2ParamsType getType() {
-	return JSONRPC2ParamsType.OBJECT;
-    }
+	@Override
+	public JSONRPC2ParamsType getType() {
+		return JSONRPC2ParamsType.OBJECT;
+	}
 }

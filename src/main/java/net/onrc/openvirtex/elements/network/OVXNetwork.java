@@ -79,12 +79,12 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	private final IPAddress                      network;
 	private final short                          mask;
 	private HashMap<IPAddress, MACAddress>       gwsMap;
-	private boolean                              bootState;
+	private boolean                              isBooted;
 	private final BitSetIndex                    dpidCounter;
 	private final BitSetIndex                    linkCounter;
 	private final BitSetIndex                    ipCounter;
 	private final BitSetIndex                    hostCounter;
-	private final Map<OVXPort, Host>                     hostMap;
+	private final Map<OVXPort, Host>                    hostMap;
 	private final OVXFlowManager		 flowManager;
 
 
@@ -109,7 +109,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		this.controllerPort = controllerPort;
 		this.network = network;
 		this.mask = mask;
-		this.bootState = false;
+		this.isBooted = false;
 		this.dpidCounter = new BitSetIndex(IndexType.SWITCH_ID);
 		this.linkCounter = new BitSetIndex(IndexType.LINK_ID);
 		this.ipCounter = new BitSetIndex(IndexType.IP_ID);
@@ -149,7 +149,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public static void reserveTenantId(Integer tenantId) throws IndexOutOfBoundException, DuplicateIndexException {
 		OpenVirteXController.getTenantCounter().getNewIndex(tenantId);
 	}
-	
+
 	public BitSetIndex getLinkCounter() {
 		return this.linkCounter;
 	}
@@ -176,15 +176,15 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	}
 
 	public boolean isBooted() {
-		return this.bootState;
+		return this.isBooted;
 	}
 
 	public Collection<Host> getHosts() {
 		return Collections.unmodifiableCollection(this.hostMap.values());
 	}
 
-	
-	
+
+
 	/*public Host getHost(final MACAddress mac) {
 		for (final Host host : this.hostList) {
 			if (host.getMac().toLong() == mac.toLong()) {
@@ -226,7 +226,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		for (final OVXSwitch sw : this.getSwitches()) {
 			sw.tearDown();
 		}
-		this.bootState = false;
+		this.isBooted = false;
 	}
 
 	// API-facing methods
@@ -253,7 +253,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		this.addSwitch(virtualSwitch);
 
 		virtualSwitch.register(switches);
-		if (this.bootState)
+		if (this.isBooted)
 			virtualSwitch.boot();
 
 		return virtualSwitch;
@@ -416,9 +416,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 			route = sw.createRoute(srcPort, dstPort, physicalLinks, reverseLinks, priority);
 		else
 			route = sw.createRoute(srcPort, dstPort, physicalLinks, reverseLinks, priority, routeId[0]);
-		
+
 		route.register();
-		
+
 		return route;
 	}
 
@@ -496,8 +496,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		for (final OVXSwitch sw : this.getSwitches()) {
 			result &= sw.boot();
 		}
-		this.bootState = result;
-		return this.bootState;
+		this.isBooted = result;
+		return this.isBooted;
 	}
 
 
@@ -603,6 +603,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		dbObject.put(TenantHandler.CTRLPORT, this.controllerPort);
 		dbObject.put(TenantHandler.NETADD, this.network.getIp());
 		dbObject.put(TenantHandler.NETMASK, this.mask);
+		dbObject.put(TenantHandler.IS_BOOTED, this.isBooted);
 		return dbObject;
 	}
 

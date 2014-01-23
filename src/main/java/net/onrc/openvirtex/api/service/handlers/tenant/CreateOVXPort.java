@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -49,20 +50,24 @@ public class CreateOVXPort extends ApiHandler<Map<String, Object>> {
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 			HandlerUtils.isValidPhysicalPort(tenantId.intValue(),
 					dpid.longValue(), port.shortValue());
+			
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
 			final OVXPort ovxPort = virtualNetwork.createPort(dpid.longValue(),
 					port.shortValue());
+			
 			if (ovxPort == null) {
-				resp = new JSONRPC2Response(-1, 0);
+				resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INTERNAL_ERROR.getCode(), this.cmdName()), 0);
 			} else {
 				this.log.info(
 						"Created virtual port {} on virtual switch {} in virtual network {}",
 						ovxPort.getPortNumber(), ovxPort.getParentSwitch()
 						.getSwitchName(), virtualNetwork.getTenantId());
-				resp = new JSONRPC2Response(ovxPort.getParentSwitch()
-						.getSwitchId() + "," + ovxPort.getPortNumber(), 0);
+				Map<String, Object> reply = new HashMap<String, Object>(ovxPort.getDBObject());
+				reply.put(TenantHandler.VDPID,  ovxPort.getParentSwitch().getSwitchId());
+				reply.put(TenantHandler.TENANT,  ovxPort.getTenantId());
+				resp = new JSONRPC2Response(reply, 0);
 			}
 
 		} catch (final MissingRequiredField e) {
@@ -70,7 +75,7 @@ public class CreateOVXPort extends ApiHandler<Map<String, Object>> {
 					new JSONRPC2Error(
 							JSONRPC2Error.INVALID_PARAMS.getCode(),
 							this.cmdName()
-							+ ": Unable to create this virtual port in the virtual network : "
+							+ ": Unable to create virtual port : "
 							+ e.getMessage()), 0);
 		} catch (final InvalidPortException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(

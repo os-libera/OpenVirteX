@@ -213,33 +213,31 @@ class OVXClient():
                'networkAddress': net_address, 'mask': net_mask}
         try:
             ret = self._connect("createNetwork", self.tenant_url, data=req)
-            if ret:
-                log.info("Network with tenantId %s has been created" % ret)
-            return ret
+            tenantId = ret.get('tenantId')
+            if tenantId:
+                log.info("Network with tenantId %s has been created" % tenantId)
+            return tenantId
         except OVXException as e:
             e.rollback = False
             raise
 
     def removeNetwork(self, tenantId):
         req = {'tenantId': tenantId}
-
         try:
             ret = self._connect("removeNetwork", self.tenant_url, data=req)
-            if ret:
-                log.info("Network with tenantId %s has been removed" % ret)
-            return ret
+            log.info("Network with tenantId %s has been removed" % ret)
         except OVXException as e:
             e.rollback = False
             raise
-
+        
     def createSwitch(self, tenantId, dpids):
         req = {'tenantId': tenantId, 'dpids': dpids}
-
         try:
             ret = self._connect("createSwitch", self.tenant_url, data=req)
-            if ret:
-                log.info("Switch with switchId %s has been created" % longToHex(ret))
-            return ret
+            switchId = ret.get('vdpid')
+            if switchId:
+                log.info("Switch with switchId %s has been created" % longToHex(switchId))
+            return switchId
         except OVXException as e:
             e.rollback = True
             e.tenantId = tenantId
@@ -247,35 +245,33 @@ class OVXClient():
 
     def createPort(self, tenantId, dpid, port):
         req = {'tenantId': tenantId, 'dpid': dpid, 'port': port}
-    
         try:
             ret = self._connect("createPort", self.tenant_url, data=req)
-            # Type conversions needed because ConnectHost returns incorrect JSON
-            switch_id, port_no = [int(x) for x in ret.split(',')]
-            if (switch_id, port_no):
-                log.info("Port on switch %s with port number %s has been created" % (longToHex(switch_id), port_no))
-            return (switch_id, port_no)
+            switchId = ret.get('vdpid')
+            portId = ret.get('vport')
+            if switchId and portId:
+                log.info("Port on switch %s with port number %s has been created" % (longToHex(switchId), portId))
+            return (switchId, portId)
         except OVXException as e:
             e.rollback = True
             e.tenantId = tenantId
-            raise        
+            raise
 
     def connectLink(self, tenantId, srcDpid, srcPort, dstDpid, dstPort, algorithm, backup_num):
         req = {'tenantId': tenantId, 'srcDpid': srcDpid, 'srcPort': srcPort, 'dstDpid': dstDpid, 'dstPort': dstPort, 'algorithm': algorithm, 'backup_num': backup_num}
-
         try:
             ret = self._connect("connectLink", self.tenant_url, data=req)
-            if ret:
-                log.info("Link with linkId %s has been created" % ret)
-            return ret
+            linkId = ret.get('linkId')
+            if linkId:
+                log.info("Link with linkId %s has been created" % linkId)
+            return linkId
         except OVXException as e:
-            e.rollback = True
-            e.tenantId = tenantId
-            raise        
+              e.rollback = True
+              e.tenantId = tenantId
+              raise
 
     def setLinkPath(self, tenantId, linkId, path, priority):
         req = {'tenantId': tenantId, 'linkId': linkId, 'path': path, 'priority': priority}
-
         try:
             ret = self._connect("setLinkPath", self.tenant_url, data=req)
             if ret:
@@ -284,24 +280,36 @@ class OVXClient():
         except OVXException as e:
             e.rollback = True
             e.tenantId = tenantId
-            raise        
-
+            raise
+        
     def connectHost(self, tenantId, dpid, port, mac):
-        req = {'tenantId': tenantId, 'dpid': dpid, 'port': port, 'mac': mac}
-
+        req = {'tenantId': tenantId, 'vdpid': dpid, 'vport': port, 'mac': mac}
         try:
             ret = self._connect("connectHost", self.tenant_url, data=req)
-            if ret:
-                log.info("Host with hostId %s connected" % ret)
-            return ret
+            hostId = ret.get('hostId')
+            if hostId:
+                log.info("Host with hostId %s connected" % hostId)
+            return hostId
         except OVXException as e:
             e.rollback = True
             e.tenantId = tenantId
             raise
-
+            
+    def connectRoute(self, tenantId, switchId, srcPort, dstPort, path):
+        req = {'tenantId': tenantId, 'vdpid': switchId, 'srcPort': srcPort, 'dstPort': dstPort, 'path': path}
+        try:
+            ret = self._connect("connectRoute", self.tenant_url, data=req)
+            routeId = reg.get('routeId')
+            if routeId:
+                log.info("Route with routeId %s on switch %s between ports (%s,%s) created" % (routeId, switchId, srcPort, dstPort))
+            return routeId
+        except OVXException as e:
+            e.rollback = True
+            e.tenantId = tenantId
+            raise
+        
     def createSwitchRoute(self, tenantId, switchId, srcPort, dstPort, path):
         req = {'tenantId': tenantId, 'dpid': switchId, 'srcPort': srcPort, 'dstPort': dstPort, 'path': path}
-
         try:
             ret = self._connect("createSwitchRoute", self.tenant_url, data=req)
             if ret:
@@ -314,7 +322,6 @@ class OVXClient():
 
     def startNetwork(self, tenantId):
         req = {'tenantId': tenantId}
-
         try:
             ret = self._connect("startNetwork", self.tenant_url, data=req)
             if ret:
@@ -327,7 +334,6 @@ class OVXClient():
 
     def getPhysicalTopology(self):
         ret = self._connect("getPhysicalTopology", self.status_url)
-
         try:
             if ret:
                 log.info("Physical network topology received")
@@ -337,8 +343,7 @@ class OVXClient():
             raise
 
     def setInternalRouting(self, tenantId, dpid, algorithm, backup_num):
-        req = {'tenantId': tenantId, 'dpid': dpid, 'algorithm': algorithm, 'backup_num': backup_num}
-
+        req = {'tenantId': tenantId, 'vdpid': dpid, 'algorithm': algorithm, 'backup_num': backup_num}
         try:
             ret = self._connect("setInternalRouting", self.tenant_url, data=req)
             if ret:
@@ -348,7 +353,7 @@ class OVXClient():
             e.rollback = True
             e.tenantId = tenantId
             raise
-
+        
 class OVXEmbedderHandler(BaseHTTPRequestHandler):
     """
     Implementation of JSON-RPC API, defines all API handler methods.

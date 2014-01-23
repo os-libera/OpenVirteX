@@ -21,7 +21,6 @@ import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXRoute;
-import net.onrc.openvirtex.api.service.handlers.tenant.SaveConfig;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXBigSwitchRouting;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXLinkPath;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXNetwork;
@@ -55,6 +54,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	public static final String SWITCH_ROUTE = "switch_route";
 	public static final String PORT = "port";
 	public static final String VPORT = "vport";
+	public static final String VDPID = "vdpid";
 	public static final String SRC_PORT = "srcPort";
 	public static final String DST_PORT = "dstPort";
 	public static final String PRIORITY = "priority";
@@ -64,6 +64,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	public static final String BACKUPS = "backup_num";
 	public static final String HOST = "hostId";
 	public static final String ROUTE = "routeId";
+	public static final String IS_BOOTED = "isBooted";
 
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
@@ -90,8 +91,6 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 			this.put("stopNetwork", new StopOVXNetwork());
 			this.put("stopSwitch", new StopOVXSwitch());
 			this.put("stopPort", new StopOVXPort());
-
-			this.put("saveConfig", new SaveConfig());
 		}
 	};
 

@@ -44,11 +44,11 @@ public class RemoveOVXNetwork extends ApiHandler<Map<String, Object>> {
 					.intValue());
 
 			if (virtualNetwork == null) {
-				resp = new JSONRPC2Response(-1, 0);
+				resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INTERNAL_ERROR.getCode(), this.cmdName()), 0);
 			} else {
 				virtualNetwork.unregister();
 				this.log.info("Removed virtual network {}", tenantId);
-				resp = new JSONRPC2Response(tenantId, 0);
+				resp = new JSONRPC2Response(0);
 			}
 
 		} catch (final MissingRequiredField e) {

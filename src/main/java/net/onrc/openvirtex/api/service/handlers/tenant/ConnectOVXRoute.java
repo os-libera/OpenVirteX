@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 			final Number tenantId = HandlerUtils.<Number> fetchField(
 					TenantHandler.TENANT, params, true, null);
 			final Number dpid = HandlerUtils.<Long> fetchField(
-					TenantHandler.DPID, params, true, null);
+					TenantHandler.VDPID, params, true, null);
 			final Number srcPort = HandlerUtils.<Number> fetchField(
 					TenantHandler.SRC_PORT, params, true, null);
 			final Number dstPort = HandlerUtils.<Number> fetchField(
@@ -76,7 +77,7 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 					dpid.longValue(), srcPort.shortValue(),
 					dstPort.shortValue(), physicalLinks, priority.byteValue());
 			if (virtualRoute == null) {
-				resp = new JSONRPC2Response(-1, 0);
+				resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INTERNAL_ERROR.getCode(), this.cmdName()), 0);
 			} else {
 				this.log.info(
 						"Created bi-directional virtual route {} between ports ({},{}) on virtual big-switch {} in virtual network {}",
@@ -84,7 +85,9 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 						.getPortNumber(), virtualRoute.getDstPort()
 						.getPortNumber(), virtualRoute.getSrcSwitch()
 						.getSwitchName(), virtualNetwork.getTenantId());
-				resp = new JSONRPC2Response(virtualRoute.getRouteId(), 0);
+				Map<String, Object> reply = new HashMap<String, Object>(virtualRoute.getDBObject());
+				reply.put(TenantHandler.TENANT, virtualRoute.getTenantId());
+				resp = new JSONRPC2Response(reply, 0);
 			}
 		} catch (final MissingRequiredField e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
@@ -129,8 +132,8 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 	}
 
 
-@Override
-public JSONRPC2ParamsType getType() {
-	return JSONRPC2ParamsType.OBJECT;
-}
+	@Override
+	public JSONRPC2ParamsType getType() {
+		return JSONRPC2ParamsType.OBJECT;
+	}
 }

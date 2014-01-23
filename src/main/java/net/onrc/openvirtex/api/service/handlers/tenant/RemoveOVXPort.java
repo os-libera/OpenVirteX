@@ -29,67 +29,67 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public class RemoveOVXPort extends ApiHandler<Map<String, Object>> {
-    Logger log = LogManager.getLogger(RemoveOVXPort.class.getName());
+	Logger log = LogManager.getLogger(RemoveOVXPort.class.getName());
 
-    @Override
-    public JSONRPC2Response process(final Map<String, Object> params) {
-	JSONRPC2Response resp = null;
+	@Override
+	public JSONRPC2Response process(final Map<String, Object> params) {
+		JSONRPC2Response resp = null;
 
-	try {
-	    final Number tenantId = HandlerUtils.<Number> fetchField(
-		    TenantHandler.TENANT, params, true, null);
-	    final Number dpid = HandlerUtils.<Number> fetchField(
-		    TenantHandler.DPID, params, true, null);
-	    final Number port = HandlerUtils.<Number> fetchField(
-		    TenantHandler.PORT, params, true, null);
+		try {
+			final Number tenantId = HandlerUtils.<Number> fetchField(
+					TenantHandler.TENANT, params, true, null);
+			final Number dpid = HandlerUtils.<Number> fetchField(
+					TenantHandler.VDPID, params, true, null);
+			final Number port = HandlerUtils.<Number> fetchField(
+					TenantHandler.VPORT, params, true, null);
 
-	    HandlerUtils.isValidTenantId(tenantId.intValue());
-	    HandlerUtils
-		    .isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
-	    HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
-		    port.shortValue());
+			HandlerUtils.isValidTenantId(tenantId.intValue());
+			HandlerUtils
+			.isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
+			HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
+					port.shortValue());
 
-	    final OVXMap map = OVXMap.getInstance();
-	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
-		    .intValue());
+			final OVXMap map = OVXMap.getInstance();
+			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
+					.intValue());
 
-	    virtualNetwork.removePort(dpid.longValue(), port.shortValue());
+			virtualNetwork.removePort(dpid.longValue(), port.shortValue());
 
-	    this.log.info(
-		    "Removed virtual port {} on virtual switch {} in virtual network {}",
-		    port, dpid, virtualNetwork.getTenantId());
-	    resp = new JSONRPC2Response(true, 0);
+			this.log.info(
+					"Removed virtual port {} on virtual switch {} in virtual network {}",
+					port, dpid, virtualNetwork.getTenantId());
+			resp = new JSONRPC2Response(0);
 
-	} catch (final MissingRequiredField e) {
-	    resp = new JSONRPC2Response(
-		    new JSONRPC2Error(
-		            JSONRPC2Error.INVALID_PARAMS.getCode(),
-		            this.cmdName()
-		                    + ": Unable to delete this virtual port in the virtual network : "
-		                    + e.getMessage()), 0);
-	} catch (final InvalidPortException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invalid port : " + e.getMessage()), 0);
-	} catch (final InvalidTenantIdException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invalid tenant id : " + e.getMessage()), 0);
-	} catch (final InvalidDPIDException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invalid virtual dpid : " + e.getMessage()), 0);
-	} catch (final NetworkMappingException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": " + e.getMessage()), 0);
+		} catch (final MissingRequiredField e) {
+			resp = new JSONRPC2Response(
+					new JSONRPC2Error(
+							JSONRPC2Error.INVALID_PARAMS.getCode(),
+							this.cmdName()
+							+ ": Unable to delete virtual port : "
+							+ e.getMessage()), 0);
+		} catch (final InvalidPortException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid port : " + e.getMessage()), 0);
+		} catch (final InvalidTenantIdException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid tenant id : " + e.getMessage()), 0);
+		} catch (final InvalidDPIDException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid virtual dpid : " + e.getMessage()), 0);
+		} catch (final NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
+		}
+		return resp;
 	}
-	return resp;
-    }
 
-    @Override
-    public JSONRPC2ParamsType getType() {
-	return JSONRPC2ParamsType.OBJECT;
-    }
+	@Override
+	public JSONRPC2ParamsType getType() {
+		return JSONRPC2ParamsType.OBJECT;
+	}
 
 }

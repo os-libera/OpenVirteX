@@ -418,7 +418,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	public Map<String, Object> getDBObject() {
 		try {
 			Map<String, Object> dbObject = new HashMap<String, Object>();
-			dbObject.put(TenantHandler.DPID, this.getSwitchId());
+			dbObject.put(TenantHandler.VDPID, this.getSwitchId());
 			dbObject.put(TenantHandler.SRC_PORT, this.srcPort.getPortNumber());
 			dbObject.put(TenantHandler.DST_PORT, this.dstPort.getPortNumber());
 			dbObject.put(TenantHandler.PRIORITY, this.priority);

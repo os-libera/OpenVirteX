@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
@@ -55,7 +56,6 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
 			final Number backupNumber = HandlerUtils.<Number> fetchField(
 					TenantHandler.BACKUPS, params, true, null);
 
-
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 			HandlerUtils.isValidOVXSwitch(tenantId.intValue(),
 					srcDpid.longValue());
@@ -74,8 +74,9 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
 					srcDpid.longValue(), srcPort.shortValue(),
 					dstDpid.longValue(), dstPort.shortValue(), alg,
 					backupNumber.byteValue());
+
 			if (virtualLink == null) {
-				resp = new JSONRPC2Response(-1, 0);
+				resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INTERNAL_ERROR.getCode(), this.cmdName()), 0);
 			} else {
 				this.log.info(
 						"Created bi-directional virtual link {} between ports {}/{} - {}/{} in virtual network {}",
@@ -84,8 +85,9 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
 						.getPortNumber(), virtualLink.getDstSwitch()
 						.getSwitchName(), virtualLink.getDstPort()
 						.getPortNumber(), virtualNetwork.getTenantId());
-
-				resp = new JSONRPC2Response(virtualLink.getLinkId(), 0);
+				Map<String, Object> reply = new HashMap<String, Object>(virtualLink.getDBObject());
+				reply.put(TenantHandler.TENANT, virtualLink.getTenantId());
+				resp = new JSONRPC2Response(reply, 0);
 			}
 		} catch (final MissingRequiredField e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
