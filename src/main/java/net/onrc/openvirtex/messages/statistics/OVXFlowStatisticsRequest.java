@@ -75,16 +75,16 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 				}
 			}
 			
-			if (replies.size() > 0) {
-				OVXStatisticsReply reply = new OVXStatisticsReply();
-				reply.setXid(msg.getXid());
-				reply.setStatisticType(OFStatisticsType.FLOW);
-				reply.setStatistics(replies);
-				
-				reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + length);
-				
-				sw.sendMsg(reply, sw);
-			}
+			
+			OVXStatisticsReply reply = new OVXStatisticsReply();
+			reply.setXid(msg.getXid());
+			reply.setStatisticType(OFStatisticsType.FLOW);
+			reply.setStatistics(replies);
+
+			reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + length);
+
+			sw.sendMsg(reply, sw);
+
 		}
 	}
 
