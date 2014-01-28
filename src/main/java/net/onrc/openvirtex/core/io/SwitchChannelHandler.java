@@ -265,7 +265,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 				case QUEUE_GET_CONFIG_REPLY:
 				case STATS_REPLY:
 				case VENDOR:
-					h.sw.handleIO(m);
+					h.sw.handleIO(m, h.channel);
 					break;
 					// The following messages are sent to switches. The controller
 					// should never receive them
@@ -391,7 +391,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 								+ "happen");
 				throw new SwitchStateException(msg);
 			}
-			h.sw.handleIO(m);
+			h.sw.handleIO(m, h.channel);
 		}
 
 		/**

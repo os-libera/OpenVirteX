@@ -7,7 +7,9 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -28,9 +30,10 @@ public class AbstractAPICalls extends TestCase {
 		@SuppressWarnings("serial")
 		final HashMap<String, Object> request = new HashMap<String, Object>() {
 			{
-				this.put(TenantHandler.PROTOCOL, "tcp");
-				this.put(TenantHandler.CTRLHOST, "localhost");
-				this.put(TenantHandler.CTRLPORT, port);
+				ArrayList<String> ctrls = new ArrayList<String>();
+				ctrls.add("tcp:localhost:"+port); 
+				
+				this.put(TenantHandler.CTRLURLS, ctrls);
 				this.put(TenantHandler.NETADD, "10.0.0.0");
 				this.put(TenantHandler.NETMASK, 24);
 			}

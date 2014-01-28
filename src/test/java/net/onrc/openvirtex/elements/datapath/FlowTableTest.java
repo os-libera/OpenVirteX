@@ -41,7 +41,7 @@ public class FlowTableTest extends TestCase {
     }
 
     public void testAddFlowMod() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
 		final OVXFlowTable oft = new OVXFlowTable(vsw);
 		final OVXFlowMod fm1 = this.getFlowMod();
 	
@@ -53,7 +53,7 @@ public class FlowTableTest extends TestCase {
     }
 
     public void testDeleteFlowMod() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
 		final OVXFlowTable oft = new OVXFlowTable(vsw);
 		final OVXFlowMod fm1 = this.getFlowMod();
 		
@@ -65,7 +65,7 @@ public class FlowTableTest extends TestCase {
     }
 
     public void testGenerateCookie() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
 		final OVXFlowTable oft = new OVXFlowTable(vsw);
 	
 		final OVXFlowMod fm1 = this.getFlowMod();
@@ -149,7 +149,7 @@ public class FlowTableTest extends TestCase {
     
     /* main FlowTable operations */
     public void testHandleFlowMod() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
 		final PhysicalSwitch psw = new PhysicalSwitch(0);
 		ArrayList<PhysicalSwitch> l = new ArrayList<PhysicalSwitch>();
 		l.add(psw);

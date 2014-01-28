@@ -19,7 +19,7 @@ import org.openflow.protocol.OFHello;
 public class TranslatorTest extends TestCase {
 
 	OpenVirteXController ctl = null;
-	private XidTranslator translator;
+	private XidTranslator<OVXSwitch> translator;
 
 	public TranslatorTest(final String name) {
 		super(name);
@@ -30,7 +30,7 @@ public class TranslatorTest extends TestCase {
 	}
 
 	public void testTranslate() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
 
 		// make a south-bound message....something simple.
 		final OFHello ofh = new OFHello();
@@ -41,13 +41,13 @@ public class TranslatorTest extends TestCase {
 	}
 
 	public void testUntranslate() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
 
 		final OFHello ofh = new OFHello();
 		ofh.setXid(0);
 		this.translator.translate(ofh.getXid(), vsw);
 
-		final XidPair pair = this.translator.untranslate(XidTranslator.MIN_XID);
+		final XidPair<OVXSwitch> pair = this.translator.untranslate(XidTranslator.MIN_XID);
 		Assert.assertEquals(pair.getSwitch().getSwitchId(), vsw.getSwitchId());
 		Assert.assertEquals(pair.getXid(), ofh.getXid());
 	}
@@ -56,7 +56,7 @@ public class TranslatorTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
     	ctl = new OpenVirteXController(new CmdLineSettings());
-		this.translator = new XidTranslator();
+		this.translator = new XidTranslator<OVXSwitch>();
 	}
 
 	@Override

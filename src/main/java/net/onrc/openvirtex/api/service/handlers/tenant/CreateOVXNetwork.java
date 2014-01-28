@@ -7,9 +7,12 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minidev.json.JSONArray;
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
@@ -35,25 +38,23 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
 	public JSONRPC2Response process(final Map<String, Object> params) {
 
 		JSONRPC2Response resp = null;
-
 		try {
-			final String protocol = HandlerUtils.<String> fetchField(
-					TenantHandler.PROTOCOL, params, true, null);
-			final String ctrlAddress = HandlerUtils.<String> fetchField(
-					TenantHandler.CTRLHOST, params, true, null);
-			final Number ctrlPort = HandlerUtils.<Number> fetchField(
-					TenantHandler.CTRLPORT, params, true, null);
+			
+			final ArrayList<String> ctrlUrls =  HandlerUtils.<ArrayList<String>>fetchField(
+					TenantHandler.CTRLURLS, params, true, null);
 			final String netAddress = HandlerUtils.<String> fetchField(
 					TenantHandler.NETADD, params, true, null);
 			final Number netMask = HandlerUtils.<Number> fetchField(
 					TenantHandler.NETMASK, params, true, null);
 
-			HandlerUtils.isControllerAvailable(ctrlAddress, ctrlPort.intValue());
+			for (String ctrl : ctrlUrls) {
+				String[] ctrlParts = ctrl.split(":");
 
+				HandlerUtils
+				.isControllerAvailable(ctrlParts[1], Integer.parseInt(ctrlParts[2]));
+			}
 			final IPAddress addr = new OVXIPAddress(netAddress, -1);
-			final OVXNetwork virtualNetwork = new OVXNetwork(protocol,
-					ctrlAddress, ctrlPort.intValue(), addr,
-					netMask.shortValue());
+			final OVXNetwork virtualNetwork = new OVXNetwork(ctrlUrls, addr, netMask.shortValue());
 			virtualNetwork.register();
 			this.log.info("Created virtual network {}",
 					virtualNetwork.getTenantId());

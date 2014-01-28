@@ -208,8 +208,8 @@ class OVXClient():
         except RuntimeError as e:
             log.error(e)
 
-    def createNetwork(self, protocol, host, port, net_address, net_mask):
-        req = {'protocol': protocol, 'controllerAddress': host, 'controllerPort': port,
+    def createNetwork(self, ctrls, net_address, net_mask):
+        req = {'controllerUrls': ctrls, 
                'networkAddress': net_address, 'mask': net_mask}
         try:
             ret = self._connect("createNetwork", self.tenant_url, data=req)
@@ -392,16 +392,15 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
             proto = self.server.ctrlProto
             host = self.server._spawnController()
             port = self.server.ctrlPort
+            ctrls = ["%s:%s:%s" % (proto, host, port)]
         elif controller['type'] == 'custom':
-            proto = controller['protocol']
-            host = controller['host']
-            port = int(controller['port'])
+            ctrls = controller['ctrls']
         else:
             raise EmbedderException(ERROR_CODE.INVALID_REQ, 'Unsupported controller type')
         # split subnet in netaddress and netmask
         (net_address, net_mask) = subnet.split('/')
         # create virtual network
-        tenantId = client.createNetwork(proto, host, port, net_address, int(net_mask))
+        tenantId = client.createNetwork(ctrls, net_address, int(net_mask))
         # create virtual switch with all physical dpids
         dpids = [hexToLong(dpid) for dpid in phyTopo['switches']]
         switchId = client.createSwitch(tenantId, dpids)
@@ -427,16 +426,15 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
             proto = self.server.ctrlProto
             host = self.server._spawnController()
             port = self.server.ctrlPort
+            ctrls = ["%s:%s:%s" % (proto, host, port)]
         elif controller['type'] == 'custom':
-            proto = controller['protocol']
-            host = controller['host']
-            port = int(controller['port'])
+            ctrls = controller['ctrls']
         else:
             raise EmbedderException(ERROR_CODE.INVALID_REQ, 'Unsupported controller type')
         # split subnet in netaddress and netmask
         (net_address, net_mask) = subnet.split('/')
         # create virtual network
-        tenantId = client.createNetwork(proto, host, port, net_address, int(net_mask))
+        tenantId = client.createNetwork(ctrls, net_address, int(net_mask))
         # create virtual switch per physical dpid
         for dpid in phyTopo['switches']:
             client.createSwitch(tenantId, [hexToLong(dpid)])

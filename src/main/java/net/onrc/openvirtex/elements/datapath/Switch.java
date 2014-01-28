@@ -23,6 +23,7 @@ import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFVendor;
 import org.openflow.util.HexString;
 
 /**
@@ -180,7 +181,10 @@ OVXSendMsg {
 	 * .OFMessage)
 	 */
 	@Override
-	public abstract void handleIO(OFMessage msg);
+	public abstract void handleIO(OFMessage msg, Channel channel);
+	
+	
+	public abstract void handleRoleIO(OFVendor msg, Channel channel);
 
 	/**
 	 * Sets the connected.
@@ -244,4 +248,8 @@ OVXSendMsg {
 		return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
 				+ this.switchName + "\n- isConnected: " + this.isConnected;
 	}
+
+	public abstract void removeChannel(Channel channel);
+
+
 }

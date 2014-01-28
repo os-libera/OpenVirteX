@@ -234,9 +234,9 @@ VirtualizableAction {
 						final OVXPort dstPort = outPort.getLink().getOutLink().getDstPort();
 						dstPort.getParentSwitch().sendMsg(
 								new OVXPacketIn(match.getPktData(),
-										dstPort.getPortNumber()), null);
+										dstPort.getPortNumber()), sw);
 						this.log.debug(
-								"Generate a packetIn from OVX Port {}/{}, phisicalPort {}/{}",
+								"Generate a packetIn from OVX Port {}/{}, physicalPort {}/{}",
 								dstPort.getParentSwitch().getSwitchName(), dstPort.getPortNumber(), 
 								dstPort.getPhysicalPort().getParentSwitch().getSwitchName(), 
 								dstPort.getPhysicalPortNumber());
@@ -252,7 +252,7 @@ VirtualizableAction {
 							dstPort.getParentSwitch().sendMsg(
 									new OVXPacketOut(match.getPktData(),
 											OFPort.OFPP_NONE.getValue(),
-											dstPort.getPortNumber()), null);
+											dstPort.getPortNumber()), sw);
 							this.log.debug(
 									"PacketOut for a bigSwitch port, "
 											+ "generate a packet from Physical Port {}/{}",
@@ -282,7 +282,7 @@ VirtualizableAction {
 			final Short outPort, final OVXSwitch sw) throws DroppedMessageException {
 		final LinkedList<OVXPort> outPortList = new LinkedList<OVXPort>();
 		if (U16.f(outPort) < U16.f(OFPort.OFPP_MAX.getValue())) {
-			if (sw.getPort(outPort).isActive())
+			if (sw.getPort(outPort) != null && sw.getPort(outPort).isActive())
 				outPortList.add(sw.getPort(outPort));
 		} 
 		else if (U16.f(outPort) == U16.f(OFPort.OFPP_FLOOD.getValue())) {

@@ -9,10 +9,11 @@
 
 package net.onrc.openvirtex.core.io;
 
+import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFMessage;
 
 public interface OVXEventHandler {
 
-	public void handleIO(OFMessage msg);
+	public void handleIO(OFMessage msg, Channel channel);
 
 }

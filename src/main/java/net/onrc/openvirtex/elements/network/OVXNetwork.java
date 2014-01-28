@@ -73,9 +73,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 					.getName());
 
 	private final Integer                        tenantId;
-	private final String                         protocol;
-	private final String                         controllerHost;
-	private final Integer                        controllerPort;
+	private final ArrayList<String>			 controllerUrls;
 	private final IPAddress                      network;
 	private final short                          mask;
 	private HashMap<IPAddress, MACAddress>       gwsMap;
@@ -99,14 +97,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	 * @param mask
 	 * @throws IndexOutOfBoundException
 	 */
-	public OVXNetwork(final int tenantId, final String protocol, final String controllerHost,
-			final Integer controllerPort, final IPAddress network,
+	public OVXNetwork(final int tenantId, final ArrayList<String> controllerUrls, final IPAddress network,
 			final short mask) throws IndexOutOfBoundException {
 		super();
 		this.tenantId = tenantId;
-		this.protocol = protocol;
-		this.controllerHost = controllerHost;
-		this.controllerPort = controllerPort;
+		this.controllerUrls = controllerUrls;
 		this.network = network;
 		this.mask = mask;
 		this.isBooted = false;
@@ -119,23 +114,13 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	}
 
 
-	public OVXNetwork(final String protocol, final String controllerHost,
-			final Integer controllerPort, final IPAddress network,
+	public OVXNetwork(final ArrayList<String> controllerUrls, final IPAddress network,
 			final short mask) throws IndexOutOfBoundException {
-		this(OpenVirteXController.getTenantCounter().getNewIndex(), protocol, controllerHost,
-				controllerPort, network, mask);
+		this(OpenVirteXController.getTenantCounter().getNewIndex(), controllerUrls, network, mask);
 	}
-
-	public String getProtocol() {
-		return this.protocol;
-	}
-
-	public String getControllerHost() {
-		return this.controllerHost;
-	}
-
-	public Integer getControllerPort() {
-		return this.controllerPort;
+	
+	public List<String> getControllerUrls() {
+		return  Collections.unmodifiableList(this.controllerUrls);
 	}
 
 	public Integer getTenantId() {
@@ -245,9 +230,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 			switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
 		}
 		if (dpids.size() == 1) {
-			virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId);
+			virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId, 
+					this.controllerUrls.size() > 1 ? true : false);
 		} else {
-			virtualSwitch = new OVXBigSwitch(switchId, this.tenantId);
+			virtualSwitch = new OVXBigSwitch(switchId, this.tenantId,
+					this.controllerUrls.size() > 1 ? true : false);
 		}
 		// Add switch to topology and register it in the map
 		this.addSwitch(virtualSwitch);
@@ -513,31 +500,29 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public void handleLLDP(final OFMessage msg, final Switch sw) {
 		final OVXPacketOut po = (OVXPacketOut) msg;
 		final byte[] pkt = po.getPacketData();
-		if (OVXLLDP.isLLDP(pkt)) {
-			// Create LLDP response for each output action port
-			for (final OFAction action : po.getActions()) {
-				try {
-					final short portNumber = ((OFActionOutput) action)
-							.getPort();
-					final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
-					final OVXPort dstPort = this.getNeighborPort(srcPort);
-					if (dstPort != null) {
-						final OVXPacketIn pi = new OVXPacketIn();
-						pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-						// Get input port from pkt_out
-						pi.setInPort(dstPort.getPortNumber());
-						pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
-						pi.setPacketData(pkt);
-						pi.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + pkt.length));
-						dstPort.getParentSwitch().sendMsg(pi, this);
-					}
-				} catch (final ClassCastException c) {
-					// ignore non-ActionOutput pkt_out's
+
+		// Create LLDP response for each output action port
+		for (final OFAction action : po.getActions()) {
+			try {
+				final short portNumber = ((OFActionOutput) action)
+						.getPort();
+				final OVXPort srcPort = (OVXPort) sw.getPort(portNumber);
+				final OVXPort dstPort = this.getNeighborPort(srcPort);
+				if (dstPort != null) {
+					final OVXPacketIn pi = new OVXPacketIn();
+					pi.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+					// Get input port from pkt_out
+					pi.setInPort(dstPort.getPortNumber());
+					pi.setReason(OFPacketIn.OFPacketInReason.NO_MATCH);
+					pi.setPacketData(pkt);
+					pi.setTotalLength((short) (OFPacketIn.MINIMUM_LENGTH + pkt.length));
+					dstPort.getParentSwitch().sendMsg(pi, this);
 				}
+			} catch (final ClassCastException c) {
+				// ignore non-ActionOutput pkt_out's
 			}
-		} else {
-			log.debug("Invalid LLDP");
 		}
+
 	}
 
 	@Override
@@ -598,9 +583,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public Map<String, Object> getDBObject() {
 		Map<String, Object> dbObject = new HashMap<String, Object>();
 		dbObject.put(TenantHandler.TENANT, this.tenantId);
-		dbObject.put(TenantHandler.PROTOCOL, this.protocol);
-		dbObject.put(TenantHandler.CTRLHOST, this.controllerHost);
-		dbObject.put(TenantHandler.CTRLPORT, this.controllerPort);
+		dbObject.put(TenantHandler.CTRLURLS, this.controllerUrls);
 		dbObject.put(TenantHandler.NETADD, this.network.getIp());
 		dbObject.put(TenantHandler.NETMASK, this.mask);
 		dbObject.put(TenantHandler.IS_BOOTED, this.isBooted);

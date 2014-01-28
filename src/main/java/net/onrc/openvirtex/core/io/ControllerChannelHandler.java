@@ -24,6 +24,7 @@ import net.onrc.openvirtex.messages.OVXMessageUtil;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.Channels;
@@ -53,6 +54,8 @@ import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.factory.BasicFactory;
 import org.openflow.protocol.factory.MessageParseException;
+import org.openflow.vendor.nicira.OFNiciraVendorData;
+import org.openflow.vendor.nicira.OFRoleRequestVendorData;
 
 public class ControllerChannelHandler extends OFChannelHandler {
 
@@ -138,7 +141,16 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			@Override
 			void processOFError(final ControllerChannelHandler h,
 					final OFError m) throws IOException {
-				h.sw.handleIO(m);
+				h.sw.handleIO(m, h.channel);
+			}
+			
+			@Override
+			void processOFVendor(final ControllerChannelHandler h, final OFVendor m) {
+				if (m.getVendor() == OFNiciraVendorData.NX_VENDOR_ID 
+						&& m.getVendorData() instanceof OFRoleRequestVendorData) {
+					h.sw.handleRoleIO(m, h.channel);
+				} else
+					this.unhandledMessageReceived(h, m);
 			}
 
 			@Override
@@ -172,10 +184,10 @@ public class ControllerChannelHandler extends OFChannelHandler {
 				case STATS_REQUEST:
 				case FLOW_MOD:
 				case GET_CONFIG_REQUEST:
-					h.sw.handleIO(m);
+					h.sw.handleIO(m, h.channel);
 					break;
 				case VENDOR:
-					this.unhandledMessageReceived(h, m);
+					processOFVendor(h, (OFVendor)m);
 					break;
 				case FEATURES_REPLY:
 				case FLOW_REMOVED:
@@ -482,7 +494,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 			final ChannelStateEvent e) throws Exception {
 
 		if (this.sw != null) {
-
+			this.sw.removeChannel(this.channel);
 			this.sw.setConnected(false);
 
 		}
@@ -522,16 +534,12 @@ public class ControllerChannelHandler extends OFChannelHandler {
 						 */
 						final byte[] data = ((OFPacketOut) ofm).getPacketData();
 						if (data.length >= 14) {
+							final int tenantId = ((OVXSwitch) this.sw).getTenantId();
 							if (OVXLLDP.isLLDP(data)) {
-								final int tenantId = ((OVXSwitch) this.sw).getTenantId();
+								
 								OVXMap.getInstance().getVirtualNetwork(tenantId).handleLLDP(ofm, this.sw);
 								break;
-							} else if (data[12] == (byte) 0x89
-									&& data[13] == (byte) 0x42) {
-								// TODO: think about how to solve this.
-								// probably treat it like a normal LLDP for now.
-								break;
-							}
+							} 
 						}
 					default:
 						// Process all non-packet-ins
@@ -566,6 +574,11 @@ public class ControllerChannelHandler extends OFChannelHandler {
 	 */
 	private void setState(final ChannelState state) {
 		this.state = state;
+	}
+	
+	public Channel getChannel() {
+	
+		return this.channel;
 	}
 
 	@Override

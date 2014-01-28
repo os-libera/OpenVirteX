@@ -10,12 +10,12 @@ package net.onrc.openvirtex.elements.datapath;
 /**
  * Based on XidPair by capveg
  */
-public class XidPair {
+public class XidPair<T> {
 
 	int xid;
-	OVXSwitch sw;
+	T sw;
 
-	public XidPair(final int x, final OVXSwitch sw) {
+	public XidPair(final int x, final T sw) {
 		this.xid = x;
 		this.sw = sw;
 	}
@@ -28,11 +28,11 @@ public class XidPair {
 		return this.xid;
 	}
 
-	public void setSwitch(final OVXSwitch sw) {
+	public void setSwitch(final T sw) {
 		this.sw = sw;
 	}
 
-	public OVXSwitch getSwitch() {
+	public T getSwitch() {
 		return this.sw;
 	}
 

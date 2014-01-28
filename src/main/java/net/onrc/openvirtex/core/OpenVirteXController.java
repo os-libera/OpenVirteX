@@ -10,6 +10,9 @@
 package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +42,8 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
+import org.openflow.vendor.nicira.OFNiciraVendorExtensions;
+
 
 public class OpenVirteXController implements Runnable {
 
@@ -103,6 +108,7 @@ public class OpenVirteXController implements Runnable {
 	@Override
 	public void run() {
 		Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
+		initVendorMessages();
 		PhysicalNetwork.getInstance().boot();
 
 		this.startDatabase();
@@ -136,36 +142,39 @@ public class OpenVirteXController implements Runnable {
 					"Could not connect to controller for switch: " + e.getMessage());
 			return;
 		}
-		final String host = ovxNetwork.getControllerHost();
-		final Integer port = ovxNetwork.getControllerPort();
-
-		final ClientBootstrap clientBootStrap = this.createClientBootStrap();
-		this.setClientBootStrapParams(clientBootStrap);
-		final InetSocketAddress remoteAddr = new InetSocketAddress(host, port);
-		clientBootStrap.setOption("remoteAddress", remoteAddr);
-
-		this.cfact = new ClientChannelPipeline(this, this.cg, this.clientThreads,
-				clientBootStrap, sw);
-		clientBootStrap.setPipelineFactory(this.cfact);
-
-		final ChannelFuture cf = clientBootStrap.connect();
-
-		cf.addListener(new ChannelFutureListener() {
-
-			@Override
-			public void operationComplete(final ChannelFuture e)
-					throws Exception {
-				if (e.isSuccess()) {
-					final Channel chan = e.getChannel();
-					sw.setChannel(chan);
-					OpenVirteXController.this.cg.add(chan);
-				} else {
-					OpenVirteXController.this.log.error(
-							"Failed to connect to controller {} for switch {}",
-							remoteAddr, sw.getSwitchName());
+		
+		final List<String> ctrls = ovxNetwork.getControllerUrls();
+		String[] ctrlParts = null;
+		for (String ctrl : ctrls) {
+			ctrlParts = ctrl.split(":");
+			final ClientBootstrap clientBootStrap = this.createClientBootStrap();
+			this.setClientBootStrapParams(clientBootStrap);
+			final InetSocketAddress remoteAddr = new InetSocketAddress(ctrlParts[1], Integer.parseInt(ctrlParts[2]));
+			clientBootStrap.setOption("remoteAddress", remoteAddr);
+	
+			this.cfact = new ClientChannelPipeline(this, this.cg, this.clientThreads,
+					clientBootStrap, sw);
+			clientBootStrap.setPipelineFactory(this.cfact);
+	
+			final ChannelFuture cf = clientBootStrap.connect();
+	
+			cf.addListener(new ChannelFutureListener() {
+	
+				@Override
+				public void operationComplete(final ChannelFuture e)
+						throws Exception {
+					if (e.isSuccess()) {
+						final Channel chan = e.getChannel();
+						sw.setChannel(chan);
+						OpenVirteXController.this.cg.add(chan);
+					} else {
+						OpenVirteXController.this.log.error(
+								"Failed to connect to controller {} for switch {}",
+								remoteAddr, sw.getSwitchName());
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	private void setServerBootStrapParams(final ServerBootstrap bootstrap) {
@@ -261,5 +270,13 @@ public class OpenVirteXController implements Runnable {
 		}
 		return tenantIdCounter;
 	}
+	
+	 private void initVendorMessages() {
+	        // Configure openflowj to be able to parse the role request/reply
+	        // vendor messages.
+	        OFNiciraVendorExtensions.initialize();
+
+	        
+	    }
 
 }

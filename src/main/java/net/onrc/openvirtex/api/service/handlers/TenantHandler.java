@@ -40,9 +40,7 @@ import com.thetransactioncompany.jsonrpc2.server.RequestHandler;
 public class TenantHandler extends AbstractHandler implements RequestHandler {
 
 	// Tenant keywords
-	public final static String CTRLHOST = "controllerAddress";
-	public final static String CTRLPORT = "controllerPort";
-	public final static String PROTOCOL = "protocol";
+	public final static String CTRLURLS = "controllerUrls";
 	public final static String NETADD = "networkAddress";
 	public final static String NETMASK = "mask";
 	public static final String TENANT = "tenantId";

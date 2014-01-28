@@ -27,6 +27,7 @@ public class OVXLLDP extends LLDP {
 	public static final String OVX_NAME = "OpenVirteX";
 	public static final byte[] LLDP_NICIRA = { 0x01, 0x23, 0x20, 0x00, 0x00, 0x01 };
 	public static final byte[] LLDP_MULTICAST = { 0x01, (byte) 0x80, (byte) 0xc2, 0x00, 0x00, 0x0e };
+	public static final byte[] BDDP_MULTICAST = { (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,(byte) 0xff };
 	public static final short ETHERTYPE_VLAN = (short) 0x8100;
 
 	// TLV constants: type, size and subtype
@@ -247,7 +248,9 @@ public class OVXLLDP extends LLDP {
 		final ByteBuffer bb = ByteBuffer.wrap(packet);
 		final byte[] dst = new byte[6];
 		bb.get(dst);
-		if (!(Arrays.equals(dst, OVXLLDP.LLDP_NICIRA) || Arrays.equals(dst, OVXLLDP.LLDP_MULTICAST))) {
+		if (!(Arrays.equals(dst, OVXLLDP.LLDP_NICIRA) 
+				|| Arrays.equals(dst, OVXLLDP.LLDP_MULTICAST) 
+				|| Arrays.equals(dst, OVXLLDP.BDDP_MULTICAST))) {
 			return false;
 		}
 
@@ -257,7 +260,8 @@ public class OVXLLDP extends LLDP {
 			etherType = bb.getShort(ETHERTYPE_OFFSET + 4);
 		
 		// Check ethertype
-		if (etherType != Ethernet.TYPE_LLDP)
+		if (etherType != Ethernet.TYPE_LLDP 
+				&& etherType != Ethernet.TYPE_BSN)
 			return false;
 
 		return true;

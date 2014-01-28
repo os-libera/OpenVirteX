@@ -8,7 +8,7 @@
 
 package net.onrc.openvirtex.elements.datapath;
 
-import java.util.Collections;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,12 +19,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
-import net.onrc.openvirtex.core.io.OVXSendMsg;
+
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
-import net.onrc.openvirtex.messages.Devirtualizable;
+
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 import net.onrc.openvirtex.routing.SwitchRoute;
@@ -56,8 +56,8 @@ public class OVXBigSwitch extends OVXSwitch {
 	private final ConcurrentHashMap<OVXPort, ConcurrentHashMap<OVXPort, SwitchRoute>> routeMap;
 
 
-	public OVXBigSwitch(final long switchId, final int tenantId) {
-		super(switchId, tenantId);
+	public OVXBigSwitch(final long switchId, final int tenantId, boolean isRoled) {
+		super(switchId, tenantId, isRoled);
 		try {
 			this.alg = new RoutingAlgorithms("spf", (byte)1);
 		} catch (RoutingAlgorithmException e) {
@@ -163,36 +163,7 @@ public class OVXBigSwitch extends OVXSwitch {
 		return true; //??
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.onrc.openvirtex.core.io.OVXSendMsg#sendMsg(org.openflow.protocol.
-	 * OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
-	 */
-	@Override
-	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-		// TODO Truncate the message for the ctrl to the missSetLenght value
-		if (this.isConnected && this.isActive) {
-			this.channel.write(Collections.singletonList(msg));
-		}
-	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.onrc.openvirtex.elements.datapath.Switch#handleIO(org.openflow.protocol
-	 * .OFMessage)
-	 */
-	@Override
-	public void handleIO(final OFMessage msg) {
-		try {
-			((Devirtualizable) msg).devirtualize(this);
-		} catch (final ClassCastException e) {
-			OVXBigSwitch.log.error("Received illegal message : " + msg);
-		}
-	}
 
 	@Override
 	public boolean boot() {

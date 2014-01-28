@@ -9,6 +9,7 @@ package net.onrc.openvirtex.api.service.handlers;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -87,19 +88,23 @@ public class HandlerUtils {
 
 		for (final OVXNetwork network : OVXMap.getInstance().listVirtualNetworks()
 				.values()) {
-			final int port = network.getControllerPort();
-			final String host = network.getControllerHost();
-			try {
-				InetAddress address = InetAddress.getByName(host);
-				oldCtrl = address.getHostAddress();
-			} catch (UnknownHostException e) {
-				oldCtrl = host;
-			}
-			if (port == controllerPort && newCtrl.equals(oldCtrl)) {
-				throw new ControllerUnavailableException(
-						"The controller we are trying to connect is already in use: "
-								+ String.valueOf(controllerPort) + " "
-								+ controllerAddress);
+			final List<String> ctrlUrls = network.getControllerUrls();
+			for (String url : ctrlUrls) {
+				String[] urlParts = url.split(":");
+				final int port = Integer.parseInt(urlParts[2]);
+				final String host = urlParts[1];
+				try {
+					InetAddress address = InetAddress.getByName(host);
+					oldCtrl = address.getHostAddress();
+				} catch (UnknownHostException e) {
+					oldCtrl = host;
+				}
+				if (port == controllerPort && newCtrl.equals(oldCtrl)) {
+					throw new ControllerUnavailableException(
+							"The controller we are trying to connect is already in use: "
+									+ String.valueOf(controllerPort) + " "
+									+ controllerAddress);
+				}
 			}
 		}
 	}

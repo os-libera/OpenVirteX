@@ -13,6 +13,8 @@ import getpass
 
 VERSION = '0.1'
 
+SUPPORTED_PROTO = ['tcp']
+
 def getUrl(opts):
     return URL % (opts.host, opts.port)
 
@@ -33,21 +35,40 @@ def pa_none(args, cmd):
 #Create calls
 
 def pa_createNetwork(args, cmd):
-    usage = "%s <protocol> <controller_ip> <controller_port> <ip_network> <ip_mask>" % USAGE.format(cmd)
+    usage = "%s <protocol> <controller_urls> <ip_network> <ip_mask>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)
 
+def buildControllerList(ctrls):
+    l = ctrls.split(',')
+    controllerUrls = []
+    for ctrl in l:
+        parts = ctrl.split(":")
+        if len(parts) < 3:
+            print "%s is not a valid controller url" % ctrl
+            sys.exit()
+        if parts[0] not in SUPPORTED_PROTO:
+            print "%s in %s is not a supported protocol" % (parts[0], ctrl)
+            sys.exit()
+        try:
+            int(parts[2])
+        except:
+            print "%s in %s is not a valid port number" % (parts[2], ctrl)
+            sys.exit()
+        controllerUrls.append(ctrl)
+    return controllerUrls
+        
+
 def do_createNetwork(gopts, opts, args):
-    if len(args) != 5:
-        print "createNetwork : Must specify protocol, controller_ip, controller_port, network_ip, network_mask"
+    if len(args) != 3:
+        print "createNetwork : Must specify controllerUrls, network_ip, network_mask"
         sys.exit()
-    req = { "protocol" : args[0], "controllerAddress" : args[1], "controllerPort" : int(args[2]), \
-                 "networkAddress" : args[3], "mask" : int(args[4]) }
-    reply = connect(gopts, "createNetwork", data=req, passwd=getPasswd(gopts))
-    tenantId = reply.get('tenantId')
-    if tenantId:
-        print "Virtual network has been created (tenant_id %s)." % tenantId
+    req = { "controllerUrls" : buildControllerList(args[0]), \
+                 "networkAddress" : args[1], "mask" : int(args[2]) }
+    network_id = connect(gopts, "createNetwork", data=req, passwd=getPasswd(gopts))
+    if network_id:
+        print "Virtual network has been created (network_id %s)." % str(network_id)
 
 def pa_createSwitch(args, cmd):
     usage = "%s <tenant_id> <physical_dpids>" % USAGE.format(cmd)

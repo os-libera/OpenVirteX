@@ -27,9 +27,11 @@ import net.onrc.openvirtex.messages.statistics.OVXPortStatisticsReply;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.statistics.OFStatistics;
 
 /**
@@ -41,7 +43,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	Logger log = LogManager.getLogger(PhysicalSwitch.class.getName());
 
 	/** The Xid mapper */
-	private final XidTranslator translator;
+	private final XidTranslator<OVXSwitch> translator;
 
 
 	private StatisticsManager statsMan = null;
@@ -91,7 +93,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 */
 	public PhysicalSwitch(final long switchId) {
 		super(switchId);
-		this.translator = new XidTranslator();
+		this.translator = new XidTranslator<OVXSwitch>();
 		this.portStats = new AtomicReference<Map<Short, OVXPortStatisticsReply>>();
 		this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
 		this.statsMan = new StatisticsManager(this);
@@ -120,7 +122,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 * .OFMessage)
 	 */
 	@Override
-	public void handleIO(final OFMessage msg) {
+	public void handleIO(final OFMessage msg, Channel channel) {
 		try {
 			((Virtualizable) msg).virtualize(this);
 		} catch (final ClassCastException e) {
@@ -255,8 +257,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		return this.translator.translate(ofm.getXid(), sw);
 	}
 
-	public XidPair untranslate(final OFMessage ofm) {
-		final XidPair pair = this.translator.untranslate(ofm.getXid());
+	public XidPair<OVXSwitch> untranslate(final OFMessage ofm) {
+		final XidPair<OVXSwitch> pair = this.translator.untranslate(ofm.getXid());
 		if (pair == null) {
 			return null;
 		}
@@ -322,5 +324,14 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	private int getTidFromCookie(long cookie) {
 		return (int) (cookie >> 32);
 	}
+
+	@Override
+	public void handleRoleIO(OFVendor msg, Channel channel) {
+		log.warn("Received Role message {} from switch {}, but no role was requested", msg, this.switchName);
+	}
+
+	@Override
+	public void removeChannel(Channel channel) {}
+
 
 }

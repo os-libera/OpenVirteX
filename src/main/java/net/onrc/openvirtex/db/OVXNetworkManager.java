@@ -3,6 +3,7 @@ package net.onrc.openvirtex.db;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,11 +24,9 @@ import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
-
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 import net.onrc.openvirtex.routing.SwitchRoute;
-
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.apache.logging.log4j.LogManager;
@@ -232,15 +231,13 @@ public class OVXNetworkManager {
 		OVXNetworkManager.log.info("Virtual network {} ready for boot", this.tenantId);
 		
 		// Create OVX network
-		final String protocol = (String) this.vnet.get(TenantHandler.PROTOCOL); 
-		final String ctrlAddress = (String) this.vnet.get(TenantHandler.CTRLHOST);
-		final Integer ctrlPort = (Integer) this.vnet.get(TenantHandler.CTRLPORT);
+		final ArrayList<String> ctrlUrls = (ArrayList<String>) this.vnet.get(TenantHandler.CTRLURLS); 
 		final Integer network = (Integer) this.vnet.get(TenantHandler.NETADD);		
 		final IPAddress addr = new OVXIPAddress(network, -1);
 		final Short netMask = ((Integer) this.vnet.get(TenantHandler.NETMASK)).shortValue();
 		OVXNetwork virtualNetwork;
 		try {
-			virtualNetwork = new OVXNetwork(this.tenantId, protocol, ctrlAddress, ctrlPort, addr, netMask);
+			virtualNetwork = new OVXNetwork(this.tenantId, ctrlUrls, addr, netMask);
 		} catch (IndexOutOfBoundException e) {
 			OVXNetworkManager.log.error("Error recreating virtual network {} from database", this.tenantId);
 			return;

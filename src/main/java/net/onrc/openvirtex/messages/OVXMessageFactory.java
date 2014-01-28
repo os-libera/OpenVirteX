@@ -42,6 +42,7 @@ import org.openflow.protocol.factory.BasicFactory;
 import org.openflow.protocol.factory.OFActionFactoryAware;
 import org.openflow.protocol.factory.OFMessageFactoryAware;
 import org.openflow.protocol.factory.OFStatisticsFactoryAware;
+import org.openflow.protocol.factory.OFVendorDataFactoryAware;
 import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
@@ -123,6 +124,9 @@ public class OVXMessageFactory extends BasicFactory {
 			}
 			if (m instanceof OFStatisticsFactoryAware) {
 				((OFStatisticsFactoryAware) m).setStatisticsFactory(this);
+			}
+			if (m instanceof OFVendorDataFactoryAware) {
+				((OFVendorDataFactoryAware)m).setVendorDataFactory(this);
 			}
 			return m;
 		} catch (final Exception e) {

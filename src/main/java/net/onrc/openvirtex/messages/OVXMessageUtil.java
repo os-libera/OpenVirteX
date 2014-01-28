@@ -137,7 +137,7 @@ public class OVXMessageUtil {
 
 	public static OVXSwitch untranslateXid(final OFMessage msg,
 			final PhysicalSwitch psw) {
-		final XidPair pair = psw.untranslate(msg);
+		final XidPair<OVXSwitch> pair = psw.untranslate(msg);
 		if (pair == null) {
 			return null;
 		}
