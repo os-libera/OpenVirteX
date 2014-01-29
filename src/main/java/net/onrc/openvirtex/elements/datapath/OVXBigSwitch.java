@@ -358,6 +358,7 @@ public class OVXBigSwitch extends OVXSwitch {
 					ingress.getPortNumber(), U8.f(revRtEntry.getPriority()), revpath.toString());
 		}
 		else {
+			this.routeCounter.releaseIndex(routeId);
 			byte currentPriority = rtEntry.getPriority();
 			if (U8.f(currentPriority) >= U8.f(priority)) {
 				rtEntry.addBackupRoute(priority, path);
