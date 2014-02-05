@@ -8,6 +8,8 @@ import java.util.Map;
 
 
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import net.onrc.openvirtex.exceptions.UnknownRoleException;
 
 import org.apache.logging.log4j.LogManager;
@@ -23,8 +25,11 @@ public class RoleManager {
 			.getName());
 
 	
-	private final HashMap<Channel, Role> state;
-	private Channel currentMaster = null;
+	private  HashMap<Channel, Role> state;
+	
+	private final AtomicReference<HashMap<Channel, Role>> currentState;
+	
+	private Channel currentMaster;
 	
 	public static enum Role {
         EQUAL(OFRoleVendorData.NX_ROLE_OTHER),
@@ -59,21 +64,32 @@ public class RoleManager {
     
     public RoleManager() {
     	this.state = new HashMap<Channel, Role>();
+    	this.currentState = new AtomicReference<HashMap<Channel,Role>>(state);
+    }
+    
+    private HashMap<Channel, Role> getState() {
+    	return new HashMap<>(this.currentState.get());
+    }
+    
+    private void setState() {
+    	this.currentState.set(this.state);
     }
     
     public void addController(Channel chan) {
+    	this.state = getState();
     	this.state.put(chan, Role.EQUAL);
+    	setState();
     }
     
     public void setRole(Channel channel, Role role) throws IllegalArgumentException, UnknownRoleException {
-    	if (!this.state.containsKey(channel))
+    	if (!this.currentState.get().containsKey(channel))
     		throw new IllegalArgumentException("Unknown controller " + channel.getRemoteAddress());
-    	
+    	this.state = getState();
     	log.info("Setting controller {} to role {}", channel.getRemoteAddress(), role);
     	switch (role) {
     		case MASTER:
     			if (channel == currentMaster) {
-    				this.state.put(currentMaster, Role.MASTER);
+    				this.state.put(channel, Role.MASTER);
     				break;
     			}
     			this.state.put(currentMaster, Role.SLAVE);
@@ -100,10 +116,12 @@ public class RoleManager {
     			throw new UnknownRoleException("Unkown role : " + role);
     				
     	}
+    	setState();
+    	
     }
     
     public boolean canSend(Channel channel, OFMessage m) {
-    	Role r = this.state.get(channel);
+    	Role r = this.currentState.get().get(channel);
     	if (r == Role.MASTER || r == Role.EQUAL)
     		return true;
     	switch (m.getType()) {
@@ -118,7 +136,7 @@ public class RoleManager {
     }
     
     public boolean canReceive(Channel channel, OFMessage m) {
-    	Role r = this.state.get(channel);
+    	Role r = this.currentState.get().get(channel);
     	if (r == Role.MASTER || r == Role.EQUAL)
     		return true;
     	switch (m.getType()) {
@@ -132,14 +150,8 @@ public class RoleManager {
     	}
     }
 
-	public void shutDown() {
-		for (Channel c : state.keySet())
-			if (c != null && c.isConnected())
-				c.close();
-		
-	}
-
 	public Role getRole(Channel channel) {
+		this.state = getState();
 		return this.state.get(channel);
 	}
 	
@@ -154,7 +166,8 @@ public class RoleManager {
 		if (c != null) {
 			checkAndSend(c, msg);
 		} else {
-			for (Channel chan : state.keySet()) {
+			final Map<Channel, Role> readOnly = Collections.unmodifiableMap(this.currentState.get());
+			for (Channel chan : readOnly.keySet()) {
 				checkAndSend(chan, msg);
 			}
 		}
@@ -163,9 +176,18 @@ public class RoleManager {
 	}
 
 	public void removeChannel(Channel channel) {
+		this.state = getState();
 		this.state.remove(channel);
+		setState();
 	}
 
-	
+	public void shutDown() {
+		this.state = getState();
+		for (Channel c : state.keySet())
+			if (c != null && c.isConnected())
+				c.close();
+		state.clear();
+		setState();
+	}
     
 }

@@ -9,7 +9,6 @@ package net.onrc.openvirtex.api.service.handlers;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

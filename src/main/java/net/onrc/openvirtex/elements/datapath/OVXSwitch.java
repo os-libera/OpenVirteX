@@ -16,7 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
@@ -113,8 +112,6 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	
 	private boolean isRoled = false;
 	private final XidTranslator<Channel> channelMux;
-	private final ReentrantLock write;
-	private final ReentrantLock read;
 
 	private final RoleManager roleMan;
 
@@ -141,8 +138,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		this.flowTable = new OVXFlowTable(this);
 		this.roleMan = new RoleManager();
 		this.channelMux = new XidTranslator<Channel>();
-		this.read = new ReentrantLock();
-		this.write = new ReentrantLock();
+		
 	}
 	
 	protected OVXSwitch(final Long switchId, final Integer tenantId, boolean isRoled) {
@@ -490,15 +486,10 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 			return;
 		}
 	
-		
-		try {
-			read.lock();
-			if (this.isConnected && this.isActive ) {
-				roleMan.sendMsg(msg, c);
-			}
-		} finally {
-			read.unlock();
+		if (this.isConnected && this.isActive ) {
+			roleMan.sendMsg(msg, c);
 		}
+		
 	}
 
 	/*
@@ -519,15 +510,13 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 			 * Check whether this channel (ie. controller) is permitted 
 			 * to send this msg to the dataplane
 			 */
-			write.lock();
+		
 			if (!this.isRoled || this.roleMan.canSend(channel, msg) )
 				((Devirtualizable) msg).devirtualize(this);
 			else
 				denyAccess(channel, msg, this.roleMan.getRole(channel));
 		} catch (final ClassCastException e) {
 			OVXSwitch.log.error("Received illegal message : " + msg);
-		} finally {
-			write.unlock();
 		}
 	}
 	
@@ -540,17 +529,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		} else {
 			Role role = extractNiciraRoleRequest(channel, msg);
 			try {
-				read.lock();
-				write.lock();
 				this.roleMan.setRole(channel, role);
 				sendRoleReply(role, msg.getXid(), channel);
 				log.info("Finished handling role for {}", channel.getRemoteAddress() );
 			} catch (IllegalArgumentException | UnknownRoleException ex) {
 				log.warn(ex.getMessage());
-			} finally {
-				write.unlock();
-				read.unlock();
-			}
+			} 
 		}
 	}
 

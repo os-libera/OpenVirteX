@@ -38,7 +38,6 @@ import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
-import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;

@@ -40,7 +40,7 @@ import org.openflow.protocol.OFType;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
-import org.openflow.util.U16;
+
 
 /**
  * Run discovery process from a physical switch. Ports are initially labeled as
