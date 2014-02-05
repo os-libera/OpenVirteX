@@ -75,9 +75,6 @@ public class ReconnectHandler extends SimpleChannelHandler {
 	@Override
 	public void channelDisconnected(final ChannelHandlerContext ctx,
 			final ChannelStateEvent e) {
-		if (!this.sw.isActive()) {
-			this.timer.stop();
-		}
 		ctx.sendUpstream(e);
 	}
 
