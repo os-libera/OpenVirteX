@@ -129,9 +129,9 @@ public class LLDP extends BasePacket {
 		}
 		bb.putShort((short) 0); // End of LLDPDU
 
-		if (this.parent != null && this.parent instanceof Ethernet) {
+		/*if (this.parent != null && this.parent instanceof Ethernet) {
 			((Ethernet) this.parent).setEtherType(this.ethType);
-		}
+		}*/
 
 		return data;
 	}

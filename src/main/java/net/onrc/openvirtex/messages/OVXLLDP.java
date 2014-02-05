@@ -283,7 +283,8 @@ public class OVXLLDP extends LLDP {
 		// Extra offset due to VLAN tag
 		final ByteBuffer bb = ByteBuffer.wrap(packet);
 		int offset = 0;
-		if (bb.getShort(ETHERTYPE_OFFSET) != Ethernet.TYPE_LLDP)
+		if (bb.getShort(ETHERTYPE_OFFSET) != Ethernet.TYPE_LLDP 
+				&& bb.getShort(ETHERTYPE_OFFSET) != Ethernet.TYPE_BSN)
 			offset = 4;
 
 		// Compare packet's organizationally specific TLVs to the expected values
@@ -307,7 +308,8 @@ public class OVXLLDP extends LLDP {
 
 		// Extra offset due to VLAN tag
 		int offset = 0;
-		if (bb.getShort(ETHERTYPE_OFFSET) != Ethernet.TYPE_LLDP)
+		if (bb.getShort(ETHERTYPE_OFFSET) != Ethernet.TYPE_LLDP 
+				&& bb.getShort(ETHERTYPE_OFFSET) != Ethernet.TYPE_BSN)
 			offset = 4;
 		
 		final short port = bb.getShort(PORT_OFFSET + offset);

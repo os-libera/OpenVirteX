@@ -11,6 +11,7 @@ package net.onrc.openvirtex.elements.network;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.OVXMap;
@@ -87,7 +88,7 @@ Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 	public synchronized void addSwitch(final PhysicalSwitch sw) {
 		super.addSwitch(sw);
 		this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
-				sw));
+				sw, OpenVirteXController.getInstance().getUseBDDP()));
 		DBManager.getInstance().addSwitch(sw.getSwitchId());
 	}
 

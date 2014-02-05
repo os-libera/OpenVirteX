@@ -26,6 +26,7 @@ public class CmdLineSettings {
 	public static final Integer DEFAULT_STATS_REFRESH = 30;
 	public static final Integer DEFAULT_SERVER_THREADS = 32;
 	public static final Integer DEFAULT_CLIENT_THREADS = 32;
+	public static final Boolean DEFAULT_USE_BDDP = false;
 
 	@Option(name = "-cf", aliases = "--config-file", metaVar = "FILE", usage = "OpenVirteX configuration file")
 	private String configFile = CmdLineSettings.DEFAULT_CONFIG_FILE;
@@ -56,6 +57,9 @@ public class CmdLineSettings {
 	
 	@Option(name = "--st", aliases = "--server-threads", metaVar = "INT", usage = "Number of threads handles switch connections")
 	private Integer serverThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
+	
+	@Option(name = "--ub", aliases = "--use-bddp", usage = "Use BDDP for network discovery; only use if you know what you are doing.")
+	private Boolean useBDDP = CmdLineSettings.DEFAULT_USE_BDDP;
 
 	public String getConfigFile() {
 		return this.configFile;
@@ -95,6 +99,10 @@ public class CmdLineSettings {
 	
 	public Integer getServerThreads() {
 		return this.serverThreads;
+	}
+	
+	public Boolean getUseBDDP() {
+		return this.useBDDP;
 	}
 	
 }

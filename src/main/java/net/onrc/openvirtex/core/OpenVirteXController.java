@@ -10,8 +10,7 @@
 package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.LinkedList;
+
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -82,6 +81,8 @@ public class OpenVirteXController implements Runnable {
 	private Integer nClientThreads;
 
 	private Integer nServerThreads;
+	
+	private final Boolean useBDDP;
 
 	public OpenVirteXController(CmdLineSettings settings) {
 		this.configFile = settings.getConfigFile();
@@ -94,6 +95,7 @@ public class OpenVirteXController implements Runnable {
 		this.statsRefresh  = settings.getStatsRefresh();
 		this.nClientThreads = settings.getClientThreads();
 		this.nServerThreads= settings.getServerThreads();
+		this.useBDDP = settings.getUseBDDP();
 		//by default, use Mac addresses to store vLinks informations
 		this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
 		this.clientThreads = new OrderedMemoryAwareThreadPoolExecutor(
@@ -278,5 +280,9 @@ public class OpenVirteXController implements Runnable {
 
 	        
 	    }
+
+	public Boolean getUseBDDP() {
+		return this.useBDDP;
+	}
 
 }

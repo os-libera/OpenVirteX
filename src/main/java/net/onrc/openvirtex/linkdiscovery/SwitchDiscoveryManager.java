@@ -40,6 +40,7 @@ import org.openflow.protocol.OFType;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
+import org.openflow.util.U16;
 
 /**
  * Run discovery process from a physical switch. Ports are initially labeled as
@@ -69,8 +70,10 @@ TimerTask {
 	Logger log = LogManager.getLogger(SwitchDiscoveryManager.class.getName());
 	OVXLLDP lldpPacket;
 	Ethernet ethPacket;
+	Ethernet bddpEth;
+	private final boolean useBDDP;
 
-	public SwitchDiscoveryManager(final PhysicalSwitch sw) {
+	public SwitchDiscoveryManager(final PhysicalSwitch sw, Boolean... useBDDP) {
 		this.sw = sw;
 		this.probeRate = 1000;
 		this.slowPorts = Collections.synchronizedSet(new HashSet<Short>());
@@ -83,10 +86,20 @@ TimerTask {
 		this.ethPacket.setDestinationMACAddress(OVXLLDP.LLDP_NICIRA);
 		this.ethPacket.setPayload(this.lldpPacket);
 		this.ethPacket.setPad(true);
+		this.useBDDP = useBDDP.length > 0 ? useBDDP[0] : false;
+		if (this.useBDDP) {
+			this.bddpEth = new Ethernet();
+			this.bddpEth.setPayload(this.lldpPacket);
+			this.bddpEth.setEtherType(Ethernet.TYPE_BSN);
+			this.bddpEth.setDestinationMACAddress(OVXLLDP.BDDP_MULTICAST);			
+			this.bddpEth.setPad(true);
+			log.info("Using BDDP to discover network");
+		}
 		PhysicalNetwork.getTimer().newTimeout(this, this.probeRate,
 				TimeUnit.MILLISECONDS);
 		this.log.debug("Started discovery manager for switch {}",
 				sw.getSwitchId());
+	
 	}
 
 	/**
@@ -104,11 +117,15 @@ TimerTask {
 				OFPacketOut pkt;
 				try {
 					pkt = this.createLLDPPacketOut(port);
+					this.sendMsg(pkt, this);
+					if (useBDDP) {
+						OFPacketOut bpkt = this.createBDDPPacketOut(port);
+						this.sendMsg(bpkt, this);
+					}
 				} catch (PortMappingException e) {
 					log.warn(e.getMessage());
 					return;
 				}
-				this.sendMsg(pkt, this);
 				this.slowPorts.add(port.getPortNumber());
 				this.slowIterator = this.slowPorts.iterator();
 			}
@@ -197,10 +214,43 @@ TimerTask {
 		final short alen = SwitchDiscoveryManager.countActionsLen(actionsList);
 		this.lldpPacket.setPort(port);
 		this.ethPacket.setSourceMACAddress(port.getHardwareAddress());
+		
 		final byte[] lldp = this.ethPacket.serialize();
 		packetOut.setActionsLength(alen);
 		packetOut.setPacketData(lldp);
 		packetOut.setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
+		return packetOut;
+	}
+	
+	/**
+	 * Creates packet_out LLDP for specified output port.
+	 * 
+	 * @param port
+	 * @return Packet_out message with LLDP data
+	 * @throws PortMappingException 
+	 */
+	private OFPacketOut createBDDPPacketOut(final PhysicalPort port) 
+			throws PortMappingException {
+		if (port == null) {
+			throw new PortMappingException("Cannot send LLDP associated with a nonexistent port");
+		}
+		final OFPacketOut packetOut = (OFPacketOut) this.ovxMessageFactory
+				.getMessage(OFType.PACKET_OUT);
+		packetOut.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+		final List<OFAction> actionsList = new LinkedList<OFAction>();
+		final OFActionOutput out = (OFActionOutput) this.ovxMessageFactory
+				.getAction(OFActionType.OUTPUT);
+		out.setPort(port.getPortNumber());
+		actionsList.add(out);
+		packetOut.setActions(actionsList);
+		final short alen = SwitchDiscoveryManager.countActionsLen(actionsList);
+		this.lldpPacket.setPort(port);
+		this.bddpEth.setSourceMACAddress(port.getHardwareAddress());
+		
+		final byte[] bddp = this.bddpEth.serialize();
+		packetOut.setActionsLength(alen);
+		packetOut.setPacketData(bddp);
+		packetOut.setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + bddp.length));
 		return packetOut;
 	}
 
@@ -275,6 +325,10 @@ TimerTask {
 					try {
 						OFPacketOut pkt = this.createLLDPPacketOut(this.sw.getPort(portNumber));
 						this.sendMsg(pkt, this);
+						if (useBDDP) {
+							OFPacketOut bpkt = this.createBDDPPacketOut(this.sw.getPort(portNumber));
+							this.sendMsg(bpkt, this);
+						}
 					} catch (PortMappingException e) {
 						log.warn(e.getMessage());
 					}
@@ -304,6 +358,10 @@ TimerTask {
 					try {
 						OFPacketOut pkt = this.createLLDPPacketOut(this.sw.getPort(portNumber));
 						this.sendMsg(pkt, this);
+						if (useBDDP) {
+							OFPacketOut bpkt = this.createBDDPPacketOut(this.sw.getPort(portNumber));
+							this.sendMsg(bpkt, this);
+						}
 					} catch (PortMappingException e) {
 						log.warn(e.getMessage());
 					}
