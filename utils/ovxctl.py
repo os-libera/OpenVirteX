@@ -71,9 +71,11 @@ def do_createNetwork(gopts, opts, args):
         print "Virtual network has been created (network_id %s)." % str(network_id)
 
 def pa_createSwitch(args, cmd):
-    usage = "%s <tenant_id> <physical_dpids>" % USAGE.format(cmd)
+    usage = "%s [options] <tenant_id> <physical_dpids>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
+    parser.add_option("-d", "--dpid", dest="dpid", type="str", default="0",
+            help="Specify the DPID for this switch")
     return parser.parse_args(args)
 
 def do_createSwitch(gopts, opts, args):
@@ -83,7 +85,7 @@ def do_createSwitch(gopts, opts, args):
         "(e.g. 00:00:00:00:00:00:00:01) which will be associated to the virtual switch")
         sys.exit()
     dpids = [int(dpid.replace(":", ""), 16) for dpid in args[1].split(',')]
-    req = { "tenantId" : int(args[0]), "dpids" : dpids }
+    req = { "tenantId" : int(args[0]), "dpids" : dpids, "dpid" : int(opts.dpid.replace(":", ""), 16) }
     reply = connect(gopts, "createSwitch", data=req, passwd=getPasswd(gopts))
     switchId = reply.get('vdpid')
     if switchId:

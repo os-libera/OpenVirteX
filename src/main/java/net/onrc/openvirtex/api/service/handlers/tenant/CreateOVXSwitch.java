@@ -44,6 +44,8 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 					TenantHandler.TENANT, params, true, null);
 			final List<Number> dpids = HandlerUtils.<List<Number>> fetchField(
 					TenantHandler.DPIDS, params, true, null);
+			final Long dp = HandlerUtils.<Number> fetchField(
+					TenantHandler.DPID, params, false, 0).longValue();
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 			
@@ -56,7 +58,11 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 			}
 			
 			HandlerUtils.isValidDPID(tenantId.intValue(), longDpids);
-			final OVXSwitch ovxSwitch = virtualNetwork.createSwitch(longDpids);
+			final OVXSwitch ovxSwitch;
+			if (dp == 0)
+				ovxSwitch = virtualNetwork.createSwitch(longDpids);
+			else
+				ovxSwitch = virtualNetwork.createSwitch(longDpids, dp);	
 			
 			if (ovxSwitch == null) {
 				resp = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.INTERNAL_ERROR.getCode(), this.cmdName()), 0);

@@ -151,8 +151,7 @@ public class RoleManager {
     }
 
 	public Role getRole(Channel channel) {
-		this.state = getState();
-		return this.state.get(channel);
+		return this.currentState.get().get(channel);
 	}
 	
 	private void checkAndSend(Channel c, OFMessage m) {

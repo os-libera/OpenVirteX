@@ -230,8 +230,8 @@ class OVXClient():
             e.rollback = False
             raise
         
-    def createSwitch(self, tenantId, dpids):
-        req = {'tenantId': tenantId, 'dpids': dpids}
+    def createSwitch(self, tenantId, dpids, dpid = "0"):
+        req = {'tenantId': tenantId, 'dpids': dpids, "dpid" : int(dpid.replace(":",""),16)}
         try:
             ret = self._connect("createSwitch", self.tenant_url, data=req)
             switchId = ret.get('vdpid')
@@ -380,7 +380,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
             res['data'] = data
         return res
 
-    def doBigSwitchNetwork(self, controller, routing, subnet, hosts):
+    def doBigSwitchNetwork(self, controller, routing, subnet, hosts, copyDpid = False):
         """Create OVX network that is a single big switch"""
         
         client = self.server.client
@@ -415,7 +415,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
 
         return tenantId
 
-    def doPhysicalNetwork(self, controller, routing, subnet, hosts):
+    def doPhysicalNetwork(self, controller, routing, subnet, hosts, copyDpid = False):
         """Create OVX network that is clone of physical network"""
         
         client = self.server.client
@@ -437,7 +437,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
         tenantId = client.createNetwork(ctrls, net_address, int(net_mask))
         # create virtual switch per physical dpid
         for dpid in phyTopo['switches']:
-            client.createSwitch(tenantId, [hexToLong(dpid)])
+            client.createSwitch(tenantId, [hexToLong(dpid)], dpid=dpid)
         # create virtual ports and connect hosts
         for host in hosts:
             (vdpid, vport) = client.createPort(tenantId, hexToLong(host['dpid']), host['port'])
@@ -481,9 +481,9 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
             if networkType == None:
                 raise EmbedderException(ERROR_CODE.INVALID_REQ, 'Missing network type')
             elif networkType == 'bigswitch':
-                tenantId = self.doBigSwitchNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'])
+                tenantId = self.doBigSwitchNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'], copyDpid=p['copy-dpid'])
             elif networkType == 'physical':
-                tenantId = self.doPhysicalNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'])
+                tenantId = self.doPhysicalNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'], copyDpid=p['copy-dpid'])
             else:
                 raise EmbedderException(ERROR_CODE.INVALID_REQ, 'Unsupported network type')
             response = self._buildResponse(json_id, result={ 'tenantId' : tenantId })
