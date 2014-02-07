@@ -91,6 +91,12 @@ public class PassingAPITest extends AbstractAPICalls {
 		final PhysicalSwitch sw2 = new PhysicalSwitch(2);
 		PhysicalNetwork.getInstance().addSwitch(sw1);
 		PhysicalNetwork.getInstance().addSwitch(sw2);
+		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
+				false);
+		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw2,
+				false);
+		PhysicalNetwork.getInstance().createLink(p1, p2);
+		PhysicalNetwork.getInstance().createLink(p2, p1);
 		super.createNetwork();
 		final List<Integer> l = new LinkedList<>();
 		l.add(1);

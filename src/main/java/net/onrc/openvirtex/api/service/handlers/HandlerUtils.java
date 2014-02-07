@@ -9,6 +9,8 @@ package net.onrc.openvirtex.api.service.handlers;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -207,7 +209,8 @@ public class HandlerUtils {
 	 * @param dpid
 	 * @throws InvalidDPIDException
 	 */
-	public static void isValidOVXSwitch(final int tenantId, final long dpid) {
+	public static void isValidOVXSwitch(final int tenantId, final long dpid)
+			throws InvalidTenantIdException, InvalidDPIDException {
 		final OVXMap map = OVXMap.getInstance();
 		OVXNetwork virtualNetwork;
 		try {
@@ -251,7 +254,8 @@ public class HandlerUtils {
 	/**
 	 * Check that the physical dpids that are provided all actually refer to a
 	 * physical switch in the physical network. If any of them does not exist
-	 * then we can throw an exception.
+	 * then we can throw an exception. If a physical dpid is not connected
+	 * to any of the other ones, throw an exception.
 	 * 
 	 * @param tenantId
 	 * @param dpids
@@ -281,10 +285,23 @@ public class HandlerUtils {
 				if (vsw != null) {
 					throw new InvalidDPIDException(
 							"The physical dpid is already part of a "
-									+ "virtual switch in the virtual network you have specified. dpid: "
+									+ "virtual switch in the virtual network you have specified. DPID: "
 									+ String.valueOf(dpid));
 				}
 			} catch (SwitchMappingException e) {
+			}
+
+			// Are all dpids connected - only relevant when creating a bigswitch?
+			if (dpids.size() > 1) {
+				Set<PhysicalSwitch> neighbours = physicalNetwork.getNeighbors(sw);
+				Set<Long> neighbourDpids = new HashSet<Long>();
+				for (PhysicalSwitch neighbour : neighbours)
+					neighbourDpids.add(neighbour.getSwitchId());
+				if (Collections.disjoint(dpids, neighbourDpids))
+					throw new InvalidDPIDException(
+							"One of the physical dpids you have provided is "
+									+ "disconnected from the others. DPID: "
+									+ String.valueOf(dpid));
 			}
 		}
 	}
@@ -310,7 +327,7 @@ public class HandlerUtils {
 							+ String.valueOf(portNumber));
 		}
 	}
-	
+
 	/**
 	 * Check if the priority specified is in the allowed range [0,127]
 	 * 
