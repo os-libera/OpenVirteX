@@ -13,7 +13,7 @@
     </Console>
   </appenders>
   <loggers>
-    <root level="info" includeLocation="false">
+    <root level="INFO" includeLocation="false">
       <appender-ref ref="Console"/>
     </root>
   </loggers>

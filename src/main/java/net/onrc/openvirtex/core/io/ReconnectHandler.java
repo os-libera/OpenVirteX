@@ -60,6 +60,7 @@ public class ReconnectHandler extends SimpleChannelHandler {
 			final ChannelStateEvent e) {
 		if (!this.sw.isActive())
 			return;
+		this.sw.removeChannel(e.getChannel());
 		final int retry = this.sw.incrementBackOff();
 		final Integer backOffTime = Math.min(1 << retry, this.maxBackOff);
 

@@ -9,6 +9,7 @@ package net.onrc.openvirtex.api.service.handlers;
 
 import java.util.HashMap;
 
+import net.onrc.openvirtex.api.service.handlers.tenant.AddController;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
@@ -67,6 +68,8 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
 		{
+			this.put("addControllers", new AddController());
+			
 			this.put("createNetwork", new CreateOVXNetwork());
 			this.put("createSwitch", new CreateOVXSwitch());
 			this.put("createPort", new CreateOVXPort());

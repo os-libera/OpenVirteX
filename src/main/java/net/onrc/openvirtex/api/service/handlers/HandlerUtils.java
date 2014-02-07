@@ -74,7 +74,7 @@ public class HandlerUtils {
 	 * @throws ControllerUnavailableException
 	 */
 	public static void isControllerAvailable(final String controllerAddress,
-			final int controllerPort) throws ControllerUnavailableException {
+			final int controllerPort, int tenantId) throws ControllerUnavailableException {
 		String newCtrl = "";
 		String oldCtrl = "";
 		try {
@@ -87,7 +87,9 @@ public class HandlerUtils {
 
 		for (final OVXNetwork network : OVXMap.getInstance().listVirtualNetworks()
 				.values()) {
-			final List<String> ctrlUrls = network.getControllerUrls();
+			if (tenantId == network.getTenantId())
+				continue;
+			final Set<String> ctrlUrls = network.getControllerUrls();
 			for (String url : ctrlUrls) {
 				String[] urlParts = url.split(":");
 				final int port = Integer.parseInt(urlParts[2]);

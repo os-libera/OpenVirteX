@@ -50,7 +50,7 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
 				String[] ctrlParts = ctrl.split(":");
 
 				HandlerUtils
-				.isControllerAvailable(ctrlParts[1], Integer.parseInt(ctrlParts[2]));
+				.isControllerAvailable(ctrlParts[1], Integer.parseInt(ctrlParts[2]), -1);
 			}
 			final IPAddress addr = new OVXIPAddress(netAddress, -1);
 			final OVXNetwork virtualNetwork = new OVXNetwork(ctrlUrls, addr, netMask.shortValue());

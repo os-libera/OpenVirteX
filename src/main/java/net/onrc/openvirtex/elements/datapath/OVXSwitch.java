@@ -11,12 +11,10 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.core.OpenVirteXController;
@@ -40,8 +38,10 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.UnknownRoleException;
 import net.onrc.openvirtex.messages.Devirtualizable;
 import net.onrc.openvirtex.messages.OVXFlowMod;
+import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXMessageUtil;
 import net.onrc.openvirtex.messages.OVXPacketIn;
+import net.onrc.openvirtex.packet.Ethernet;
 import net.onrc.openvirtex.util.BitSetIndex;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 
@@ -49,9 +49,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFFeaturesReply;
+import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.util.LRULinkedHashMap;
@@ -110,9 +113,17 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	
 	
 	
-	private boolean isRoled = false;
+	/**
+	 * Used to save which channel the message came in on.
+	 */
 	private final XidTranslator<Channel> channelMux;
 
+	/**
+	 * Role Manager. Saves all role requests coming 
+	 * from each controller. It is also responsible 
+	 * for permitting or denying certain operations
+	 * based on the current role of a controller.
+	 */
 	private final RoleManager roleMan;
 
 	/**
@@ -123,7 +134,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	 * @param tenantId
 	 *            the tenant id
 	 */
-	private OVXSwitch(final Long switchId, final Integer tenantId) {
+	protected OVXSwitch(final Long switchId, final Integer tenantId) {
 		super(switchId);
 		this.tenantId = tenantId;
 		this.missSendLen = 0;
@@ -141,10 +152,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		
 	}
 	
-	protected OVXSwitch(final Long switchId, final Integer tenantId, boolean isRoled) {
-		this(switchId, tenantId);
-		this.isRoled = isRoled;
-	}
+	
 
 	/**
 	 * Gets the tenant id.
@@ -331,12 +339,9 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	@Override
 	public void tearDown() {
 		this.isActive = false;
-		if (isRoled) 
-			roleMan.shutDown();
-		else
-			if (this.channel != null)
-				this.channel.close();
-		
+		 
+		roleMan.shutDown();
+
 		cleanUpFlowMods(true);
 		for (OVXPort p : getPorts().values()) {
 			if (p.isLink()) 
@@ -480,14 +485,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 			msg.setXid(pair.getXid());
 			c = pair.getSwitch();
 		} 
-		if (!isRoled) {
-			if (this.isConnected && this.isActive && this.channel.isOpen()) 
-				this.channel.write(Collections.singletonList(msg));
-			return;
-		}
 	
 		if (this.isConnected && this.isActive ) {
 			roleMan.sendMsg(msg, c);
+		} else {
+			// TODO: we probably should install a drop rule here.
+			log.warn("Virtual switch {} is not active or is not connected to a controller", switchName);
 		}
 		
 	}
@@ -510,8 +513,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 			 * Check whether this channel (ie. controller) is permitted 
 			 * to send this msg to the dataplane
 			 */
-		
-			if (!this.isRoled || this.roleMan.canSend(channel, msg) )
+			
+			if (this.roleMan.canSend(channel, msg) )
 				((Devirtualizable) msg).devirtualize(this);
 			else
 				denyAccess(channel, msg, this.roleMan.getRole(channel));
@@ -522,20 +525,17 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	
 	@Override
 	public void handleRoleIO(OFVendor msg, Channel channel) {
-		if (!isRoled) {
-			log.warn("Received unhandled VENDOR message at switch {}, sending unsupported error: {}", this.switchName, msg);
-			OFMessage e = OVXMessageUtil.makeErrorMsg(OFBadRequestCode.OFPBRC_BAD_VENDOR, msg);
-			channel.write(Collections.singletonList(e));
-		} else {
-			Role role = extractNiciraRoleRequest(channel, msg);
-			try {
-				this.roleMan.setRole(channel, role);
-				sendRoleReply(role, msg.getXid(), channel);
-				log.info("Finished handling role for {}", channel.getRemoteAddress() );
-			} catch (IllegalArgumentException | UnknownRoleException ex) {
-				log.warn(ex.getMessage());
-			} 
-		}
+
+		Role role = extractNiciraRoleRequest(channel, msg);
+		try {
+			this.roleMan.setRole(channel, role);
+			sendRoleReply(role, msg.getXid(), channel);
+			log.info("Finished handling role for {}", channel.getRemoteAddress() );
+		} catch (IllegalArgumentException | UnknownRoleException ex) {
+			log.warn(ex.getMessage());
+		} 
+
+
 	}
 
 	/**
@@ -551,15 +551,11 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	}
 	
 	public void setChannel(Channel channel) {
-		if (!this.isRoled)
-			this.channel = channel;
-		else
-			this.roleMan.addController(channel);
+		this.roleMan.addController(channel);
 	}
 	
 	public void removeChannel(Channel channel) {
-		if (this.isRoled)
-			this.roleMan.removeChannel(channel);
+		this.roleMan.removeChannel(channel);
 	}
 	
 	

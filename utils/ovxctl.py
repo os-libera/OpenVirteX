@@ -34,6 +34,23 @@ def pa_none(args, cmd):
 
 #Create calls
 
+def pa_addControllers(args, cmd):
+    usage = "%s <tenant_id> <vdpid> <ctrlUrls>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_addControllers(gopts, opts, args):
+    if len(args) != 3:
+        print "addControllers: Must specify tenant id, virtual dpid, controller list"
+        sys.exit()
+    req = { "controllerUrls" : buildControllerList(args[2]), \
+            "tenantId" : int(args[0]), "vdpid" : int(args[1].replace(":",""), 16) }
+    resp = connect(gopts, "addControllers", data=req, passwd=getPasswd(gopts))
+    if resp:
+        print "Added controllers %s to switch %s" % (args[2], args[1])
+        print resp
+
 def pa_createNetwork(args, cmd):
     usage = "%s <protocol> <controller_urls> <ip_network> <ip_mask>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
@@ -41,6 +58,8 @@ def pa_createNetwork(args, cmd):
     return parser.parse_args(args)
 
 def buildControllerList(ctrls):
+    if ctrls.lower() == "none":
+        return []
     l = ctrls.split(',')
     controllerUrls = []
     for ctrl in l:
@@ -471,6 +490,7 @@ def printHelp (option, opt, value, parser):
     sys.exit()
 
 CMDS = {
+    'addControllers': (pa_addControllers, do_addControllers),
     'createNetwork': (pa_createNetwork, do_createNetwork),
     'createSwitch': (pa_createSwitch, do_createSwitch),
     'createPort': (pa_createPort, do_createPort),
@@ -498,6 +518,9 @@ CMDS = {
 }
 
 DESCS = {
+    'addControllers' : ("Adds controllers to a virtual switch",
+                        ("Adds the specified list of controllers to a given virtual switch.\n"
+                         "ExampleL addController <tenantId> <vdpid> <ctrlUrls>")),
     'createNetwork' : ("Creates a virtual network",
                        ("Creates a virtual network. Input: protocol, controllerIP, controller port, ip address, mask. "
                         "\nExample: createNetwork tcp 1.1.1.1 6634 192.168.1.0 24")),
@@ -606,57 +629,15 @@ if __name__ == '__main__':
     (gopts, rargs, parser) = parse_global_args(sys.argv[1:])
 
     if len(rargs) < 1:
-      printHelp(None, None, None, parser)      
+        raise IndexError
     (parse_args, do_func) = CMDS[rargs[0]]
     (opts, args) = parse_args(rargs[1:], rargs[0])
     do_func(gopts, opts, args)
+    sys.exit(0)
   except ValueError, e:
-    print "the argument types being sent to the function %s are incorrect. Please double check them." % sys.argv[1]
-    function = sys.argv[1]
-    if function=='createNetwork':
-      print "createNetwork: string, string, short, string, short"
-    elif function=='createSwitch':
-      print "createSwitch: int, comma separated list of strings"
-    elif function=='createPort':
-      print "createPort: int, string, short"
-    elif function=='setInternalRouting':
-      print "setInternalRouting: int, string, string, byte"
-    elif function=='connectHost':
-      print "connectHost: int, string, short, string"
-    elif function=='connectLink':
-      print "connectLink: int, string, short, string, short, string, byte"
-    elif function=='connectRoute':
-      print "connectRoute: int, string, short, short, string, byte"
-      
-    elif function=='removeNetwork':
-      print "removeNetwork: int"  
-    elif function=='removeSwitch':
-      print "removeSwitch: int, string"  
-    elif function=='removePort':
-      print "removePort: int, string , short"  
-    elif function=='disconnectHost':
-      print "disconnectHost: int, int"        
-    elif function=='disconnectLink':
-      print "disconnectLink: int, int"    
-    elif function=='disconnectRoute':
-      print "disconnectRoute: int, int"          
-            
-    elif function=='startNetwork':
-      print "startNetwork: int"  
-    elif function=='startSwitch':
-      print "startSwitch: int, string"  
-    elif function=='startPort':
-      print "startPort: int, string , short"             
-    elif function=='stopNetwork':
-      print "stopNetwork: int"  
-    elif function=='stopSwitch':
-      print "stopSwitch: int, string"  
-    elif function=='stopPort':
-      print "stopPort: int, string , short"
-      
+    print "The argument types being sent to the function %s are incorrect. Please double check them." % sys.argv[1]
   except IndexError, e:
     print "%s is an unknown command" % sys.argv[-1]
-    printHelp(None, None, None, parser)
   except Exception, e:
     print "uknown error"
-    print e
+  printHelp(None,None,None,parser)

@@ -70,7 +70,7 @@ public class OVXLLDP extends LLDP {
 	private static short DEFAULT_TTL = 120;				// in seconds
 
 	// Minimum and OVX-generated LLDP packet sizes
-	private static short MINIMUM_LLDP_SIZE = 64;
+	private static short MINIMUM_LLDP_SIZE = 61;
 	// Add 12 for 2-byte header of each TLV and a single EndOfLLDPTLV
 	private static short OVX_LLDP_SIZE = (short) (CHASSIS_TLV_SIZE + PORT_TLV_SIZE + TTL_TLV_SIZE + NAME_TLV_SIZE + DPID_TLV_SIZE + 12);
 
@@ -248,9 +248,12 @@ public class OVXLLDP extends LLDP {
 		final ByteBuffer bb = ByteBuffer.wrap(packet);
 		final byte[] dst = new byte[6];
 		bb.get(dst);
+		
 		if (!(Arrays.equals(dst, OVXLLDP.LLDP_NICIRA) 
 				|| Arrays.equals(dst, OVXLLDP.LLDP_MULTICAST) 
 				|| Arrays.equals(dst, OVXLLDP.BDDP_MULTICAST))) {
+			
+			
 			return false;
 		}
 
@@ -260,11 +263,13 @@ public class OVXLLDP extends LLDP {
 			etherType = bb.getShort(ETHERTYPE_OFFSET + 4);
 		
 		// Check ethertype
-		if (etherType != Ethernet.TYPE_LLDP 
-				&& etherType != Ethernet.TYPE_BSN)
-			return false;
-
-		return true;
+		if (etherType == Ethernet.TYPE_LLDP)
+			return true;
+		if (etherType == Ethernet.TYPE_BSN)
+			return true;
+		
+		
+		return false;
 
 	}
 

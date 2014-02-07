@@ -56,8 +56,8 @@ public class OVXBigSwitch extends OVXSwitch {
 	private final ConcurrentHashMap<OVXPort, ConcurrentHashMap<OVXPort, SwitchRoute>> routeMap;
 
 
-	public OVXBigSwitch(final long switchId, final int tenantId, boolean isRoled) {
-		super(switchId, tenantId, isRoled);
+	public OVXBigSwitch(final long switchId, final int tenantId) {
+		super(switchId, tenantId);
 		try {
 			this.alg = new RoutingAlgorithms("spf", (byte)1);
 		} catch (RoutingAlgorithmException e) {

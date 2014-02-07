@@ -92,7 +92,7 @@ public class MapAddTest extends TestCase {
 			sw = new PhysicalSwitch(i);
 			p_sw.add(sw);
 			for (int j = 0; j < this.MAXTIDS; j++) {
-				vsw = new OVXSingleSwitch(i, j, false);
+				vsw = new OVXSingleSwitch(i, j);
 				v_sw.add(vsw);
 				this.map.addSwitches(Collections.singletonList(sw), vsw);
 			}
@@ -200,7 +200,7 @@ public class MapAddTest extends TestCase {
 		}
 		/* make 5 VSWs for a tenant */
 		for (long j = 0; j < this.MAXTIDS/2; j++) {
-			vsw = new OVXSingleSwitch(j, 1, false); /*DPID, TID*/
+			vsw = new OVXSingleSwitch(j, 1); /*DPID, TID*/
 			vswmap.add(vsw);
 		}
 

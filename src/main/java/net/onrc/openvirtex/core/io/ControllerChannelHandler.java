@@ -522,7 +522,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 		if (e.getMessage() instanceof List) {
 			@SuppressWarnings("unchecked")
 			final List<OFMessage> msglist = (List<OFMessage>) e.getMessage();
-
+			
 			for (final OFMessage ofm : msglist) {
 
 				try {
@@ -536,7 +536,6 @@ public class ControllerChannelHandler extends OFChannelHandler {
 						if (data.length >= 14) {
 							final int tenantId = ((OVXSwitch) this.sw).getTenantId();
 							if (OVXLLDP.isLLDP(data)) {
-								
 								OVXMap.getInstance().getVirtualNetwork(tenantId).handleLLDP(ofm, this.sw);
 								break;
 							} 

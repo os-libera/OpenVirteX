@@ -75,13 +75,15 @@ public class RoleManager {
     	this.currentState.set(this.state);
     }
     
-    public void addController(Channel chan) {
+    public synchronized void addController(Channel chan) {
+    	if (chan == null)
+    		return;
     	this.state = getState();
     	this.state.put(chan, Role.EQUAL);
     	setState();
     }
     
-    public void setRole(Channel channel, Role role) throws IllegalArgumentException, UnknownRoleException {
+    public synchronized void setRole(Channel channel, Role role) throws IllegalArgumentException, UnknownRoleException {
     	if (!this.currentState.get().containsKey(channel))
     		throw new IllegalArgumentException("Unknown controller " + channel.getRemoteAddress());
     	this.state = getState();
@@ -98,7 +100,7 @@ public class RoleManager {
     			break;
     		case SLAVE:
     			if (channel == currentMaster) {
-    				this.state.put(currentMaster, Role.SLAVE);
+    				this.state.put(channel, Role.SLAVE);
     				currentMaster = null;
     				break;
     			}
@@ -106,7 +108,7 @@ public class RoleManager {
     			break;
     		case EQUAL:
     			if (channel == currentMaster) {
-    				this.state.put(currentMaster, Role.EQUAL);
+    				this.state.put(channel, Role.EQUAL);
     				this.currentMaster = null;
     				break;
     			}
@@ -151,7 +153,9 @@ public class RoleManager {
     }
 
 	public Role getRole(Channel channel) {
-		return this.currentState.get().get(channel);
+
+		return this.currentState.get().get(channel);		
+
 	}
 	
 	private void checkAndSend(Channel c, OFMessage m) {
@@ -159,14 +163,18 @@ public class RoleManager {
 			if (c != null && c.isOpen())
 				c.write(Collections.singletonList(m));
 		}
+		
 	}
 
 	public void sendMsg(OFMessage msg, Channel c) {
+		
 		if (c != null) {
 			checkAndSend(c, msg);
 		} else {
 			final Map<Channel, Role> readOnly = Collections.unmodifiableMap(this.currentState.get());
 			for (Channel chan : readOnly.keySet()) {
+				if (chan == null)
+					continue;
 				checkAndSend(chan, msg);
 			}
 		}
@@ -174,19 +182,24 @@ public class RoleManager {
 		
 	}
 
-	public void removeChannel(Channel channel) {
+	public synchronized void removeChannel(Channel channel) {
 		this.state = getState();
 		this.state.remove(channel);
 		setState();
 	}
 
-	public void shutDown() {
+	public synchronized void shutDown() {
 		this.state = getState();
 		for (Channel c : state.keySet())
 			if (c != null && c.isConnected())
 				c.close();
 		state.clear();
 		setState();
+	}
+	
+	@Override
+	public String toString() {
+		return this.currentState.get().toString();
 	}
     
 }

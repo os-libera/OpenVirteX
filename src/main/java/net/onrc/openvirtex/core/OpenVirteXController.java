@@ -10,8 +10,7 @@
 package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
-
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -134,18 +133,8 @@ public class OpenVirteXController implements Runnable {
 		}
 
 	}
-
-	public void registerOVXSwitch(final OVXSwitch sw) {
-		OVXNetwork ovxNetwork;
-		try {
-			ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId());
-		} catch (NetworkMappingException e) {
-			OpenVirteXController.this.log.error(
-					"Could not connect to controller for switch: " + e.getMessage());
-			return;
-		}
-		
-		final List<String> ctrls = ovxNetwork.getControllerUrls();
+	
+	public void addControllers(final OVXSwitch sw, final Set<String> ctrls) {
 		String[] ctrlParts = null;
 		for (String ctrl : ctrls) {
 			ctrlParts = ctrl.split(":");
@@ -177,6 +166,20 @@ public class OpenVirteXController implements Runnable {
 				}
 			});
 		}
+	}
+
+	public void registerOVXSwitch(final OVXSwitch sw) {
+		OVXNetwork ovxNetwork;
+		try {
+			ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId());
+		} catch (NetworkMappingException e) {
+			OpenVirteXController.this.log.error(
+					"Could not connect to controller for switch: " + e.getMessage());
+			return;
+		}
+		
+		final Set<String> ctrls = ovxNetwork.getControllerUrls();
+		addControllers(sw, ctrls);
 	}
 
 	private void setServerBootStrapParams(final ServerBootstrap bootstrap) {

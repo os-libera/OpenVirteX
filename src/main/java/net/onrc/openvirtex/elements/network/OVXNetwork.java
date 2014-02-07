@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 					.getName());
 
 	private final Integer                        tenantId;
-	private final ArrayList<String>			 controllerUrls;
+	private final HashSet<String>			 controllerUrls;
 	private final IPAddress                      network;
 	private final short                          mask;
 	private HashMap<IPAddress, MACAddress>       gwsMap;
@@ -100,7 +101,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 			final short mask) throws IndexOutOfBoundException {
 		super();
 		this.tenantId = tenantId;
-		this.controllerUrls = controllerUrls;
+		this.controllerUrls = new HashSet<String>();
+		this.controllerUrls.addAll(controllerUrls);
 		this.network = network;
 		this.mask = mask;
 		this.isBooted = false;
@@ -118,8 +120,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 		this(OpenVirteXController.getTenantCounter().getNewIndex(), controllerUrls, network, mask);
 	}
 	
-	public List<String> getControllerUrls() {
-		return  Collections.unmodifiableList(this.controllerUrls);
+	public Set<String> getControllerUrls() {
+		return  Collections.unmodifiableSet(this.controllerUrls);
 	}
 
 	public Integer getTenantId() {
@@ -229,11 +231,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 			switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
 		}
 		if (dpids.size() == 1) {
-			virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId, 
-					this.controllerUrls.size() > 1 ? true : false);
+			virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId);
 		} else {
-			virtualSwitch = new OVXBigSwitch(switchId, this.tenantId,
-					this.controllerUrls.size() > 1 ? true : false);
+			virtualSwitch = new OVXBigSwitch(switchId, this.tenantId);
 		}
 		// Add switch to topology and register it in the map
 		this.addSwitch(virtualSwitch);
@@ -606,5 +606,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 
 	public void removeHost(final Host host) {
 		this.hostMap.remove(host.getPort());
+	}
+
+
+	public void addControllers(ArrayList<String> ctrlUrls) {
+		this.controllerUrls.addAll(ctrlUrls);
+		
 	}
 }

@@ -30,7 +30,7 @@ public class TranslatorTest extends TestCase {
 	}
 
 	public void testTranslate() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
 
 		// make a south-bound message....something simple.
 		final OFHello ofh = new OFHello();
@@ -41,7 +41,7 @@ public class TranslatorTest extends TestCase {
 	}
 
 	public void testUntranslate() {
-		final OVXSwitch vsw = new OVXSingleSwitch(1, 1, false);
+		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
 
 		final OFHello ofh = new OFHello();
 		ofh.setXid(0);
