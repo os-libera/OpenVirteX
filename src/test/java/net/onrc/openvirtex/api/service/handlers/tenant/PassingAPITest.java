@@ -161,7 +161,7 @@ public class PassingAPITest extends AbstractAPICalls {
 		super.createNetwork();
 		super.createSwitch(1, Collections.singletonList(1));
 		super.createPort(1, (long) 1, (short) 1);
-		final JSONRPC2Response resp = super.connectHost(1, (long) 46200400562356225L, (short) 1,
+		JSONRPC2Response resp = super.connectHost(1, (long) 46200400562356225L, (short) 1,
 				"00:00:00:00:00:01");
 
 		Assert.assertNull(
@@ -174,6 +174,11 @@ public class PassingAPITest extends AbstractAPICalls {
 		Map<String, Object> result = (Map<String, Object>) resp.getResult();
 
 		Assert.assertEquals(1, result.get(TenantHandler.HOST));
+		
+		// Try to create another host with same MAC
+		resp = super.connectHost(1, (long) 46200400562356225L, (short) 1,
+				"00:00:00:00:00:01");
+		Assert.assertNotNull("ConnectHost should not allow duplicate MACs", resp.getError());
 	}
 
 	@SuppressWarnings("unchecked")

@@ -24,6 +24,7 @@ import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.exceptions.DuplicateMACException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
@@ -64,6 +65,7 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
 			final MACAddress macAddr = MACAddress.valueOf(mac);
+			HandlerUtils.isUniqueHostMAC(macAddr);
 			final Host host = virtualNetwork.connectHost(dpid.longValue(),
 					port.shortValue(), macAddr);
 			
@@ -104,6 +106,10 @@ public class ConnectHost extends ApiHandler<Map<String, Object>> {
 							+ ": Impossible to create the virtual port, too many ports on this virtual switch : "
 							+ e.getMessage()), 0);
 		} catch (final NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
+		} catch (final DuplicateMACException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": " + e.getMessage()), 0);

@@ -39,6 +39,7 @@ import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.ControllerUnavailableException;
+import net.onrc.openvirtex.exceptions.DuplicateMACException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidHostException;
 import net.onrc.openvirtex.exceptions.InvalidLinkException;
@@ -52,6 +53,7 @@ import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.exceptions.VirtualLinkException;
 import net.onrc.openvirtex.routing.SwitchRoute;
+import net.onrc.openvirtex.util.MACAddress;
 
 public class HandlerUtils {
 
@@ -348,6 +350,19 @@ public class HandlerUtils {
 		if (priority < 0 || priority > 127) {
 			throw new InvalidPriorityException(
 					"The priority specified is invalid: allowed priorities are in range [0, 127]");
+		}
+	}
+
+	/**
+	 * Check if the host MAC address is not yet registered in the map.
+	 * 
+	 * @param MAC address
+	 * @throws InvalidPriorityException
+	 */
+	public static void isUniqueHostMAC(final MACAddress mac) throws DuplicateMACException {
+		if (OVXMap.getInstance().hasMAC(mac)) {
+			throw new DuplicateMACException(
+					"The specified MAC address is already in use: " + mac.toString());
 		}
 	}
 
