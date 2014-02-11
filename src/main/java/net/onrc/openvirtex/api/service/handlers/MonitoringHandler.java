@@ -34,6 +34,7 @@ public class MonitoringHandler extends AbstractHandler implements
 	public static final String TENANT = "tenantId";
 	public static final String MAC = "mac";
 	public static final String DPID = "dpid";
+	public static final String VDPID = "vdpid";
 
 	@SuppressWarnings({ "serial", "rawtypes" })
 	HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {

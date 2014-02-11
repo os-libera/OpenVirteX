@@ -31,7 +31,7 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
 			final Number tid = HandlerUtils.<Number> fetchField(
 					MonitoringHandler.TENANT, params, true, null);
 			final Number dpid = HandlerUtils.<Number> fetchField(
-					MonitoringHandler.DPID, params, false, -1);
+					MonitoringHandler.VDPID, params, false, -1);
 			final OVXMap map = OVXMap.getInstance();
 			final LinkedList<Map<String, Object>> flows = new LinkedList<Map<String, Object>>();
 			if (dpid.longValue() == -1) {
