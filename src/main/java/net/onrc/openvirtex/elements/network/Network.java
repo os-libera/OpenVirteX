@@ -25,6 +25,7 @@ import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.util.HexString;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -167,7 +168,7 @@ OVXSendMsg {
 	 */
 	public T1 getSwitch(final Long dpid) throws InvalidDPIDException {
 		if (!this.dpidMap.containsKey(dpid)) {
-			throw new InvalidDPIDException("DPID " + dpid + " is unknown ");
+			throw new InvalidDPIDException("DPID " + HexString.toHexString(dpid) + " is unknown ");
 		}
 		return this.dpidMap.get(dpid);
 	}

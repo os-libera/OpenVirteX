@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openflow.util.HexString;
+
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
@@ -348,7 +350,7 @@ public class HandlerUtils {
 			throw new InvalidDPIDException(
 					"The physical dpid has first to be associated to "
 							+ "virtual switch in the virtual network you have specified. dpid: "
-							+ String.valueOf(dpid));
+							+ HexString.toHexString(dpid));
 		}
 	}
 

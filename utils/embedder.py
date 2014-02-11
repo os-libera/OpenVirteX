@@ -42,12 +42,18 @@ class EmbedderException(Exception):
     def __str__(self):
         return '%s (%s)' % (self.msg, self.code)
 
-# Convert dotted hex MAC address to long value
-def hexToLong(mac):
-    return int(mac.replace(':', ''), 16)
+# Convert dotted hex to long value
+def hexToLong(h):
+    return int(h.replace(':', ''), 16)
 
-def longToHex(l):
-    return '00:' + ':'.join([("%x" % l)[i:i+2] for i in range(0, len(("%x" % l)), 2)])
+# Convert long value to dotted hex value with specified length in bytes
+def longToHex(l, length=8):
+    h = ("%x" % l)
+    if len(h) % 2 != 0:
+        h = '0' + h
+    result = ':'.join([h[i:i+2] for i in range(0, len(h), 2)])
+    prefix = '00:' * (length - (len(h) / 2) - (len(h) % 2))
+    return prefix + result
 
 class Routing():
     def __init__(self, topology):
@@ -230,8 +236,10 @@ class OVXClient():
             e.rollback = False
             raise
         
-    def createSwitch(self, tenantId, dpids, dpid = "0"):
-        req = {'tenantId': tenantId, 'dpids': dpids, "dpid" : int(dpid.replace(":",""),16)}
+    def createSwitch(self, tenantId, dpids, dpid=None):
+        req = {'tenantId': tenantId, 'dpids': dpids}
+        if dpid:
+            req["vdpid"] = dpid
         try:
             ret = self._connect("createSwitch", self.tenant_url, data=req)
             switchId = ret.get('vdpid')
@@ -380,7 +388,7 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
             res['data'] = data
         return res
 
-    def doBigSwitchNetwork(self, controller, routing, subnet, hosts, copyDpid = False):
+    def doBigSwitchNetwork(self, controller, routing, subnet, hosts):
         """Create OVX network that is a single big switch"""
         
         client = self.server.client
@@ -437,7 +445,10 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
         tenantId = client.createNetwork(ctrls, net_address, int(net_mask))
         # create virtual switch per physical dpid
         for dpid in phyTopo['switches']:
-            client.createSwitch(tenantId, [hexToLong(dpid)], dpid=dpid)
+            if copyDpid:
+                client.createSwitch(tenantId, [hexToLong(dpid)], dpid=hexToLong(dpid))
+            else:
+                client.createSwitch(tenantId, [hexToLong(dpid)])
         # create virtual ports and connect hosts
         for host in hosts:
             (vdpid, vport) = client.createPort(tenantId, hexToLong(host['dpid']), host['port'])
@@ -481,9 +492,9 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
             if networkType == None:
                 raise EmbedderException(ERROR_CODE.INVALID_REQ, 'Missing network type')
             elif networkType == 'bigswitch':
-                tenantId = self.doBigSwitchNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'], copyDpid=p['copy-dpid'])
+                tenantId = self.doBigSwitchNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'])
             elif networkType == 'physical':
-                tenantId = self.doPhysicalNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'], copyDpid=p['copy-dpid'])
+                tenantId = self.doPhysicalNetwork(p['controller'], p['routing'], p['subnet'], p['hosts'], copyDpid=p.get('copy-dpid', False))
             else:
                 raise EmbedderException(ERROR_CODE.INVALID_REQ, 'Unsupported network type')
             response = self._buildResponse(json_id, result={ 'tenantId' : tenantId })
