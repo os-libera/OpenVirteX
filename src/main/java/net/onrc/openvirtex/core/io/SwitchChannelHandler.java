@@ -199,14 +199,16 @@ public class SwitchChannelHandler extends OFChannelHandler {
 					final OFStatisticsReply m) {
 				// Read description, if it has been updated
 				final OVXDescriptionStatistics description = new OVXDescriptionStatistics();
-				final ChannelBuffer data = ChannelBuffers.buffer(description
+				if (m.getStatisticType() == OFStatisticsType.DESC) {
+					final ChannelBuffer data = ChannelBuffers.buffer(description
 						.getLength());
-				final OFStatistics f = m.getFirstStatistics();
-				f.writeTo(data);
-				description.readFrom(data);
+					final OFStatistics f = m.getFirstStatistics();
+					f.writeTo(data);
+					description.readFrom(data);
+				}
 				OFFlowMod fm = new OFFlowMod();
 				fm.setCommand(OFFlowMod.OFPFC_DELETE);
-				fm.setMatch(new OFMatch());
+				fm.setMatch(new OFMatch().setDataLayerVirtualLan((short)4000));
 				h.channel.write(Collections.singletonList(fm));
 				h.sw = new PhysicalSwitch(h.featuresReply.getDatapathId());
 				// set switch information
