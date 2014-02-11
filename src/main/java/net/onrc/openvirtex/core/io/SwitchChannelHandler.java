@@ -48,10 +48,12 @@ import org.openflow.protocol.OFEchoReply;
 import org.openflow.protocol.OFEchoRequest;
 import org.openflow.protocol.OFError;
 import org.openflow.protocol.OFFeaturesReply;
+import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFFlowRemoved;
 import org.openflow.protocol.OFGetConfigReply;
 import org.openflow.protocol.OFGetConfigRequest;
 import org.openflow.protocol.OFHello;
+import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFPortStatus;
@@ -202,6 +204,10 @@ public class SwitchChannelHandler extends OFChannelHandler {
 				final OFStatistics f = m.getFirstStatistics();
 				f.writeTo(data);
 				description.readFrom(data);
+				OFFlowMod fm = new OFFlowMod();
+				fm.setCommand(OFFlowMod.OFPFC_DELETE);
+				fm.setMatch(new OFMatch());
+				h.channel.write(Collections.singletonList(fm));
 				h.sw = new PhysicalSwitch(h.featuresReply.getDatapathId());
 				// set switch information
 				// set features reply and channel first so we have a DPID and
