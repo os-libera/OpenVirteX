@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -30,6 +31,7 @@ import net.onrc.openvirtex.exceptions.SwitchStateException;
 import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXSetConfig;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
+import net.onrc.openvirtex.packet.Ethernet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,6 +58,7 @@ import org.openflow.protocol.OFHello;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
+import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPortStatus;
 import org.openflow.protocol.OFQueueGetConfigReply;
 import org.openflow.protocol.OFSetConfig;
@@ -64,6 +67,8 @@ import org.openflow.protocol.OFStatisticsRequest;
 import org.openflow.protocol.OFSwitchConfig;
 import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
+import org.openflow.protocol.Wildcards;
+import org.openflow.protocol.Wildcards.Flag;
 import org.openflow.protocol.factory.BasicFactory;
 import org.openflow.protocol.factory.MessageParseException;
 import org.openflow.protocol.statistics.OFStatistics;
@@ -694,6 +699,54 @@ public class SwitchChannelHandler extends OFChannelHandler {
 				OFType.ECHO_REQUEST);
 		e.getChannel().write(Collections.singletonList(m));
 	}
+	
+	
+	@Override
+	public void writeRequested(final ChannelHandlerContext ctx, 
+			final MessageEvent e) throws Exception {
+		if (e.getMessage() instanceof List) {
+			@SuppressWarnings("unchecked")
+			List<OFMessage> msglist = (List<OFMessage>) e.getMessage();
+			
+			
+			try {
+				for (OFMessage msg : msglist) {
+					
+					switch (msg.getType()) {
+					case PACKET_OUT:
+						
+						OFPacketOut out = (OFPacketOut) msg;
+						Ethernet eth = new Ethernet();
+						eth.deserialize(out.getPacketData(),  0, out.getPacketData().length);
+						eth.setVlanID((short)4000);
+						out.setPacketData(eth.serialize());
+						out.setLengthU(out.getLengthU() + 4);
+						
+						break;
+					case FLOW_MOD:
+						OFFlowMod fm = (OFFlowMod) msg;
+						fm.getMatch().setDataLayerVirtualLan((short) 4000);
+						Wildcards w = fm.getMatch().getWildcardObj().matchOn(Flag.DL_VLAN);
+						fm.getMatch().setWildcards(w.getInt());
+						
+						break;
+					default:
+						break;
+					}
+					
+				}
+				Channels.write(ctx, e.getFuture(), msglist);
+			} catch (Exception ex) {
+				Channels.fireExceptionCaught(ctx.getChannel(), ex);
+			}
+			
+		}else {
+			Channels.fireExceptionCaught(this.channel, new AssertionError(
+					"Message received from Channel is not a list"));
+		}
+		
+	}
+	
 
 	@Override
 	public void messageReceived(final ChannelHandlerContext ctx,
@@ -720,7 +773,17 @@ public class SwitchChannelHandler extends OFChannelHandler {
 						 * Is this packet a packet in? If yes is it an lldp?
 						 * then send it to the PhysicalNetwork.
 						 */
-						final byte[] data = ((OFPacketIn) ofm).getPacketData();
+						byte[] data = ((OFPacketIn) ofm).getPacketData();
+						Ethernet eth = new Ethernet();
+						eth.deserialize(data, 0, data.length);
+						
+						if (eth.getVlanID() != Ethernet.VLAN_UNTAGGED) {
+							eth.setVlanID(Ethernet.VLAN_UNTAGGED);
+							data = eth.serialize();
+							((OFPacketIn) ofm).setPacketData(data);
+							((OFPacketIn) ofm).setLengthU(((OFPacketIn) ofm).getLengthU() + data.length);
+							
+						}
 						if (OVXLLDP.isLLDP(data)) {
 							if (this.sw != null) {
 								PhysicalNetwork.getInstance().handleLLDP(
