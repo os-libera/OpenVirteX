@@ -70,7 +70,7 @@ public class OVXLLDP extends LLDP {
 	private static short DEFAULT_TTL = 120;				// in seconds
 
 	// Minimum and OVX-generated LLDP packet sizes
-	private static short MINIMUM_LLDP_SIZE = 60;
+	private static short MINIMUM_LLDP_SIZE = 50;
 	// Add 12 for 2-byte header of each TLV and a single EndOfLLDPTLV
 	private static short OVX_LLDP_SIZE = (short) (CHASSIS_TLV_SIZE + PORT_TLV_SIZE + TTL_TLV_SIZE + NAME_TLV_SIZE + DPID_TLV_SIZE + 12);
 
