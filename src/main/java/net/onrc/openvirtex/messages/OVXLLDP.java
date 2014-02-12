@@ -240,9 +240,9 @@ public class OVXLLDP extends LLDP {
 	 */
 	public static boolean isLLDP(final byte[] packet) {
 		// Does packet exist and does it have the mininum size?
-		if (packet == null || packet.length < MINIMUM_LLDP_SIZE) {
+		/*if (packet == null || packet.length < MINIMUM_LLDP_SIZE) {
 			return false;
-		}
+		}*/
 
 		// Packet has LLDP multicast destination address?
 		final ByteBuffer bb = ByteBuffer.wrap(packet);

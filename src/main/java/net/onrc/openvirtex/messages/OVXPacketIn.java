@@ -273,7 +273,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		final OVXFlowMod fm = new OVXFlowMod();
 		fm.setMatch(match);
 		fm.setBufferId(this.getBufferId());
-		fm.setHardTimeout((short) 1);
+		fm.setHardTimeout((short) 5);
 		sw.sendMsg(fm, sw);
 	}
 
