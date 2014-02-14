@@ -225,7 +225,7 @@ class OVXClient():
         req = {'tenantId': tenantId}
         try:
             ret = self._connect("removeNetwork", self.tenant_url, data=req)
-            log.info("Network with tenantId %s has been removed" % ret)
+            log.info("Network with tenantId %s has been removed" % tenantId)
         except OVXException as e:
             e.rollback = False
             raise
