@@ -49,11 +49,11 @@ public class OVXFlowManager {
 		Integer flowId = this.flowValues.inverse().get(dualMac);
 		if (flowId == null) {
 			flowId = this.flowCounter.getNewIndex();
-			log.debug("virtual net = {}: save flowId = {} that is associated to {} {}",
+			log.debug("virtual net = {}: save flowId = {} that is associated to {} {} = {}",
 					this.tenantId, flowId, MACAddress.valueOf(srcMac)
 					.toString(), MACAddress.valueOf(dstMac)
-					.toString());
-			this.flowValues.put(flowId, dualMac);
+					.toString(), dualMac);
+			this.flowValues.forcePut(flowId, dualMac);
 		}
 		return flowId;
 	}

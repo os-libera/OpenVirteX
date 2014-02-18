@@ -11,6 +11,7 @@
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{1} - %msg%n"/>
     </Console>
+    
   </appenders>
   <loggers>
     <root level="INFO" includeLocation="false">
