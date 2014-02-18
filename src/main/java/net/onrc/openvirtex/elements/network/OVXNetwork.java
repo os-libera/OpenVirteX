@@ -411,7 +411,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 	public synchronized void removeSwitch(final long ovxDpid) {
 		if ((ovxDpid & 0xA42305) == 0xA42305) 
 			this.dpidCounter.releaseIndex((int) (0x000000 << 32 | ovxDpid));
-		
+
 		OVXSwitch sw = this.getSwitch(ovxDpid);
 		sw.unregister();
 	}

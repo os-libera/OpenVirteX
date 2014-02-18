@@ -594,8 +594,8 @@ public class ControllerChannelHandler extends OFChannelHandler {
 					this.getSwitchInfoString(), e.getCause());
 			ctx.getChannel().close();
 		} else if (e.getCause() instanceof ClosedChannelException) {
-			this.log.error("Channel for ctrl {} already closed",
-					this.getSwitchInfoString(), e.getCause());
+			this.log.error("Channel for ctrl {} already closed; attempting reconnection.",
+					this.getSwitchInfoString());
 		} else if (e.getCause() instanceof IOException) {
 			this.log.error("Disconnecting ctrl {} due to IO Error.",
 					this.getSwitchInfoString(), e.getCause());
