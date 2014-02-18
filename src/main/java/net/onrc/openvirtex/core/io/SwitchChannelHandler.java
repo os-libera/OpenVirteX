@@ -728,6 +728,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 						fm.getMatch().setDataLayerVirtualLan((short) 4000);
 						Wildcards w = fm.getMatch().getWildcardObj().matchOn(Flag.DL_VLAN);
 						fm.getMatch().setWildcards(w.getInt());
+						fm.getMatch().setWildcards(fm.getMatch().getWildcardObj().wildcard(Flag.NW_DST));
+		    				fm.getMatch().setWildcards(fm.getMatch().getWildcardObj().wildcard(Flag.NW_SRC));
 						
 						break;
 					default:
