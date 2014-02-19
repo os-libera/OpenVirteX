@@ -560,7 +560,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	
 	@Override 
 	public void setConnected(final boolean isConnected) {
-		if (!this.roleMan.hasControllers())
+		if (!this.roleMan.hasControllers() || !this.isConnected )
 			this.isConnected = isConnected;
 	}
 	
