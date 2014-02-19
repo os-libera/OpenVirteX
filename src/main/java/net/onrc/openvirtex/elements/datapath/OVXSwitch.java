@@ -558,6 +558,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		this.roleMan.removeChannel(channel);
 	}
 	
+	@Override 
+	public void setConnected(final boolean isConnected) {
+		if (!this.roleMan.hasControllers())
+			this.isConnected = isConnected;
+	}
+	
 	
 	/**
 	 * Remove an entry in the mapping

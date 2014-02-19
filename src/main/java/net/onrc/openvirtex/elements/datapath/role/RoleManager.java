@@ -201,5 +201,9 @@ public class RoleManager {
 	public String toString() {
 		return this.currentState.get().toString();
 	}
+
+	public boolean hasControllers() {
+		return !this.currentState.get().isEmpty();
+	}
     
 }
