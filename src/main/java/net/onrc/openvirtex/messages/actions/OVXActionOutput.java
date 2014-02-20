@@ -40,6 +40,7 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.util.U16;
 
+// TODO: handle case where input port is null: ODL does this
 public class OVXActionOutput extends OFActionOutput implements
 VirtualizableAction {
 	Logger log = LogManager.getLogger(OVXActionOutput.class.getName());
@@ -50,6 +51,8 @@ VirtualizableAction {
 					throws ActionVirtualizationDenied, DroppedMessageException {
 		final OVXPort inPort = sw.getPort(match.getInputPort());
 
+		// TODO: handle TABLE output port here
+		
 		final LinkedList<OVXPort> outPortList = this.fillPortList(
 				match.getInputPort(), this.getPort(), sw);
 		final OVXNetwork vnet;
@@ -298,7 +301,7 @@ VirtualizableAction {
 				if (port.isActive())
 					outPortList.add(port);
 			}
-		} 
+		}
 		else
 			log.warn("Output port from controller currently not supported. Short = {}, Exadecimal = 0x{}" , 
 					U16.f(outPort), Integer.toHexString(U16.f(outPort) & 0xffff));

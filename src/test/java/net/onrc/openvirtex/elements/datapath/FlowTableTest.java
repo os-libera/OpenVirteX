@@ -46,10 +46,25 @@ public class FlowTableTest extends TestCase {
 		final OVXFlowMod fm1 = this.getFlowMod();
 	
 		final long c1 = (long) vsw.getTenantId() << 32 | 1;
-		final long c2 = oft.getCookie();
-		final boolean c = oft.handleFlowMods(fm1, c2);
-		Assert.assertTrue(c);
+		final boolean res1 = oft.handleFlowMods(fm1);
+		final long c2 = oft.getCookie(fm1, false);
+		
+		/* verify inital cookie value */
+		Assert.assertTrue(res1);
 		Assert.assertEquals(c2, c1);
+		
+		/* try to add identical FlowMod, should get back old cookie 
+		 * since we're displacing the old flowMod */
+		final boolean res2 = oft.handleFlowMods(fm1);
+		final long c3 = oft.getCookie(fm1, false);
+		
+		Assert.assertTrue(res2);
+		Assert.assertEquals(c2, c3);
+		
+		/* the next available cookie value should be next-value up, 
+		 * which was never used */
+		final long c4 = (long) vsw.getTenantId() << 32 | 2;
+		Assert.assertEquals(c4 ,oft.getCookie());
     }
 
     public void testDeleteFlowMod() {
@@ -57,8 +72,8 @@ public class FlowTableTest extends TestCase {
 		final OVXFlowTable oft = new OVXFlowTable(vsw);
 		final OVXFlowMod fm1 = this.getFlowMod();
 		
-		final long c = oft.getCookie();
-		oft.handleFlowMods(fm1, c);
+		oft.handleFlowMods(fm1);
+		final long c = oft.getCookie(fm1, false);
 		final OVXFlowMod fm2 = oft.deleteFlowMod(c);
 	
 		Assert.assertEquals(fm1, fm2);
@@ -67,27 +82,34 @@ public class FlowTableTest extends TestCase {
     public void testGenerateCookie() {
 		final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
 		final OVXFlowTable oft = new OVXFlowTable(vsw);
-	
+		
+		/* 2 FMs that deliberately don't match */
 		final OVXFlowMod fm1 = this.getFlowMod();
+			fm1.setCommand(OFFlowMod.OFPFC_ADD)
+			.setMatch((new OFMatch())
+					.setInputPort((short)1)
+					.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT));
 		final OVXFlowMod fm2 = this.getFlowMod();
-		final OVXFlowMod fm3 = this.getFlowMod();
-	
+			fm2.setCommand(OFFlowMod.OFPFC_ADD)
+			.setMatch((new OFMatch()).setInputPort((short)2)
+					.setWildcards(OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT));
+		
 		final long c1 = (long) vsw.getTenantId() << 32 | 1;
 		final long c2 = (long) vsw.getTenantId() << 32 | 2;
-	
-		final long c3 = oft.getCookie();
-		final long c4 = oft.getCookie();
 		
 		// generate new cookies while none in freelist
-		oft.handleFlowMods(fm1, c3);
+		oft.handleFlowMods(fm1);
+		final long c3 = oft.getCookie(fm1, false);
+		
 		Assert.assertEquals(c3, c1);
-		oft.handleFlowMods(fm2, c4);
+		oft.handleFlowMods(fm2);
+		final long c4 = oft.getCookie(fm2, false);
+		
 		Assert.assertEquals(c4, c2);
 	
-		// should re-use first cookie that was freed up
+		// should re-use first cookie that was freed up 
 		oft.deleteFlowMod(c1);
 		long c = oft.getCookie();
-		oft.addFlowMod(fm3, c);
 		Assert.assertEquals(c, c1);
     }
 
@@ -170,7 +192,7 @@ public class FlowTableTest extends TestCase {
 		        .setCommand(OFFlowMod.OFPFC_MODIFY);
 	
 		/* add done via modify call - should work */
-		Assert.assertTrue(oft.handleFlowMods(fm, oft.getCookie()));
+		Assert.assertTrue(oft.handleFlowMods(fm));
 	
 		/* try strict add with superset match - should fail */
 		final OFMatch super_m = new OFMatch();
@@ -181,17 +203,17 @@ public class FlowTableTest extends TestCase {
 		                        & ~OFMatch.OFPFW_NW_DST_ALL);
 		fm.setCommand(OFFlowMod.OFPFC_ADD)
 		        .setFlags(OFFlowMod.OFPFF_CHECK_OVERLAP).setMatch(super_m);
-		Assert.assertFalse(oft.handleFlowMods(fm, oft.getCookie()));
+		Assert.assertFalse(oft.handleFlowMods(fm));
 	
 		/* try add with overlap check off should succeed. */
 		fm.setFlags((short) 0);
-		Assert.assertTrue(oft.handleFlowMods(fm, oft.getCookie()));
+		Assert.assertTrue(oft.handleFlowMods(fm));
 	
 		/* do a delete of one element, then a wild-card. */
 		fm.setCommand(OFFlowMod.OFPFC_DELETE_STRICT);
-		Assert.assertTrue(oft.handleFlowMods(fm, oft.getCookie()));
+		Assert.assertTrue(oft.handleFlowMods(fm));
 		fm.setCommand(OFFlowMod.OFPFC_ADD);
-		oft.handleFlowMods(fm, oft.getCookie());
+		oft.handleFlowMods(fm);
 		/* OFPFW_ALL match - need to do sendSouth() */
 		/*
 		 * fm.setMatch(new OFMatch()).setCommand(OFFlowMod.OFPFC_DELETE);

@@ -24,6 +24,7 @@ import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -226,7 +227,10 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 							Integer flowId = this.map.getVirtualNetwork(this.tenantId).getFlowManager()
 									.storeFlowValues(fe.getMatch().getDataLayerSource(),
 											fe.getMatch().getDataLayerDestination());
-							this.generateLinkFMs(fe.clone(), flowId);
+							
+							OVXFlowMod fm = fe.clone();
+							fm.setCookie(((OVXFlowTable) this.getSrcPort().getParentSwitch().getFlowTable()).getCookie(fe, true));
+							this.generateLinkFMs(fm, flowId);
 						} catch (IndexOutOfBoundException e) {
 							log.error("Too many host to generate the flow pairs in this virtual network {}. "
 									+ "Dropping flow-mod {} ", this.getTenantId(), fe);
@@ -297,7 +301,6 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		 * 1) change the fields where the virtual link info are stored
 		 * 2) change the fields where the physical ips are stored
 		 */
-		fm.setPhysicalCookie();
 		final OVXLinkUtils lUtils = new OVXLinkUtils(this.tenantId,
 				this.linkId, flowId);
 		lUtils.rewriteMatch(fm.getMatch());

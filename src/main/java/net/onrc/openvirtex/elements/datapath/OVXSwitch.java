@@ -38,10 +38,8 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.UnknownRoleException;
 import net.onrc.openvirtex.messages.Devirtualizable;
 import net.onrc.openvirtex.messages.OVXFlowMod;
-import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXMessageUtil;
 import net.onrc.openvirtex.messages.OVXPacketIn;
-import net.onrc.openvirtex.packet.Ethernet;
 import net.onrc.openvirtex.util.BitSetIndex;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 
@@ -49,12 +47,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.openflow.protocol.OFFeaturesReply;
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
-import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPort;
-import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.util.LRULinkedHashMap;
@@ -547,7 +542,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 	 * @throws MappingException 
 	 */
 	public OVXFlowMod getFlowMod(final Long cookie) throws MappingException {
-		return this.flowTable.getFlowMod(cookie);
+		return this.flowTable.getFlowMod(cookie).clone();
 	}
 	
 	public void setChannel(Channel channel) {

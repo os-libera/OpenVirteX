@@ -25,10 +25,10 @@ import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.PortMappingException;
-import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXMessageFactory;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.packet.Ethernet;
+import net.onrc.openvirtex.packet.OVXLLDP;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -1,6 +1,7 @@
 package net.onrc.openvirtex.elements.datapath;
 
 import java.util.Collection;
+
 import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 
@@ -16,7 +17,7 @@ public interface FlowTable {
 	 * @cookie the new cookie generated for this FlowMod. 
 	 * @return true if processing occured correctly
 	 */
-	public boolean handleFlowMods(OVXFlowMod fm, Long cookie);
+	public boolean handleFlowMods(OVXFlowMod fm);
 	
 	/**
 	 * Fetch FlowMod out of this Flow Table based on cookie. 

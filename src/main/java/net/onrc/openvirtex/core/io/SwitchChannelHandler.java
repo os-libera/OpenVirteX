@@ -27,9 +27,9 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
-import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXSetConfig;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
+import net.onrc.openvirtex.packet.OVXLLDP;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

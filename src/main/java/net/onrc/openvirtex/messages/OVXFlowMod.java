@@ -56,7 +56,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		if (this.match.getDataLayerType() == Ethernet.TYPE_LLDP) {
 			return;
 		}
-
+		
 		this.sw = sw;
 		FlowTable ft = this.sw.getFlowTable();
 		
@@ -66,11 +66,13 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		}
 		final short inport = this.getMatch().getInputPort();
 
+		/* let flow table process FlowMod, generate cookie as needed */
+		boolean pflag = ft.handleFlowMods(this.clone());
+		
+		/* used by OFAction virtualization */
 		OVXMatch ovxMatch = new OVXMatch(this.match);
-		ovxCookie = ((OVXFlowTable) ft).getCookie();
-		//Store the virtual flowMod and obtain the physical cookie
+		ovxCookie = ((OVXFlowTable) ft).getCookie(this, false);
 		ovxMatch.setCookie(ovxCookie);
-		boolean pflag = ft.handleFlowMods(this, ovxCookie);
 		this.setCookie(ovxMatch.getCookie());
 		
 		for (final OFAction act : this.getActions()) {
@@ -110,7 +112,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 				return;
 			}
 		} else {
-		    	prepAndSendSouth(ovxInPort, pflag);
+			prepAndSendSouth(ovxInPort, pflag);
 		}
 	}
 
@@ -214,18 +216,10 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		 return map;
 	 }
 	
-	public void setPhysicalCookie() {
-		long tmp = this.cookie;
-		this.cookie = this.ovxCookie;
-		this.ovxCookie = tmp;
-	}
-	
 	public void setVirtualCookie() {
 		long tmp = this.ovxCookie;
 		this.ovxCookie = this.cookie;
 		this.cookie = tmp;
 	}
-	
-	
 
 }

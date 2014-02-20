@@ -25,6 +25,7 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
+import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.Link;
@@ -210,21 +211,24 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 				if (act.getType() == OFActionType.OUTPUT && 
 						fe.getMatch().getInputPort() == this.getSrcPort().getPortNumber() && 
 						((OFActionOutput) act).getPort() == this.getDstPort().getPortNumber()) {
-					log.info("Virtual network {}, switch {}, route {}: switch fm {}", this.getTenantId(), 
-							this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), fe);
+					log.info("Virtual network {}, switch {}, route {} between ports {}-{}: switch fm {}", this.getTenantId(), 
+							this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), this.getSrcPort().getPortNumber(), 
+							this.getDstPort().getPortNumber(),fe);
 					counter++;
 					
-					this.generateRouteFMs(fe.clone());
-					this.generateFirstFM(fe.clone());
+					OVXFlowMod fm = fe.clone();
+					fm.setCookie(((OVXFlowTable) this.getSrcPort().getParentSwitch().getFlowTable()).getCookie(fe, true));
+					this.generateRouteFMs(fm);
+					this.generateFirstFM(fm);
 				}
 			}
 		}
-		log.info("Virtual network {}, switch {}, route {}: {} flow-mod switched to the new path", this.getTenantId(), 
-				this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), counter);
+		log.info("Virtual network {}, switch {}, route {} between ports {}-{}: {} flow-mod switched to the new path", this.getTenantId(), 
+				this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), this.getSrcPort().getPortNumber(), 
+				this.getDstPort().getPortNumber(), counter);
 	}
 
 	public void generateRouteFMs(final OVXFlowMod fm) {
-		fm.setPhysicalCookie();
 		// This list includes all the actions that have to be applied at the end of the route
 		final LinkedList<OFAction> outActions = new LinkedList<OFAction>();
 		/*
@@ -328,7 +332,6 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	}
 
 	private void generateFirstFM(OVXFlowMod fm) {
-		fm.setPhysicalCookie();
 		fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 		final List<OFAction> approvedActions = new LinkedList<OFAction>();
 		if (this.getSrcPort().isLink()) {

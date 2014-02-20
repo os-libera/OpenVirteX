@@ -31,10 +31,9 @@ import net.onrc.openvirtex.messages.OVXMessageUtil;
 
 /**
  * Virtualized version of the switch flow table.
- * 
  */
 public class OVXFlowTable implements FlowTable {
-    
+	
     private final Logger log = LogManager.getLogger(OVXFlowTable.class.getName());
     
     /** OVXSwitch tied to this table */
@@ -42,7 +41,9 @@ public class OVXFlowTable implements FlowTable {
     
     /** Map of FlowMods to physical cookies for vlinks*/
     protected ConcurrentHashMap<Long, OVXFlowMod> flowmodMap;
-
+    /** Reverse map of FlowMod hashcode to cookie */
+    protected ConcurrentHashMap<Integer, Long> cookieMap;
+    
     /** a temporary solution that should be replaced by something that doesn't fragment */
     private AtomicInteger cookieCounter;
  
@@ -57,6 +58,7 @@ public class OVXFlowTable implements FlowTable {
 
     public OVXFlowTable(OVXSwitch vsw) {
 		this.flowmodMap = new ConcurrentHashMap<Long, OVXFlowMod>();
+		this.cookieMap = new ConcurrentHashMap<Integer, Long>();
 		this.cookieCounter = new AtomicInteger(1);
 		this.freeList = new LinkedList<Long>();
 		this.vswitch = vsw;
@@ -76,20 +78,22 @@ public class OVXFlowTable implements FlowTable {
      * south if needed.  
      * 
      * @param fm The FlowMod to apply to this table 
-     * @param cookie the cookie value
+     * @param cookie the cookie value - FlowTable will return the cookie value
+     * that it decided to use in this value. This may be a cookie already in 
+     * the table, or the one supplied to this method. 
      * @return if the FlowMod needs to be sent south during de-virtualization.
      */
-    public boolean handleFlowMods(OVXFlowMod fm, Long cookie) {
+    public boolean handleFlowMods(OVXFlowMod fm) { 
     	switch (fm.getCommand()) {
 		    case OFFlowMod.OFPFC_ADD:
-		    	return doFlowModAdd(fm, cookie);
+		    	return doFlowModAdd(fm);
 		    case OFFlowMod.OFPFC_MODIFY:
 		    case OFFlowMod.OFPFC_MODIFY_STRICT:
-		    	return doFlowModModify(fm, cookie);
+		    	return doFlowModModify(fm);
 		    case OFFlowMod.OFPFC_DELETE:
-		    	return doFlowModDelete(fm, cookie, false);
+		    	return doFlowModDelete(fm, false);
 		    case OFFlowMod.OFPFC_DELETE_STRICT:
-		    	return doFlowModDelete(fm, cookie, true);
+		    	return doFlowModDelete(fm, true);
 		    default:
 			/* we don't know what it is. drop. */ 
 		    	return false;
@@ -104,7 +108,7 @@ public class OVXFlowTable implements FlowTable {
      * @param nostrict true if not a _STRICT match
      * @return true if FlowMod should be written south 
      */
-    private boolean doFlowModDelete(OVXFlowMod fm, Long cookie, boolean strict) {
+    private boolean doFlowModDelete(OVXFlowMod fm, boolean strict) {
 		/* don't do anything if FlowTable is empty */
 		if (this.flowmodMap.isEmpty()) {
 		    return false;
@@ -120,6 +124,7 @@ public class OVXFlowTable implements FlowTable {
 					psw.cleanUpTenant(this.vswitch.getTenantId(), OFPort.OFPP_NONE.getValue());
 		    	}
 				this.flowmodMap.clear();
+				this.cookieMap.clear();
 			    return false;
 			} else {
 			    /* remove matching flow entries, and let FlowMod be sent down */
@@ -130,6 +135,7 @@ public class OVXFlowTable implements FlowTable {
 			    	fe.setFlowMod(entry.getValue());
 					int overlap = fe.compare(fm.getMatch(), strict);
 					if (overlap == OVXFlowEntry.EQUAL) {
+						this.cookieMap.remove(entry.getValue().hashCode());
 					    itr.remove();
 					}
 			    }
@@ -147,7 +153,7 @@ public class OVXFlowTable implements FlowTable {
      * @param fm
      * @return true if FlowMod should be written south 
      */
-    private boolean doFlowModAdd(OVXFlowMod fm, Long cookie) {
+    private boolean doFlowModAdd(OVXFlowMod fm) {
 		if ((fm.getFlags() & OFFlowMod.OFPFF_CHECK_OVERLAP) 
 				== OFFlowMod.OFPFF_CHECK_OVERLAP) {
 			OVXFlowEntry fe = new OVXFlowEntry();
@@ -162,7 +168,7 @@ public class OVXFlowTable implements FlowTable {
 				}
 		    }
 		}
-		return doFlowModModify(fm, cookie);
+		return doFlowModModify(fm);
     }
     
     /**
@@ -171,9 +177,26 @@ public class OVXFlowTable implements FlowTable {
      * @param fm
      * @return true if FlowMod should be written south 
      */
-    private boolean doFlowModModify(OVXFlowMod fm, Long cookie) {
-		/* TODO replace entry that matches on equals(). */
-		this.addFlowMod(fm.clone(), cookie);
+    private boolean doFlowModModify(OVXFlowMod fm){
+    	OVXFlowEntry fe = new OVXFlowEntry();
+		int res;
+		for (Map.Entry<Long, OVXFlowMod> fmod : this.flowmodMap.entrySet()) {
+			fe.setFlowMod(fmod.getValue());
+			res = fe.compare(fm.getMatch(), true);
+			/* replace table entry that strictly matches with given FlowMod. */
+	    	if (res == OVXFlowEntry.EQUAL) {
+				long c = fmod.getKey();
+				log.info("replacing equivalent FlowEntry [cookie={}]", c);
+				OVXFlowMod old = this.flowmodMap.get(c);
+				this.cookieMap.remove(old.hashCode());
+				this.addFlowMod(fm, c);
+				/*return cookie to pool and use the previous cookie*/
+				return true;
+			}
+    	}
+		/*make a new cookie, add FlowMod*/
+		long newc = this.getCookie();
+		this.addFlowMod(fm.clone(), newc);
 		return true;
     }
     
@@ -200,8 +223,38 @@ public class OVXFlowTable implements FlowTable {
     	return this.generateCookie();
     }
     
+    public final long getCookie(OVXFlowMod flowmod, Boolean cflag) {
+    	if (cflag) {
+    		long cookie = this.getCookie();
+    		OVXFlowEntry fe = new OVXFlowEntry();
+    		int res;
+    		for (Map.Entry<Long, OVXFlowMod> fmod : this.flowmodMap.entrySet()) {
+    			fe.setFlowMod(fmod.getValue());
+    			res = fe.compare(flowmod.getMatch(), true);
+    			/* replace table entry that strictly matches with given FlowMod. */
+    	    	if (res == OVXFlowEntry.EQUAL) {
+    				long c = fmod.getKey();
+    				log.info("replacing equivalent FlowEntry with new [cookie={}]", cookie);
+    				OVXFlowMod old = this.flowmodMap.get(c);
+    				this.cookieMap.remove(old.hashCode());
+    				this.flowmodMap.remove(c);
+    				this.addFlowMod(flowmod, cookie);
+    				/*return cookie to pool and use the previous cookie*/
+    				return cookie;
+    			}
+        	}
+    		
+    	}
+    	Long cookie = this.cookieMap.get(flowmod.hashCode());
+    	if (cookie == null) {
+    		cookie = this.getCookie();
+    	}
+    	return cookie;
+    }
+    
 	public long addFlowMod(final OVXFlowMod flowmod, long cookie) {
 		this.flowmodMap.put(cookie, flowmod);
+		this.cookieMap.put(flowmod.hashCode(), cookie);
 		return cookie;
 	}
 
@@ -215,7 +268,11 @@ public class OVXFlowTable implements FlowTable {
 				this.freeList.remove();
 				this.freeList.add(cookie);
 			}
-			return this.flowmodMap.remove(cookie);
+			OVXFlowMod ret = this.flowmodMap.remove(cookie);
+			if (ret != null) {
+				this.cookieMap.remove(ret.hashCode());
+			}
+			return ret;
 		}
 	}
 

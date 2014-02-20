@@ -19,8 +19,8 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.exceptions.ControllerStateException;
 import net.onrc.openvirtex.exceptions.HandshakeTimeoutException;
 import net.onrc.openvirtex.exceptions.SwitchStateException;
-import net.onrc.openvirtex.messages.OVXLLDP;
 import net.onrc.openvirtex.messages.OVXMessageUtil;
+import net.onrc.openvirtex.packet.OVXLLDP;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

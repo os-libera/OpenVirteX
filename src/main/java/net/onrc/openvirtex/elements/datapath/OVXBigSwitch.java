@@ -180,7 +180,7 @@ public class OVXBigSwitch extends OVXSwitch {
 					if (srcPort.getPortNumber() != dstPort.getPortNumber()
 							&& srcPort.getPhysicalPort().getParentSwitch() != dstPort
 							.getPhysicalPort().getParentSwitch()) {
-						this.getRoute(srcPort, dstPort).register();						
+						this.getRoute(srcPort, dstPort).register();
 					}
 				}
 			}
@@ -398,7 +398,7 @@ public class OVXBigSwitch extends OVXSwitch {
 						links.addAll(getRouteMap().get(p1).get(p2).getLinks());
 						links.addAll(getRouteMap().get(p2).get(p1).getLinks());
 					} catch (NullPointerException npe) {
-						log.warn("No route defined on switch {} in virtual network {} between ports {} and {}", 
+						log.debug("No route defined on switch {} in virtual network {} between ports {} and {}", 
 								this.getSwitchName(), this.getTenantId(), p1.getPortNumber(), p2.getPortNumber());
 						continue;
 					}

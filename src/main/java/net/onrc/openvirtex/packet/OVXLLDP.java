@@ -1,4 +1,4 @@
-package net.onrc.openvirtex.messages;
+package net.onrc.openvirtex.packet;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -10,9 +10,6 @@ import org.apache.commons.lang.ArrayUtils;
 import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
-import net.onrc.openvirtex.packet.Ethernet;
-import net.onrc.openvirtex.packet.LLDP;
-import net.onrc.openvirtex.packet.LLDPTLV;
 
 /**
  * LLDP packets OpenVirteX uses for discovery of physical network topology.
