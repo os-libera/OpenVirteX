@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
@@ -38,7 +39,8 @@ import com.google.gson.annotations.SerializedName;
  *            the generic type (Switch)
  */
 @SuppressWarnings("rawtypes")
-public abstract class Link<T1 extends Port, T2 extends Switch> implements Persistable {
+public abstract class Link<T1 extends Port, T2 extends Switch> 
+		implements Persistable, Component {
 
 	Logger       log     = LogManager.getLogger(Link.class.getName());
 
@@ -106,11 +108,6 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements Persis
 		final short dstPort = this.dstPort.getPortNumber();
 		return srcSwitch + "/" + srcPort + "-" + dstSwitch + "/" + dstPort;
 	}
-
-	/**
-	 * Removes mappings and dependencies related to this link.
-	 */
-	public abstract void unregister();
 
 	@Override
 	public int hashCode() {
@@ -202,5 +199,7 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements Persis
 		return dbObject;
 	}
 	
-	
+	public void register() {
+		// do nothing
+	}
 }

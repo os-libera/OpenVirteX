@@ -117,8 +117,8 @@ TimerTask {
 	 * @param port
 	 */
 	public void addPort(final PhysicalPort port) {
-		// Ignore ports that are not on this switch
-		if (port.getParentSwitch().equals(this.sw)) {
+		/* Ignore ports that are not on this switch, or already booted.*/
+		if (port.boot() && port.getParentSwitch().equals(this.sw)) {
 			synchronized (this) {
 				this.log.debug("sending init probe to port {}",
 						port.getPortNumber());
@@ -148,6 +148,7 @@ TimerTask {
 	public void removePort(final PhysicalPort port) {
 		// Ignore ports that are not on this switch
 		if (port.getParentSwitch().equals(this.sw)) {
+			port.tearDown();
 			short portnum = port.getPortNumber();
 			synchronized (this) {
 				if (this.slowPorts.contains(portnum)) {

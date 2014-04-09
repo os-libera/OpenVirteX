@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.port.Port;
@@ -49,8 +50,8 @@ import com.google.gson.annotations.SerializedName;
  *            Generic Link type
  */
 @SuppressWarnings("rawtypes")
-public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link> implements LLDPEventHandler,
-OVXSendMsg {
+public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link> 
+		implements LLDPEventHandler, OVXSendMsg, Component {
 
 
 	@SerializedName("switches")
@@ -91,7 +92,11 @@ OVXSendMsg {
 		final Port dstPort = link.getSrcPort();
 		srcPort.setEdge(false);
 		dstPort.setEdge(false);
-		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
+		HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
+		if (neighbours == null) {
+			neighbours = new HashSet<T1>();
+			this.neighborMap.put(srcSwitch, neighbours);
+		}
 		neighbours.add(dstSwitch);
 		this.neighborPortMap.put((T2) link.getSrcPort(),
 				(T2) link.getDstPort());
@@ -112,8 +117,11 @@ OVXSendMsg {
 		final Port dstPort = link.getSrcPort();
 		srcPort.setEdge(true);
 		dstPort.setEdge(true);
-		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
-		neighbours.remove(dstSwitch);
+		final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch); 
+		/* neighbour may have already been removed by symmetric call */
+		if (neighbours != null) {
+			neighbours.remove(dstSwitch);
+		}
 		this.neighborPortMap.remove(link.getSrcPort());
 		return true;
 	}

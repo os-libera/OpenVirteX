@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFPhysicalPort.OFPortState;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
@@ -32,7 +33,91 @@ import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
+/**
+ * Class representing a network host. This is a purely "Virtual" 
+ * construct. 
+ */
 public class Host implements Persistable {
+	
+	/**
+	 * The Host's FSM. Like Link states, it is affected by a 
+	 * Port's status. 
+	 */
+	enum HostState {
+		INIT {
+			protected void register(Host h) {
+				log.info("registering {}", h);
+				try {
+					Mappable map = OVXMap.getInstance();
+					map.addMAC(h.mac, h.port.getTenantId());
+					map.getVirtualNetwork(h.port.getTenantId()).addHost(h);
+					DBManager.getInstance().save(h);
+					h.state = HostState.INACTIVE;
+				} catch (NetworkMappingException e) {
+					log.warn("tenant {} was not found in global map",
+							h.port.getTenantId());
+				}
+			}
+		},
+		INACTIVE {
+			protected boolean boot(Host h) {
+				log.info("booting {}", h);
+				/* port to host goes up GIVEN port is ACTIVE. Host can attach
+				 * to an inactive port. */
+				h.state = HostState.ACTIVE;
+				h.port.setState(h.port.getState() & ~OFPortState.OFPPS_LINK_DOWN.getValue());
+				h.port.setEdge(true);
+				return true;
+			}
+			
+			protected void unregister(Host h) {
+				log.info("un-registering {}", h);
+				try {
+					Mappable map = OVXMap.getInstance();
+					map.removeMAC(h.mac);
+					map.getVirtualNetwork(h.port.getTenantId()).removeHost(h);
+					DBManager.getInstance().remove(h);
+					h.state = HostState.STOPPED;	
+				} catch (NetworkMappingException e) {
+					log.warn("tenant {} was not found in global map", 
+							h.port.getTenantId());
+				}
+			}
+		},
+		ACTIVE {
+			protected boolean teardown(Host h) {
+				log.info("inactivating {}", h);
+				/* port to host goes down GIVEN port is ACTIVE.*/
+				h.state = HostState.INACTIVE;
+				h.port.setState(h.port.getState() | OFPortState.OFPPS_LINK_DOWN.getValue());
+				return true;
+			}
+		},
+		STOPPED;
+		
+		protected void register(Host h) {	
+			log.warn("Cannot register {} while status={}", 
+					h, h.state);
+		}
+		
+		protected boolean boot(Host h) {
+			log.warn("Cannot boot {} while status={}", 
+					h, h.state);
+			return false;
+		}
+		
+		protected boolean teardown(Host h) {
+			log.warn("Cannot teardown {} while status={}", 
+					h, h.state);
+			return false;
+		}
+		
+		protected void unregister(Host h) {
+			log.warn("Cannot unregister {} while status={}", 
+					h, h.state);
+		}
+		
+	}
 	
 	static Logger log = LogManager.getLogger(Host.class.getName());
 	
@@ -41,13 +126,15 @@ public class Host implements Persistable {
 	private final Integer hostId;
 	private final MACAddress mac;
 	private final OVXPort port;
-
+	
 	private OVXIPAddress ipAddress = new OVXIPAddress(0, 0);
-
+	private HostState state;
+	
 	public Host(final MACAddress mac, final OVXPort port, final Integer hostId) {
 		this.mac = mac;
 		this.port = port;
 		this.hostId = hostId;
+		this.state = HostState.INIT;
 	}
 
 	public void setIPAddress(int ip) {
@@ -67,7 +154,7 @@ public class Host implements Persistable {
 	}
 
 	public void register() {
-		DBManager.getInstance().save(this);
+		this.state.register(this);
 	}
 
 	@Override
@@ -102,22 +189,17 @@ public class Host implements Persistable {
 	}
 
 	public void unregister() {
-		try {
-			DBManager.getInstance().remove(this);
-			this.tearDown();
-			Mappable map = this.port.getParentSwitch().getMap();
-			map.removeMAC(this.mac);
-			map.getVirtualNetwork(port.getTenantId()).removeHost(this);
-		} catch (NetworkMappingException e) {
-			//log object?
-		}
-
+		this.state.unregister(this);
 	}
 	
 	public void tearDown() {
-		this.port.tearDown();	
+		this.state.teardown(this);
 	}
 
+	public boolean boot() {
+		return this.state.boot(this);
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -170,6 +252,10 @@ public class Host implements Persistable {
 		return map;
 	}
 	
-	 
+	@Override
+	public String toString() {
+		return "Host [HWAddr:" + this.mac.toString() +
+				" Port:" + this.port.toAP() +"]";
+	}
 	
 }
