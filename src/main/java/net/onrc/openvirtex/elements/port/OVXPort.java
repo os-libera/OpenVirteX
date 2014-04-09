@@ -15,10 +15,8 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.port;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
@@ -29,6 +27,7 @@ import org.openflow.protocol.OFPortStatus;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
 
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -38,21 +37,167 @@ import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
-import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
 import net.onrc.openvirtex.messages.OVXPortStatus;
 import net.onrc.openvirtex.elements.Persistable;
 
-public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
+public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable, Component {
 
+	/**
+	 * TODO for the love of ** figure out how to handle in/active vs portdown/up
+	 */
+	enum PortState {
+		INIT {
+			protected void register(OVXPort port) {	
+				log.debug("registering port {}", port.toAP());
+				port.pstate = PortState.INACTIVE;
+				
+				port.parentSwitch.addPort(port);
+				port.physicalPort.setOVXPort(port);
+				port.parentSwitch.generateFeaturesReply();
+				DBManager.getInstance().save(port);
+			}
+		},
+		INACTIVE {
+			protected boolean boot(OVXPort port) {
+				log.debug("enabling port {}", port.toAP());
+				port.pstate = PortState.ACTIVE;
+				
+				/* send can only happen when parent switch is ACTIVE. */
+				port.sendStatusMsg(OFPortReason.OFPPR_ADD);
+				port.state = OFPortState.OFPPS_STP_FORWARD.getValue();
+				
+				port.sendStatusMsg(OFPortReason.OFPPR_MODIFY);
+				
+				/* isLink() only checks for OVXLinks */
+				if (port.isLink()) { 
+					OVXPort dst = port.portLink.egressLink.getDstPort();
+					if (port.pstate.equals(dst.pstate)) {
+						port.portLink.egressLink.boot();
+						port.portLink.ingressLink.boot();
+					}
+				}
+				/* attached hosts - is this true? */
+				Host h = port.getHost();
+				if (h != null) {
+					h.boot();
+					port.setEdge(true);
+					port.physicalPort.setEdge(true);
+				}
+				/* fetch and synch routes if any */
+				if (port.parentSwitch.hasRoute(port)) {
+					for (SwitchRoute rt :
+						((OVXBigSwitch)port.parentSwitch).getRoutebyPort(port)) {
+						rt.boot();
+					}
+				}
+				
+				return true;
+			}
+			
+			protected void unregister(OVXPort port) {
+				log.debug("unregistering port {}", port.toAP());
+				port.pstate = PortState.STOPPED;	
+				
+				DBManager.getInstance().remove(port);
+				port.sendStatusMsg(OFPortReason.OFPPR_DELETE);
+				/* Port may have links/routes/hosts associated with it, even if
+				 * it didn't start that way. Both teardown() and unregister()
+				 * elements since ACTIVE components may have been attached 
+				 * to port while INACTIVE.*/
+				if (port.isLink()){
+					port.getLink().egressLink.tearDown();
+					port.getLink().egressLink.unregister();
+					port.getLink().ingressLink.tearDown();
+					port.getLink().ingressLink.unregister();
+				}
+				Host h;
+				if ((h = port.getHost()) != null){
+					h.tearDown();
+					h.unregister();
+				}
+				if (port.parentSwitch.hasRoute(port)) {
+					for (SwitchRoute rt :
+						((OVXBigSwitch)port.parentSwitch).getRoutebyPort(port)) {
+						rt.tearDown();
+						rt.unregister();
+					}
+				}
+				
+				port.parentSwitch.removePort(port.portNumber);
+				port.physicalPort.removeOVXPort(port);
+				port.parentSwitch.generateFeaturesReply();
+				port.cleanUpFlowMods();
+			}
+		},
+		ACTIVE {
+			protected boolean teardown(OVXPort port) {
+				log.debug("disabling port {}", port.toAP());
+				port.pstate = PortState.INACTIVE;
+				
+				port.state |= OFPortState.OFPPS_LINK_DOWN.getValue();
+				port.parentSwitch.generateFeaturesReply();
+				port.sendStatusMsg(OFPortReason.OFPPR_MODIFY);
+				
+				/* tear down any links */
+				if (port.isLink()) {
+					port.portLink.egressLink.tearDown();
+					port.portLink.ingressLink.tearDown();
+				}
+				/* hosts */
+				Host h;
+				if ((h = port.getHost()) != null) {
+					h.tearDown();
+				}
+				/* routes, if any */
+				if (port.parentSwitch.hasRoute(port)) {
+					for (SwitchRoute rt :
+						((OVXBigSwitch)port.parentSwitch).getRoutebyPort(port)) {
+						// TODO remove if/when getRoutebyPort() takes backups into account. 
+						if (rt != null) {
+							rt.tearDown();
+						}
+					}
+				}
+				
+				port.cleanUpFlowMods();
+				return true;
+			}	
+		},
+		STOPPED;
+		
+		protected void register(OVXPort port) {	
+			log.warn("Cannot register port {} while status={}",
+					port.toAP(), port.pstate);
+		}
+		
+		protected boolean boot(OVXPort port) {
+			log.warn("Cannot boot port {} while status={}",
+					port.toAP(), port.pstate);
+			return false;
+		}
+		
+		protected boolean teardown(OVXPort port) {
+			log.warn("Cannot teardown port {} while status={}", 
+					port.toAP(), port.pstate);
+			return false;
+		}
+		
+		protected void unregister(OVXPort port) {
+			log.warn("Cannot unregister port {} while status={}", 
+					port.toAP(), port.pstate);
+		}
+		
+	}
+	
 	private static Logger log = LogManager.getLogger(OVXPort.class
 			.getName());
 
 	private final Integer      tenantId;
 	private final PhysicalPort physicalPort;
-	private boolean isActive; 
-
+	private PortState pstate;
+	
 	public OVXPort(final int tenantId, final PhysicalPort port,
 			final boolean isEdge, final short portNumber) throws IndexOutOfBoundException {
 		super(port);
@@ -80,7 +225,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		this.peerFeatures = features.getOVXFeatures();
 		this.state = OFPortState.OFPPS_LINK_DOWN.getValue();
 		this.config = OFPortConfig.OFPPC_NO_STP.getValue();
-		this.isActive = false;
+		this.pstate = PortState.INIT;
 	}
 
 	public OVXPort(final int tenantId, final PhysicalPort port,
@@ -102,15 +247,37 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		return this.physicalPort.getPortNumber();
 	}
 
+	/**
+	 * TODO - eventually get rid of this by "locking" sendMsg()
+	 * on port status. 
+	 * @return
+	 */
 	public boolean isActive() {
-		return isActive;
+		return this.pstate.equals(PortState.ACTIVE);
 	}
 
 	public boolean isLink() {
 		return !this.isEdge; 
 	}
-
-	public void sendStatusMsg(OFPortReason reason) {
+	
+	/**
+	 * @return A host attached to the port, or null
+	 */
+	public Host getHost() {
+		if (!this.isEdge) {
+			return null;
+		}
+		try {
+			OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(this.tenantId);
+			return vnet.getHost(this);
+		} catch (NetworkMappingException e) {
+			log.error("Port {} not associated with any tenants??", this.toAP());
+			return null;
+		}
+	}
+	
+	// TODO Check if this ISN'T malformed. 
+	private void sendStatusMsg(OFPortReason reason) {
 		OFPortStatus status = new OFPortStatus();
 		status.setDesc(this);
 		status.setReason(reason.getReasonCode());
@@ -121,13 +288,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 	 * Registers a port in the virtual parent switch and in the physical port
 	 */
 	public void register() {
-		this.parentSwitch.addPort(this);
-		this.physicalPort.setOVXPort(this);
-		if (this.parentSwitch.isActive()) {
-			sendStatusMsg(OFPortReason.OFPPR_ADD);
-			this.parentSwitch.generateFeaturesReply();
-		}
-		DBManager.getInstance().save(this);
+		this.pstate.register(this);
 	}
 
 	/**
@@ -161,56 +322,16 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		this.peerFeatures = psport.getPeerFeatures();
 	}
 
-	public void boot() {
-		if (this.isActive)
-			return;
-		this.isActive = true;
-		this.state = OFPortState.OFPPS_STP_FORWARD.getValue();
-		this.parentSwitch.generateFeaturesReply();
-		if (this.parentSwitch.isActive())
-			sendStatusMsg(OFPortReason.OFPPR_MODIFY);
-		if (this.isLink()) 
-			this.getLink().getOutLink().getDstPort().boot();
+	public boolean boot() {
+		return this.pstate.boot(this);
 	}
 
-	public void tearDown() {
-		if (!this.isActive) 
-			return;
-		this.isActive = false;
-		this.state = OFPortState.OFPPS_LINK_DOWN.getValue();
-		this.parentSwitch.generateFeaturesReply();
-		if (this.parentSwitch.isActive())
-			sendStatusMsg(OFPortReason.OFPPR_MODIFY);
-		if (this.isLink()) 
-			this.getLink().getOutLink().getDstPort().tearDown();
-
-		cleanUpFlowMods();
+	public boolean tearDown() {
+		return this.pstate.teardown(this);
 	}
 
 	public void unregister() {
-		DBManager.getInstance().remove(this);
-		OVXNetwork virtualNetwork = null;
-		try {
-			virtualNetwork = this.parentSwitch.getMap().getVirtualNetwork(this.tenantId);
-		} catch (NetworkMappingException e) {
-			log.error("Error retrieving the network with id {}. Unregister for OVXPort {}/{} not fully done!", 
-					this.getTenantId(), this.getParentSwitch().getSwitchName(), this.getPortNumber());
-			return;
-		}        
-		if (this.parentSwitch.isActive()) {
-			sendStatusMsg(OFPortReason.OFPPR_DELETE);
-		}
-		if (this.isEdge && this.isActive) {
-			Host host = virtualNetwork.getHost(this);
-			host.unregister();
-		}
-		else if (!this.isEdge){
-			this.getLink().egressLink.unregister();
-			this.getLink().ingressLink.unregister();
-		}
-		this.unMap();
-		this.parentSwitch.generateFeaturesReply();
-		cleanUpFlowMods();
+		this.pstate.unregister(this);
 	}
 
 	@Override
@@ -249,132 +370,6 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 				&& this.parentSwitch.getSwitchId() == port.getParentSwitch()
 				.getSwitchId();
 	}
-
-    
-	/**
-	 * undoes mapping for this port from the OVXSwitch and PhysicalPort. 
-	 */
-	public void unMap() {
-		this.parentSwitch.removePort(this.portNumber);
-		this.physicalPort.removeOVXPort(this);
-	}
-
-	/**
-	 * Removes a host from this port, if it's an edge
-	 * @throws NetworkMappingException 
-	 */
-	public void unMapHost() throws NetworkMappingException {
-		if (this.isEdge) {
-			OVXNetwork virtualNetwork = this.parentSwitch.getMap().getVirtualNetwork(this.tenantId);
-			Host host = virtualNetwork.getHost(this);
-			/* need this check since a port can be created but not have anything attached to it */
-			if (host != null) {
-				host.unregister();
-			}
-		}
-	}
-
-	/**
-	 * Deletes this port after removing any links mapped to this port. 
-	 * 
-	 * TODO see if this can be consolidated with unregister(), because it
-	 * shares a lot in common  
-	 * 
-	 * @param stat PortStatus triggering port deletion
-	 * @throws NetworkMappingException 
-	 * @throws LinkMappingException 
-	 */
-	public void handlePortDelete(OVXPortStatus stat) 
-			throws NetworkMappingException {
-		log.debug("deleting port {}", this.getPortNumber());
-		handlePortDisable(stat);
-		this.unregister();
-	}
-
-	/**
-	 * Checks if this port has associated OVXLink(s) and/or SwitchRoute(s)
-	 * and attempts to neatly disable them. This port and its neighbor are 
-	 * NOT deleted. Since this port is an end point, OVXLink/SwitchRoute,
-	 * there is no real backup to recover to in this case, so we don't try.  
-	 * 
-	 * @param stat PortStatus triggering link down 
-	 * @throws NetworkMappingException
-	 */
-	public void handlePortDisable(OVXPortStatus stat) 
-			throws NetworkMappingException {
-		handleLinkDisable(stat);
-		handleRouteDisable(stat);
-		this.tearDown();
-		log.info("Sending "+stat.toString()+" as OVXSwitch "+this.parentSwitch.getSwitchId());
-	}
-
-	/**
-	 * Disables a link for LINK_DOWN or DELETE PortStats. Mapping s for the 
-	 * OVXLink are removed only if the provided PortStat is of reason DELETE. 
-	 * 
-	 * @param stat
-	 * @throws NetworkMappingException
-	 */
-	public void handleLinkDisable(OVXPortStatus stat) throws NetworkMappingException {
-		OVXNetwork virtualNetwork = 
-				this.parentSwitch.getMap().getVirtualNetwork(this.tenantId); 
-		if (virtualNetwork.getHost(this) != null) {
-		} else if (this.portLink != null && this.portLink.exists()) {
-			OVXPort dst = this.portLink.egressLink.getDstPort();
-			/* unmap vLinks and this port if DELETE */
-			if (stat.isReason(OFPortReason.OFPPR_DELETE)) {
-				this.portLink.egressLink.unregister();
-				this.portLink.ingressLink.unregister();
-			}
-			/* set this and destPort as edge, and send up Modify PortStat for dest port */
-			dst.tearDown();
-		}
-
-	}
-
-	/**
-	 * Removes SwitchRoutes from a BVS's routing table if the end points 
-	 * of the route are deleted. 
-	 * @param stat
-	 */
-	public void handleRouteDisable(OVXPortStatus stat) {
-		if ((this.parentSwitch instanceof OVXBigSwitch) && 
-				(stat.isReason(OFPortReason.OFPPR_DELETE))){
-			Map<OVXPort, SwitchRoute> routes 
-			= ((OVXBigSwitch) this.parentSwitch).getRouteMap().get(this);
-			if (routes != null) {
-				Set<SwitchRoute> rtset = Collections.unmodifiableSet((Set<SwitchRoute>)routes.values());
-				for (SwitchRoute route : rtset) {
-					((OVXBigSwitch) this.parentSwitch).unregisterRoute(route.getRouteId());
-				}
-			}
-			//TODO send flowRemoved's
-		}
-	}
-
-	/**
-	 * Brings a disabled port and its links (by association up). Currently
-	 * it's only the matter of setting the endpoints to nonEdge if they used to 
-	 * be part of a link. 
-	 * 
-	 * @param stat PortStatus indicating link up
-	 * @throws NetworkMappingException 
-	 */
-	public void handlePortEnable(OVXPortStatus stat) throws NetworkMappingException {
-		log.debug("enabling port {}", this.getPortNumber());
-		OVXNetwork virtualNetwork = 
-				this.parentSwitch.getMap().getVirtualNetwork(this.tenantId); 
-		Host h = virtualNetwork.getHost(this);
-		this.boot();
-		if (h != null) {
-			h.getPort().boot();
-		} else if (this.portLink != null && this.portLink.exists()) {
-			OVXPort dst = this.portLink.egressLink.getDstPort();
-			dst.boot();
-			dst.isEdge = false;
-			this.isEdge = false;
-		}
-    }
 
 	@Override
 	public int hashCode() {
@@ -424,7 +419,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 				+ "\n- supportedFeatures: " + this.supportedFeatures
 				+ "\n- peerFeatures: " + this.peerFeatures 
 				+ "\n- isEdge: " + this.isEdge
-				+ "\n- isActive: " + this.isActive
+				+ "\n- state: " + this.pstate
 				+ "\n- linkId: " + linkId
 				+ "\n- physicalPortNumber: " + this.getPhysicalPortNumber()
 				+ "\n- physicalSwitchName: " + this.getPhysicalPort().getParentSwitch().getSwitchName();

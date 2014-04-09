@@ -75,6 +75,12 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		 * but just find which controller this should be
 		 * send to.
 		 */
+		String matchstr = match == null ? "(none)" : match.toString(); 
+		log.info(
+				"handling packet [match={}\n isEdge={}\n plink={}]",
+				matchstr, port.isEdge(), 
+				port.getLink());
+		
 		if (this.port.isEdge()) {
 			this.tenantId = this.fetchTenantId(match, map, true);
 			if (this.tenantId == null) {
@@ -88,7 +94,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 			
 			
 			/*
-			 * Checks on vSwitch and the virtual port done in swndPkt.
+			 * Checks on vSwitch and the virtual port done in sndPkt.
 			 */
 			vSwitch = this.fetchOVXSwitch(sw, vSwitch, map);
 			this.ovxPort = this.port.getOVXPort(this.tenantId, 0);
@@ -104,7 +110,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		 * Below handles packets traveling in the core.
 		 * 
 		 * 
-		 * The idea here si to rewrite the packets such that the controller is able to recognize them.
+		 * The idea here is to rewrite the packets such that the controller is able to recognize them.
 		 * 
 		 * For IPv4 packets and ARP packets this means rewriting the IP fields and possibly the mac
 		 * address fields if these packets are at the egress point of a virtual link.
@@ -123,7 +129,8 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 			if (lUtils.isValid()) {
 				OVXPort srcPort = port.getOVXPort(lUtils.getTenantId(), lUtils.getLinkId());
 				if (srcPort == null) {
-					this.log.error("Virtual Src Port Unknown: {}, port {} with this match {}; dropping packet", 
+					this.log.error("Virtual Src Port Unknown: {}, port {} with this match {}; "
+							+ "dropping packet", 
 							sw.getName(), match.getInputPort(), match);
 					return;
 				}
@@ -206,9 +213,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		this.tenantId = this.fetchTenantId(match, map, true);
 		if (this.tenantId == null) {
 			this.log.warn(
-					"PacketIn {} does not belong to any virtual network; "
+					"\n\t match={} does not belong to any virtual network; "
 							+ "dropping and installing a temporary drop rule",
-							this);
+							match);
 			this.installDropRule(sw, match);
 			return;
 		}
@@ -220,10 +227,9 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
 	private void learnHostIP(OFMatch match, Mappable map)  {
 		if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			
 			try {
 				map.getVirtualNetwork(tenantId)
-						.getHost(ovxPort).setIPAddress(match.getNetworkSource());;
+						.getHost(ovxPort).setIPAddress(match.getNetworkSource());
 			} catch (NetworkMappingException e) {
 				log.warn("Failed to lookup virtual network {}", this.tenantId);
 				return;
@@ -258,11 +264,13 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 		else if (this.port == null) {
 			log.error("The port {} doesn't belong to the physical switch {}", this.getInPort(), sw.getName());
 		}
-		else if (this.ovxPort == null || !this.ovxPort.isActive()) {
+		else if (this.ovxPort == null) {
 			log.error("Virtual port associated to physical port {} in physical switch {} for "
-					+ "virtual network {} is not defined or inactive", 
+					+ "virtual network {} is not defined", 
 					this.getInPort(), sw.getName(), this.tenantId);
-		} 
+		} else if (!this.ovxPort.isActive()) {
+			log.error("virt port associated to physical port {} in physical switch {} not active.");
+		}
 	}
 
 	private void learnAddresses(final OFMatch match, final Mappable map) {

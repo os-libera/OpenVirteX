@@ -15,9 +15,6 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath;
 
-
-
-
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
@@ -26,6 +23,11 @@ import org.apache.logging.log4j.Logger;
 
 import org.openflow.protocol.OFMessage;
 
+/**
+ * A class representing a virtual switch that maps to exactly one 
+ * PhysicalSwitch. Multiple OVXSingleSwitches may map to one PhysicalSwitch, 
+ * but only if they belong to different tenant networks.  
+ */
 public class OVXSingleSwitch extends OVXSwitch {
 	
 	
@@ -49,13 +51,10 @@ public class OVXSingleSwitch extends OVXSwitch {
 		}
 	}
 
-	
-
 	@Override
 	// TODO: this is probably not optimal
 	public void sendSouth(final OFMessage msg, final OVXPort inPort) {
 		PhysicalSwitch psw = getPhySwitch(inPort);
-		log.debug("Sending packet to sw {}: {}", psw.getName(), msg);
 		psw.sendMsg(msg, this);
 	}
 
@@ -78,5 +77,14 @@ public class OVXSingleSwitch extends OVXSwitch {
 			return inPort.getPhysicalPort().getParentSwitch();
 		}
 		return psw;
+	}
+
+	@Override
+	protected boolean bootSwitch() {
+		return super.bootDP();
+	}
+	
+	public void unregSwitch(boolean synch) {
+		super.unregisterDP(synch);
 	}
 }

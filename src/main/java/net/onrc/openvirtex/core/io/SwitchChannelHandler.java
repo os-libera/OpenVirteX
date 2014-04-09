@@ -222,7 +222,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 				h.sw.setDescriptionStats(description);
 				h.sw.setConnected(true);
 				h.sw.setChannel(h.channel);
-
+				h.sw.register();
 				for (final OFPortStatus ps : h.pendingPortStatusMsg) {
 					this.handlePortStatusMessage(h, ps);
 				}
@@ -551,7 +551,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			this.unhandledMessageReceived(h, m);
 		}
 
-		// bi default implementation. Every state needs to handle it.
+		// default implementation. Every state needs to handle it.
 		abstract void processOFPortStatus(SwitchChannelHandler h, OFPortStatus m)
 				throws IOException;
 
@@ -621,7 +621,6 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	@Override
 	public void channelConnected(final ChannelHandlerContext ctx,
 			final ChannelStateEvent e) throws Exception {
-
 		this.channel = e.getChannel();
 		this.sendHandShakeMessage(OFType.HELLO);
 		this.setState(ChannelState.WAIT_HELLO);
@@ -630,9 +629,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
 	@Override
 	public void channelDisconnected(final ChannelHandlerContext ctx,
 			final ChannelStateEvent e) throws Exception {
-
 		if (this.sw != null) {
-			this.sw.setConnected(false);
+			this.sw.tearDown();
 			this.sw.unregister();
 		}
 
@@ -717,7 +715,6 @@ public class SwitchChannelHandler extends OFChannelHandler {
 			for (final OFMessage ofm : msglist) {
 
 				try {
-
 					switch (ofm.getType()) {
 					case PACKET_IN:
 						/*
@@ -726,7 +723,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
 						 */
 						final byte[] data = ((OFPacketIn) ofm).getPacketData();
 						if (OVXLLDP.isLLDP(data)) {
-							if (this.sw != null) {
+							if ((this.sw != null) && (this.sw.isActive())) {
 								PhysicalNetwork.getInstance().handleLLDP(
 										ofm, this.sw);
 							} else {
