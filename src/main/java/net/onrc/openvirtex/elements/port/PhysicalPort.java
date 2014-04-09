@@ -23,20 +23,134 @@ import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.messages.OVXPortStatus;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPortStatus.OFPortReason;
 
 
-public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
-
+public class PhysicalPort 
+		extends Port<PhysicalSwitch, PhysicalLink> implements Component {
+	
+	/**
+	 * The FSM for a port, as relevant to OVX in terms of behavior, 
+	 * not in terms of OFPPC or OFPPS values. 
+	 *  
+	 * INACTIVE implies OFPPC_PORT_DOWN (administratively down) i.e the port 
+	 * will not receive or send traffic, and is inert but still exists.
+	 * If an INACTIVE port has a link connected to it, the link will also go down
+	 * as well; however, it will not become an edge port when it does, though
+	 * it will be OFPPS_LINK_DOWN.
+	 * 
+	 * A port's link may become INACTIVE or be STOPPED while the port is 
+	 * ACTIVE; in this case, it will become an edge port. 
+	 */
+	enum PortState {
+		INIT {
+			protected void register(PhysicalPort port) {
+				port.pstate = PortState.INACTIVE;
+				/* port will be boot()ed from SwitchDiscoveryManager */
+				if (port.parentSwitch.addPort(port)) {
+					DBManager.getInstance().addPort(port.toDPIDandPort());
+					port.log.debug("Added port {}", port.toAP());		
+				} else {
+					/* TODO register to try later on a wait list */
+					port.log.warn("Could not add port {}", port.toAP());
+				}
+			}
+		},
+		INACTIVE {
+			protected boolean boot(PhysicalPort port) {
+				port.log.debug("enabling port={}", port.toAP());
+				port.pstate = PortState.ACTIVE;
+				
+				/* Add to discovery manager*/
+				PhysicalNetwork.getInstance().addPort(port);
+				if ((port.portLink != null) && (port.portLink.exists())) {
+					/* if neighbor port is ACTIVE, boot up link */				
+					PhysicalPort dst = port.portLink.egressLink.getDstPort();
+					if (dst.pstate.equals(port.pstate)){
+						port.portLink.egressLink.boot();
+						port.portLink.ingressLink.boot();
+					}
+				}
+				return true;
+			}
+			
+			protected void unregister(PhysicalPort port) {
+				port.log.debug("removing port={}", port.toAP());
+				
+				port.pstate = PortState.STOPPED;
+				if (port.parentSwitch.removePort(port)) {
+					PhysicalNetwork pnet = PhysicalNetwork.getInstance();
+					pnet.removePort(port);
+					DBManager.getInstance().delPort(port.toDPIDandPort());	
+				}
+				
+				/* remove link - calls unregister() on links */
+				if ((port.portLink != null) && (port.portLink.exists())) {
+					PhysicalPort dst = port.portLink.egressLink.getDstPort();
+					PhysicalNetwork.getInstance().removeLink(port, dst);
+					PhysicalNetwork.getInstance().removeLink(dst, port);
+				}
+			}
+		},
+		ACTIVE {
+			protected boolean teardown(PhysicalPort port) {
+				port.log.debug("disabling port={}", port.toAP());
+				
+				port.pstate = PortState.INACTIVE;
+				PhysicalNetwork.getInstance().disablePort(port);
+				
+				if ((port.portLink != null) && (port.portLink.exists())) {
+					/* it only takes one inactive port to teardown link */
+					port.portLink.egressLink.tearDown();
+					port.portLink.ingressLink.tearDown();
+				}
+				
+				return true;
+			}	
+		},
+		STOPPED;
+		
+		protected void register(PhysicalPort port) {
+			port.log.debug("Port {} is already registered [state={}]", 
+					port.toAP(), port.pstate);
+		}
+		
+		protected boolean boot(PhysicalPort port) {
+			port.log.debug("Port {} can't be enabled from state={}", 
+					port.toAP(), port.pstate);
+			return false;
+		}
+		
+		protected boolean teardown(PhysicalPort port) {
+			port.log.debug("Port {} can't be disabled from state={}", 
+					port.toAP(), port.pstate);
+			return false;
+		}
+		
+		protected void unregister(PhysicalPort port) {
+			port.log.debug("Port {} can't be unregistered from state={}", 
+					port.toAP(), port.pstate);
+		}
+		
+	}
+	
+	Logger log = LogManager.getLogger(PhysicalPort.class.getName());
 	private final Map<Integer, HashMap<Integer, OVXPort>> ovxPortMap;
+	private PortState pstate;
 	
 	private PhysicalPort(final OFPhysicalPort port) {
 		super(port);
 		this.ovxPortMap = new HashMap<Integer, HashMap<Integer, OVXPort>>();
+		this.pstate = PortState.INIT;
 	}
 
 	/**
@@ -104,7 +218,7 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 	
 	public void removeOVXPort(OVXPort ovxPort) {
 	    if (this.ovxPortMap.containsKey(ovxPort.getTenantId())) {
-		this.ovxPortMap.remove(ovxPort.getTenantId());
+	    	this.ovxPortMap.remove(ovxPort.getTenantId());
 	    }
 	}
 
@@ -128,43 +242,72 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 	 * tenant is null all of the OVXPorts mapping to this port
 	 */
 	public List<Map<Integer, OVXPort>> getOVXPorts(Integer tenant) {
-	    	List<Map<Integer, OVXPort>> ports = new ArrayList<Map<Integer,OVXPort>>();
+	    List<Map<Integer, OVXPort>> ports = new ArrayList<Map<Integer,OVXPort>>();
 		if (tenant == null) {    	
 		    	ports.addAll(this.ovxPortMap.values());
 	    	} else {
 			ports.add(this.ovxPortMap.get(tenant));
 		}
-	    	return Collections.unmodifiableList(ports);
+	    return Collections.unmodifiableList(ports);
 	}
 	
 	/**
-	 * Changes the attribute of this port according to a MODIFY PortStatus
-	 * @param portstat
+	 * Changes the attribute of this port according to a MODIFY or DELETE PortStatus
+	 * @param portstat the PortStatus for this port 
 	 */
-	public void applyPortStatus(OVXPortStatus portstat) {
-		if (!portstat.isReason(OFPortReason.OFPPR_MODIFY)) {    	
-			return;    
+	public boolean applyPortStatus(OVXPortStatus portstat) {
+		switch(OFPortReason.fromReasonCode(portstat.getReason())) {
+			case OFPPR_MODIFY:
+				/* link/port (en/dis)abled */
+				OFPhysicalPort psport = portstat.getDesc();
+				this.portNumber = psport.getPortNumber();
+				this.hardwareAddress = psport.getHardwareAddress();
+				this.name = psport.getName();
+				this.config = psport.getConfig();    
+				this.state = psport.getState();    
+				this.currentFeatures = psport.getCurrentFeatures();
+				this.advertisedFeatures = psport.getAdvertisedFeatures();
+				this.supportedFeatures = psport.getSupportedFeatures();
+				this.peerFeatures = psport.getPeerFeatures();
+				/* disable if link or port is down */
+				if (((this.state & OFPortState.OFPPS_LINK_DOWN.getValue()) > 0) || 
+						((this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) > 0)) {
+					this.tearDown();
+				} else if (((this.state & OFPortState.OFPPS_LINK_DOWN.getValue()) == 0) || 
+				((this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) == 0)) {
+					this.boot();
+				}
+				return true;
+			default:
+				log.error("Unknown PortReason");
+				return false;
 		}
-		OFPhysicalPort psport = portstat.getDesc();
-		this.portNumber = psport.getPortNumber();
-		this.hardwareAddress = psport.getHardwareAddress();
-		this.name = psport.getName();
-		this.config = psport.getConfig();    
-		this.state = psport.getState();    
-		this.currentFeatures = psport.getCurrentFeatures();
-		this.advertisedFeatures = psport.getAdvertisedFeatures();
-		this.supportedFeatures = psport.getSupportedFeatures();
-		this.peerFeatures = psport.getPeerFeatures();
 	}
 
 	/**
 	 * unmaps this port from the global mapping and its parent switch. 
 	 */
 	public void unregister() {
-		/* remove links, if any */
-		if ((this.portLink != null) && (this.portLink.exists())) {
-			this.portLink.egressLink.unregister();
-			this.portLink.ingressLink.unregister();
-		}
+		this.pstate.unregister(this);
 	}
+
+	@Override
+	public void register() {
+		this.pstate.register(this);
+	}
+
+	@Override
+	public boolean boot() {
+		return this.pstate.boot(this);
+	}
+
+	@Override
+	public boolean tearDown() {
+		return this.pstate.teardown(this);
+	}
+	
+	public PortState getCurState(){
+		return this.pstate;
+	}
+
 }

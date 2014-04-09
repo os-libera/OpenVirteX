@@ -30,7 +30,6 @@ public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 
 	@Override
 	public void virtualize(final PhysicalSwitch sw) {
-		
 		int tid = (int) (this.cookie >> 32);
 		
 		/* a PhysSwitch can be a OVXLink */
@@ -42,6 +41,7 @@ public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 			/* If we are a Big Switch we might receive multiple same-cookie FR's
 			 * from multiple PhysicalSwitches. Only handle if the FR's newly seen */
 			if (vsw.getFlowTable().hasFlowMod(this.cookie)) {
+				log.info("# recvd FLowRemoved");
 				OVXFlowMod fm = vsw.getFlowMod(this.cookie);
 				/* send north ONLY if tenant controller wanted a FlowRemoved for the FlowMod*/
 				vsw.deleteFlowMod(this.cookie);

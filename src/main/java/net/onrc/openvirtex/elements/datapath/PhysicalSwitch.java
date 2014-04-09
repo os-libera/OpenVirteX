@@ -15,12 +15,14 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.statistics.StatisticsManager;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -44,6 +46,158 @@ import org.openflow.protocol.statistics.OFStatistics;
  * The Class PhysicalSwitch.
  */
 public class PhysicalSwitch extends Switch<PhysicalPort> {
+	
+	enum SwitchState {
+		INIT{
+			public void register(PhysicalSwitch psw) {
+				psw.log.debug("Switch connected with dpid {}, name {} and type {}",
+						psw.getSwitchId(), psw.getSwitchName(),
+						psw.desc.getHardwareDescription());
+				PhysicalNetwork.getInstance().addSwitch(psw);
+				psw.state = SwitchState.INACTIVE;
+			}
+		},
+		INACTIVE {
+			public boolean boot(PhysicalSwitch psw) {
+				psw.state = SwitchState.ACTIVE;
+				psw.fillPortMap();
+				psw.statsMan.start();
+				return true;
+			}
+			
+			public void unregister(PhysicalSwitch psw) {
+				psw.deregOVXSwitch(psw);
+				/* try to remove from network and disconnect */
+				PhysicalNetwork.getInstance().removeSwitch(psw);
+				Collection<PhysicalPort> ports = psw.portMap.values();
+				for (PhysicalPort p : ports) {
+					p.unregister();
+				}
+				psw.portMap.clear();
+				OVXMap.getInstance().removePhysicalSwitch(psw);
+				/* 
+				 * not safe to completely stop a PhySwitch unless we 
+				 * really know for sure that it's gone for good. 
+				 */
+				//psw.state = SwitchState.STOPPED;
+			}
+
+		},
+		ACTIVE {
+			public boolean teardown(PhysicalSwitch psw) {
+				psw.statsMan.stop();
+				psw.channel.disconnect();
+				psw.setConnected(false);
+				for (PhysicalPort p : psw.portMap.values()) {
+					p.tearDown();
+				}
+				psw.log.info("Switch {} disconnected ", psw.featuresReply.getDatapathId());
+				psw.state = SwitchState.INACTIVE;	
+				return true;
+			}
+			
+			public int translate(PhysicalSwitch psw, final OFMessage ofm, final OVXSwitch sw) {
+				return psw.translator.translate(ofm.getXid(), sw);
+			}
+
+			public XidPair<OVXSwitch> untranslate(PhysicalSwitch psw, final OFMessage ofm) {
+				final XidPair<OVXSwitch> pair = psw.translator.untranslate(ofm.getXid());
+				if (pair == null) {
+					return null;
+				}
+				return pair;
+			}
+			
+			public boolean addPort(PhysicalSwitch psw, PhysicalPort port) {
+				return psw.addIface(port);
+			}
+			
+			public void sendMsg(PhysicalSwitch psw, OFMessage msg, OVXSendMsg from) {
+				if ((psw.channel.isOpen()) && (psw.isConnected)) {
+					psw.log.debug("Sending packet to sw {}: {}", psw.getName(), msg);
+					psw.channel.write(Collections.singletonList(msg));
+				}
+			}
+			
+			public void handleIO(PhysicalSwitch psw, final OFMessage msg, Channel ch) {
+				try {
+					((Virtualizable) msg).virtualize(psw);
+				} catch (final ClassCastException e) {
+					psw.log.error("Received illegal message : " + msg);
+				}
+			}
+			
+			public boolean removePort(PhysicalSwitch psw, PhysicalPort port) {
+				return psw.removeIface(port);
+			}
+		},
+		STOPPED {
+			public boolean boot(PhysicalSwitch psw) {
+				psw.log.warn("Switch {} has already been halted, can't re-enable"
+						, psw.getSwitchName());
+				return false;
+			}
+		};
+		
+		public static final int INVALID_XID = -1;
+		
+		public void register(PhysicalSwitch psw) {
+			psw.log.warn("Switch {} has already been registered", psw.getSwitchName());
+		}
+		
+		public boolean boot(PhysicalSwitch psw) {
+			psw.log.warn("Switch {} has already been enabled", psw.getSwitchName());
+			return false;
+		}
+		
+		public boolean teardown(PhysicalSwitch psw) {
+			psw.log.warn("Switch {} has already been disabled", psw.getSwitchName());
+			return false;
+		}
+		
+		public boolean addPort(PhysicalSwitch psw, PhysicalPort port) {
+			psw.log.warn("Can't add port {} to Switch {} in state={}", 
+					port.getPortNumber(), psw.getSwitchName(), psw.state);
+			return false;
+		}
+		
+		public void sendMsg(PhysicalSwitch psw, OFMessage msg, OVXSendMsg from) {
+			psw.log.warn("Switch {} can't send message while state={}", 
+					psw.getSwitchName(), psw.state);	
+		}
+		
+		public void handleIO(PhysicalSwitch psw, final OFMessage msg, Channel ch) {
+			psw.log.warn("Switch {} can't handle message while state={}", 
+					psw.getSwitchName(), psw.state);
+		}
+		
+		//do we want to clear out tables of stored messages that a switch receives
+		//while inactive? being able to remove things would prevent potential aliasing.
+		
+		public int translate(PhysicalSwitch psw, final OFMessage ofm, final OVXSwitch sw) {
+			psw.log.warn("XIDTranslator for Switch {} inactive when state={}", 
+					psw.getSwitchName(), psw.state);
+			return INVALID_XID;
+		}
+
+		public XidPair<OVXSwitch> untranslate(PhysicalSwitch psw, final OFMessage ofm) {
+			psw.log.warn("XIDTranslator for Switch {} inactive when state={}", 
+					psw.getSwitchName(), psw.state);
+			return null;
+		}
+
+		public void unregister(PhysicalSwitch psw) {
+			psw.log.warn("Switch {} can't shut down from state={}"
+					, psw.state);
+		}
+
+		public boolean removePort(PhysicalSwitch psw,
+				PhysicalPort port) {
+			psw.log.warn("Can't remove port {} from Switch {} in state={}", 
+					port.getPortNumber(), psw.getSwitchName(), psw.state);
+			return false;
+		}
+	}
 
 	/** The log. */
 	Logger log = LogManager.getLogger(PhysicalSwitch.class.getName());
@@ -55,17 +209,23 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	private StatisticsManager statsMan = null;
 	private AtomicReference<Map<Short, OVXPortStatisticsReply>> portStats;
 	private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
-
+	private SwitchState state;
+	
 	/**
 	 * Unregisters OVXSwitches and associated virtual elements mapped to
-	 * this PhysicalSwitch. Called by unregister() when the PhysicalSwitch 
+	 * a PhysicalSwitch. Called by unregister() when the PhysicalSwitch 
 	 * is torn down.  
+	 * 
+	 * Bit iffy - currently, no reliable way to make sure a PhySwitch is gone for
+	 * good - that means we might destroy a VSwitch before the physical one
+	 * is really gone. 
 	 */
-	class DeregAction implements Runnable {
+	class SwitchDeregAction implements Runnable {
 
 		PhysicalSwitch psw;   
 		int tid;
-		DeregAction(PhysicalSwitch s, int t) {
+		
+		SwitchDeregAction(PhysicalSwitch s, int t) {
 			this.psw = s;
 			this.tid = t;
 		}
@@ -74,15 +234,20 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		public void run() {
 			OVXSwitch vsw;
 			try {
-				if (psw.map.hasVirtualSwitch(psw, tid)) {
-					vsw = psw.map.getVirtualSwitch(psw, tid);
+				if (map.hasVirtualSwitch(psw, tid)) {
+					vsw = map.getVirtualSwitch(psw, tid);
+					log.info("Unregistering OVXSwitch {} [mapped to {}]", 
+							vsw.getSwitchName(), psw.getSwitchName());
+					
 					/* save = don't destroy the switch, it can be saved */    
 					boolean save = false;
 					if (vsw instanceof OVXBigSwitch) {    
 						save = ((OVXBigSwitch) vsw).tryRecovery(psw);    	    
 					} 
 					if (!save) {
-						vsw.unregister();
+						psw.cleanUpTenant(tid, (short)0);
+						vsw.tearDown(true);	
+						vsw.unregSwitch(true);
 					}
 				}
 			} catch (SwitchMappingException e) {
@@ -90,7 +255,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 			}
 		}
 	}
-
+	
 	/**
 	 * Instantiates a new physical switch.
 	 * 
@@ -103,6 +268,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 		this.portStats = new AtomicReference<Map<Short, OVXPortStatisticsReply>>();
 		this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
 		this.statsMan = new StatisticsManager(this);
+		this.state = SwitchState.INIT;
 	}
 
 	/**
@@ -123,31 +289,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * net.onrc.openvirtex.elements.datapath.Switch#handleIO(org.openflow.protocol
-	 * .OFMessage)
-	 */
-	@Override
-	public void handleIO(final OFMessage msg, Channel channel) {
-		try {
-			((Virtualizable) msg).virtualize(this);
-		} catch (final ClassCastException e) {
-			this.log.error("Received illegal message : " + msg);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see net.onrc.openvirtex.elements.datapath.Switch#tearDown()
 	 */
 	@Override
-	public void tearDown() {
-		this.log.info("Switch disconnected {} ",
-				this.featuresReply.getDatapathId());
-		this.statsMan.stop();
-		this.channel.disconnect();
-		this.map.removePhysicalSwitch(this);
+	public boolean tearDown() {
+		return this.state.teardown(this);
 	}
 
 	/**
@@ -156,12 +302,23 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	protected void fillPortMap() {
 		for (final OFPhysicalPort port : this.featuresReply.getPorts()) {
 			final PhysicalPort physicalPort = new PhysicalPort(port, this, true);
-			this.addPort(physicalPort);
+			physicalPort.register();
 		}
 	}
 
 	@Override
 	public boolean addPort(final PhysicalPort port) {
+		return this.state.addPort(this, port);
+	}
+	
+	/**
+	 * Adds a port to this PhysicalSwitch ONLY if this switch 
+	 * and the PhysicalNetwork are ACTIVE. 
+	 * 
+	 * @param port the PhysicalPort to add
+	 * @return true if successfully added.
+	 */
+	private boolean addIface(final PhysicalPort port) {
 		final boolean result = super.addPort(port);
 		if (result) {
 			PhysicalNetwork.getInstance().addPort(port);
@@ -171,19 +328,18 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	
 	/**
 	 * removes the specified port from this PhysicalSwitch. This includes
-	 * removal from the switch's port map, topology discovery, and the 
-	 * PhysicalNetwork topology. 
+	 * removal from the switch's portmap, SwitchDiscoveryManager, and the 
+	 * PhysicalNetwork. 
 	 *  
 	 * @param port
 	 * @return
 	 */
 	public boolean removePort(final PhysicalPort port) {
-		final boolean result = super.removePort(port.getPortNumber());
-		if (result) {
-			PhysicalNetwork pnet = PhysicalNetwork.getInstance();
-			pnet.removePort(pnet.getDiscoveryManager(this.getSwitchId()), port);    
-		}
-		return result;
+		return this.state.removePort(this, port);
+	}
+	
+	private boolean removeIface(final PhysicalPort port) {
+		return super.removePort(port.getPortNumber());
 	}
 
 	/*
@@ -193,37 +349,26 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	 */
 	@Override
 	public boolean boot() {
-		this.log.info("Switch connected with dpid {}, name {} and type {}",
-				this.featuresReply.getDatapathId(), this.getSwitchName(),
-				this.desc.getHardwareDescription());
-		PhysicalNetwork.getInstance().addSwitch(this);
-		this.fillPortMap();
-		this.statsMan.start();
-		return true;
+		return this.state.boot(this);
 	}
 
+	@Override
+	public void register() {
+		this.state.register(this);
+	}
+	
 	/**
 	 * Removes this PhysicalSwitch from the network. Also removes associated
 	 * ports, links, and virtual elements mapped to it (OVX*Switch, etc.).
 	 */
 	@Override
 	public void unregister() {
-		/* tear down OVXSingleSwitches mapped to this PhysialSwitch */
-		for (Integer tid : this.map.listVirtualNetworks().keySet()) {   
-			DeregAction dereg = new DeregAction(this, tid);    
-			new Thread(dereg).start();
-		}
-		/* try to remove from network and disconnect */
-		PhysicalNetwork.getInstance().removeSwitch(this);
-		this.portMap.clear();
-		this.tearDown();
+		this.state.unregister(this);
 	}
 
 	@Override
 	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-		if ((this.channel.isOpen()) && (this.isConnected)) {
-			this.channel.write(Collections.singletonList(msg));
-		}
+		this.state.sendMsg(this, msg, from);	
 	}
 
 	/*
@@ -260,15 +405,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	}
 
 	public int translate(final OFMessage ofm, final OVXSwitch sw) {
-		return this.translator.translate(ofm.getXid(), sw);
+		return this.state.translate(this, ofm, sw);
 	}
 
 	public XidPair<OVXSwitch> untranslate(final OFMessage ofm) {
-		final XidPair<OVXSwitch> pair = this.translator.untranslate(ofm.getXid());
-		if (pair == null) {
-			return null;
-		}
-		return pair;
+		return this.state.untranslate(this, ofm);
 	}
 
 	public void setPortStatistics(Map<Short, OVXPortStatisticsReply> stats) {
@@ -330,6 +471,16 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	private int getTidFromCookie(long cookie) {
 		return (int) (cookie >> 32);
 	}
+	
+	/**
+	 * Unregisters OVXSwitches mapped to provided PhysicalSwitch
+	 */
+	public void deregOVXSwitch(PhysicalSwitch psw) {
+		for (Integer tid : this.map.listVirtualNetworks().keySet()) {
+			SwitchDeregAction dereg = new SwitchDeregAction(psw, tid);    
+			new Thread(dereg).start();
+		}
+	}
 
 	@Override
 	public void handleRoleIO(OFVendor msg, Channel channel) {
@@ -339,5 +490,12 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	@Override
 	public void removeChannel(Channel channel) {}
 
+	public boolean isActive() {
+		return this.state.equals(SwitchState.ACTIVE);
+	}
 
+	@Override
+	public void handleIO(OFMessage msg, Channel channel) {
+		this.state.handleIO(this, msg, channel);
+	}
 }

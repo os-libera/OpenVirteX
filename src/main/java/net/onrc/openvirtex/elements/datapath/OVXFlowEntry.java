@@ -72,6 +72,9 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry>{
 	 * At the end, either 1) one of the ints are 0x3fffff,
 	 * or 2) none are.
 	 * 
+	 * TODO: this does not short-circuit matching quite like how
+	 * some switches do, e.g. ignore L3 headers once type is masked. 
+	 * 
 	 * @param omatch The other FlowEntry to compare this one against. 
 	 * @param strict whether FlowMod from which the match came was strict or not. 
 	 * @return Union enum representing the relationship 

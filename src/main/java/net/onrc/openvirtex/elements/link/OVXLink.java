@@ -28,8 +28,10 @@ import java.util.TreeMap;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.Resilient;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -49,6 +51,7 @@ import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFPhysicalPort.OFPortState;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
@@ -61,12 +64,185 @@ import com.google.gson.annotations.SerializedName;
  * The Class OVXLink.
  * 
  */
-public class OVXLink extends Link<OVXPort, OVXSwitch> {
-	Logger                log = LogManager.getLogger(OVXLink.class.getName());
+public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
+	
+	enum LinkState {
+		INIT {
+			protected void initialize(OVXLink link) {
+				log.debug("Initializing link {}", link);
+				link.srcPort.setOutLink(link);
+				link.dstPort.setInLink(link);
+
+				try {
+					link.map.getVirtualNetwork(link.tenantId).addLink(link);
+				} catch (NetworkMappingException e) {
+					log.warn("No OVXNetwork associated with this link [{}-{}]", 
+							link.srcPort.toAP(), link.dstPort.toAP());
+				}
+			}
+			
+			protected void register(final OVXLink link, 
+					final List<PhysicalLink> physicalLinks, 
+					byte priority) {	
+				log.debug("registering link {}", link);
+				link.state = LinkState.INACTIVE;
+			
+				//register the primary link in the map
+				link.map.removeVirtualLink(link);
+				link.map.addLinks(physicalLinks, link);
+				link.backupLink(physicalLinks, priority);
+				link.srcPort.setEdge(false);
+				link.dstPort.setEdge(false);
+				DBManager.getInstance().save(link);
+			}
+		},
+		INACTIVE {
+			protected boolean boot(OVXLink link) {
+				log.debug("enabling link {}", link);
+				link.state = LinkState.ACTIVE;
+				int linkup = ~OFPortState.OFPPS_LINK_DOWN.getValue();
+				link.srcPort.setState(link.srcPort.getState() & linkup);
+				link.dstPort.setState(link.dstPort.getState() & linkup);
+				return true;
+			}
+			
+			protected void unregister(OVXLink link) {
+				log.debug("unregistering link {}", link);
+				link.state = LinkState.STOPPED;
+				
+				try {
+					setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+					link.srcPort.setEdge(true);
+					link.srcPort.setOutLink(null);
+					link.dstPort.setEdge(true);
+					link.dstPort.setInLink(null);
+					link.map.removeVirtualLink(link);
+					link.map.getVirtualNetwork(link.tenantId).removeLink(link);
+					DBManager.getInstance().remove(link);
+				} catch (NetworkMappingException e) {
+					log.warn("[unregister()]: could not remove this link from map \n{}", e.getMessage());
+				}
+			}
+			
+			public boolean tryRevert(OVXLink vlink, PhysicalLink plink) {
+				if (vlink.unusableLinks.isEmpty()) {
+					return false;
+				}
+				synchronized (vlink.unusableLinks) {
+					Iterator<Byte> it = vlink.unusableLinks.descendingKeySet().iterator();
+					while (it.hasNext()) {
+						Byte curPriority = it.next();
+						if (vlink.unusableLinks.get(curPriority).contains(plink)) {
+							log.debug("Reactivate all inactive paths for virtual link {} in virtual network {} ", vlink.linkId, vlink.tenantId);
+	
+							if (U8.f(vlink.getPriority()) >= U8.f(curPriority)) {
+								vlink.backupLinks.put(curPriority, vlink.unusableLinks.get(curPriority));
+							}
+							else {
+	
+								try {
+									List<PhysicalLink> backupLinks = new ArrayList<>(vlink.map.getPhysicalLinks(vlink));
+									Collections.copy(backupLinks, vlink.map.getPhysicalLinks(vlink));
+									vlink.backupLinks.put(vlink.getPriority(), backupLinks);
+									vlink.switchPath(vlink.unusableLinks.get(curPriority), curPriority);
+								} catch (LinkMappingException e) {
+									log.warn("No physical Links mapped to SwitchRoute? : {}", e);
+									return false;
+								}
+							}
+							it.remove();
+						}
+					}
+				}
+				vlink.backupLinks.remove(vlink.priority);
+				vlink.boot();
+				return true;
+			}
+			
+			public void generateFMs(OVXLink link, OVXFlowMod fm, Integer flowId) {
+				link.generateFlowMods(fm, flowId);
+			}
+		},
+		ACTIVE {
+			protected boolean teardown(OVXLink link) {
+				log.debug("disabling link {}", link);
+				link.state = LinkState.INACTIVE;
+				
+				setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+				return true;
+			}
+			
+			public boolean tryRecovery(OVXLink vlink, PhysicalLink plink) {
+				log.debug("Try recovery for virtual link {} [id={}, tID={}]", 
+						vlink, vlink.linkId, vlink.tenantId);
+				/* store broken link to force re-initialization when we tryRevert().*/
+				try {
+					List<PhysicalLink> unusableLinks = new ArrayList<>(vlink.map.getPhysicalLinks(vlink));
+					Collections.copy(unusableLinks, vlink.map.getPhysicalLinks(vlink));
+					vlink.unusableLinks.put(vlink.getPriority(), unusableLinks);
+				} catch (LinkMappingException e) {
+					log.warn("No physical Links mapped to OVXLink? : {}", e);
+					return false;
+				}
+				if (vlink.backupLinks.size() > 0) {
+					byte priority = vlink.backupLinks.lastKey();
+					List<PhysicalLink> phyLinks = vlink.backupLinks.get(priority);
+					vlink.switchPath(phyLinks, priority);
+					vlink.backupLinks.remove(priority);
+					return true;
+				}
+				else return false;
+			}
+			
+			public void generateFMs(OVXLink link, OVXFlowMod fm, Integer flowId) {
+				link.generateFlowMods(fm, flowId);
+			}	
+		},
+		STOPPED;
+		
+		protected void initialize(final OVXLink link) {
+			log.debug("Cannot initialize link {} while status={}", link, link.state);
+		}
+		
+		protected void register(final OVXLink link, 
+				final List<PhysicalLink> physicalLinks, 
+				byte priority) {	
+			log.debug("Cannot register link {} while status={}", link, link.state);
+		}
+		
+		protected boolean boot(OVXLink link) {
+			log.debug("Cannot boot link {} while status={}", link, link.state);
+			return false;
+		}
+		
+		protected boolean teardown(OVXLink link) {
+			log.debug("Cannot teardown link {} while status={}", link, link.state);
+			return false;
+		}
+		
+		protected void unregister(OVXLink link) {
+			log.debug("Cannot unregister link {} while status={}", link, link.state);
+		}
+		
+		private static void setEndStates(OVXLink link, int nstate) {
+			link.srcPort.setState(link.srcPort.getState() | nstate);
+			link.dstPort.setState(link.dstPort.getState() | nstate);
+		}
+
+		public boolean tryRecovery(OVXLink ovxLink, PhysicalLink plink) {
+			return false;
+		}
+
+		public boolean tryRevert(OVXLink ovxLink, PhysicalLink plink) {
+			return false;
+		}
+
+		public void generateFMs(OVXLink ovxLink, OVXFlowMod fm, Integer flowId) {}
+	}
+	
+	static Logger                log = LogManager.getLogger(OVXLink.class.getName());
 
 	/** The link id. */
-
-
 	@SerializedName("linkId")
 	@Expose
 	private final Integer linkId;
@@ -85,7 +261,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 
 	private Mappable      map = null;
 
-
+	private LinkState state;
+	
 	/**
 	 * Instantiates a new virtual link.
 	 * 
@@ -104,17 +281,20 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 			final OVXPort srcPort, final OVXPort dstPort, RoutingAlgorithms alg) 
 					throws PortMappingException {
 		super(srcPort, dstPort);
+		this.state = LinkState.INIT;
 		this.linkId = linkId;
 		this.tenantId = tenantId;
-		srcPort.setOutLink(this);
-		dstPort.setInLink(this);
 		this.backupLinks = new TreeMap<>();
 		this.unusableLinks = new TreeMap<>();
 		this.priority = (byte) 0;
 		this.alg = alg;
 		this.map = OVXMap.getInstance();
-		if (this.alg.getRoutingType() != RoutingType.NONE) 
+		/* If SPF routing, let RoutingAlgorithm initialize() link, else do it here */
+		if (this.alg.getRoutingType() != RoutingType.NONE) { 
 			this.alg.getRoutable().setLinkPath(this);
+		} else {
+			this.initialize();
+		}
 		this.srcPort.getPhysicalPort().removeOVXPort(this.srcPort);
 		this.srcPort.getPhysicalPort().setOVXPort(this.srcPort);
 	}
@@ -159,6 +339,13 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		this.alg = alg;
 	}
 
+	/**
+	 * Pre-registration method independent of this OVXLink's Physical dependencies. 
+	 * Must be called before register().  
+	 */
+	public void initialize() {
+		this.state.initialize(this);
+	}
 
 	/**
 	 * Register mapping between virtual link and physical path
@@ -167,62 +354,48 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @param priority 
 	 */
 	public void register(final List<PhysicalLink> physicalLinks, byte priority) {
+		this.state.register(this, physicalLinks, priority);
+	}
+	
+	private void backupLink(final List<PhysicalLink> physicalLinks, byte priority) {
 		if (U8.f(this.getPriority()) >= U8.f(priority)) {
 			this.backupLinks.put(priority, physicalLinks);
-			log.debug("Add virtual link {} backup path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
-					this.getLinkId(), U8.f(priority), this.getSrcSwitch()
-					.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
+			log.debug("Add virtual link {} backup path (priority {}) between ports {}-{} in virtual network {}. Path: {}",
+					this.getLinkId(), U8.f(priority), this.srcPort.toAP(), this.dstPort.toAP(), 
 					this.getTenantId(), physicalLinks);
-		}
-		else {
+		} else {
 			try {
 				this.backupLinks.put(this.getPriority(), map.getPhysicalLinks(this));
-				log.debug("Replace virtual link {} with a new primary path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
-						this.getLinkId(), U8.f(priority), this.getSrcSwitch()
-						.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
+				log.debug("Replace virtual link {} with a new primary path (priority {}) between ports {}-{} in virtual network {}. Path: {}",
+						this.getLinkId(), U8.f(priority), this.srcPort.toAP(), this.dstPort.toAP(), 
 						this.getTenantId(), physicalLinks);
-				log.info("Switch all existing flow-mods crossing the virtual link {} between ports ({}/{},{}/{}) to new path", 
-						this.getLinkId(), this.getSrcSwitch().getSwitchName(), this.getSrcPort().getPortNumber(),
-						this.getDstSwitch().getSwitchName(), this.getDstPort().getPortNumber());
+				log.info("Switch all existing flow-mods crossing the virtual link {} between ports ({}-{}) to new path", 
+						this.getLinkId(), this.getSrcPort().toAP(), this.getDstPort().toAP());
 			}
 			catch (LinkMappingException e) {
-				log.debug("Create virtual link {} primary path (priority {}) between ports {}/{} - {}/{} in virtual network {}. Path: {}",
-						this.getLinkId(), U8.f(priority), this.getSrcSwitch()
-						.getSwitchName(), this.srcPort.getPortNumber(), this.getDstSwitch().getSwitchName(), this.dstPort.getPortNumber(), 
+				log.debug("Create virtual link {} primary path (priority {}) between ports {}-{} in virtual network {}. Path: {}",
+						this.getLinkId(), U8.f(priority), this.srcPort.toAP(), this.dstPort.toAP(), 
 						this.getTenantId(), physicalLinks);
 			}
+			//TODO this should be boot()
 			this.switchPath(physicalLinks, priority);			
 		}	
-
-		DBManager.getInstance().save(this);
 	}
 
 	@Override
 	public void unregister() {
-
-		try {
-			DBManager.getInstance().remove(this);
-			this.tearDown();
-			map.removeVirtualLink(this);
-			map.getVirtualNetwork(this.tenantId).removeLink(this);
-		} catch (NetworkMappingException e) {
-			log.warn("[unregister()]: could not remove this link from map \n{}", e.getMessage());
-		}
+		this.state.unregister(this);
 	}    
 
 	/**
-	 * Disables this OVXLink by disabling its endpoints. 
+	 * Disables this OVXLink temporarily. 
 	 */
-	public void tearDown() {
-		this.srcPort.tearDown();
-		this.dstPort.tearDown();
+	public boolean tearDown() {
+		return this.state.teardown(this);
 	}
 
-	public void switchPath(List<PhysicalLink> physicalLinks, byte priority) {
-		//register the primary link in the map
-		this.srcPort.getParentSwitch().getMap().removeVirtualLink(this);
-		this.srcPort.getParentSwitch().getMap().addLinks(physicalLinks, this);
-
+	private void switchPath(List<PhysicalLink> physicalLinks, byte priority) {
+		
 		this.setPriority(priority);
 
 		Collection<OVXFlowMod> flows = this.getSrcSwitch().getFlowTable().getFlowTable();
@@ -295,14 +468,22 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	/**
 	 * Push the flow-mod to all the middle point of a virtual link
 	 * 
-	 * @param the
-	 *            original flow mod
-	 * @param the
-	 *            flow identifier
-	 * @param the
-	 *            source switch
+	 * @param the original flow mod 
+	 * @param the flow identifier
+	 * @param the source switch
 	 */
 	public void generateLinkFMs(final OVXFlowMod fm, final Integer flowId) {
+		this.state.generateFMs(this, fm, flowId);
+	}
+	
+	/**
+	 * Helper function that does FlowMod generation. 
+	 * 
+	 * @param the original flow mod
+	 * @param the flow identifier
+	 * @param the source switch
+	 */
+	private void generateFlowMods(final OVXFlowMod fm, final Integer flowId) {
 		/*
 		 * Change the packet match:
 		 * 1) change the fields where the virtual link info are stored
@@ -327,12 +508,12 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 		fm.setCommand(OFFlowMod.OFPFC_MODIFY);
 		List<PhysicalLink> plinks = new LinkedList<PhysicalLink>();
 		try {
-			final OVXLink link = this.map.getVirtualNetwork(this.tenantId)
-					.getLink(this.srcPort, this.dstPort); 
-			for (final PhysicalLink phyLink : OVXMap.getInstance().getPhysicalLinks(link))
-				plinks.add(new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort()));
-
-		} catch (LinkMappingException | NetworkMappingException e) {
+			for (final PhysicalLink phyLink : OVXMap.getInstance().getPhysicalLinks(this)) {
+				PhysicalLink nlink = new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort());
+				plinks.add(nlink);
+				nlink.boot();
+			}
+		} catch (LinkMappingException e) {
 			log.warn("No physical Links mapped to OVXLink? : {}", e);
 			return;
 		}
@@ -349,7 +530,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 						outPort.getPortNumber(), (short) 0xffff)));
 				phyLink.getSrcPort().getParentSwitch()
 				.sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
-				this.log.debug(
+				log.debug(
 						"Sending virtual link intermediate fm to sw {}: {}",
 						phyLink.getSrcPort().getParentSwitch().getSwitchName(), fm);
 
@@ -370,24 +551,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @param plink the failed PhysicalLink
 	 * @return true if successful
 	 */
-	public boolean tryRecovery(PhysicalLink plink) {
-		log.info("Try recovery for virtual link {} in virtual network {} ", this.linkId, this.tenantId);
-		if (this.backupLinks.size() > 0) {
-			try {
-				List<PhysicalLink> unusableLinks = new ArrayList<>(map.getPhysicalLinks(this));
-				Collections.copy(unusableLinks, map.getPhysicalLinks(this));
-				this.unusableLinks.put(this.getPriority(), unusableLinks);
-			} catch (LinkMappingException e) {
-				log.warn("No physical Links mapped to OVXLink? : {}", e);
-				return false;
-			}
-			byte priority = this.backupLinks.lastKey();
-			List<PhysicalLink> phyLinks = this.backupLinks.get(priority);
-			this.switchPath(phyLinks, priority);
-			this.backupLinks.remove(priority);
-			return true;
-		}
-		else return false;
+	public boolean tryRecovery(Component plink) {
+		return this.state.tryRecovery(this, (PhysicalLink)plink);
 	}
 
 	/**
@@ -395,32 +560,13 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> {
 	 * @param plink
 	 * @return true for success, false otherwise. 
 	 */
-	public boolean tryRevert(PhysicalLink plink) {
-		Iterator<Byte> it = this.unusableLinks.descendingKeySet().iterator();
-		while (it.hasNext()) {
-			Byte curPriority = it.next();
-			if (this.unusableLinks.get(curPriority).contains(plink)) {
-				log.info("Reactivate all inactive paths for virtual link {} in virtual network {} ", this.linkId, this.tenantId);
+	public boolean tryRevert(Component plink) {
+		return this.state.tryRevert(this, (PhysicalLink)plink);
+	}
 
-				if (U8.f(this.getPriority()) >= U8.f(curPriority)) {
-					this.backupLinks.put(curPriority, this.unusableLinks.get(curPriority));
-				}
-				else {
-
-					try {
-						List<PhysicalLink> backupLinks = new ArrayList<>(map.getPhysicalLinks(this));
-						Collections.copy(backupLinks,map.getPhysicalLinks(this));
-						this.backupLinks.put(this.getPriority(), backupLinks);
-						this.switchPath(this.unusableLinks.get(curPriority), curPriority);
-					} catch (LinkMappingException e) {
-						log.warn("No physical Links mapped to SwitchRoute? : {}", e);
-						return false;
-					}
-				}
-				it.remove();
-			}
-		}
-		return true;
+	@Override
+	public boolean boot() {
+		return this.state.boot(this);
 	}
 
 }

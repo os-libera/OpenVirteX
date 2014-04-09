@@ -40,7 +40,8 @@ import org.openflow.protocol.OFPhysicalPort;
  */
 
 @SuppressWarnings("rawtypes")
-public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort implements Persistable {
+public class Port<T1 extends Switch, T2 extends Link> 
+		extends OFPhysicalPort implements Persistable {
 
 	public static final String DB_KEY = "ports";
 	
@@ -109,10 +110,10 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 	 * @param link
 	 */
 	public void setInLink(T2 link) {
-	    	if (this.portLink == null) {
+	    if (this.portLink == null) {
 			this.portLink = new LinkPair<T2>();
-	    	}
-	    	this.portLink.setInLink(link);
+	    }
+	    this.portLink.setInLink(link);
 	}
 	
 	/**
@@ -120,10 +121,10 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 	 * @param link
 	 */
 	public void setOutLink(T2 link) {
-	    	if (this.portLink == null) {
+		if (this.portLink == null) {
 			this.portLink = new LinkPair<T2>();
-	    	}
-	    	this.portLink.setOutLink(link);
+		}
+		this.portLink.setOutLink(link);
 	}
 	
 	/**
@@ -163,7 +164,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 		final int prime = 307;
 		int result = 1;
 		result = prime * result + this.advertisedFeatures;
-		result = prime * result + this.config;
+		//result = prime * result + this.config;
 		result = prime * result + Arrays.hashCode(this.hardwareAddress);
 		result = prime * result
 				+ (this.name == null ? 0 : this.name.hashCode());
@@ -214,5 +215,17 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 	
 	public DPIDandPort toDPIDandPort() {
 		return new DPIDandPort(this.parentSwitch.getSwitchId(), this.portNumber);
+	}
+	
+	/**
+	 * @return String in [DPID/port] "Attachment Point" format
+	 */
+	public String toAP(){
+		return "[" + this.parentSwitch == null ? "null" : this.parentSwitch.getSwitchName()
+				+ "/" + this.getPortNumber() + "]";
+	}
+
+	public boolean isAdminDown() {
+		return (this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) != 0;
 	}
 }

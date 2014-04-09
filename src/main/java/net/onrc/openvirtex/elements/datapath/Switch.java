@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.onrc.openvirtex.core.io.OVXEventHandler;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.Port;
@@ -40,8 +41,8 @@ import org.openflow.util.HexString;
  */
 
 @SuppressWarnings("rawtypes")
-public abstract class Switch<T extends Port> implements OVXEventHandler,
-OVXSendMsg {
+public abstract class Switch<T extends Port> 
+		implements OVXEventHandler, OVXSendMsg, Component {
 
 	public static final String DB_KEY = "switches";
 
@@ -230,8 +231,9 @@ OVXSendMsg {
 
 	/**
 	 * Tear down.
+	 * @return 
 	 */
-	public abstract void tearDown();
+	public abstract boolean tearDown();
 
 	/**
 	 * Sets the description stats.
@@ -244,6 +246,13 @@ OVXSendMsg {
 
 	}
 
+	/**
+	 * Checks if is active.
+	 * 
+	 * @return true, if is active
+	 */
+	public abstract boolean isActive();
+	
 	@Override
 	public String getName() {
 		return this.switchName + ":" + this.switchId;

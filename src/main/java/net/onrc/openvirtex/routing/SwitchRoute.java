@@ -29,8 +29,10 @@ import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
+import net.onrc.openvirtex.elements.Resilient;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
@@ -63,7 +65,203 @@ import org.openflow.util.U8;
  * Route within a Big Switch abstraction
  * 
  */
-public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persistable {
+public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> 
+		implements Persistable, Resilient {
+	
+	enum RouteState {
+		INIT {
+			protected void register(
+					final SwitchRoute route, List<PhysicalLink> path) {	
+				route.log.debug("registering route {}-{}", 
+						route.srcPort.toAP(), route.dstPort.toAP());
+				route.state = RouteState.INACTIVE;
+				
+				OVXBigSwitch vsw = (OVXBigSwitch) route.sw;
+				vsw.getMap().addRoute(route, path);
+				vsw.registerRoute(route.srcPort, route.dstPort, route);
+				DBManager.getInstance().save(route);
+			}	
+		},
+		INACTIVE {
+			protected boolean boot(SwitchRoute route) {
+				route.log.debug("enabling route {}-{}", 
+						route.srcPort.toAP(), route.dstPort.toAP());
+				route.state = RouteState.ACTIVE;
+				return true;
+			}
+			
+			protected void unregister(SwitchRoute route) {
+				route.log.debug("unregistering route {}-{}", 
+						route.srcPort.toAP(), route.dstPort.toAP());
+				route.state = RouteState.STOPPED;
+				
+				OVXBigSwitch vsw = (OVXBigSwitch)route.sw;
+				vsw.getMap().removeRoute(route);
+				vsw.unregisterRoute(route.srcPort, route.dstPort, route.routeId);
+				DBManager.getInstance().remove(route);
+			}
+					
+			public boolean tryRevert(SwitchRoute route, PhysicalLink plink) {
+				if (route.unusableRoutes.isEmpty()) { 
+					return false;
+				}
+				synchronized (route.unusableRoutes) {
+					Iterator<Byte> it = route.unusableRoutes.descendingKeySet().iterator();
+					while (it.hasNext()) {
+						Byte curPriority = it.next();
+						if (route.unusableRoutes.get(curPriority).contains(plink)) {
+							route.log.info("Reactivate all inactive paths for virtual network {} big-switch {} "
+									+ "internal route {} between ports ({},{})",
+							route.getTenantId(), 
+							route.getSrcPort().getParentSwitch().getSwitchName(), route.routeId, route.getSrcPort().getPortNumber(),
+							route.getDstPort().getPortNumber());
+							if (U8.f(route.getPriority()) >= U8.f(curPriority)) {
+								route.backupRoutes.put(curPriority, route.unusableRoutes.get(curPriority));
+							}
+							try {
+								List<PhysicalLink> backupLinks = new ArrayList<>(OVXMap.getInstance().getRoute(route));
+								Collections.copy(backupLinks,OVXMap.getInstance().getRoute(route));
+								route.backupRoutes.put(route.getPriority(), backupLinks);
+								route.switchPath(route.unusableRoutes.get(curPriority), curPriority);
+							} catch (LinkMappingException e) {
+								route.log.warn("No physical Links mapped to SwitchRoute? : {}", e);
+								return false;
+							}
+							it.remove();
+						}
+					}
+				}
+				route.backupRoutes.remove(route.priority);
+				route.boot();
+				return true;
+			}
+		},
+		ACTIVE {
+			protected boolean teardown(SwitchRoute route) {
+				route.log.debug("disabling route {}-{}", 
+						route.srcPort.toAP(), route.dstPort.toAP());
+				route.state = RouteState.INACTIVE;
+				return true;
+			}
+			
+			public boolean tryRecovery(SwitchRoute route, PhysicalLink plink) {
+				route.log.debug("Try recovery for virtual network {} big-switch {} "
+						+ "internal route {} between ports ({},{})",
+						route.getTenantId(), 
+						route.getSrcPort().getParentSwitch().getSwitchName(), route.routeId, 
+						route.getSrcPort().getPortNumber(),
+						route.getDstPort().getPortNumber());
+				/* store broken route to force route re-initialization when we tryRevert().*/
+				try {
+					List<PhysicalLink> unusableLinks = 
+							new ArrayList<>(OVXMap.getInstance().getRoute(route));
+					Collections.copy(unusableLinks, OVXMap.getInstance().getRoute(route));
+					route.unusableRoutes.put(route.getPriority(), unusableLinks);
+				} catch (LinkMappingException e) {
+					route.log.warn("No physical Links mapped to SwitchRoute? : {}", e);
+					return false;
+				}
+				if (route.backupRoutes.size() > 0) {	
+					List<PhysicalLink> phyLinks = null;
+					for (Byte priority : route.backupRoutes.descendingKeySet()) {
+						//take highest priority backup avail.
+						phyLinks = route.backupRoutes.get(priority);
+						if (phyLinks.contains(plink)) {
+							route.log.warn("backup candidate contains failed PhyLink {}-{}",
+									plink.getSrcPort().toAP(), plink.getDstPort().toAP());
+						} else {
+							//switch route to new one in OVXMap, and new priority
+							route.switchPath(phyLinks, priority);
+							//remove selected backup from backups list. 
+							route.backupRoutes.remove(priority);
+							route.log.debug("Route{}:\n o backuproutes[{} routes]: \n\t{}"
+									+ "\n o unusable: \n\t{}", route.routeId,
+									route.backupRoutes.size(), route.backupRoutes, route.unusableRoutes);
+							return true;
+						}
+					}
+				}
+				return false;
+			}		
+		},
+		STOPPED {
+			
+			protected void replaceRoute(SwitchRoute route, Byte priority,
+					List<PhysicalLink> physicalLinks) {}
+			
+			protected void addBackupRoute(
+					SwitchRoute route, Byte prio, final List<PhysicalLink> phyLinks) {}
+			
+			public void generateFMs(SwitchRoute route, OVXFlowMod fm) {}
+
+		};
+		
+		protected void register(final SwitchRoute route, List<PhysicalLink> path) {	
+			route.log.debug("Cannot register route {}-{} while status={}", 
+					route.srcPort.toAP(), route.dstPort.toAP(),
+					route.state);
+		}
+		
+		protected boolean boot(SwitchRoute route) {
+			route.log.debug("Cannot boot route {}-{} while status={}", 
+					route.srcPort.toAP(), route.dstPort.toAP(),
+					route.state);
+			return false;
+		}
+		
+		protected boolean teardown(SwitchRoute route) {
+			route.log.debug("Cannot teardown route {}-{} while status={}",
+					route.srcPort.toAP(), route.dstPort.toAP(),
+					route.state);
+			return false;
+		}
+		
+		protected void unregister(SwitchRoute route) {
+			route.log.debug("Cannot unregister route {}-{} while status={}",
+					route.srcPort.toAP(), route.dstPort.toAP(),
+					route.state);
+		}
+		
+		protected void addBackupRoute(
+				SwitchRoute route, Byte prio, final List<PhysicalLink> phyLinks) {
+			route.log.debug("Added backup for {}-{}, prio={}",
+					route.srcPort.toAP(), route.dstPort.toAP(), prio);
+			route.backupRoutes.put(prio, phyLinks);
+		}
+
+		/* Called as long as route is ACTIVE or INACTIVE */
+		protected void replaceRoute(SwitchRoute route, Byte priority,
+				List<PhysicalLink> physicalLinks) {
+			//Save the current path in the backup Map
+			try {
+				route.addBackupRoute(route.priority, OVXMap.getInstance().getRoute(route));
+			} catch (LinkMappingException e) {
+				route.log.error("Unable to retrieve the list of physical link from the OVXMap "
+						+ "associated to the big-switch route {}" ,
+						route.routeId);
+			}
+			route.switchPath(physicalLinks, priority);	
+		}
+
+		public boolean tryRecovery(SwitchRoute route, PhysicalLink plink) {
+			route.log.debug("{}-{} Not active - call to tryRecovery failed.",
+					route.getSrcPort().toAP(), route.getDstPort().toAP());
+			return false;
+		}
+		
+		public boolean tryRevert(SwitchRoute route, PhysicalLink plink) {
+			route.log.debug("{}-{} Not active - call to tryRevert failed.",
+					route.getSrcPort().toAP(), route.getDstPort().toAP());
+			return false;
+		}
+		
+
+		public void generateFMs(SwitchRoute route, OVXFlowMod fm) {
+			route.generateFlowMods(fm);
+		}
+		
+	}
+	
 	Logger       log = LogManager.getLogger(SwitchRoute.class.getName());
 
 	public static final String DB_KEY = "routes";
@@ -84,7 +282,10 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 
 	/** A reference to the PhysicalPort at the start of the path */
 	PhysicalPort outPort;
-
+	
+	/** The state of the route */
+	RouteState state;
+	
 	public SwitchRoute(final OVXSwitch sw, final OVXPort in, final OVXPort out,
 			final int routeid, final byte priority) {
 		super(in, out);
@@ -93,6 +294,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 		this.priority = priority;
 		this.backupRoutes = new TreeMap<>();
 		this.unusableRoutes = new TreeMap<>();
+		this.state = RouteState.INIT;
 	}
 
 	/**
@@ -163,28 +365,20 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	}
 
 	public void addBackupRoute(Byte priority, final List<PhysicalLink> physicalLinks) {
-		this.backupRoutes.put(priority, physicalLinks);
+		this.state.addBackupRoute(this, priority, physicalLinks);
 	}
 
 	public void replacePrimaryRoute(Byte priority, final List<PhysicalLink> physicalLinks) {
-		//Save the current path in the backup Map
-		try {
-			this.addBackupRoute(this.getPriority(), OVXMap.getInstance().getRoute(this));
-		} catch (LinkMappingException e) {
-			log.error("Unable to retrieve the list of physical link from the OVXMap associated to the big-switch route {}" , 
-					this.getRouteId());
-		}
-
-		this.switchPath(physicalLinks, priority);
+		this.state.replaceRoute(this, priority, physicalLinks);
 	}
 
-	@Override
+	/*@Override
 	public String toString() {
-		return "routeId: " + this.routeId + " dpid: " + this.getSwitchId() + " inPort: "
-				+ this.srcPort == null ? "" : this.srcPort.toString()
-						+ " outPort: " + this.dstPort == null ? "" : this.dstPort
-								.toString();
-	}
+		return "routeId: " + this.routeId + 
+				" tenantId/dpid: " + this.getTenantId() + "/" + this.getSwitchId() + 
+				" inPort: " + this.srcPort == null ? "" : this.srcPort.toString() + 
+				" outPort: " + this.dstPort == null ? "" : this.dstPort.toString();
+	}*/
 
 	@Override
 	/**
@@ -202,15 +396,16 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 		return this.dstPort.getPhysicalPort().getParentSwitch();
 	}
 
-	public void switchPath(List<PhysicalLink> physicalLinks, byte priority) {
+	private void switchPath(List<PhysicalLink> physicalLinks, byte priority) {
 		//Register the new path as primary path in the OVXMap
+		//rip out route (i.e. current PhyLinks) from OVXMap, and add it in with chosen backup.
 		OVXMap.getInstance().removeRoute(this);
 		OVXMap.getInstance().addRoute(this, physicalLinks);
 		//Set the route priority to the new one 
 		this.setPriority(priority);
-
+		//track number of flowmods swapped. 
 		int counter = 0;
-		log.info("Virtual network {}: switching all existing flow-mods crossing the big-switch {} route {} between ports ({},{}) to the new path: {}", 
+		log.debug("Virtual network {}: switching all existing flow-mods crossing the big-switch {} route {} between ports ({},{}) to the new path: {}", 
 				this.getTenantId(), this.getSrcPort().getParentSwitch().getSwitchName(), this.getRouteId(), this.getSrcPort().getPortNumber(),
 				this.getDstPort().getPortNumber(), physicalLinks);
 		Collection<OVXFlowMod> flows = this.getSrcPort().getParentSwitch().getFlowTable().getFlowTable();
@@ -237,6 +432,11 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	}
 
 	public void generateRouteFMs(final OVXFlowMod fm) {
+		this.state.generateFMs(this, fm);
+	}
+	
+	private void generateFlowMods(final OVXFlowMod fm) {
+		log.info("generateFlowMods() for SR-{}-{}", this.getSrcPort().toAP(), this.getDstPort().toAP());
 		// This list includes all the actions that have to be applied at the end of the route
 		final LinkedList<OFAction> outActions = new LinkedList<OFAction>();
 		/*
@@ -250,6 +450,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 		 * 		- generate the route FMs
 		 */
 		if (this.getDstPort().isEdge()) {
+			log.info("DstPort {} is edge", this.getDstPort().toAP());
 			outActions.addAll(IPMapper.prependUnRewriteActions(fm.getMatch()));
 		} else {
 			final OVXLink link = this.getDstPort().getLink().getOutLink();
@@ -289,8 +490,11 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 				.getParentSwitch()).getRoute(this.getSrcPort(), this.getDstPort());
 		LinkedList<PhysicalLink> reverseLinks = new LinkedList<>();
 		try {
-			for (final PhysicalLink phyLink : OVXMap.getInstance().getRoute(route))
-				reverseLinks.add(new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort()));
+			for (final PhysicalLink phyLink : OVXMap.getInstance().getRoute(route)) {
+				PhysicalLink nlink = new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort());
+				reverseLinks.add(nlink);//new PhysicalLink(phyLink.getDstPort(), phyLink.getSrcPort()));
+				nlink.boot();
+			}
 		} catch (LinkMappingException e) {
 			log.warn("Could not fetch route : {}", e);
 			return;
@@ -306,7 +510,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 				fm.setActions(Arrays.asList((OFAction) new OFActionOutput(
 						outPort.getPortNumber(), (short) 0xffff)));
 				phyLink.getSrcPort().getParentSwitch().sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
-				this.log.debug(
+				this.log.info(
 						"Sending big-switch route intermediate fm to sw {}: {}",
 						phyLink.getSrcPort().getParentSwitch().getName(), fm);
 
@@ -326,7 +530,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 				}
 				fm.setLengthU(OFFlowMod.MINIMUM_LENGTH + actLenght);
 				phyLink.getSrcPort().getParentSwitch().sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
-				this.log.debug("Sending big-switch route last fm to sw {}: {}",
+				this.log.info("Sending big-switch route last fm to sw {}: {}",
 						phyLink.getSrcPort().getParentSwitch().getName(), fm);
 			}
 			outPort = phyLink.getDstPort();
@@ -343,6 +547,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 		fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 		final List<OFAction> approvedActions = new LinkedList<OFAction>();
 		if (this.getSrcPort().isLink()) {
+			log.info("**SrcPort has link");
 			OVXPort dstPort = null;
 			try {
 				dstPort = OVXMap.getInstance().getVirtualNetwork(this.getTenantId()).getNeighborPort(this.getSrcPort());
@@ -377,6 +582,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 			}
 		}
 		else {
+			log.info("**SrcPort is not link");
 			approvedActions.addAll(IPMapper.prependRewriteActions(this.getTenantId(), fm.getMatch()));
 		}
 
@@ -396,16 +602,22 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 		}
 		fm.setLengthU(OFFlowMod.MINIMUM_LENGTH + actLenght);
 		this.getSrcSwitch().sendMsg(fm, this.getSrcSwitch());
-		this.log.debug("Sending big-switch route first fm to sw {}: {}", this.getSrcSwitch().getName(), fm);
+		this.log.info("Sending big-switch route first fm to sw {}: {}", this.getSrcSwitch().getName(), fm);
 	}
 
-	public void register() {
-		DBManager.getInstance().save(this);
+	/**
+	 * Register SwitchRoute
+	 * @param fpath forward list of PhysicalLinks
+	 * @param rpath reverse list of PhysicalLinks
+	 * @param priority of this route. 
+	 */
+	public void register(List<PhysicalLink> path, byte priority) {
+		this.state.register(this, path);
 	}
 
 	@Override
 	public void unregister() {
-		this.srcPort.getParentSwitch().getMap().removeRoute(this);
+		this.state.unregister(this);
 	}
 
 	@Override
@@ -458,27 +670,8 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	 * @param plink the failed PhysicalLink
 	 * @return true if successful
 	 */
-	public boolean tryRecovery(PhysicalLink plink) {
-		log.info("Try recovery for virtual network {} big-switch {} internal route {} between ports ({},{}) in virtual network {} ",
-				this.getTenantId(), 
-				this.getSrcPort().getParentSwitch().getSwitchName(), this.routeId, this.getSrcPort().getPortNumber(),
-				this.getDstPort().getPortNumber(), this.getTenantId());
-		if (this.backupRoutes.size() > 0) {
-			try {
-				List<PhysicalLink> unusableLinks = new ArrayList<>(OVXMap.getInstance().getRoute(this));
-				Collections.copy(unusableLinks, OVXMap.getInstance().getRoute(this));
-				this.unusableRoutes.put(this.getPriority(), unusableLinks);
-			} catch (LinkMappingException e) {
-				log.warn("No physical Links mapped to SwitchRoute? : {}", e);
-				return false;
-			}
-			byte priority = this.backupRoutes.lastKey();
-			List<PhysicalLink> phyLinks = this.backupRoutes.get(priority);
-			this.switchPath(phyLinks, priority);
-			this.backupRoutes.remove(priority);
-			return true;
-		}
-		else return false;
+	public boolean tryRecovery(Component plink) {
+		return this.state.tryRecovery(this, (PhysicalLink)plink);
 	}
 	
 	public HashSet<PhysicalLink> getLinks() {
@@ -501,35 +694,18 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements Persis
 	 * @param plink
 	 * @return true for success, false otherwise. 
 	 */
-	public boolean tryRevert(PhysicalLink plink) {
-		Iterator<Byte> it = this.unusableRoutes.descendingKeySet().iterator();
-		while (it.hasNext()) {
-			Byte curPriority = it.next();
-			if (this.unusableRoutes.get(curPriority).contains(plink)) {
-				log.info("Reactivate all inactive paths for virtual network {} big-switch {} internal route {} between ports ({},{}) in virtual network {} ",
-						this.getTenantId(), 
-						this.getSrcPort().getParentSwitch().getSwitchName(), this.routeId, this.getSrcPort().getPortNumber(),
-						this.getDstPort().getPortNumber(), this.getTenantId());
-				
-				if (U8.f(this.getPriority()) >= U8.f(curPriority)) {
-					this.backupRoutes.put(curPriority, this.unusableRoutes.get(curPriority));
-				}
-				else {
-					
-					try {
-						List<PhysicalLink> backupLinks = new ArrayList<>(OVXMap.getInstance().getRoute(this));
-						Collections.copy(backupLinks,OVXMap.getInstance().getRoute(this));
-						this.backupRoutes.put(this.getPriority(), backupLinks);
-						this.switchPath(this.unusableRoutes.get(curPriority), curPriority);
-					} catch (LinkMappingException e) {
-						log.warn("No physical Links mapped to SwitchRoute? : {}", e);
-						return false;
-					}
-				}
-				it.remove();
-			}
-		}
-		return true;
+	public boolean tryRevert(Component plink) {
+		return this.state.tryRevert(this, (PhysicalLink)plink);
+	}
+
+	@Override
+	public boolean boot() {
+		return this.state.boot(this);
+	}
+
+	@Override
+	public boolean tearDown() {
+		return this.state.teardown(this);
 	}
 
 }
