@@ -369,6 +369,7 @@ public class ShortestPath implements Routable {
 			path.clear();
 			revpath.clear();
 			path = computePath(srcPort, dstPort);
+			log.info("computed path={}", path);
 			if (checkPath(path) == false) {
 				if (i == 0) {
 					log.warn("Unable to compute the PRIMARY path for for big-switch {} "
@@ -436,7 +437,9 @@ public class ShortestPath implements Routable {
 				ovxLink.getDstPort().getPhysicalPort()) != null) {
 			path.add(PhysicalNetwork.getInstance().getLink(ovxLink.getSrcPort().getPhysicalPort(), 
 					ovxLink.getDstPort().getPhysicalPort()));
+			ovxLink.initialize();
 			ovxLink.register(path, (byte) U8.f(MAXPRIORITY) );
+			ovxLink.boot();
 			log.debug("Virtual link {} embeds to a single-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}
@@ -445,7 +448,9 @@ public class ShortestPath implements Routable {
 					srcPathPort));
 			path.add(PhysicalNetwork.getInstance().getLink(dstPathPort, 
 					ovxLink.getDstPort().getPhysicalPort()));
+			ovxLink.initialize();
 			ovxLink.register(path, (byte) U8.f(MAXPRIORITY) );
+			ovxLink.boot();
 			log.debug("Virtual link {} embeds to a dual-hop physical link {}. No automatic backups are possible.", 
 					ovxLink.getLinkId(), path);
 		}
@@ -484,7 +489,9 @@ public class ShortestPath implements Routable {
 							srcPathPort));
 					path.add(PhysicalNetwork.getInstance().getLink(dstPathPort, 
 							ovxLink.getDstPort().getPhysicalPort()));
+					ovxLink.initialize();
 					ovxLink.register(path, (byte) (U8.f(MAXPRIORITY) - i));
+					ovxLink.boot();
 				}
 			}
 		}

@@ -15,6 +15,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,10 +28,12 @@ import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 
+import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.protocol.OFPhysicalPort;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -73,12 +76,11 @@ public class PassingAPITest extends AbstractAPICalls {
 	@SuppressWarnings("unchecked")
 	public void testCreateSingleSwitch() {
 		final PhysicalSwitch sw = new PhysicalSwitch(1);
-		PhysicalNetwork.getInstance().addSwitch(sw);
-
+		
+		configNW(Collections.singletonList(sw));
 		super.createNetwork();
 		final JSONRPC2Response resp = super.createSwitch(1,
 				Collections.singletonList(1));
-
 		Assert.assertNull("CreateOVXSwitch should not return null",
 				resp.getError());
 
@@ -95,22 +97,33 @@ public class PassingAPITest extends AbstractAPICalls {
 	 */
 	@SuppressWarnings("unchecked")
 	public void testCreateBigSwitch() {
-		final PhysicalSwitch sw1 = new PhysicalSwitch(1);
-		final PhysicalSwitch sw2 = new PhysicalSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
-				false);
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw2,
-				false);
+		//final PhysicalSwitch sw1 = new PhysicalSwitch(1);
+		//final PhysicalSwitch sw2 = new PhysicalSwitch(2);
+		final TestSwitch sw1 = new TestSwitch(1);
+		final TestSwitch sw2 = new TestSwitch(2);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		configSW(Collections.singletonList((OFPhysicalPort)p1), sw1);
+		
+		final PhysicalPort p2 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		configSW(Collections.singletonList((OFPhysicalPort)p2), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p2);
 		PhysicalNetwork.getInstance().createLink(p2, p1);
+		for (PhysicalLink l : PhysicalNetwork.getInstance().getLinks()) {
+			l.register();
+			l.boot();
+		}
+		
 		super.createNetwork();
 		final List<Integer> l = new LinkedList<>();
 		l.add(1);
 		l.add(2);
 		final JSONRPC2Response resp = super.createSwitch(1, l);
-
+		
 		Assert.assertNull("CreateOVXSwitch should not return null",
 				resp.getError());
 
@@ -125,18 +138,17 @@ public class PassingAPITest extends AbstractAPICalls {
 	@SuppressWarnings("unchecked")
 	public void testCreatePort() {
 		final TestSwitch sw = new TestSwitch(1);
-		PhysicalNetwork.getInstance().addSwitch(sw);
-		final PhysicalPort port = new PhysicalPort(new OFPhysicalPort(), sw,
-				true);
-		port.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		port.setPortNumber((short)1);
-		sw.addPort(port);
-
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw)));
+		
+		final PhysicalPort port = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw);
+		configSW(Collections.singletonList((OFPhysicalPort)port), sw);
+		
 		super.createNetwork();
 		super.createSwitch(1, Collections.singletonList(1));
 
 		final JSONRPC2Response resp = super.createPort(1, (long) 1, (short) 1);
-
+		
 		Assert.assertNull("CreateOVXPort should not return null",
 				resp.getError());
 
@@ -151,13 +163,12 @@ public class PassingAPITest extends AbstractAPICalls {
 	@SuppressWarnings("unchecked")
 	public void testConnectHost() {
 		final TestSwitch sw1 = new TestSwitch(1);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		final PhysicalPort port = new PhysicalPort(new OFPhysicalPort(), sw1,
-				true);
-		port.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		port.setPortNumber((short)1);
-		sw1.addPort(port);
-
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1)));
+		
+		final PhysicalPort port = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		configSW(Collections.singletonList((OFPhysicalPort)port), sw1);
+		
 		super.createNetwork();
 		super.createSwitch(1, Collections.singletonList(1));
 		super.createPort(1, (long) 1, (short) 1);
@@ -186,19 +197,17 @@ public class PassingAPITest extends AbstractAPICalls {
 		super.createNetwork();
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
-				false);
-		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		p1.setPortNumber((short)1);
-		sw1.addPort(p1);
-
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw2,
-				false);
-		p2.setHardwareAddress(new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 });
-		p2.setPortNumber((short)1);
-		sw2.addPort(p2);
+		
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		configSW(Collections.singletonList((OFPhysicalPort)p1), sw1);
+		
+		final PhysicalPort p2 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		configSW(Collections.singletonList((OFPhysicalPort)p2), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p2);
 		PhysicalNetwork.getInstance().createLink(p2, p1);
 
@@ -248,24 +257,21 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
-		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		p1.setPortNumber((short)1);
-		sw1.addPort(p1);
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1, true);
-		p2.setHardwareAddress(new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c });
-		p2.setPortNumber((short)2);
-		sw1.addPort(p2);
-		final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2, false);
-		p3.setHardwareAddress(new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 });
-		p3.setPortNumber((short)1);
-		sw2.addPort(p3);
-		final PhysicalPort p4 = new PhysicalPort(new OFPhysicalPort(), sw2, true);
-		p4.setHardwareAddress(new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c });
-		p4.setPortNumber((short)2);
-		sw2.addPort(p4);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		final PhysicalPort p2 =  configPort(
+				new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c }, (short)2, true, sw1);
+		
+		final PhysicalPort p3 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		final PhysicalPort p4 = configPort(
+				new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c }, (short)2, true, sw2);
+		
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p1, p2)), sw1);
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p3, p4)), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p3);
 		PhysicalNetwork.getInstance().createLink(p3, p1);
 
@@ -300,24 +306,21 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
-		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		p1.setPortNumber((short)1);
-		sw1.addPort(p1);
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1, true);
-		p2.setHardwareAddress(new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c });
-		p2.setPortNumber((short)2);
-		sw1.addPort(p2);
-		final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2, false);
-		p3.setHardwareAddress(new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 });
-		p3.setPortNumber((short)1);
-		sw2.addPort(p3);
-		final PhysicalPort p4 = new PhysicalPort(new OFPhysicalPort(), sw2, true);
-		p4.setHardwareAddress(new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c });
-		p4.setPortNumber((short)2);
-		sw2.addPort(p4);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		final PhysicalPort p2 = configPort(
+				new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c }, (short)2, true, sw1);
+		
+		final PhysicalPort p3 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		final PhysicalPort p4 = configPort(
+				new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c }, (short)2, true, sw2);
+		
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p1, p2)), sw1);
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p3, p4)), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p3);
 		PhysicalNetwork.getInstance().createLink(p3, p1);
 
@@ -345,8 +348,8 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
 		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
 		p1.setPortNumber((short)1);
@@ -390,24 +393,21 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
-		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		p1.setPortNumber((short)1);
-		sw1.addPort(p1);
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1, true);
-		p2.setHardwareAddress(new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c });
-		p2.setPortNumber((short)2);
-		sw1.addPort(p2);
-		final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2, false);
-		p3.setHardwareAddress(new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 });
-		p3.setPortNumber((short)1);
-		sw2.addPort(p3);
-		final PhysicalPort p4 = new PhysicalPort(new OFPhysicalPort(), sw2, true);
-		p4.setHardwareAddress(new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c });
-		p4.setPortNumber((short)2);
-		sw2.addPort(p4);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		final PhysicalPort p2 =  configPort(
+				new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c }, (short)2, true, sw1);
+		
+		final PhysicalPort p3 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		final PhysicalPort p4 = configPort(
+				new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c }, (short)2, true, sw2);
+		
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p1, p2)), sw1);
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p3, p4)), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p3);
 		PhysicalNetwork.getInstance().createLink(p3, p1);
 
@@ -435,24 +435,21 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
-		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		p1.setPortNumber((short)1);
-		sw1.addPort(p1);
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1, true);
-		p2.setHardwareAddress(new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c });
-		p2.setPortNumber((short)2);
-		sw1.addPort(p2);
-		final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2, false);
-		p3.setHardwareAddress(new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 });
-		p3.setPortNumber((short)1);
-		sw2.addPort(p3);
-		final PhysicalPort p4 = new PhysicalPort(new OFPhysicalPort(), sw2, true);
-		p4.setHardwareAddress(new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c });
-		p4.setPortNumber((short)2);
-		sw2.addPort(p4);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		final PhysicalPort p2 =  configPort(
+				new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c }, (short)2, true, sw1);
+		
+		final PhysicalPort p3 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		final PhysicalPort p4 = configPort(
+				new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c }, (short)2, true, sw2);
+		
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p1, p2)), sw1);
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p3, p4)), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p3);
 		PhysicalNetwork.getInstance().createLink(p3, p1);
 
@@ -481,24 +478,21 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
-		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		p1.setPortNumber((short)1);
-		sw1.addPort(p1);
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1, true);
-		p2.setHardwareAddress(new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c });
-		p2.setPortNumber((short)2);
-		sw1.addPort(p2);
-		final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2, false);
-		p3.setHardwareAddress(new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 });
-		p3.setPortNumber((short)1);
-		sw2.addPort(p3);
-		final PhysicalPort p4 = new PhysicalPort(new OFPhysicalPort(), sw2, true);
-		p4.setHardwareAddress(new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c });
-		p4.setPortNumber((short)2);
-		sw2.addPort(p4);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		final PhysicalPort p2 =  configPort(
+				new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c }, (short)2, true, sw1);
+		
+		final PhysicalPort p3 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		final PhysicalPort p4 = configPort(
+				new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c }, (short)2, true, sw2);
+		
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p1, p2)), sw1);
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p3, p4)), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p3);
 		PhysicalNetwork.getInstance().createLink(p3, p1);
 
@@ -530,24 +524,21 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
-		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
-		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
-		p1.setPortNumber((short)1);
-		sw1.addPort(p1);
-		final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1, true);
-		p2.setHardwareAddress(new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c });
-		p2.setPortNumber((short)2);
-		sw1.addPort(p2);
-		final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2, false);
-		p3.setHardwareAddress(new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 });
-		p3.setPortNumber((short)1);
-		sw2.addPort(p3);
-		final PhysicalPort p4 = new PhysicalPort(new OFPhysicalPort(), sw2, true);
-		p4.setHardwareAddress(new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c });
-		p4.setPortNumber((short)2);
-		sw2.addPort(p4);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
+		final PhysicalPort p1 = configPort(
+				new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 }, (short)1, false, sw1);
+		final PhysicalPort p2 =  configPort(
+				new byte[] { 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c }, (short)2, true, sw1);
+		
+		final PhysicalPort p3 = configPort(
+				new byte[] { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16 }, (short)1, false, sw2);
+		final PhysicalPort p4 = configPort(
+				new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c }, (short)2, true, sw2);
+		
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p1, p2)), sw1);
+		configSW(new LinkedList<OFPhysicalPort>(Arrays.asList(p3, p4)), sw2);
+		
 		PhysicalNetwork.getInstance().createLink(p1, p3);
 		PhysicalNetwork.getInstance().createLink(p3, p1);
 
@@ -579,8 +570,8 @@ public class PassingAPITest extends AbstractAPICalls {
 		// set the physical network (linear 2 sws with 1 host x sw)
 		final TestSwitch sw1 = new TestSwitch(1);
 		final TestSwitch sw2 = new TestSwitch(2);
-		PhysicalNetwork.getInstance().addSwitch(sw1);
-		PhysicalNetwork.getInstance().addSwitch(sw2);
+		configNW(new LinkedList<PhysicalSwitch>(Arrays.asList(sw1, sw2)));
+		
 		final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1, false);
 		p1.setHardwareAddress(new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
 		p1.setPortNumber((short)1);
@@ -597,9 +588,12 @@ public class PassingAPITest extends AbstractAPICalls {
 		p4.setHardwareAddress(new byte[] { 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c });
 		p4.setPortNumber((short)2);
 		sw2.addPort(p4);
+		sw1.boot();
+		sw2.boot();
+		
 		PhysicalNetwork.getInstance().createLink(p1, p3);
 		PhysicalNetwork.getInstance().createLink(p3, p1);
-
+		
 		//set the virtual network (copy of the phy network)
 		super.createNetwork();
 		super.createSwitch(1, Collections.singletonList(1));
@@ -627,10 +621,41 @@ public class PassingAPITest extends AbstractAPICalls {
 	}
 
 	@Override
+	protected void setUp() throws Exception {
+		PhysicalNetwork.getInstance().register();
+		PhysicalNetwork.getInstance().boot();
+	}
+	
+	@Override
 	protected void tearDown() throws Exception {
 		OVXMap.reset();
-		PhysicalNetwork.reset();
+		PhysicalNetwork.getInstance().tearDown();
+		PhysicalNetwork.getInstance().unregister();
 		OVXNetwork.reset();
+	}
+	
+	private void configNW(List<PhysicalSwitch> switches) {
+		for (PhysicalSwitch dp : switches) {
+			PhysicalNetwork.getInstance().addSwitch(dp);
+		}
+	}
+	
+	private PhysicalPort configPort(byte[] hwaddr, short portnum, boolean flag, PhysicalSwitch sw) {
+		final PhysicalPort p = new PhysicalPort(new OFPhysicalPort(), sw, flag);
+		p.setHardwareAddress(hwaddr);
+		p.setPortNumber(portnum);
+		p.register();
+		p.boot();
+		
+		return p;
+	}
+	
+	private void configSW(List<OFPhysicalPort> ports, PhysicalSwitch sw) {
+		OFFeaturesReply fr = new OFFeaturesReply();
+		fr.setPorts(ports);
+		sw.setFeaturesReply(fr);
+		sw.register();
+		sw.boot();
 	}
 
 }

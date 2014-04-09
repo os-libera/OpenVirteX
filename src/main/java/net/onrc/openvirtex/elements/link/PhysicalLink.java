@@ -18,6 +18,10 @@ package net.onrc.openvirtex.elements.link;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFPhysicalPort.OFPortState;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -32,14 +36,104 @@ import net.onrc.openvirtex.elements.port.PhysicalPort;
  */
 public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements Persistable, Comparable<PhysicalLink> {
 
-	
+	/**
+	 * The FSM describing PhysicalLink state. A Link's state is 
+	 * dependent on the state of its ports:
+	 * 
+	 * <ul>
+	 *   <li> Both ports ACTIVE: Link is ACTIVE </li>
+	 *   <li> One or both ports INACTIVE: Link is INACTIVE </li>
+	 *   <li> One or both ports STOPPED: Link is STOPPED </li>
+	 * </ul>
+	 * 
+	 * This behavior is more clear from the PhysicalPort FSM, which 
+	 * drives this one. The Link's state primarily affects the 
+	 * OFPortState of one end if the other end causes the Link's 
+	 * state to change.   
+	 */
+	enum LinkState {
+		INIT {
+			protected void register(PhysicalLink link) {
+				log.debug("registering link {}-{}", 
+						link.srcPort.toAP(), link.dstPort.toAP());
+				link.srcPort.setOutLink(link);
+				link.dstPort.setInLink(link);
+				link.state = LinkState.INACTIVE;
+			}
+		},
+		INACTIVE {
+			protected boolean boot(PhysicalLink link) {
+				log.info("enabling link {}-{}", 
+						link.srcPort.toAP(), link.dstPort.toAP());
+				/* set state to link_up */
+				int linkup = ~OFPortState.OFPPS_LINK_DOWN.getValue();
+				link.srcPort.setState(link.srcPort.getState() & linkup);
+				link.srcPort.setEdge(false);
+				link.dstPort.setState(link.dstPort.getState() & linkup);
+				link.dstPort.setEdge(false);
+				link.state = LinkState.ACTIVE;
+				return true;
+			}	
+			
+			protected void unregister(PhysicalLink link) {
+				/* remove oneself from end-points' LinkPairs and OVXMap. */
+				log.debug("unregistering link {}-{}", 
+						link.srcPort.toAP(), link.dstPort.toAP());
+				link.state = LinkState.STOPPED;
+				
+				setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+				link.srcPort.setOutLink(null);
+				link.dstPort.setInLink(null);
+				link.getSrcSwitch().getMap().removePhysicalLink(link);    
+			}
+		},
+		ACTIVE {
+			protected boolean teardown(PhysicalLink link) {
+				log.info("disabling link {}-{}", 
+						link.srcPort.toAP(), link.dstPort.toAP());
+				link.state = LinkState.INACTIVE;
+				
+				/* set state to link_down for end-points */
+				setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+				link.srcPort.setEdge(true);
+				link.dstPort.setEdge(true);
+				return true;
+			}				
+		},
+		STOPPED;
+		
+		protected void register(PhysicalLink link) {	
+			log.debug("Cannot register link while status={}", link.state);
+		}
+		
+		protected boolean boot(PhysicalLink link) {
+			log.debug("Cannot boot link while status={}", link.state);
+			return false;
+		}
+		
+		protected boolean teardown(PhysicalLink link) {
+			log.debug("Cannot teardown link while status={}", link.state);
+			return false;
+		}
+		
+		protected void unregister(PhysicalLink link) {
+			log.debug("Cannot unregister link while status={}", link.state);
+		}
+		
+		private static void setEndStates(PhysicalLink link, int nstate) {
+			link.srcPort.setState(link.srcPort.getState() | nstate);
+			link.dstPort.setState(link.dstPort.getState() | nstate);
+		}
+	}
+
+	static Logger log = LogManager.getLogger(PhysicalLink.class.getName());
 	private static AtomicInteger linkIds = new AtomicInteger(0);
 	
 	@SerializedName("linkId")
 	@Expose
 	private Integer linkId = null;
 	
-	
+	private LinkState state;
 	/**
 	 * Instantiates a new physical link.
 	 * 
@@ -50,9 +144,9 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements 
 	 */
 	public PhysicalLink(final PhysicalPort srcPort, final PhysicalPort dstPort) {
 		super(srcPort, dstPort);
-		srcPort.setOutLink(this);
-		dstPort.setInLink(this);
 		this.linkId = PhysicalLink.linkIds.getAndIncrement();
+		this.state = LinkState.INIT;
+		this.register();
 	}
 	
 	public Integer getLinkId() {
@@ -61,9 +155,7 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements 
 	
 	@Override
 	public void unregister() {
-		this.getSrcSwitch().getMap().removePhysicalLink(this);    
-		srcPort.setOutLink(null);
-		dstPort.setInLink(null);
+		this.state.unregister(this);
 	}
 
 	@Override
@@ -86,7 +178,20 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements 
 		else
 			return (int) (sum1 - sum2);
 	}
-	
-	
+
+	@Override
+	public void register() {
+		this.state.register(this);
+	}
+
+	@Override
+	public boolean boot() {
+		return this.state.boot(this); 
+	}
+
+	@Override
+	public boolean tearDown() {
+		return this.state.teardown(this);
+	}
 	
 }
