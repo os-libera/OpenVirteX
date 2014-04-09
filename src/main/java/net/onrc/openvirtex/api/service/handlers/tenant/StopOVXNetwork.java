@@ -52,7 +52,7 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 		    .intValue());
 
-	    virtualNetwork.stop();
+	    virtualNetwork.tearDown();
 	    this.log.info("Stop virtual network {}", tenantId);
 		Map<String, Object> reply = new HashMap<String, Object>(virtualNetwork.getDBObject());
 		resp = new JSONRPC2Response(reply, 0);

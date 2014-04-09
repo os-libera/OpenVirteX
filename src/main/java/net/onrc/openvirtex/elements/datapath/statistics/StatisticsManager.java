@@ -107,6 +107,7 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 		 * Then drop down to configured value
 		 */
 		log.info("Starting Stats collection thread for {}", this.sw.getSwitchName());
+		this.stopTimer = false;
 		timer.newTimeout(this, 1, TimeUnit.SECONDS);
 	}
 	
