@@ -45,7 +45,7 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 			final List<Number> dpids = HandlerUtils.<List<Number>> fetchField(
 					TenantHandler.DPIDS, params, true, null);
 			final Long dp = HandlerUtils.<Number> fetchField(
-					TenantHandler.DPID, params, false, 0).longValue();
+					TenantHandler.VDPID, params, false, 0).longValue();
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 			
