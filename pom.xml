@@ -53,7 +53,10 @@
         <executions>
           <execution>
             <id>validate-checkstyle</id>
-            <phase>compile</phase>
+            <phase>verify</phase>
+            <goals>
+                <goal>checkstyle</goal>
+            </goals>
             <!-- Uncomment this once we have cleaned up the code
             <goals>
               <goal>check</goal>
@@ -117,8 +120,9 @@
         <executions>
           <execution>
             <id>validate-findbugs</id>
-            <phase>compile</phase>
+            <phase>verify</phase>
             <goals>
+              <goal>findbugs</goal>
               <!--  Uncomment this goal to make the build fail on findbugs errors -->
               <!--<goal>check</goal>-->
             </goals>
@@ -147,8 +151,10 @@
         <executions>
           <execution>
             <id>validate-pmd</id>
-            <phase>compile</phase>
+            <phase>verify</phase>
             <goals>
+              <goal>pmd</goal>
+              <goal>cpd</goal>
               <!--  Uncomment this goal to make the build fail on pmd errors -->
               <!--<goal>check</goal>-->
             </goals>
@@ -164,15 +170,6 @@
         </configuration>
         <executions>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-          <charset>UTF-8</charset>
-          <locale>en</locale>
-        </configuration>
       </plugin>
       <plugin>
       <artifactId>maven-assembly-plugin</artifactId>
