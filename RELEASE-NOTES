@@ -1,0 +1,5 @@
+OpenVirteX pre-alpha 0.0.1: Apr 30 2014
+    * Initial release of OVX
+    * create, delete, modify dynamically virtual networks
+    * Basic Resilience for physical network failures
+    * User API
