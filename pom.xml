@@ -19,7 +19,7 @@
   <groupId>net.onrc.openvirtex</groupId>
   <artifactId>OpenVirteX</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <name>OpenVirteX</name>
   <url>http://ovx.onlab.us</url>
   <properties>
