@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 Open Networking Laboratory
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,16 +28,16 @@ public class OFNiciraVendorExtensions {
 
         // Configure openflowj to be able to parse the role request/reply
         // vendor messages.
-        OFBasicVendorId niciraVendorId =
-                new OFBasicVendorId(OFNiciraVendorData.NX_VENDOR_ID, 4);
+        OFBasicVendorId niciraVendorId = new OFBasicVendorId(
+                OFNiciraVendorData.NX_VENDOR_ID, 4);
         OFVendorId.registerVendorId(niciraVendorId);
-        OFBasicVendorDataType roleRequestVendorData =
-                new OFBasicVendorDataType(OFRoleRequestVendorData.NXT_ROLE_REQUEST,
-                        OFRoleRequestVendorData.getInstantiable());
+        OFBasicVendorDataType roleRequestVendorData = new OFBasicVendorDataType(
+                OFRoleRequestVendorData.NXT_ROLE_REQUEST,
+                OFRoleRequestVendorData.getInstantiable());
         niciraVendorId.registerVendorDataType(roleRequestVendorData);
-        OFBasicVendorDataType roleReplyVendorData =
-                new OFBasicVendorDataType(OFRoleReplyVendorData.NXT_ROLE_REPLY,
-                        OFRoleReplyVendorData.getInstantiable());
+        OFBasicVendorDataType roleReplyVendorData = new OFBasicVendorDataType(
+                OFRoleReplyVendorData.NXT_ROLE_REPLY,
+                OFRoleReplyVendorData.getInstantiable());
         niciraVendorId.registerVendorDataType(roleReplyVendorData);
 
         initialized = true;

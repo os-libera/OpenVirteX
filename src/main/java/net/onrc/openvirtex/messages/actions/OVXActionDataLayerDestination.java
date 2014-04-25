@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 Open Networking Laboratory
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,25 +27,30 @@ import org.openflow.protocol.OFError.OFBadActionCode;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionDataLayerDestination;
 
+/**
+ * Virtual destination data layer action message.
+ */
 public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
-		implements VirtualizableAction {
+        implements VirtualizableAction {
 
-	@Override
-	public void virtualize(final OVXSwitch sw,
-			final List<OFAction> approvedActions, final OVXMatch match)
-			throws ActionVirtualizationDenied {
-		final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
-		final int tid;
-                try {
-			tid = sw.getMap().getMAC(mac);
-                	if (tid != sw.getTenantId()) {
-				throw new ActionVirtualizationDenied("Target mac " + mac
-						+ " is not in virtual network " + sw.getTenantId(),
-						OFBadActionCode.OFPBAC_EPERM);
-			}
-			approvedActions.add(this);
-                } catch (AddressMappingException e) {
-	        }
-	}
+    @Override
+    public void virtualize(final OVXSwitch sw,
+            final List<OFAction> approvedActions, final OVXMatch match)
+            throws ActionVirtualizationDenied {
+        final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
+        final int tid;
+        try {
+            tid = sw.getMap().getMAC(mac);
+            if (tid != sw.getTenantId()) {
+                throw new ActionVirtualizationDenied("Target mac " + mac
+                        + " is not in virtual network " + sw.getTenantId(),
+                        OFBadActionCode.OFPBAC_EPERM);
+            }
+            approvedActions.add(this);
+        } catch (AddressMappingException e) {
+            throw new ActionVirtualizationDenied("Target mac " + mac
+                    + " is invalid ", OFBadActionCode.OFPBAC_EPERM);
+        }
+    }
 
 }

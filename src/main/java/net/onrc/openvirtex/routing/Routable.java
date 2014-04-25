@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 Open Networking Laboratory
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,30 +24,33 @@ import net.onrc.openvirtex.exceptions.PortMappingException;
 
 public interface Routable {
 
-	public LinkedList<PhysicalLink> computePath(OVXPort srcPort, OVXPort dstPort);
+    public LinkedList<PhysicalLink> computePath(OVXPort srcPort, OVXPort dstPort);
 
-	/**
-	 * @param virtualSwitch
-	 *            The virtual big switch
-	 * @param ingress
-	 *            The ingress port on the big switch
-	 * @param egress
-	 *            The egress port on the big switch
-	 * @return A list of links (tentative) representing the route across the big
-	 *         switch
-	 */
-	public SwitchRoute getRoute(OVXBigSwitch vSwitch, OVXPort srcPort,
-			OVXPort dstPort);
+    /**
+     * @param vSwitch
+     *            The virtual big switch
+     * @param srcPort
+     *            The ingress port on the big switch
+     * @param dstPort
+     *            The egress port on the big switch
+     * @return the switch route
+     */
+    public SwitchRoute getRoute(OVXBigSwitch vSwitch, OVXPort srcPort,
+            OVXPort dstPort);
 
-	/**
-	 * @return The name of the routing policy
-	 */
-	public String getName();
+    /**
+     * Gets the name of the routing policy.
+     *
+     * @return the name
+     */
+    public String getName();
 
-	/**
-	 * Sets end-points to a route 
-	 * @param ovxLink The link representing the end-points of a route
-	 * @throws PortMappingException
-	 */
-	public void setLinkPath(OVXLink ovxLink) throws PortMappingException;
+    /**
+     * Sets end-points to a route.
+     *
+     * @param ovxLink
+     *            The link representing the end-points of a route
+     * @throws PortMappingException
+     */
+    public void setLinkPath(OVXLink ovxLink) throws PortMappingException;
 }
