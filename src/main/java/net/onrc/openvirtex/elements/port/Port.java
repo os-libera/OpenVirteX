@@ -58,7 +58,6 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort imp
 		super();
 		this.portNumber = ofPort.getPortNumber();
 		this.hardwareAddress = ofPort.getHardwareAddress();
-		this.name = ofPort.getName();
 		this.config = ofPort.getConfig();
 		this.state = ofPort.getState();
 		this.currentFeatures = ofPort.getCurrentFeatures();

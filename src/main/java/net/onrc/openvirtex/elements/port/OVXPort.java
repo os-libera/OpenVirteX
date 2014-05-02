@@ -55,6 +55,23 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 
 	public OVXPort(final int tenantId, final PhysicalPort port,
 			final boolean isEdge, final short portNumber) throws IndexOutOfBoundException {
+		this(tenantId, port);
+		this.setPortAttrs(portNumber, isEdge);
+	}
+
+	public OVXPort(final int tenantId, final PhysicalPort port,
+			final boolean isEdge)  throws IndexOutOfBoundException {
+		this(tenantId, port);
+		this.setPortAttrs(this.parentSwitch.getNextPortNumber(), isEdge);
+	}
+
+	/**
+	 * The base constructor to OVXPort.
+	 * @param tenantId
+	 * @param port
+	 * @throws SwitchMappingException
+	 */
+	private OVXPort(final int tenantId, final PhysicalPort port) {
 		super(port);
 		this.tenantId = tenantId;
 		this.physicalPort = port;
@@ -65,10 +82,19 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 			// something pretty wrong if we get here. Not 100% on how to handle this
 			throw new RuntimeException("Unexpected state in OVXMap: " + e.getMessage());
 		}
+		this.hardwareAddress = port.getHardwareAddress();
+	}
+
+	/**
+	 * Helper to set port attributes.
+	 *
+	 * @param portNumber
+	 * @param isEdge
+	 */
+	private void setPortAttrs(final short portNumber, final boolean isEdge) {
 		this.portNumber = portNumber;
 		this.name = "ovxport-"+this.portNumber;
 		this.isEdge = isEdge;
-		this.hardwareAddress = port.getHardwareAddress();
 		PortFeatures features = new PortFeatures();
 		features.setCurrentOVXPortFeatures();
 		this.currentFeatures = features.getOVXFeatures();
@@ -81,13 +107,6 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable {
 		this.state = OFPortState.OFPPS_LINK_DOWN.getValue();
 		this.config = OFPortConfig.OFPPC_NO_STP.getValue();
 		this.isActive = false;
-	}
-
-	public OVXPort(final int tenantId, final PhysicalPort port,
-			final boolean isEdge)  throws IndexOutOfBoundException {
-		this(tenantId, port, isEdge, (short) 0);
-		this.portNumber = this.parentSwitch.getNextPortNumber();
-		this.name = "ovxport-"+this.portNumber;
 	}
 
 	public Integer getTenantId() {

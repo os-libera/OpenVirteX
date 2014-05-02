@@ -36,6 +36,7 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> {
 	
 	private PhysicalPort(final OFPhysicalPort port) {
 		super(port);
+		this.name = port.getName();
 		this.ovxPortMap = new HashMap<Integer, HashMap<Integer, OVXPort>>();
 	}
 
