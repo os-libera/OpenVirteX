@@ -9,20 +9,20 @@ package net.onrc.openvirtex.exceptions;
 
 public class DuplicateMACException extends IllegalArgumentException {
 
-	/**
-     * 
+    /**
+     *
      */
-	private static final long serialVersionUID = 6957434977838295826L;
+    private static final long serialVersionUID = 6957434977838295826L;
 
-	public DuplicateMACException() {
-		super();
-	}
+    public DuplicateMACException() {
+        super();
+    }
 
-	public DuplicateMACException(final String msg) {
-		super(msg);
-	}
+    public DuplicateMACException(final String msg) {
+        super(msg);
+    }
 
-	public DuplicateMACException(final Throwable msg) {
-		super(msg);
-	}
+    public DuplicateMACException(final Throwable msg) {
+        super(msg);
+    }
 }
