@@ -17,3 +17,5 @@
 
 # Emacs backup files
 *~
+
+.checkstyle

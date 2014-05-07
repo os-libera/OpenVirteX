@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 Open Networking Laboratory
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,131 +35,149 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+/**
+ * Run a JSON RPC web server that supports both http and https. Creates three
+ * roles (user, admin, and ui) each with an exposed resource (/tenant, /admin,
+ * and /status).
+ *
+ */
 public class JettyServer implements Runnable {
 
-	private static Logger log = LogManager.getLogger(JettyServer.class
-			.getName());
+    private static Logger log = LogManager.getLogger(JettyServer.class
+            .getName());
 
-	public static String REALM_NAME = "OVXREALM";
+    /**
+     * Web server realm name.
+     */
+    public static final String REALM = "OVXREALM";
 
-	private JSONRPCAPI service = null;
-	private Server server = null;
+    private JSONRPCAPI service = null;
+    private Server server = null;
 
-	public JettyServer(final int port) {
-		this.service = new JSONRPCAPI();
-		this.init(port);
-	}
+    /**
+     * Constructs and initializes a web server.
+     *
+     * @param port
+     *            the port on which to run the web server
+     */
+    public JettyServer(final int port) {
+        this.service = new JSONRPCAPI();
+        this.init(port);
+    }
 
-	private void init(final int port) {
-		JettyServer.log.info("Initializing API WebServer on port {}", port);
-		this.server = new Server(port);
+    /**
+     * Initializes API web server.
+     *
+     * @param port
+     *            the port on which to run the web server
+     */
+    private void init(final int port) {
+        JettyServer.log.info("Initializing API WebServer on port {}", port);
+        this.server = new Server(port);
 
-		final String sslKeyStore = System.getProperty("javax.net.ssl.keyStore");
-		;
-		if (sslKeyStore == null) {
-			throw new RuntimeException(
-					"Property javax.net.ssl.keyStore not defined; missing keystore file : Use startup script to start OVX");
-		}
-		if (!new File(sslKeyStore).exists()) {
-			throw new RuntimeException(
-					"SSL Key Store file not found: '"
-							+ sslKeyStore
-							+ " make sure you installed OVX correctly : see Installation manual");
-		}
+        final String sslKeyStore = System.getProperty("javax.net.ssl.keyStore");
 
-		// HTTP Configuration
-		final HttpConfiguration http_config = new HttpConfiguration();
-		http_config.setSecureScheme("https");
-		http_config.setSecurePort(8443);
-		http_config.setOutputBufferSize(32768);
+        if (sslKeyStore == null) {
+            throw new RuntimeException(
+                    "Property javax.net.ssl.keyStore not defined; missing keystore file:"
+                            + "Use startup script to start OVX");
+        }
+        if (!new File(sslKeyStore).exists()) {
+            throw new RuntimeException(
+                    "SSL Key Store file not found: '"
+                            + sslKeyStore
+                            + " make sure you installed OVX correctly : see Installation manual");
+        }
 
-		// HTTP connector
-		final ServerConnector http = new ServerConnector(this.server,
-				new HttpConnectionFactory(http_config));
-		http.setPort(port);
-		http.setIdleTimeout(30000);
+        // HTTP Configuration
+        final HttpConfiguration httpConfig = new HttpConfiguration();
+        httpConfig.setSecureScheme("https");
+        httpConfig.setSecurePort(8443);
+        httpConfig.setOutputBufferSize(32768);
 
-		// SSL Context Factory for HTTPS and SPDY
-		final SslContextFactory sslContextFactory = new SslContextFactory();
-		sslContextFactory.setKeyStorePath(sslKeyStore);
-		sslContextFactory
-				.setKeyStorePassword("OBF:1lbw1wg41sox1kfx1vub1w8t1idn1zer1zej1igj1w8x1vuz1kch1sot1wfu1lfm");
-		sslContextFactory
-				.setKeyManagerPassword("OBF:1ym71u2g1uh61l8h1l4t1ugk1u2u1ym7");
+        // HTTP connector
+        final ServerConnector http = new ServerConnector(this.server,
+                new HttpConnectionFactory(httpConfig));
+        http.setPort(port);
+        http.setIdleTimeout(30000);
 
-		// HTTPS Configuration
-		final HttpConfiguration https_config = new HttpConfiguration(
-				http_config);
-		https_config.addCustomizer(new SecureRequestCustomizer());
+        // SSL Context Factory for HTTPS and SPDY
+        final SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setKeyStorePath(sslKeyStore);
+        sslContextFactory
+                .setKeyStorePassword("OBF:1lbw1wg41sox1kfx1vub1w8t1idn1zer1zej1igj1w8x1vuz1kch1sot1wfu1lfm");
+        sslContextFactory
+                .setKeyManagerPassword("OBF:1ym71u2g1uh61l8h1l4t1ugk1u2u1ym7");
 
-		// HTTPS connector
-		final ServerConnector https = new ServerConnector(this.server,
-				new SslConnectionFactory(sslContextFactory, "http/1.1"),
-				new HttpConnectionFactory(https_config));
-		https.setPort(8443);
-		https.setIdleTimeout(500000);
+        // HTTPS Configuration
+        final HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+        httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
-		// Set the connectors
-		this.server.setConnectors(new Connector[] { http, https });
+        // HTTPS connector
+        final ServerConnector https = new ServerConnector(this.server,
+                new SslConnectionFactory(sslContextFactory, "http/1.1"),
+                new HttpConnectionFactory(httpsConfig));
+        https.setPort(8443);
+        https.setIdleTimeout(500000);
 
-		final Constraint user_c = new Constraint();
-		user_c.setName(Constraint.__BASIC_AUTH);
-		;
-		user_c.setRoles(new String[] { "user" });
-		user_c.setAuthenticate(true);
+        // Set the connectors
+        this.server.setConnectors(new Connector[] {http, https});
 
-		final Constraint admin_c = new Constraint();
-		admin_c.setName(Constraint.__BASIC_AUTH);
-		;
-		admin_c.setRoles(new String[] { "admin" });
-		admin_c.setAuthenticate(true);
+        final Constraint userConstraint = new Constraint();
+        userConstraint.setName(Constraint.__BASIC_AUTH);
+        userConstraint.setRoles(new String[] {"user"});
+        userConstraint.setAuthenticate(true);
 
-		final Constraint ui_c = new Constraint();
-		ui_c.setName(Constraint.__BASIC_AUTH);
-		;
-		ui_c.setRoles(new String[] { "ui" });
-		ui_c.setAuthenticate(true);
+        final Constraint adminConstraint = new Constraint();
+        adminConstraint.setName(Constraint.__BASIC_AUTH);
+        adminConstraint.setRoles(new String[] {"admin"});
+        adminConstraint.setAuthenticate(true);
 
-		final ConstraintMapping usermapping = new ConstraintMapping();
-		usermapping.setConstraint(user_c);
-		usermapping.setPathSpec("/tenant");
+        final Constraint uiConstraint = new Constraint();
+        uiConstraint.setName(Constraint.__BASIC_AUTH);
+        uiConstraint.setRoles(new String[] {"ui"});
+        uiConstraint.setAuthenticate(true);
 
-		final ConstraintMapping adminmapping = new ConstraintMapping();
-		adminmapping.setConstraint(admin_c);
-		adminmapping.setPathSpec("/admin");
+        final ConstraintMapping usermapping = new ConstraintMapping();
+        usermapping.setConstraint(userConstraint);
+        usermapping.setPathSpec("/tenant");
 
-		final ConstraintMapping uimapping = new ConstraintMapping();
-		uimapping.setConstraint(ui_c);
-		uimapping.setPathSpec("/status");
+        final ConstraintMapping adminmapping = new ConstraintMapping();
+        adminmapping.setConstraint(adminConstraint);
+        adminmapping.setPathSpec("/admin");
 
-		final ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
-		sh.setRealmName(JettyServer.REALM_NAME);
-		sh.setConstraintMappings(new ConstraintMapping[] { usermapping,
-				adminmapping, uimapping });
-		sh.setAuthenticator(new BasicAuthenticator());
-		sh.setHandler(this.service);
-		final LoginService loginSrv = new OVXLoginService();
-		sh.setLoginService(loginSrv);
+        final ConstraintMapping uimapping = new ConstraintMapping();
+        uimapping.setConstraint(uiConstraint);
+        uimapping.setPathSpec("/status");
 
-		this.server.setHandler(sh);
-	}
+        final ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
+        sh.setRealmName(JettyServer.REALM);
+        sh.setConstraintMappings(new ConstraintMapping[] {usermapping,
+                adminmapping, uimapping});
+        sh.setAuthenticator(new BasicAuthenticator());
+        sh.setHandler(this.service);
+        final LoginService loginSrv = new OVXLoginService();
+        sh.setLoginService(loginSrv);
 
-	@Override
-	public void run() {
-		try {
-			this.server.start();
-		} catch (final Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			this.server.join();
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+        this.server.setHandler(sh);
+    }
 
-		}
+    @Override
+    public void run() {
+        try {
+            this.server.start();
+        } catch (final Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            this.server.join();
+        } catch (final InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
 
-	}
+        }
+
+    }
 
 }
