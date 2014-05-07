@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 Open Networking Laboratory
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,131 +52,133 @@ import org.openflow.protocol.factory.OFVendorDataFactoryAware;
 import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
+/**
+ * Singleton class that serves as factory for OVX messages.
+ */
 public class OVXMessageFactory extends BasicFactory {
 
-	private static OVXMessageFactory instance = null;
+    private static OVXMessageFactory instance = null;
 
-	// not sure how to deal with this...
-	// HACK to convert OFMessage* to OVXMessage*
-	@SuppressWarnings("rawtypes")
-	static final Class convertMap[] = { OVXHello.class, OVXError.class,
-			OVXEchoRequest.class, OVXEchoReply.class, OVXVendor.class,
-			OVXFeaturesRequest.class, OVXFeaturesReply.class,
-			OVXGetConfigRequest.class, OVXGetConfigReply.class,
-			OVXSetConfig.class, OVXPacketIn.class, OVXFlowRemoved.class,
-			OVXPortStatus.class, OVXPacketOut.class, OVXFlowMod.class,
-			OVXPortMod.class, OVXStatisticsRequest.class,
-			OVXStatisticsReply.class, OVXBarrierRequest.class,
-			OVXBarrierReply.class, OVXQueueGetConfigRequest.class,
-			OVXQueueGetConfigReply.class };
+    // not sure how to deal with this...
+    // HACK to convert OFMessage* to OVXMessage*
+    @SuppressWarnings("rawtypes")
+    static final Class[] CONVERT_MAP = {OVXHello.class, OVXError.class,
+            OVXEchoRequest.class, OVXEchoReply.class, OVXVendor.class,
+            OVXFeaturesRequest.class, OVXFeaturesReply.class,
+            OVXGetConfigRequest.class, OVXGetConfigReply.class,
+            OVXSetConfig.class, OVXPacketIn.class, OVXFlowRemoved.class,
+            OVXPortStatus.class, OVXPacketOut.class, OVXFlowMod.class,
+            OVXPortMod.class, OVXStatisticsRequest.class,
+            OVXStatisticsReply.class, OVXBarrierRequest.class,
+            OVXBarrierReply.class, OVXQueueGetConfigRequest.class,
+            OVXQueueGetConfigReply.class};
 
-	@SuppressWarnings({ "rawtypes" })
-	static final Class convertActionsMap[] = { OVXActionOutput.class,
-			OVXActionVirtualLanIdentifier.class,
-			OVXActionVirtualLanPriorityCodePoint.class,
-			OVXActionStripVirtualLan.class, OVXActionDataLayerSource.class,
-			OVXActionDataLayerDestination.class,
-			OVXActionNetworkLayerSource.class,
-			OVXActionNetworkLayerDestination.class,
-			OVXActionNetworkTypeOfService.class,
-			OVXActionTransportLayerSource.class,
-			OVXActionTransportLayerDestination.class, OVXActionEnqueue.class,
-			OVXActionVendor.class };
+    @SuppressWarnings({ "rawtypes" })
+    static final Class[] CONVERT_ACTIONS_MAP = {OVXActionOutput.class,
+            OVXActionVirtualLanIdentifier.class,
+            OVXActionVirtualLanPriorityCodePoint.class,
+            OVXActionStripVirtualLan.class, OVXActionDataLayerSource.class,
+            OVXActionDataLayerDestination.class,
+            OVXActionNetworkLayerSource.class,
+            OVXActionNetworkLayerDestination.class,
+            OVXActionNetworkTypeOfService.class,
+            OVXActionTransportLayerSource.class,
+            OVXActionTransportLayerDestination.class, OVXActionEnqueue.class,
+            OVXActionVendor.class};
 
-	@SuppressWarnings("rawtypes")
-	static final Class convertStatsRequestMap[] = {
-			OVXDescriptionStatistics.class, OVXFlowStatisticsRequest.class,
-			OVXAggregateStatisticsRequest.class, OVXTableStatistics.class,
-			OVXPortStatisticsRequest.class, OVXQueueStatisticsRequest.class,
-			OVXVendorStatistics.class };
+    @SuppressWarnings("rawtypes")
+    static final Class[] CONVERT_STATS_REQUEST_MAP = {
+            OVXDescriptionStatistics.class, OVXFlowStatisticsRequest.class,
+            OVXAggregateStatisticsRequest.class, OVXTableStatistics.class,
+            OVXPortStatisticsRequest.class, OVXQueueStatisticsRequest.class,
+            OVXVendorStatistics.class};
 
-	@SuppressWarnings("rawtypes")
-	static final Class convertStatsReplyMap[] = {
-			OVXDescriptionStatistics.class, OVXFlowStatisticsReply.class,
-			OVXAggregateStatisticsReply.class, OVXTableStatistics.class,
-			OVXPortStatisticsReply.class, OVXQueueStatisticsReply.class,
-			OVXVendorStatistics.class };
+    @SuppressWarnings("rawtypes")
+    static final Class[] CONVERT_STATS_REPLY_MAP = {
+            OVXDescriptionStatistics.class, OVXFlowStatisticsReply.class,
+            OVXAggregateStatisticsReply.class, OVXTableStatistics.class,
+            OVXPortStatisticsReply.class, OVXQueueStatisticsReply.class,
+            OVXVendorStatistics.class};
 
-	protected OVXMessageFactory() {
-		super();
-	}
+    protected OVXMessageFactory() {
+        super();
+    }
 
-	public static OVXMessageFactory getInstance() {
-		if (OVXMessageFactory.instance == null) {
-			OVXMessageFactory.instance = new OVXMessageFactory();
-		}
-		return OVXMessageFactory.instance;
-	}
+    public static OVXMessageFactory getInstance() {
+        if (OVXMessageFactory.instance == null) {
+            OVXMessageFactory.instance = new OVXMessageFactory();
+        }
+        return OVXMessageFactory.instance;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public OFMessage getMessage(final OFType t) {
-		if (t == null) {
-			return new OVXUnknownMessage();
-		}
-		final byte mtype = t.getTypeValue();
-		if (mtype >= OVXMessageFactory.convertMap.length) {
-			throw new IllegalArgumentException("OFMessage type " + mtype
-					+ " unknown to OVX");
-		}
-		final Class<? extends OFMessage> c = OVXMessageFactory.convertMap[mtype];
-		try {
-			final OFMessage m = c.getConstructor(new Class[] {}).newInstance();
-			if (m instanceof OFMessageFactoryAware) {
-				((OFMessageFactoryAware) m).setMessageFactory(this);
-			}
-			if (m instanceof OFActionFactoryAware) {
-				((OFActionFactoryAware) m).setActionFactory(this);
-			}
-			if (m instanceof OFStatisticsFactoryAware) {
-				((OFStatisticsFactoryAware) m).setStatisticsFactory(this);
-			}
-			if (m instanceof OFVendorDataFactoryAware) {
-				((OFVendorDataFactoryAware)m).setVendorDataFactory(this);
-			}
-			return m;
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public OFMessage getMessage(final OFType t) {
+        if (t == null) {
+            return new OVXUnknownMessage();
+        }
+        final byte mtype = t.getTypeValue();
+        if (mtype >= OVXMessageFactory.CONVERT_MAP.length) {
+            throw new IllegalArgumentException("OFMessage type " + mtype
+                    + " unknown to OVX");
+        }
+        final Class<? extends OFMessage> c = OVXMessageFactory.CONVERT_MAP[mtype];
+        try {
+            final OFMessage m = c.getConstructor(new Class[] {}).newInstance();
+            if (m instanceof OFMessageFactoryAware) {
+                ((OFMessageFactoryAware) m).setMessageFactory(this);
+            }
+            if (m instanceof OFActionFactoryAware) {
+                ((OFActionFactoryAware) m).setActionFactory(this);
+            }
+            if (m instanceof OFStatisticsFactoryAware) {
+                ((OFStatisticsFactoryAware) m).setStatisticsFactory(this);
+            }
+            if (m instanceof OFVendorDataFactoryAware) {
+                ((OFVendorDataFactoryAware) m).setVendorDataFactory(this);
+            }
+            return m;
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public OFAction getAction(final OFActionType t) {
-		final Class<? extends OFAction> c = OVXMessageFactory.convertActionsMap[t
-				.getTypeValue()];
-		try {
-			return c.getConstructor(new Class[] {}).newInstance();
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public OFAction getAction(final OFActionType t) {
+        final Class<? extends OFAction> c = OVXMessageFactory.CONVERT_ACTIONS_MAP[t
+                .getTypeValue()];
+        try {
+            return c.getConstructor(new Class[] {}).newInstance();
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	// big hack; need to fix
-	@Override
-	public OFStatistics getStatistics(final OFType t, final OFStatisticsType st) {
-		Class<? extends OFStatistics> c;
-		if (t == OFType.STATS_REPLY) {
-			if (st.getTypeValue() == -1) {
-				c = OVXVendorStatistics.class;
-			} else {
-				c = OVXMessageFactory.convertStatsReplyMap[st.getTypeValue()];
-			}
-		} else if (t == OFType.STATS_REQUEST) {
-			if (st.getTypeValue() == -1) {
-				c = OVXVendorStatistics.class;
-			} else {
-				c = OVXMessageFactory.convertStatsRequestMap[st.getTypeValue()];
-			}
-		} else {
-			throw new RuntimeException("non-stats type in stats factory: " + t);
-		}
-		try {
-			return c.getConstructor(new Class[] {}).newInstance();
-		} catch (final Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
+    @SuppressWarnings("unchecked")
+    // big hack; need to fix
+    @Override
+    public OFStatistics getStatistics(final OFType t, final OFStatisticsType st) {
+        Class<? extends OFStatistics> c;
+        if (t == OFType.STATS_REPLY) {
+            if (st.getTypeValue() == -1) {
+                c = OVXVendorStatistics.class;
+            } else {
+                c = OVXMessageFactory.CONVERT_STATS_REPLY_MAP[st.getTypeValue()];
+            }
+        } else if (t == OFType.STATS_REQUEST) {
+            if (st.getTypeValue() == -1) {
+                c = OVXVendorStatistics.class;
+            } else {
+                c = OVXMessageFactory.CONVERT_STATS_REQUEST_MAP[st.getTypeValue()];
+            }
+        } else {
+            throw new RuntimeException("non-stats type in stats factory: " + t);
+        }
+        try {
+            return c.getConstructor(new Class[] {}).newInstance();
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
