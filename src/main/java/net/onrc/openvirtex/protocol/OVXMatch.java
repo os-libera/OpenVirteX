@@ -16,7 +16,16 @@
 package net.onrc.openvirtex.protocol;
 
 import java.util.HashMap;
+import java.util.List;
+
+import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
+import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
+
 import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.Wildcards;
+import org.openflow.protocol.Wildcards.Flag;
+import org.openflow.protocol.action.OFAction;
 import org.openflow.util.HexString;
 import org.openflow.util.U16;
 import org.openflow.util.U8;
@@ -208,4 +217,33 @@ public class OVXMatch extends OFMatch {
 		return ret;
 	}
 
+	/**
+	 * Return an OFAction associated with nw_src
+	 *
+	 * @param tenantId
+	 * @return OFAction or null
+	 */
+	public OFAction getNetworkSrcAction(int tenantId) {
+		OVXActionNetworkLayerSource srcAct = null;
+		if (!this.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+			srcAct = new OVXActionNetworkLayerSource();
+			srcAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkSource));
+		}
+		return srcAct;
+	}
+
+	/**
+	 * Return an OFAction associated with nw_dst
+	 *
+	 * @param tenantId
+	 * @return OFAction or null
+	 */
+	public OFAction getNetworkDstAction(int tenantId) {
+		OVXActionNetworkLayerDestination dstAct = null;
+		if (!this.getWildcardObj().isWildcarded(Flag.NW_DST)) {
+			dstAct = new OVXActionNetworkLayerDestination();
+			dstAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkDestination));
+		}
+		return dstAct;
+	}
 }

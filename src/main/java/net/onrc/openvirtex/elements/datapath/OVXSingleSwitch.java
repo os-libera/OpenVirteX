@@ -18,18 +18,17 @@ package net.onrc.openvirtex.elements.datapath;
 
 
 
+import java.util.LinkedList;
+import java.util.List;
+
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.openflow.protocol.OFMessage;
 
 public class OVXSingleSwitch extends OVXSwitch {
-	
-	
-	
 
 	private static Logger log = LogManager.getLogger(OVXSingleSwitch.class
 			.getName());
@@ -78,5 +77,15 @@ public class OVXSingleSwitch extends OVXSwitch {
 			return inPort.getPhysicalPort().getParentSwitch();
 		}
 		return psw;
+	}
+
+	@Override
+	public List<PhysicalSwitch> getPhysicalSwitches() {
+		try {
+			return map.getPhysicalSwitches(this);
+		} catch (SwitchMappingException e) {
+			log.debug("OVXSwitch {} does not map to any physical switches", this.switchName);
+			return new LinkedList<>();
+		}
 	}
 }

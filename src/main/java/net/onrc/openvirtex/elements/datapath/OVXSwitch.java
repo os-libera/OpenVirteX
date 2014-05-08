@@ -216,6 +216,13 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
 		return this.portMap.get(ovxPortNumber).getPhysicalPortNumber();
 	}
 
+	/**
+	 * Fetches the PhsyicalSwitches mapped to this OVXSwitch.
+	 *
+	 * @return A list of PhysicalSwitches.
+	 */
+	public abstract List<PhysicalSwitch> getPhysicalSwitches();
+
 	public void resetBackOff() {
 		this.backOffCounter.set(-1);
 	}

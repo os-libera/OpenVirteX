@@ -56,7 +56,6 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 					TenantHandler.VDPID, params, false, 0).longValue();
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
-			
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
@@ -88,6 +87,10 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": Unable to create virtual switch : "
 					+ e.getMessage()), 0);
+		} catch (final NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": " + e.getMessage()), 0);
 		} catch (final InvalidDPIDException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
@@ -96,10 +99,6 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": Invalid tenant id : " + e.getMessage()), 0);
-		} catch (final NetworkMappingException e) {
-			resp = new JSONRPC2Response(new JSONRPC2Error(
-					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": " + e.getMessage()), 0);
 		} catch (final IndexOutOfBoundException e) {
 			resp = new JSONRPC2Response(
 					new JSONRPC2Error(

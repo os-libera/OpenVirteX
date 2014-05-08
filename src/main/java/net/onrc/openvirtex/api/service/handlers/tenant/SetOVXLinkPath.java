@@ -61,15 +61,15 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
 					TenantHandler.PRIORITY, params, true, null);
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
+			final OVXMap map = OVXMap.getInstance();
+			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
+					.intValue());
+
 			final List<PhysicalLink> physicalLinks = HandlerUtils
 					.getPhysicalPath(pathString);
 			HandlerUtils.isValidLinkId(tenantId.intValue(), linkId.intValue());
 			HandlerUtils.isValidVirtualLink(physicalLinks);
 			HandlerUtils.isValidPriority(priority.intValue());
-
-			final OVXMap map = OVXMap.getInstance();
-			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
-					.intValue());
 
 			final OVXLink virtualLink = virtualNetwork.setLinkPath(
 					linkId.intValue(), physicalLinks,
@@ -81,11 +81,6 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
 				reply.put(TenantHandler.TENANT, virtualLink.getTenantId());
 				resp = new JSONRPC2Response(reply, 0);
 			}
-		} catch (final MissingRequiredField e) {
-			resp = new JSONRPC2Response(new JSONRPC2Error(
-					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": Unable to create virtual link : "
-					+ e.getMessage()), 0);
 		} catch (final VirtualLinkException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
@@ -94,6 +89,11 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": Invalid tenant id : " + e.getMessage()), 0);
+		} catch (final MissingRequiredField e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Unable to set virtual link path : "
+					+ e.getMessage()), 0);
 		} catch (final IndexOutOfBoundException e) {
 			resp = new JSONRPC2Response(
 					new JSONRPC2Error(
@@ -117,7 +117,7 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
 		} catch (final InvalidPriorityException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": " + e.getMessage()), 0);
+					+ ": Invalid link priority : " + e.getMessage()), 0);
 		}
 		return resp;
 	}
