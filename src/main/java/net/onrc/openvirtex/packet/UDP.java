@@ -40,11 +40,12 @@ import java.util.Map;
  * 
  * @author David Erickson (daviderickson@cs.stanford.edu)
  */
-public class UDP extends BasePacket {
+public class UDP extends AbstractSegment {
 	public static Map<Short, Class<? extends IPacket>> decodeMap;
 	public static short DHCP_SERVER_PORT = (short) 67;
 	public static short DHCP_CLIENT_PORT = (short) 68;
 
+	protected short length;
 	static {
 		UDP.decodeMap = new HashMap<Short, Class<? extends IPacket>>();
 		/*
@@ -56,70 +57,11 @@ public class UDP extends BasePacket {
 
 	}
 
-	protected short sourcePort;
-	protected short destinationPort;
-	protected short length;
-	protected short checksum;
-
-	/**
-	 * @return the sourcePort
-	 */
-	public short getSourcePort() {
-		return this.sourcePort;
-	}
-
-	/**
-	 * @param sourcePort
-	 *            the sourcePort to set
-	 */
-	public UDP setSourcePort(final short sourcePort) {
-		this.sourcePort = sourcePort;
-		return this;
-	}
-
-	/**
-	 * @return the destinationPort
-	 */
-	public short getDestinationPort() {
-		return this.destinationPort;
-	}
-
-	/**
-	 * @param destinationPort
-	 *            the destinationPort to set
-	 */
-	public UDP setDestinationPort(final short destinationPort) {
-		this.destinationPort = destinationPort;
-		return this;
-	}
-
 	/**
 	 * @return the length
 	 */
 	public short getLength() {
 		return this.length;
-	}
-
-	/**
-	 * @return the checksum
-	 */
-	public short getChecksum() {
-		return this.checksum;
-	}
-
-	/**
-	 * @param checksum
-	 *            the checksum to set
-	 */
-	public UDP setChecksum(final short checksum) {
-		this.checksum = checksum;
-		return this;
-	}
-
-	@Override
-	public void resetChecksum() {
-		this.checksum = 0;
-		super.resetChecksum();
 	}
 
 	/**
@@ -148,40 +90,11 @@ public class UDP extends BasePacket {
 		if (payloadData != null) {
 			bb.put(payloadData);
 		}
-
 		if (this.parent != null && this.parent instanceof IPv4) {
 			((IPv4) this.parent).setProtocol(IPv4.PROTOCOL_UDP);
 		}
 
-		// compute checksum if needed
-		if (this.checksum == 0) {
-			bb.rewind();
-			int accumulation = 0;
-
-			// compute pseudo header mac
-			if (this.parent != null && this.parent instanceof IPv4) {
-				final IPv4 ipv4 = (IPv4) this.parent;
-				accumulation += (ipv4.getSourceAddress() >> 16 & 0xffff)
-						+ (ipv4.getSourceAddress() & 0xffff);
-				accumulation += (ipv4.getDestinationAddress() >> 16 & 0xffff)
-						+ (ipv4.getDestinationAddress() & 0xffff);
-				accumulation += ipv4.getProtocol() & 0xff;
-				accumulation += this.length & 0xffff;
-			}
-
-			for (int i = 0; i < this.length / 2; ++i) {
-				accumulation += 0xffff & bb.getShort();
-			}
-			// pad to an even number of shorts
-			if (this.length % 2 > 0) {
-				accumulation += (bb.get() & 0xff) << 8;
-			}
-
-			accumulation = (accumulation >> 16 & 0xffff)
-					+ (accumulation & 0xffff);
-			this.checksum = (short) (~accumulation & 0xffff);
-			bb.putShort(6, this.checksum);
-		}
+		super.serialize(bb, this.length);
 		return data;
 	}
 
@@ -193,11 +106,8 @@ public class UDP extends BasePacket {
 	@Override
 	public int hashCode() {
 		final int prime = 5807;
-		int result = super.hashCode();
-		result = prime * result + this.checksum;
-		result = prime * result + this.destinationPort;
+		int result = super.hashCode(prime);
 		result = prime * result + this.length;
-		result = prime * result + this.sourcePort;
 		return result;
 	}
 
@@ -264,4 +174,5 @@ public class UDP extends BasePacket {
 		this.payload.setParent(this);
 		return this;
 	}
+
 }

@@ -46,7 +46,6 @@ public class RemoveOVXNetwork extends ApiHandler<Map<String, Object>> {
 					TenantHandler.TENANT, params, true, null);
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
-
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
@@ -64,14 +63,14 @@ public class RemoveOVXNetwork extends ApiHandler<Map<String, Object>> {
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": Unable to remove virtual network : "
 					+ e.getMessage()), 0);
+		} catch (final NetworkMappingException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Cannot remove unknown virtual network : " + e.getMessage()), 0);
 		} catch (final InvalidTenantIdException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": Invalid tenant id : " + e.getMessage()), 0);
-		} catch (final NetworkMappingException e) {
-			resp = new JSONRPC2Response(new JSONRPC2Error(
-					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": " + e.getMessage()), 0);
 		}
 
 		return resp;

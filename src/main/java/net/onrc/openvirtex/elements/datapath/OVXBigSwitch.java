@@ -19,6 +19,7 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,12 +27,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
-
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
-
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 import net.onrc.openvirtex.routing.SwitchRoute;
@@ -427,5 +426,17 @@ public class OVXBigSwitch extends OVXSwitch {
 		dbObject.put(TenantHandler.BACKUPS, this.alg.getBackups());
 		
 		return dbObject;
+	}
+
+	@Override
+	public List<PhysicalSwitch> getPhysicalSwitches() {
+		/* doesn't map.getPhysicalSwitches() suffice? */
+		LinkedList<PhysicalSwitch> sws = new LinkedList<PhysicalSwitch>();
+		for (OVXPort p : this.getPorts().values()) {
+			if (!sws.contains(p.getPhysicalPort().getParentSwitch())) {
+				sws.add(p.getPhysicalPort().getParentSwitch());
+			}
+		}
+		return sws;
 	}
 }

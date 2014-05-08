@@ -53,10 +53,10 @@ public class StartOVXPort extends ApiHandler<Map<String, Object>> {
 					TenantHandler.VPORT, params, true, null);
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
-			HandlerUtils
-			.isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
-			HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
-					port.shortValue());
+			HandlerUtils.isValidOVXSwitch(
+					tenantId.intValue(), dpid.longValue());
+			HandlerUtils.isValidOVXPort(
+					tenantId.intValue(), dpid.longValue(),port.shortValue());
 
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
@@ -80,22 +80,22 @@ public class StartOVXPort extends ApiHandler<Map<String, Object>> {
 							this.cmdName()
 							+ ": Unable to delete this virtual port in the virtual network : "
 							+ e.getMessage()), 0);
-		} catch (final InvalidPortException e) {
-			resp = new JSONRPC2Response(new JSONRPC2Error(
-					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": Invalid port : " + e.getMessage()), 0);
-		} catch (final InvalidTenantIdException e) {
-			resp = new JSONRPC2Response(new JSONRPC2Error(
-					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": Invalid tenant id : " + e.getMessage()), 0);
 		} catch (final InvalidDPIDException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": Invalid virtual dpid : " + e.getMessage()), 0);
+		} catch (final InvalidPortException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid port : " + e.getMessage()), 0);
 		} catch (final NetworkMappingException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": " + e.getMessage()), 0);
+					+ ": Unknown virtual network : " + e.getMessage()), 0);
+		} catch (final InvalidTenantIdException e) {
+			resp = new JSONRPC2Response(new JSONRPC2Error(
+					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+					+ ": Invalid tenant id : " + e.getMessage()), 0);
 		}
 		return resp;
 	}

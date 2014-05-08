@@ -49,9 +49,8 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
 	@Override
 	public void devirtualize(final OVXSwitch sw) {
-
-		final OVXPort inport = sw.getPort(this.getInPort());
 		OVXMatch ovxMatch = null;
+		final OVXPort inport = sw.getPort(this.getInPort());
 
 		if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
 			if (this.getPacketData().length <= 14) {
@@ -103,7 +102,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
 		if (U16.f(this.getInPort()) < U16.f(OFPort.OFPP_MAX.getValue()))
 			this.setInPort(inport.getPhysicalPortNumber());
-		this.prependRewriteActions(sw);
+		this.prependRewriteActions(sw, ovxMatch);
 		this.setActions(this.approvedActions);
 		this.setActionsLength((short) 0);
 		this.setLengthU(OVXPacketOut.MINIMUM_LENGTH + this.packetData.length);
@@ -120,17 +119,14 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 		sw.sendSouth(this, inport);
 	}
 
-	private void prependRewriteActions(final OVXSwitch sw) {
-		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-			srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkSource()));
-			this.approvedActions.add(0, srcAct);
+	private void prependRewriteActions(final OVXSwitch sw, OVXMatch match) {
+		OFAction sact= match.getNetworkSrcAction(sw.getTenantId());
+		if (sact != null) {
+			this.approvedActions.add(0, sact);
 		}
-
-		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-			dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkDestination()));
-			this.approvedActions.add(0, dstAct);
+		OFAction dact = match.getNetworkDstAction(sw.getTenantId());
+		if (dact != null) {
+			this.approvedActions.add(0, dact);
 		}
 	}
 

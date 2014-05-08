@@ -109,32 +109,8 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public JSONRPC2Response process(final JSONRPC2Request req,
 			final MessageContext ctxt) {
-
-		final ApiHandler m = this.handlers.get(req.getMethod());
-		if (m != null) {
-
-			if (m.getType() != JSONRPC2ParamsType.NO_PARAMS
-					&& m.getType() != req.getParamsType()) {
-				return new JSONRPC2Response(new JSONRPC2Error(
-						JSONRPC2Error.INVALID_PARAMS.getCode(), req.getMethod()
-						+ " requires: " + m.getType() + "; got: "
-						+ req.getParamsType()), req.getID());
-			}
-
-			switch (m.getType()) {
-			case NO_PARAMS:
-				return m.process(null);
-			case ARRAY:
-				return m.process(req.getPositionalParams());
-			case OBJECT:
-				return m.process(req.getNamedParams());
-			}
-		}
-
-		return new JSONRPC2Response(JSONRPC2Error.METHOD_NOT_FOUND, req.getID());
+		return super.process(this.handlers, req, ctxt);
 	}
-
 }

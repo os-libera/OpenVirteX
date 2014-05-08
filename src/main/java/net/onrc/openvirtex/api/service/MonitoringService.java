@@ -52,11 +52,11 @@ public class MonitoringService extends AbstractService {
 			json = this.parseJSONRequest(request);
 			jsonResp = this.dispatcher.process(json, null);
 			jsonResp.setID(json.getID());
-		} catch (final IOException e) {
+		} catch (final JSONRPC2ParseException e) {
 			jsonResp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.PARSE_ERROR.getCode(),
 					AbstractService.stack2string(e)), 0);
-		} catch (final JSONRPC2ParseException e) {
+		} catch (final IOException e) {
 			jsonResp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.PARSE_ERROR.getCode(),
 					AbstractService.stack2string(e)), 0);
@@ -69,7 +69,5 @@ public class MonitoringService extends AbstractService {
 		}
 
 	}
-	
-	
 
 }
