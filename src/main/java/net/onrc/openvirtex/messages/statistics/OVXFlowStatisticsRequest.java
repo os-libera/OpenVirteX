@@ -52,7 +52,7 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 	
 		if ((this.match.getWildcardObj().isFull() || this.match.getWildcards() == -1) // the -1 is for beacon...
 				&& this.outPort == OFPort.OFPP_NONE.getValue()) {
-			for (PhysicalSwitch psw : getPhysicalSwitches(sw)) {
+			for (PhysicalSwitch psw : sw.getPhysicalSwitches()) {
 				List<OVXFlowStatisticsReply> reps = psw.getFlowStats(tid);
 				if (reps != null) {
 					for (OVXFlowStatisticsReply stat : reps) {
@@ -92,21 +92,6 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 			sw.sendMsg(reply, sw);
 
 		}
-	}
-
-	private List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch sw) {
-		if (sw instanceof OVXSingleSwitch)
-			try {
-				return sw.getMap().getPhysicalSwitches(sw);
-			} catch (SwitchMappingException e) {
-				log.debug("OVXSwitch {} does not map to any physical switches", sw.getSwitchName());
-				return new LinkedList<>();
-			}
-		LinkedList<PhysicalSwitch> sws = new LinkedList<PhysicalSwitch>();
-		for (OVXPort p : sw.getPorts().values())
-			if (!sws.contains(p.getPhysicalPort().getParentSwitch()))
-				sws.add(p.getPhysicalPort().getParentSwitch());
-		return sws;
 	}
 
 }

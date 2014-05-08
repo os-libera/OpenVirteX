@@ -47,7 +47,6 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
 		    TenantHandler.TENANT, params, true, null);
 
 	    HandlerUtils.isValidTenantId(tenantId.intValue());
-
 	    final OVXMap map = OVXMap.getInstance();
 	    final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 		    .intValue());
@@ -69,7 +68,7 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
 	} catch (final NetworkMappingException e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": " + e.getMessage()), 0);
+		            + ": Unknown virtual network : " + e.getMessage()), 0);
 	}
 
 	return resp;

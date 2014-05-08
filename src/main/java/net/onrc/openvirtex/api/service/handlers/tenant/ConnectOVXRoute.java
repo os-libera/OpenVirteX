@@ -134,7 +134,7 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
 		} catch (final InvalidPriorityException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-					+ ": " + e.getMessage()), 0);
+					+ ": Invalid route priority : " + e.getMessage()), 0);
 		}
 		return resp;
 	}

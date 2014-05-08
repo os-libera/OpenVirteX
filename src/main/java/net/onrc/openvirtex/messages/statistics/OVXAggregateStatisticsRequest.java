@@ -54,7 +54,7 @@ public class OVXAggregateStatisticsRequest extends OFAggregateStatisticsRequest
 			stat.setFlowCount(ft.getFlowTable().size());
 			stat.setByteCount(0);
 			stat.setPacketCount(0);
-			for (PhysicalSwitch psw : getPhysicalSwitches(sw)) {
+			for (PhysicalSwitch psw : sw.getPhysicalSwitches()) {
 				List<OVXFlowStatisticsReply> reps = psw.getFlowStats(tid);
 				if (reps != null) {
 					for (OVXFlowStatisticsReply s : reps) {
@@ -82,22 +82,6 @@ public class OVXAggregateStatisticsRequest extends OFAggregateStatisticsRequest
 			
 		sw.sendMsg(reply, sw);
 		
-		
 	}
 	
-	private List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch sw) {
-		if (sw instanceof OVXSingleSwitch)
-			try {
-				return sw.getMap().getPhysicalSwitches(sw);
-			} catch (SwitchMappingException e) {
-				log.debug("OVXSwitch {} does not map to any physical switches", sw.getSwitchName());
-				return new LinkedList<>();
-			}
-		LinkedList<PhysicalSwitch> sws = new LinkedList<PhysicalSwitch>();
-		for (OVXPort p : sw.getPorts().values())
-			if (!sws.contains(p.getPhysicalPort().getParentSwitch()))
-				sws.add(p.getPhysicalPort().getParentSwitch());
-		return sws;
-	}
-
 }

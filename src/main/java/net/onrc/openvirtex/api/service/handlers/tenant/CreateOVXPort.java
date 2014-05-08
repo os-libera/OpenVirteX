@@ -85,6 +85,13 @@ public class CreateOVXPort extends ApiHandler<Map<String, Object>> {
 							this.cmdName()
 							+ ": Unable to create virtual port : "
 							+ e.getMessage()), 0);
+		} catch (final IndexOutOfBoundException e) {
+			resp = new JSONRPC2Response(
+					new JSONRPC2Error(
+							JSONRPC2Error.INVALID_PARAMS.getCode(),
+							this.cmdName()
+							+ ": Impossible to create the virtual port, too many ports on this virtual switch : "
+							+ e.getMessage()), 0);
 		} catch (final InvalidPortException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
@@ -93,13 +100,6 @@ public class CreateOVXPort extends ApiHandler<Map<String, Object>> {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 					+ ": Invalid tenant id : " + e.getMessage()), 0);
-		} catch (final IndexOutOfBoundException e) {
-			resp = new JSONRPC2Response(
-					new JSONRPC2Error(
-							JSONRPC2Error.INVALID_PARAMS.getCode(),
-							this.cmdName()
-							+ ": Impossible to create the virtual port, too many ports on this virtual switch : "
-							+ e.getMessage()), 0);
 		} catch (final InvalidDPIDException e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()

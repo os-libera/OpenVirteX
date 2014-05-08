@@ -15,6 +15,10 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers;
 
+import java.util.Map;
+
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.server.MessageContext;
@@ -25,4 +29,31 @@ public abstract class AbstractHandler {
 
 	public abstract JSONRPC2Response process(JSONRPC2Request req,
 			MessageContext ctxt);
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected JSONRPC2Response process(Map<String, ApiHandler> handlers, JSONRPC2Request req,
+			MessageContext ctxt) {
+		final ApiHandler m = handlers.get(req.getMethod());
+		if (m != null) {
+
+			if (m.getType() != JSONRPC2ParamsType.NO_PARAMS
+					&& m.getType() != req.getParamsType()) {
+				return new JSONRPC2Response(new JSONRPC2Error(
+						JSONRPC2Error.INVALID_PARAMS.getCode(), req.getMethod()
+						+ " requires: " + m.getType() + "; got: "
+						+ req.getParamsType()), req.getID());
+			}
+
+			switch (m.getType()) {
+			case NO_PARAMS:
+				return m.process(null);
+			case ARRAY:
+				return m.process(req.getPositionalParams());
+			case OBJECT:
+				return m.process(req.getNamedParams());
+			}
+		}
+
+		return new JSONRPC2Response(JSONRPC2Error.METHOD_NOT_FOUND, req.getID());
+	}
 }

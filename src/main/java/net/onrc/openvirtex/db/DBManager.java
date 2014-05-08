@@ -352,36 +352,9 @@ public class DBManager {
 			return;
 		// Register links in the appropriate manager
 		for (Map<String, Object> link: links) {
+			/* possibly do OVXLink-specific operation here. */
 			List<Map<String, Object>> path = (List<Map<String, Object>>) link.get(TenantHandler.PATH);
-			for (Map<String, Object> hop: path) {
-				// Fetch link
-				Long srcDpid = (Long) hop.get(TenantHandler.SRC_DPID);
-				Short srcPort = ((Integer) hop.get(TenantHandler.SRC_PORT)).shortValue();
-				Long dstDpid = (Long) hop.get(TenantHandler.DST_DPID);
-				Short dstPort = ((Integer) hop.get(TenantHandler.DST_PORT)).shortValue();
-				DPIDandPortPair dpp = new DPIDandPortPair(new DPIDandPort(srcDpid, srcPort),
-						new DPIDandPort(dstDpid, dstPort));
-				// Register link in current manager
-				mngr.registerLink(dpp);
-				// Update list of managers that wait for this link
-				List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
-				if (mngrs == null)
-					this.linkToMngr.put(dpp, new ArrayList<OVXNetworkManager>());
-				this.linkToMngr.get(dpp).add(mngr);
-
-				// Register src/dst switches of this link
-				mngr.registerSwitch(srcDpid);
-				mngr.registerSwitch(dstDpid);
-				// Update list of managers that wait for these switches
-				mngrs = this.dpidToMngr.get(srcDpid);
-				if (mngrs == null)
-					this.dpidToMngr.put(srcDpid, new ArrayList<OVXNetworkManager>());
-				this.dpidToMngr.get(srcDpid).add(mngr);
-				mngrs = this.dpidToMngr.get(dstDpid);
-				if (mngrs == null)
-					this.dpidToMngr.put(dstDpid, new ArrayList<OVXNetworkManager>());
-				this.dpidToMngr.get(dstDpid).add(mngr);
-			}
+			this.readHops(path, mngr);
 		}
 	}
 
@@ -419,33 +392,41 @@ public class DBManager {
 		if (routes == null)
 			return;
 		for (Map<String, Object> route: routes) {
+			/* possibly do SwitchRoute-specific operation here. */
 			List<Map<String, Object>> path = (List<Map<String, Object>>) route.get(TenantHandler.PATH);
-			for (Map<String, Object> hop: path) {
-				Long srcDpid = (Long) hop.get(TenantHandler.SRC_DPID);
-				Short srcPort = ((Integer) hop.get(TenantHandler.SRC_PORT)).shortValue();
-				Long dstDpid = (Long) hop.get(TenantHandler.DST_DPID);
-				Short dstPort = ((Integer) hop.get(TenantHandler.DST_PORT)).shortValue();
-				DPIDandPortPair dpp = new DPIDandPortPair(new DPIDandPort(srcDpid, srcPort),
-						new DPIDandPort(dstDpid, dstPort));
-				// Register links in the appropriate manager
-				mngr.registerLink(dpp);
-				List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
-				if (mngrs == null)
-					this.linkToMngr.put(dpp, new ArrayList<OVXNetworkManager>());
-				this.linkToMngr.get(dpp).add(mngr);
+			this.readHops(path, mngr);
+		}
+	}
 
-				// Register switches
-				mngr.registerSwitch(srcDpid);
-				mngr.registerSwitch(dstDpid);
-				mngrs = this.dpidToMngr.get(srcDpid);
-				if (mngrs == null)
-					this.dpidToMngr.put(srcDpid, new ArrayList<OVXNetworkManager>());
-				this.dpidToMngr.get(srcDpid).add(mngr);
-				mngrs = this.dpidToMngr.get(dstDpid);
-				if (mngrs == null)
-					this.dpidToMngr.put(dstDpid, new ArrayList<OVXNetworkManager>());
-				this.dpidToMngr.get(dstDpid).add(mngr);
+	private void readHops(List<Map<String, Object>> path, OVXNetworkManager mngr) {
+		for (Map<String, Object> hop: path) {
+			Long srcDpid = (Long) hop.get(TenantHandler.SRC_DPID);
+			Short srcPort = ((Integer) hop.get(TenantHandler.SRC_PORT)).shortValue();
+			Long dstDpid = (Long) hop.get(TenantHandler.DST_DPID);
+			Short dstPort = ((Integer) hop.get(TenantHandler.DST_PORT)).shortValue();
+			DPIDandPortPair dpp = new DPIDandPortPair(new DPIDandPort(srcDpid, srcPort),
+					new DPIDandPort(dstDpid, dstPort));
+			// Register links in the appropriate manager
+			mngr.registerLink(dpp);
+			List<OVXNetworkManager> mngrs = this.linkToMngr.get(dpp);
+			if (mngrs == null) {
+				this.linkToMngr.put(dpp, new ArrayList<OVXNetworkManager>());
 			}
+			this.linkToMngr.get(dpp).add(mngr);
+
+			// Register switches
+			mngr.registerSwitch(srcDpid);
+			mngr.registerSwitch(dstDpid);
+			mngrs = this.dpidToMngr.get(srcDpid);
+			if (mngrs == null) {
+				this.dpidToMngr.put(srcDpid, new ArrayList<OVXNetworkManager>());
+			}
+			this.dpidToMngr.get(srcDpid).add(mngr);
+			mngrs = this.dpidToMngr.get(dstDpid);
+			if (mngrs == null) {
+				this.dpidToMngr.put(dstDpid, new ArrayList<OVXNetworkManager>());
+			}
+			this.dpidToMngr.get(dstDpid).add(mngr);
 		}
 	}
 

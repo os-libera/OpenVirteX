@@ -51,13 +51,14 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 	private final Logger log = LogManager.getLogger(OVXFlowMod.class.getName());
 
-	private OVXSwitch sw = null;
+	private OVXSwitch sw;
+	private OVXMatch ovxMatch;
 	private final List<OFAction> approvedActions = new LinkedList<OFAction>();
-	
 	private long ovxCookie = -1;
 
 	@Override
 	public void devirtualize(final OVXSwitch sw) {
+
 		/* Drop LLDP-matching messages sent by some applications */
 		if (this.match.getDataLayerType() == Ethernet.TYPE_LLDP) {
 			return;
@@ -70,13 +71,12 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		if (sw.getFromBufferMap(this.bufferId) != null) {
 			bufferId = sw.getFromBufferMap(this.bufferId).getBufferId();
 		}
-		final short inport = this.getMatch().getInputPort();
 
 		/* let flow table process FlowMod, generate cookie as needed */
 		boolean pflag = ft.handleFlowMods(this.clone());
 		
 		/* used by OFAction virtualization */
-		OVXMatch ovxMatch = new OVXMatch(this.match);
+		ovxMatch = new OVXMatch(this.match);
 		ovxCookie = ((OVXFlowTable) ft).getCookie(this, false);
 		ovxMatch.setCookie(ovxCookie);
 		this.setCookie(ovxMatch.getCookie());
@@ -98,7 +98,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 				return;
 			}
 		}
-
+		final short inport = this.getMatch().getInputPort();
 		final OVXPort ovxInPort = sw.getPort(inport);
 		this.setBufferId(bufferId);
 
@@ -173,16 +173,13 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 	}
 
 	private void prependRewriteActions() {
-		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
-			srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkSource()));
-			this.approvedActions.add(0, srcAct);
+		OFAction sact= ovxMatch.getNetworkSrcAction(sw.getTenantId());
+		if (sact != null) {
+			this.approvedActions.add(0, sact);
 		}
-
-		if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
-			dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(), this.match.getNetworkDestination()));
-			this.approvedActions.add(0, dstAct);
+		OFAction dact = ovxMatch.getNetworkDstAction(sw.getTenantId());
+		if (dact != null) {
+			this.approvedActions.add(0, dact);
 		}
 	}
 

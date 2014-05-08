@@ -145,28 +145,6 @@ VirtualizableAction {
 						if (outPort.isEdge()) {
 							//TODO: this is logically incorrect, i have to do this because we always add the rewriting actions in the flowMod. Change it.
 							approvedActions.addAll(IPMapper.prependUnRewriteActions(match));
-						} else {
-							/*
-							 * If inPort is edge and outPort is link:
-							 * 	- retrieve link
-							 * 	- generate the link's FMs
-							 * 	- add actions to current FM to write packet fields related to the link 
-							 */
-							final OVXLink link = outPort.getLink().getOutLink();
-							linkId = link.getLinkId();
-							try {
-								flowId = vnet.getFlowManager()
-										.storeFlowValues(
-												match.getDataLayerSource(),
-												match.getDataLayerDestination());
-								link.generateLinkFMs(fm.clone(), flowId);
-								approvedActions.addAll(
-										new OVXLinkUtils(sw.getTenantId(), linkId, flowId).setLinkFields());
-							} catch (IndexOutOfBoundException e) {
-								log.error("Too many host to generate the flow pairs in this virtual network {}. "
-										+ "Dropping flow-mod {} ", sw.getTenantId(), fm);
-								throw new DroppedMessageException();
-							}
 						}
 					} else {
 						if (outPort.isEdge()) {
@@ -193,27 +171,30 @@ VirtualizableAction {
 										dstPort, inPort);
 								return;
 							}
-						} else {
-							final OVXLink link = outPort.getLink().getOutLink();
-							linkId = link.getLinkId();
-							try {
-								flowId = vnet.getFlowManager()
-										.storeFlowValues(
-												match.getDataLayerSource(),
-												match.getDataLayerDestination());
-								link.generateLinkFMs(fm.clone(), flowId);
-								approvedActions.addAll(new OVXLinkUtils(sw.getTenantId(), linkId, flowId).setLinkFields());
-							} catch (IndexOutOfBoundException e) {
-								log.error("Too many host to generate the flow pairs in this virtual network {}. "
-										+ "Dropping flow-mod {} ", sw.getTenantId(), fm);
-								throw new DroppedMessageException();
-							}
 						}
 					}
-					if (inPort.getPhysicalPortNumber() != outPort.getPhysicalPortNumber())
-						approvedActions.add(new OFActionOutput(outPort.getPhysicalPortNumber()));
-					else 
+					if (!outPort.isEdge()) {
+						final OVXLink link = outPort.getLink().getOutLink();
+						linkId = link.getLinkId();
+						try {
+							flowId = vnet.getFlowManager()
+									.storeFlowValues(
+											match.getDataLayerSource(),
+											match.getDataLayerDestination());
+							link.generateLinkFMs(fm.clone(), flowId);
+							approvedActions.addAll(new OVXLinkUtils(sw.getTenantId(), linkId, flowId).setLinkFields());
+						} catch (IndexOutOfBoundException e) {
+							log.error("Too many host to generate the flow pairs in this virtual network {}. "
+									+ "Dropping flow-mod {} ", sw.getTenantId(), fm);
+							throw new DroppedMessageException();
+						}
+					}
+
+					if (inPort.getPhysicalPortNumber() == outPort.getPhysicalPortNumber()) {
 						approvedActions.add(new OFActionOutput(OFPort.OFPP_IN_PORT.getValue()));
+					} else {
+						approvedActions.add(new OFActionOutput(outPort.getPhysicalPortNumber()));
+					}
 				}
 				// TODO: Check if I need to do the unrewrite here for the single
 				// switch
