@@ -42,7 +42,6 @@ public class StartOVXSwitch extends ApiHandler<Map<String, Object>> {
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
 	JSONRPC2Response resp = null;
-
 	try {
 	    final Number tenantId = HandlerUtils.<Number> fetchField(
 		    TenantHandler.TENANT, params, true, null);
@@ -74,22 +73,21 @@ public class StartOVXSwitch extends ApiHandler<Map<String, Object>> {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		            + ": Invalid DPID : " + e.getMessage()), 0);
-	} catch (final InvalidTenantIdException e) {
-	    resp = new JSONRPC2Response(new JSONRPC2Error(
-		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-		            + ": Invalid tenant id : " + e.getMessage()), 0);
 	} catch (final NetworkMappingException e) {
 	    resp = new JSONRPC2Response(new JSONRPC2Error(
 		    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 		            + ": " + e.getMessage()), 0);
+	} catch (final InvalidTenantIdException e) {
+	    resp = new JSONRPC2Response(new JSONRPC2Error(
+			    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+			            + ": Invalid tenant id : " + e.getMessage()), 0);
 	}
-
 	return resp;
     }
 
     @Override
     public JSONRPC2ParamsType getType() {
-	return JSONRPC2ParamsType.OBJECT;
+        return JSONRPC2ParamsType.OBJECT;
     }
 
 }

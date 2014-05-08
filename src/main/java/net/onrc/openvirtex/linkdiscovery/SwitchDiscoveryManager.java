@@ -210,28 +210,11 @@ TimerTask {
 		if (port == null) {
 			throw new PortMappingException("Cannot send LLDP associated with a nonexistent port");
 		}
-		final OFPacketOut packetOut = (OFPacketOut) this.ovxMessageFactory
-				.getMessage(OFType.PACKET_OUT);
-		packetOut.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-		final List<OFAction> actionsList = new LinkedList<OFAction>();
-		final OFActionOutput out = (OFActionOutput) this.ovxMessageFactory
-				.getAction(OFActionType.OUTPUT);
-		out.setPort(port.getPortNumber());
-		actionsList.add(out);
-		packetOut.setActions(actionsList);
-		final short alen = SwitchDiscoveryManager.countActionsLen(actionsList);
-		this.lldpPacket.setPort(port);
-		this.ethPacket.setSourceMACAddress(port.getHardwareAddress());
-		
-		final byte[] lldp = this.ethPacket.serialize();
-		packetOut.setActionsLength(alen);
-		packetOut.setPacketData(lldp);
-		packetOut.setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
-		return packetOut;
+		return createDiscoveryPacket(port, this.ethPacket);
 	}
-	
+
 	/**
-	 * Creates packet_out LLDP for specified output port.
+	 * Creates packet_out BDDP for specified output port.
 	 * 
 	 * @param port
 	 * @return Packet_out message with LLDP data
@@ -240,8 +223,12 @@ TimerTask {
 	private OFPacketOut createBDDPPacketOut(final PhysicalPort port) 
 			throws PortMappingException {
 		if (port == null) {
-			throw new PortMappingException("Cannot send LLDP associated with a nonexistent port");
+			throw new PortMappingException("Cannot send BDDP associated with a nonexistent port");
 		}
+		return createDiscoveryPacket(port, this.bddpEth);
+	}
+
+	private OFPacketOut createDiscoveryPacket(final PhysicalPort port, Ethernet eth) {
 		final OFPacketOut packetOut = (OFPacketOut) this.ovxMessageFactory
 				.getMessage(OFType.PACKET_OUT);
 		packetOut.setBufferId(OFPacketOut.BUFFER_ID_NONE);
@@ -253,15 +240,15 @@ TimerTask {
 		packetOut.setActions(actionsList);
 		final short alen = SwitchDiscoveryManager.countActionsLen(actionsList);
 		this.lldpPacket.setPort(port);
-		this.bddpEth.setSourceMACAddress(port.getHardwareAddress());
-		
-		final byte[] bddp = this.bddpEth.serialize();
+		eth.setSourceMACAddress(port.getHardwareAddress());
+
+		final byte[] dp = eth.serialize();
 		packetOut.setActionsLength(alen);
-		packetOut.setPacketData(bddp);
-		packetOut.setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + bddp.length));
+		packetOut.setPacketData(dp);
+		packetOut.setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + dp.length));
 		return packetOut;
 	}
-
+	
 	@Override
 	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 		this.sw.sendMsg(msg, this);

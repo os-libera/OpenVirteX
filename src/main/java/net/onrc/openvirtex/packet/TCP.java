@@ -38,56 +38,14 @@ import java.nio.ByteBuffer;
  * 
  * @author shudong.zhou@bigswitch.com
  */
-public class TCP extends BasePacket {
-	protected short sourcePort;
-	protected short destinationPort;
+public class TCP extends AbstractSegment {
 	protected int sequence;
 	protected int acknowledge;
 	protected byte dataOffset;
 	protected short flags;
 	protected short windowSize;
-	protected short checksum;
 	protected short urgentPointer;
 	protected byte[] options;
-
-	/**
-	 * @return the sourcePort
-	 */
-	public short getSourcePort() {
-		return this.sourcePort;
-	}
-
-	/**
-	 * @param sourcePort
-	 *            the sourcePort to set
-	 */
-	public TCP setSourcePort(final short sourcePort) {
-		this.sourcePort = sourcePort;
-		return this;
-	}
-
-	/**
-	 * @return the destinationPort
-	 */
-	public short getDestinationPort() {
-		return this.destinationPort;
-	}
-
-	/**
-	 * @param destinationPort
-	 *            the destinationPort to set
-	 */
-	public TCP setDestinationPort(final short destinationPort) {
-		this.destinationPort = destinationPort;
-		return this;
-	}
-
-	/**
-	 * @return the checksum
-	 */
-	public short getChecksum() {
-		return this.checksum;
-	}
 
 	public int getSequence() {
 		return this.sequence;
@@ -134,21 +92,6 @@ public class TCP extends BasePacket {
 		return this;
 	}
 
-	public short getTcpChecksum() {
-		return this.checksum;
-	}
-
-	public TCP setTcpChecksum(final short checksum) {
-		this.checksum = checksum;
-		return this;
-	}
-
-	@Override
-	public void resetChecksum() {
-		this.checksum = 0;
-		super.resetChecksum();
-	}
-
 	public short getUrgentPointer(final short urgentPointer) {
 		return this.urgentPointer;
 	}
@@ -165,15 +108,6 @@ public class TCP extends BasePacket {
 	public TCP setOptions(final byte[] options) {
 		this.options = options;
 		this.dataOffset = (byte) (20 + options.length + 3 >> 2);
-		return this;
-	}
-
-	/**
-	 * @param checksum
-	 *            the checksum to set
-	 */
-	public TCP setChecksum(final short checksum) {
-		this.checksum = checksum;
 		return this;
 	}
 
@@ -218,40 +152,11 @@ public class TCP extends BasePacket {
 		if (payloadData != null) {
 			bb.put(payloadData);
 		}
-
 		if (this.parent != null && this.parent instanceof IPv4) {
 			((IPv4) this.parent).setProtocol(IPv4.PROTOCOL_TCP);
 		}
 
-		// compute checksum if needed
-		if (this.checksum == 0) {
-			bb.rewind();
-			int accumulation = 0;
-
-			// compute pseudo header mac
-			if (this.parent != null && this.parent instanceof IPv4) {
-				final IPv4 ipv4 = (IPv4) this.parent;
-				accumulation += (ipv4.getSourceAddress() >> 16 & 0xffff)
-						+ (ipv4.getSourceAddress() & 0xffff);
-				accumulation += (ipv4.getDestinationAddress() >> 16 & 0xffff)
-						+ (ipv4.getDestinationAddress() & 0xffff);
-				accumulation += ipv4.getProtocol() & 0xff;
-				accumulation += length & 0xffff;
-			}
-
-			for (int i = 0; i < length / 2; ++i) {
-				accumulation += 0xffff & bb.getShort();
-			}
-			// pad to an even number of shorts
-			if (length % 2 > 0) {
-				accumulation += (bb.get() & 0xff) << 8;
-			}
-
-			accumulation = (accumulation >> 16 & 0xffff)
-					+ (accumulation & 0xffff);
-			this.checksum = (short) (~accumulation & 0xffff);
-			bb.putShort(16, this.checksum);
-		}
+		super.serialize(bb, length);
 		return data;
 	}
 
@@ -263,10 +168,7 @@ public class TCP extends BasePacket {
 	@Override
 	public int hashCode() {
 		final int prime = 5807;
-		int result = super.hashCode();
-		result = prime * result + this.checksum;
-		result = prime * result + this.destinationPort;
-		result = prime * result + this.sourcePort;
+		int result = super.hashCode(prime);
 		return result;
 	}
 
@@ -333,4 +235,5 @@ public class TCP extends BasePacket {
 		this.payload.setParent(this);
 		return this;
 	}
+
 }
