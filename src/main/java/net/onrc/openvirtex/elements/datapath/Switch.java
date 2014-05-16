@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 Open Networking Laboratory
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,228 +34,219 @@ import org.openflow.util.HexString;
 
 /**
  * The Class Switch.
- * 
+ *
  * @param <T>
  *            generic type (Port) that is casted in the subclasses
  */
 
 @SuppressWarnings("rawtypes")
 public abstract class Switch<T extends Port> implements OVXEventHandler,
-OVXSendMsg {
+        OVXSendMsg {
 
-	public static final String DB_KEY = "switches";
+    public static final String DB_KEY = "switches";
+    // Switch channel status
+    protected boolean isConnected = false;
+    // The channel descriptor
+    protected Channel channel = null;
+    // The description of OXV stats
+    protected OVXDescriptionStatistics desc = null;
+    // The switch name (converted from the DPID)
+    protected String switchName = null;
+    protected Mappable map = null;
 
-	/** Switch channel status. */
-	protected boolean isConnected = false;
+    /**
+     * The port map. Associate all the port instances with the switch. The port
+     * number is the key.
+     */
+    protected HashMap<Short, T> portMap = null;
 
-	/** The channel descriptor */
-	protected Channel channel = null;
+    /** The features reply message. */
+    protected OFFeaturesReply featuresReply = null;
 
-	/** The description of OXV stats */
-	protected OVXDescriptionStatistics desc = null;
+    /** The switch id (DPID). */
+    protected Long switchId = (long) 0;
 
-	/** The switch name (converted from the DPID). */
-	protected String switchName = null;
+    /**
+     * Instantiates a new switch (should be never used).
+     *
+     * @param switchId
+     *            the switchId (long) that represent the DPID
+     * @param map
+     *            reference to the OVXMap
+     */
 
-	protected Mappable map = null;
+    protected Switch(final Long switchId) {
+        this.switchId = switchId;
+        this.switchName = HexString.toHexString(this.switchId);
+        this.portMap = new HashMap<Short, T>();
+        this.featuresReply = null;
+        this.map = OVXMap.getInstance();
+    }
 
-	/**
-	 * The port map. Associate all the port instances with the switch. The port
-	 * number is the key.
-	 */
-	protected HashMap<Short, T> portMap = null;
+    /**
+     * Gets the switch name.
+     *
+     * @return a user-friendly String that map the switch DPID
+     */
+    public String getSwitchName() {
+        return this.switchName;
+    }
 
-	/** The features reply message. */
-	protected OFFeaturesReply featuresReply = null;
+    public Mappable getMap() {
+        return this.map;
+    }
 
-	/** The switch id (DPID). */
-	protected Long switchId = (long) 0;
+    /**
+     * Gets the switch info.
+     *
+     * @return the switch info
+     */
+    public OFFeaturesReply getFeaturesReply() {
+        return this.featuresReply;
+    }
 
-	/**
-	 * Instantiates a new switch (should be never used).
-	 * 
-	 * @param switchId
-	 *            the switchId (long) that represent the DPID
-	 * @param map
-	 *            reference to the OVXMap
-	 */
+    /**
+     * Sets the features reply.
+     *
+     * @param m the new features reply
+     */
+    public void setFeaturesReply(final OFFeaturesReply m) {
+        this.featuresReply = m;
+    }
 
-	protected Switch(final Long switchId) {
-		this.switchId = switchId;
-		this.switchName = HexString.toHexString(this.switchId);
-		this.portMap = new HashMap<Short, T>();
-		this.featuresReply = null;
-		this.map = OVXMap.getInstance();
-	}
+    /**
+     * Gets the switch id.
+     *
+     * @return the switch id
+     */
+    public Long getSwitchId() {
+        return this.switchId;
+    }
 
-	/**
-	 * Gets the switch name.
-	 * 
-	 * @return a user-friendly String that map the switch DPID
-	 */
-	public String getSwitchName() {
-		return this.switchName;
-	}
+    /**
+     * Returns an unmodifiable copy of the port map.
+     */
 
-	public Mappable getMap() {
-		return this.map;
-	}
+    public Map<Short, T> getPorts() {
+        return Collections.unmodifiableMap(this.portMap);
+    }
 
-	/**
-	 * Gets the switch info.
-	 * 
-	 * @return the switch info
-	 */
-	public OFFeaturesReply getFeaturesReply() {
-		return this.featuresReply;
-	}
+    /**
+     * Gets the port.
+     *
+     * @param portNumber
+     *            the port number
+     * @return the port instance
+     */
+    public T getPort(final Short portNumber) {
+        return this.portMap.get(portNumber);
+    };
 
-	/**
-	 * Sets the features reply.
-	 * 
-	 * @param the
-	 *            new features reply
-	 */
-	public void setFeaturesReply(final OFFeaturesReply m) {
-		this.featuresReply = m;
-	}
+    /**
+     * Adds the port. If the port is already present then no action is
+     * performed.
+     *
+     * @param port
+     *            the port instance
+     * @return true, if successful
+     */
+    public boolean addPort(final T port) {
+        if (this.portMap.containsKey(port.getPortNumber())) {
+            return false;
+        }
+        this.portMap.put(port.getPortNumber(), port);
+        return true;
+    }
 
-	/**
-	 * Gets the switch id.
-	 * 
-	 * @return the switch id
-	 */
-	public Long getSwitchId() {
-		return this.switchId;
-	}
+    /**
+     * Removes the port.
+     *
+     * @param portNumber
+     *            the port number
+     * @return true, if successful
+     */
+    public boolean removePort(Short portNumber) {
+        if (this.portMap.containsKey(portNumber)) {
+            this.portMap.remove(portNumber);
+            return true;
+        }
+        return false;
+    };
 
-	/**
-	 * Returns an unmodifiable copy of the port map.
-	 */
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * net.onrc.openvirtex.core.io.OVXEventHandler#handleIO(org.openflow.protocol
+     * .OFMessage)
+     */
+    @Override
+    public abstract void handleIO(OFMessage msg, Channel channel);
 
-	public Map<Short, T> getPorts() {
-		return Collections.unmodifiableMap(this.portMap);
-	}
+    public abstract void handleRoleIO(OFVendor msg, Channel channel);
 
-	/**
-	 * Gets the port.
-	 * 
-	 * @param portNumber
-	 *            the port number
-	 * @return the port instance
-	 */
-	public T getPort(final Short portNumber) {
-		return this.portMap.get(portNumber);
-	};
+    /**
+     * Sets the connected.
+     *
+     * @param isConnected
+     *            the new connected
+     */
+    public void setConnected(final boolean isConnected) {
+        this.isConnected = isConnected;
+    }
 
-	/**
-	 * Adds the port. If the port is already present then no action is
-	 * performed.
-	 * 
-	 * @param port
-	 *            the port instance
-	 * @return true, if successful
-	 */
-	public boolean addPort(final T port) {
-		if (this.portMap.containsKey(port.getPortNumber())) {
-			return false;
-		}
-		this.portMap.put(port.getPortNumber(), port);
-		return true;
-	}
+    /**
+     * Sets the channel.
+     *
+     * @param channel
+     *            the new channel
+     */
+    public void setChannel(final Channel channel) {
+        this.channel = channel;
 
-	/**
-	 * Removes the port.
-	 * 
-	 * @param portNumber
-	 *            the port number
-	 * @return true, if successful
-	 */
-	public boolean removePort(Short portNumber) {
-		if (this.portMap.containsKey(portNumber)) {
-			this.portMap.remove(portNumber);
-			return true;
-		}
-		return false;
-	};
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.onrc.openvirtex.core.io.OVXEventHandler#handleIO(org.openflow.protocol
-	 * .OFMessage)
-	 */
-	@Override
-	public abstract void handleIO(OFMessage msg, Channel channel);
-	
-	
-	public abstract void handleRoleIO(OFVendor msg, Channel channel);
+    /**
+     * Starts up the switch.
+     *
+     * @return true upon success startup.
+     */
+    public abstract boolean boot();
 
-	/**
-	 * Sets the connected.
-	 * 
-	 * @param isConnected
-	 *            the new connected
-	 */
-	public void setConnected(final boolean isConnected) {
-		this.isConnected = isConnected;
-	}
+    /**
+     * Removes the switch from the network representation. Removal may be
+     * triggered by an API call (in the case of a OVXSwitch) or disconnection of
+     * a switch connected to us (in the case of a PhysicalSwitch).
+     */
+    public abstract void unregister();
 
-	/**
-	 * Sets the channel.
-	 * 
-	 * @param channel
-	 *            the new channel
-	 */
-	public void setChannel(final Channel channel) {
-		this.channel = channel;
+    /**
+     * Tear down.
+     */
+    public abstract void tearDown();
 
-	}
+    /**
+     * Sets the description stats.
+     *
+     * @param description
+     *            the new description stats
+     */
+    public void setDescriptionStats(final OVXDescriptionStatistics description) {
+        this.desc = description;
 
-	/**
-	 * Starts up the switch. 
-	 * 
-	 * @return true upon success startup.
-	 */
-	public abstract boolean boot();
+    }
 
-	/**
-	 * Removes the switch from the network representation. Removal 
-	 * may be triggered by an API call (in the case of a OVXSwitch) 
-	 * or disconnection of a switch connected to us (in the case of
-	 * a PhysicalSwitch).   
-	 */
-	public abstract void unregister();
+    @Override
+    public String getName() {
+        return this.switchName + ":" + this.switchId;
+    }
 
-	/**
-	 * Tear down.
-	 */
-	public abstract void tearDown();
+    @Override
+    public String toString() {
+        return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
+                + this.switchName + "\n- isConnected: " + this.isConnected;
+    }
 
-	/**
-	 * Sets the description stats.
-	 * 
-	 * @param description
-	 *            the new description stats
-	 */
-	public void setDescriptionStats(final OVXDescriptionStatistics description) {
-		this.desc = description;
-
-	}
-
-	@Override
-	public String getName() {
-		return this.switchName + ":" + this.switchId;
-	}
-
-	@Override
-	public String toString() {
-		return "SWITCH:\n- switchId: " + this.switchId + "\n- switchName: "
-				+ this.switchName + "\n- isConnected: " + this.isConnected;
-	}
-
-	public abstract void removeChannel(Channel channel);
-
+    public abstract void removeChannel(Channel channel);
 
 }
