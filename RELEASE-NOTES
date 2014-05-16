@@ -1,3 +1,24 @@
+OpenVirteX pre-alpha 0.0.2: May 16 2014
+
+    ** Sub-task
+        * [OVX-104] - Fix findbugs reported items
+
+
+    ** Bug
+        * [OVX-321] - Fix CPD reported items
+        * [OVX-322] - Fix reported PMD Warnings
+        * [OVX-323] - Fix CheckStyle Warning 
+        * [OVX-328] - Make ovx.sh take parameters. 
+
+
+    ** Improvement
+        * [OVX-225] - Rewrite OVXPort constructor
+        * [OVX-325] - Can't run OVX out of OpenVirtex/script foulder
+
+    ** Task
+        * [OVX-326] - Add missing Javadoc to code base
+
+
 OpenVirteX pre-alpha 0.0.1: Apr 30 2014
     * Initial release of OVX
     * create, delete, modify dynamically virtual networks
