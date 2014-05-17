@@ -440,10 +440,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements 
 				dstPort, algorithm);
 		OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
 				srcPort, algorithm);
-		log.info("Created bi-directional virtual link {} between ports {}/{} - {}/{} in virtual network {}",
-				link.getLinkId(), link.getSrcSwitch()
-				.getSwitchName(), srcPort.getPortNumber(), link.getDstSwitch().getSwitchName(), dstPort.getPortNumber(), 
-				this.getTenantId());
 		return link;
 	}
 
