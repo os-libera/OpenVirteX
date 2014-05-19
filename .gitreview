@@ -2,4 +2,4 @@
 host=review.gerrithub.io
 port=29418
 project=OPENNETWORKINGLAB/OpenVirteX.git
-defaultbranch=0.0-MAINT
+defaultbranch=0.1-DEV
