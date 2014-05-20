@@ -432,11 +432,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                 srcPort, algorithm);
         super.addLink(link);
         super.addLink(reverseLink);
-        log.info(
-                "Created bi-directional virtual link {} between ports {}/{} - {}/{} in virtual network {}",
-                link.getLinkId(), link.getSrcSwitch().getSwitchName(),
-                srcPort.getPortNumber(), link.getDstSwitch().getSwitchName(),
-                dstPort.getPortNumber(), this.getTenantId());
         srcPort.setEdge(false);
         dstPort.setEdge(false);
         srcPort.boot();
