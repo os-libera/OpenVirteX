@@ -144,7 +144,6 @@ public class ConnectOVXRoute extends ApiHandler<Map<String, Object>> {
         return resp;
     }
 
-
     @Override
     public JSONRPC2ParamsType getType() {
         return JSONRPC2ParamsType.OBJECT;

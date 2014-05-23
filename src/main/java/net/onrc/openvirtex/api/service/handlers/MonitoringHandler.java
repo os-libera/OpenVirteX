@@ -82,7 +82,6 @@ public class MonitoringHandler extends AbstractHandler implements
         return this.handlers.keySet().toArray(new String[] {});
     }
 
-
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public JSONRPC2Response process(final JSONRPC2Request req,

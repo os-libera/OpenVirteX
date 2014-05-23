@@ -220,33 +220,33 @@ public class OVXMatch extends OFMatch {
         return ret;
     }
 
-	/**
-	 * Return an OFAction associated with nw_src
-	 *
-	 * @param tenantId
-	 * @return OFAction or null
-	 */
-	public OFAction getNetworkSrcAction(int tenantId) {
-		OVXActionNetworkLayerSource srcAct = null;
-		if (!this.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-			srcAct = new OVXActionNetworkLayerSource();
-			srcAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkSource));
-		}
-		return srcAct;
-	}
+    /**
+     * Return an OFAction associated with nw_src
+     *
+     * @param tenantId
+     * @return OFAction or null
+     */
+    public OFAction getNetworkSrcAction(int tenantId) {
+        OVXActionNetworkLayerSource srcAct = null;
+        if (!this.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+            srcAct = new OVXActionNetworkLayerSource();
+            srcAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkSource));
+        }
+        return srcAct;
+    }
 
-	/**
-	 * Return an OFAction associated with nw_dst
-	 *
-	 * @param tenantId
-	 * @return OFAction or null
-	 */
-	public OFAction getNetworkDstAction(int tenantId) {
-		OVXActionNetworkLayerDestination dstAct = null;
-		if (!this.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-			dstAct = new OVXActionNetworkLayerDestination();
-			dstAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkDestination));
-		}
-		return dstAct;
-	}
+    /**
+     * Return an OFAction associated with nw_dst
+     *
+     * @param tenantId
+     * @return OFAction or null
+     */
+    public OFAction getNetworkDstAction(int tenantId) {
+        OVXActionNetworkLayerDestination dstAct = null;
+        if (!this.getWildcardObj().isWildcarded(Flag.NW_DST)) {
+            dstAct = new OVXActionNetworkLayerDestination();
+            dstAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkDestination));
+        }
+        return dstAct;
+    }
 }

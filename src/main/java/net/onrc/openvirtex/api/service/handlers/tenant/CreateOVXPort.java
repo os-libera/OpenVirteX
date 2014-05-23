@@ -59,13 +59,11 @@ public class CreateOVXPort extends ApiHandler<Map<String, Object>> {
             HandlerUtils.isValidPhysicalPort(tenantId.intValue(),
                     dpid.longValue(), port.shortValue());
 
-
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
             final OVXPort ovxPort = virtualNetwork.createPort(dpid.longValue(),
                     port.shortValue());
-
 
             if (ovxPort == null) {
                 resp = new JSONRPC2Response(

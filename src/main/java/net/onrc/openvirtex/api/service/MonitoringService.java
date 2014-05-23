@@ -33,7 +33,6 @@ import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 
 public class MonitoringService extends AbstractService {
 
-
     private static Logger log = LogManager.getLogger(MonitoringService.class.getName());
 
     Dispatcher dispatcher = new Dispatcher();
@@ -68,6 +67,5 @@ public class MonitoringService extends AbstractService {
         }
 
     }
-
 
 }

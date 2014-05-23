@@ -48,7 +48,6 @@ import org.openflow.protocol.action.OFAction;
 
 public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
-
     private final Logger log = LogManager.getLogger(OVXFlowMod.class.getName());
 
     private OVXSwitch sw = null;
@@ -247,6 +246,5 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
         this.ovxCookie = this.cookie;
         this.cookie = tmp;
     }
-
 
 }

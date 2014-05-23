@@ -83,7 +83,6 @@ public class ConnectOVXLink extends ApiHandler<Map<String, Object>> {
                     dstDpid.longValue(), dstPort.shortValue(), alg,
                     backupNumber.byteValue());
 
-
             if (virtualLink == null) {
                 resp = new JSONRPC2Response(
                         new JSONRPC2Error(

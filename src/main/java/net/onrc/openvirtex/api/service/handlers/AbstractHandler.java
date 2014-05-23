@@ -24,7 +24,6 @@ public abstract class AbstractHandler {
 
     public abstract String[] handledRequests();
 
-
     public abstract JSONRPC2Response process(JSONRPC2Request req,
             MessageContext ctxt);
 }

@@ -135,9 +135,7 @@ public class OVXActionOutput extends OFActionOutput implements
                         }
                     }
 
-
                     route.generateRouteFMs(fm.clone());
-
 
                     // add the output action with the physical outPort (srcPort
                     // of the route)

@@ -92,5 +92,4 @@ public class DisconnectOVXLink extends ApiHandler<Map<String, Object>> {
         return JSONRPC2ParamsType.OBJECT;
     }
 
-
 }
