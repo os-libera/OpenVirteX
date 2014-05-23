@@ -38,7 +38,6 @@ public class RemoveOVXSwitch extends ApiHandler<Map<String, Object>> {
 
     Logger log = LogManager.getLogger(RemoveOVXSwitch.class.getName());
 
-
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
         JSONRPC2Response resp = null;

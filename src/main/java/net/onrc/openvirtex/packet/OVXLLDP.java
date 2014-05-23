@@ -163,7 +163,6 @@ public class OVXLLDP extends LLDP {
         for (int i = 2; i < 8; i++) {
             bb.put(dpid[i]);
         }
-
         this.chassisTLV.setLength(CHASSIS_TLV_SIZE);
         this.chassisTLV.setType(CHASSIS_TLV_TYPE);
         this.chassisTLV.setValue(this.chassisId);
@@ -262,7 +261,6 @@ public class OVXLLDP extends LLDP {
         if (this.sw == null || this.port == null) {
             return null;
         }
-
         return super.serialize();
     }
 

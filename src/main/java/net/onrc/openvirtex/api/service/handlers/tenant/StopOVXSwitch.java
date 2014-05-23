@@ -85,7 +85,6 @@ public class StopOVXSwitch extends ApiHandler<Map<String, Object>> {
                             + ": " + e.getMessage()), 0);
         }
 
-
         return resp;
     }
 

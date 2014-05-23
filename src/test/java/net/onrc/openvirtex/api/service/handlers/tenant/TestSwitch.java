@@ -19,11 +19,13 @@ import org.openflow.protocol.OFMessage;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
 public class TestSwitch extends PhysicalSwitch {
 
     public TestSwitch(long dpid) {
         super(dpid);
+        this.setDescriptionStats(new OVXDescriptionStatistics());
     }
 
     @Override

@@ -81,9 +81,9 @@ public class SwitchChannelHandler extends OFChannelHandler {
     Logger log = LogManager.getLogger(SwitchChannelHandler.class.getName());
     protected ArrayList<OFPortStatus> pendingPortStatusMsg = null;
 
-    /*
+    /**
      *
-     * The enum below implements the connection state machine. Each method in
+     * The ChannelState enum implements the connection state machine. Each method in
      * individual enum elements override previous implementations of each
      * message processor. Each state expects some event and passes to the next
      * state.
@@ -224,7 +224,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
                 h.sw.setDescriptionStats(description);
                 h.sw.setConnected(true);
                 h.sw.setChannel(h.channel);
-
+                h.sw.register();
                 for (final OFPortStatus ps : h.pendingPortStatusMsg) {
                     this.handlePortStatusMessage(h, ps);
                 }
@@ -686,7 +686,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
     }
 
     /**
-     * Return. a string describing this switch based on the already available
+     * Return a string describing this switch based on the already available
      * information (DPID and/or remote socket).
      *
      * @return
@@ -724,9 +724,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
     @Override
     public void channelDisconnected(final ChannelHandlerContext ctx,
             final ChannelStateEvent e) throws Exception {
-
         if (this.sw != null) {
-            this.sw.setConnected(false);
+            this.sw.tearDown();
             this.sw.unregister();
         }
 
@@ -821,7 +820,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
                          */
                         final byte[] data = ((OFPacketIn) ofm).getPacketData();
                         if (OVXLLDP.isLLDP(data)) {
-                            if (this.sw != null) {
+                            if ((this.sw != null) && (this.sw.isActive())) {
                                 PhysicalNetwork.getInstance().handleLLDP(ofm,
                                         this.sw);
                             } else {

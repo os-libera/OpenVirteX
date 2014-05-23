@@ -46,15 +46,13 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
             final Number tenantId = HandlerUtils.<Number>fetchField(
                     TenantHandler.TENANT, params, true, null);
 
-
             HandlerUtils.isValidTenantId(tenantId.intValue());
 
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
 
-
-            virtualNetwork.stop();
+            virtualNetwork.tearDown();
             this.log.info("Stop virtual network {}", tenantId);
             Map<String, Object> reply = new HashMap<String, Object>(
                     virtualNetwork.getDBObject());

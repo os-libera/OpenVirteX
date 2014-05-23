@@ -18,7 +18,7 @@ package net.onrc.openvirtex.exceptions;
 public class ControllerStateException extends IllegalArgumentException {
 
     /**
-     *
+     * Auto-generated Serial UID?
      */
     private static final long serialVersionUID = 6957434977838246116L;
 

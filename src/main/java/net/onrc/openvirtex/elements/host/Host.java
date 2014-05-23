@@ -18,27 +18,108 @@ package net.onrc.openvirtex.elements.host;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.db.DBManager;
+import net.onrc.openvirtex.elements.Component;
+import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
-import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFPhysicalPort.OFPortState;
+
 /**
- * A host has a unique MAC address, a unique virtual port, and
- * a unique host ID. Uniqueness here is global in the OVX context.
- * A host can also have a virtual IP address which can be reused across
- * virtual networks.
+ * Class representing a network host. This is a purely "Virtual" construct. A
+ * host has a unique MAC address, a unique virtual port, and a unique host ID.
+ * Uniqueness here is global in the OVX context. A host can also have a virtual
+ * IP address which can be reused across virtual networks.
  */
-public class Host implements Persistable {
+public class Host implements Persistable, Component {
+
+    /**
+     * The Host's FSM. Like Link states, it is affected by a Port's status.
+     */
+    enum HostState {
+        INIT {
+            protected void register(Host h) {
+                log.debug("registering {}", h);
+                try {
+                    Mappable map = OVXMap.getInstance();
+                    map.addMAC(h.mac, h.port.getTenantId());
+                    map.getVirtualNetwork(h.port.getTenantId()).addHost(h);
+                    DBManager.getInstance().save(h);
+                    h.state = HostState.INACTIVE;
+                } catch (NetworkMappingException e) {
+                    log.warn("tenant {} was not found in global map",
+                            h.port.getTenantId());
+                }
+            }
+        },
+        INACTIVE {
+            protected boolean boot(Host h) {
+                log.debug("booting {}", h);
+                /*
+                 * port to host goes up GIVEN port is ACTIVE. Host can attach to
+                 * an inactive port.
+                 */
+                h.state = HostState.ACTIVE;
+                h.port.setState(h.port.getState()
+                        & ~OFPortState.OFPPS_LINK_DOWN.getValue());
+                h.port.setEdge(true);
+                return true;
+            }
+
+            protected void unregister(Host h) {
+                log.debug("un-registering {}", h);
+                try {
+                    Mappable map = OVXMap.getInstance();
+                    map.removeMAC(h.mac);
+                    map.getVirtualNetwork(h.port.getTenantId()).removeHost(h);
+                    DBManager.getInstance().remove(h);
+                    h.state = HostState.STOPPED;
+                } catch (NetworkMappingException e) {
+                    log.warn("tenant {} was not found in global map",
+                            h.port.getTenantId());
+                }
+            }
+        },
+        ACTIVE {
+            protected boolean teardown(Host h) {
+                log.debug("inactivating {}", h);
+                /* port to host goes down GIVEN port is ACTIVE. */
+                h.state = HostState.INACTIVE;
+                h.port.setState(h.port.getState()
+                        | OFPortState.OFPPS_LINK_DOWN.getValue());
+                return true;
+            }
+        },
+        STOPPED;
+
+        protected void register(Host h) {
+            log.warn("Cannot register {} while status={}", h, h.state);
+        }
+
+        protected boolean boot(Host h) {
+            log.warn("Cannot boot {} while status={}", h, h.state);
+            return false;
+        }
+
+        protected boolean teardown(Host h) {
+            log.warn("Cannot teardown {} while status={}", h, h.state);
+            return false;
+        }
+
+        protected void unregister(Host h) {
+            log.warn("Cannot unregister {} while status={}", h, h.state);
+        }
+
+    }
 
     private static Logger log = LogManager.getLogger(Host.class.getName());
     /**
@@ -47,27 +128,35 @@ public class Host implements Persistable {
     public static final String DB_KEY = "hosts";
     private final Integer hostId;
     private final MACAddress mac;
+    /* attachment point. */
     private final OVXPort port;
     private OVXIPAddress ipAddress = new OVXIPAddress(0, 0);
+    /* The FSM state of this host */
+    private HostState state;
 
     /**
-     * Instantiates a new host by setting its MAC address, virtual port,
-     * and host ID.
+     * Instantiates a new host by setting its MAC address, virtual port, and
+     * host ID.
      *
-     * @param mac the MAC address
-     * @param port the virtual port
-     * @param hostId the host ID
+     * @param mac
+     *            the MAC address
+     * @param port
+     *            the virtual port
+     * @param hostId
+     *            the host ID
      */
     public Host(final MACAddress mac, final OVXPort port, final Integer hostId) {
         this.mac = mac;
         this.port = port;
         this.hostId = hostId;
+        this.state = HostState.INIT;
     }
 
     /**
      * Sets the virtual IP address of the host.
      *
-     * @param ip the virtual IP address
+     * @param ip
+     *            the virtual IP address
      */
     public void setIPAddress(int ip) {
         this.ipAddress = new OVXIPAddress(this.port.getTenantId(), ip);
@@ -104,7 +193,7 @@ public class Host implements Persistable {
      * Registers the host in persistent storage.
      */
     public void register() {
-        DBManager.getInstance().save(this);
+        this.state.register(this);
     }
 
     @Override
@@ -145,26 +234,22 @@ public class Host implements Persistable {
     }
 
     /**
-     * Unregisters the host from the persistent storage and removes
-     * all references from the map.
+     * Unregisters the host from the persistent storage and removes all
+     * references from the map.
      */
     public void unregister() {
-        try {
-            DBManager.getInstance().remove(this);
-            this.tearDown();
-            Mappable map = this.port.getParentSwitch().getMap();
-            map.removeMAC(this.mac);
-            map.getVirtualNetwork(port.getTenantId()).removeHost(this);
-        } catch (NetworkMappingException e) {
-            Host.log.warn("Tried to remove host from unknown network: {}", e);
-        }
+        this.state.unregister(this);
     }
 
     /**
      * Tears down the port to which the host is connected.
      */
-    public void tearDown() {
-        this.port.tearDown();
+    public boolean tearDown() {
+        return this.state.teardown(this);
+    }
+
+    public boolean boot() {
+        return this.state.boot(this);
     }
 
     @Override
@@ -206,9 +291,8 @@ public class Host implements Persistable {
     }
 
     /*
-     * Converts virtual elements of a host to physical data.
-     * TODO: rewrite
-     *
+     * Converts virtual elements of a host to physical data. TODO: rewrite
+     * 
      * @return map that contains host data
      */
     public HashMap<String, Object> convertToPhysical() {
@@ -221,14 +305,22 @@ public class Host implements Persistable {
 
         if (this.ipAddress.getIp() != 0) {
             try {
-                map.put("ipAddress", OVXMap.getInstance().getPhysicalIP(
-                        this.ipAddress, this.port.getTenantId())
+                map.put("ipAddress",
+                        OVXMap.getInstance()
+                                .getPhysicalIP(this.ipAddress,
+                                        this.port.getTenantId())
                                 .toSimpleString());
             } catch (AddressMappingException e) {
                 log.warn("Unable to fetch physical IP for host");
             }
         }
         return map;
+    }
+
+    @Override
+    public String toString() {
+        return "Host [HWAddr:" + this.mac.toString() + " Port:"
+                + this.port.toAP() + "]";
     }
 
 }

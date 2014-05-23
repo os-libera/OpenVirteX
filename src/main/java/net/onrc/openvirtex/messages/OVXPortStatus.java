@@ -15,193 +15,101 @@
  ******************************************************************************/
 package net.onrc.openvirtex.messages;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import net.onrc.openvirtex.elements.Mappable;
-import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
-import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.LinkPair;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
-import net.onrc.openvirtex.exceptions.LinkMappingException;
-import net.onrc.openvirtex.exceptions.NetworkMappingException;
-import net.onrc.openvirtex.routing.SwitchRoute;
+import net.onrc.openvirtex.util.OVXStateManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFPhysicalPort.OFPortState;
 import org.openflow.protocol.OFPortStatus;
 
+/**
+ * Handler for PortStatus messages from the network. From the virtual side, HOW
+ * the port was disabled in the network doesn't matter, so only a PhysicalPort
+ * is duly affected by state/configuration changes in the message.
+ */
 public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 
     private final Logger log = LogManager.getLogger(OVXPortStatus.class);
 
     @Override
     public void virtualize(final PhysicalSwitch sw) {
-        Mappable map = sw.getMap();
+        log.debug("Received {} from switch {} for port {}", this.toString(), sw
+                .getSwitchId(),
+                sw.getPort(this.desc.getPortNumber()) == null ? "null" : sw
+                        .getPort(this.desc.getPortNumber()).toAP());
+
         PhysicalPort p = sw.getPort(this.desc.getPortNumber());
         if (p == null) {
-            handlePortAdd(sw, p);
+            handlePortAdd(sw);
             return;
         }
 
-        log.info("Received {} from switch {}", this.toString(),
-                sw.getSwitchId());
-        LinkPair<PhysicalLink> pair = p.getLink();
-        try {
-            Set<Integer> vnets = map.listVirtualNetworks().keySet();
-            for (Integer tenantId : vnets) {
-                /* handle vLinks/routes containing phyLink to/from this port. */
-                if ((pair != null) && (pair.exists())) {
-                    handleLinkChange(sw, map, pair, tenantId);
+        LinkPair<PhysicalLink> plink = p.getLink();
+        OVXStateManager mgr = new OVXStateManager();
+
+        if (this.isReason(OFPortReason.OFPPR_MODIFY)) {
+            if (isState(OFPortState.OFPPS_LINK_DOWN)) {
+                /* Link went down or port was disabled */
+                mgr.deactivateOVXPorts(p, false);
+                if ((plink != null) && (plink.exists())) {
+                    mgr.deactivateVLinks(plink.getOutLink(), false);
+                    mgr.deactivateVLinks(plink.getInLink(), false);
                 }
-                List<Map<Integer, OVXPort>> vports = p.getOVXPorts(tenantId);
-                /* cycle through all OVXPorts for this port. */
-                Iterator<Map<Integer, OVXPort>> pItr = vports.iterator();
-                while (pItr.hasNext()) {
-                    Map<Integer, OVXPort> mp = pItr.next();
-                    if (mp == null) {
-                        continue;
-                    }
-                    for (Map.Entry<Integer, OVXPort> pMap : mp.entrySet()) {
-                        OVXPort vport = pMap.getValue();
-                        if (vport == null) {
-                            continue;
-                        }
-                        if (isReason(OFPortReason.OFPPR_DELETE)) {
-                            /* try to remove OVXPort, vLinks, routes */
-                            vport.unMapHost();
-                            vport.handlePortDelete(this);
-                            sw.removePort(p);
-                        } else if (isReason(OFPortReason.OFPPR_MODIFY)) {
-                            if (isState(OFPortState.OFPPS_LINK_DOWN)) {
-                                /* set ports as edge, but don't remove vLinks */
-                                vport.handlePortDisable(this);
-                            } else if (!isState(OFPortState.OFPPS_LINK_DOWN)
-                                    && ((p.getState() & OFPortState.OFPPS_LINK_DOWN
-                                            .getValue()) == 0)) {
-                                /*
-                                 * set links to non-edge, if it was previously
-                                 * disabled
-                                 */
-                                vport.handlePortEnable(this);
-                            }
-                        }
-                    }
+                p.setConfig(this.getDesc().getConfig());
+                p.tearDown();
+            } else if (!isState(OFPortState.OFPPS_LINK_DOWN)) {
+                /* Link is back up or port was enabled */
+                p.setConfig(this.getDesc().getConfig());
+                p.boot();
+                mgr.activateOVXPorts(p);
+                if ((plink != null) && (plink.exists())) {
+                    mgr.activateVLinks(plink.getOutLink());
+                    mgr.activateVLinks(plink.getInLink());
                 }
+            } else {
+                /* Some port attribute has changed */
+                this.updateOVXPorts(p);
             }
-        } catch (NetworkMappingException | LinkMappingException e) {
-            log.warn("Couldn't process reason={} for PortStatus for port {}",
-                    this.reason, p.getPortNumber());
-            e.printStackTrace();
+        } else if (this.isReason(OFPortReason.OFPPR_DELETE)) {
+            mgr.deactivateOVXPorts(p, true);
+            if ((plink != null) && (plink.exists())) {
+                mgr.deactivateVLinks(plink.getOutLink(), true);
+                mgr.deactivateVLinks(plink.getInLink(), true);
+            }
+            p.tearDown();
+            p.unregister();
+        } else {
+            log.warn("Unknown PortReason [code={}], ignoring", this.reason);
         }
     }
 
-    private void handlePortAdd(PhysicalSwitch sw, PhysicalPort p) {
+    private void handlePortAdd(PhysicalSwitch sw) {
         /* add a new port to PhySwitch if add message, quit otherwise */
         if (isReason(OFPortReason.OFPPR_ADD)) {
-            p = new PhysicalPort(this.desc, sw, false);
-            if (!sw.addPort(p)) {
-                log.warn("Could not add new port {} to physical switch {}",
-                        p.getPortNumber(), sw.getSwitchId());
-            }
-            log.info("Added port {} to switch {}", p.getPortNumber(),
-                    sw.getSwitchId());
+            PhysicalPort p = new PhysicalPort(this.desc, sw, true);
+            p.register();
         }
     }
 
     /**
-     * Handles change in internal link state, e.g., a PhysicalPort in, but not at
-     * edges of, an OVXLink or SwitchRoute.
-     *
-     * @param map
-     *            Mappable containing global information
-     * @param pair
-     *            the LinkPair associated with the PhysicalPort
-     * @param tid
-     *            the tenant ID
-     * @throws LinkMappingException
-     * @throws NetworkMappingException
+     * Update state/config of OVXPorts based on changes in PhysicalPort
+     * according to this PortStatus. This would be in response to non-
+     * OFPPS_LINK_DOWN OFPPR_MODIFY messages.
+     * 
+     * @param ppt
+     *            the PhysicalPort
      */
-    private void handleLinkChange(PhysicalSwitch sw, Mappable map,
-            LinkPair<PhysicalLink> pair, int tid) throws LinkMappingException,
-            NetworkMappingException {
-        PhysicalLink plink = pair.getOutLink();
-
-        if (!isState(OFPortState.OFPPS_LINK_DOWN)
-                && ((plink.getSrcPort().getState() & OFPortState.OFPPS_LINK_DOWN
-                        .getValue()) == 0)) {
-            OVXNetwork net = map.getVirtualNetwork(tid);
-            for (OVXLink link : net.getLinks()) {
-                link.tryRevert(plink);
-            }
-            for (OVXSwitch ovxSw : net.getSwitches()) {
-                if (ovxSw instanceof OVXBigSwitch) {
-                    for (Map<OVXPort, SwitchRoute> routeMap : ((OVXBigSwitch) ovxSw)
-                            .getRouteMap().values()) {
-                        for (SwitchRoute route : routeMap.values()) {
-                            route.tryRevert(plink);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (map.hasOVXLinks(plink, tid)) {
-            List<OVXLink> vlinks = map.getVirtualLinks(plink, tid);
-            for (OVXLink vlink : vlinks) {
-                if (isReason(OFPortReason.OFPPR_DELETE)) {
-                    /* couldn't recover, remove link */
-                    if (!vlink.tryRecovery(plink)) {
-                        OVXPort vport = vlink.getSrcPort();
-                        vport.unMapHost();
-                        vport.handlePortDelete(this);
-                        sw.removePort(plink.getSrcPort());
-                    }
-                }
-                if (isReason(OFPortReason.OFPPR_MODIFY)) {
-                    if (isState(OFPortState.OFPPS_LINK_DOWN)) {
-                        /* couldn't recover, remove link */
-                        if (!vlink.tryRecovery(plink)) {
-                            vlink.getSrcPort().handlePortDisable(this);
-                        }
-                    } else if (!isState(OFPortState.OFPPS_LINK_DOWN)
-                            && ((plink.getSrcPort().getState() & OFPortState.OFPPS_LINK_DOWN
-                                    .getValue()) == 0)) {
-                        log.debug("enabling OVXLink mapped to port {}");
-                        /*
-                         * try to switch back to original path, if not just
-                         * bring up and hope it's working
-                         */
-                        if (!vlink.tryRevert(plink)) {
-                            vlink.getSrcPort().handlePortEnable(this);
-                        }
-                    }
-                }
-            }
-        }
-        if (map.hasSwitchRoutes(plink, tid)) {
-            Set<SwitchRoute> routes = new HashSet<SwitchRoute>(
-                    map.getSwitchRoutes(plink, tid));
-            for (SwitchRoute route : routes) {
-                /*
-                 * try to recover, remove route if we fail, but don't send any
-                 * stat up
-                 */
-                if ((isReason(OFPortReason.OFPPR_DELETE))
-                        || (isReason(OFPortReason.OFPPR_MODIFY) & isState(OFPortState.OFPPS_LINK_DOWN))) {
-                    if (!route.tryRecovery(plink)) {
-                        route.getSrcPort().handleRouteDisable(this);
-                    }
-                }
+    private void updateOVXPorts(PhysicalPort ppt) {
+        for (Map<Integer, OVXPort> el : ppt.getOVXPorts(null)) {
+            for (OVXPort vp : el.values()) {
+                vp.applyPortStatus(this);
             }
         }
     }

@@ -22,6 +22,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
+/**
+ * A class representing a virtual switch that maps to exactly one
+ * PhysicalSwitch. Multiple OVXSingleSwitches may map to one PhysicalSwitch, but
+ * only if they belong to different tenant networks.
+ */
 public class OVXSingleSwitch extends OVXSwitch {
 
     private static Logger log = LogManager.getLogger(OVXSingleSwitch.class
@@ -46,7 +51,6 @@ public class OVXSingleSwitch extends OVXSwitch {
     // TODO: this is probably not optimal
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
         PhysicalSwitch psw = getPhySwitch(inPort);
-        log.debug("Sending packet to sw {}: {}", psw.getName(), msg);
         psw.sendMsg(msg, this);
     }
 
@@ -56,7 +60,6 @@ public class OVXSingleSwitch extends OVXSwitch {
         PhysicalSwitch psw = getPhySwitch(inPort);
         return psw.translate(ofm, this);
     }
-
 
     private PhysicalSwitch getPhySwitch(OVXPort inPort) {
         PhysicalSwitch psw = null;
@@ -70,5 +73,14 @@ public class OVXSingleSwitch extends OVXSwitch {
             return inPort.getPhysicalPort().getParentSwitch();
         }
         return psw;
+    }
+
+    @Override
+    protected boolean bootSwitch() {
+        return super.bootDP();
+    }
+
+    public void unregSwitch(boolean synch) {
+        super.unregisterDP(synch);
     }
 }
