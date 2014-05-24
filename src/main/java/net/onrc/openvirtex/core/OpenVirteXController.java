@@ -16,6 +16,7 @@
 package net.onrc.openvirtex.core;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -141,7 +142,7 @@ public class OpenVirteXController implements Runnable {
 
     public void addControllers(final OVXSwitch sw, final Set<String> ctrls) {
         String[] ctrlParts = null;
-        for (String ctrl : ctrls) {
+        for (final String ctrl : ctrls) {
             ctrlParts = ctrl.split(":");
             final ClientBootstrap clientBootStrap = this
                     .createClientBootStrap();
@@ -173,6 +174,14 @@ public class OpenVirteXController implements Runnable {
                 }
             });
         }
+    }
+    
+    public void removeControllers(OVXSwitch sw, ArrayList<String> ctrlUrls) {
+        
+        for (String ctrl : ctrlUrls) {            
+            sw.removeController(ctrl);
+        }
+    
     }
 
     public void registerOVXSwitch(final OVXSwitch sw) {
@@ -296,5 +305,7 @@ public class OpenVirteXController implements Runnable {
     public Boolean getUseBDDP() {
         return this.useBDDP;
     }
+
+    
 
 }

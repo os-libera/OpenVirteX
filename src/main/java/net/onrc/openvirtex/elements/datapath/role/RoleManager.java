@@ -15,10 +15,10 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath.role;
 
+import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.onrc.openvirtex.exceptions.UnknownRoleException;
@@ -212,5 +212,26 @@ public class RoleManager {
     @Override
     public String toString() {
         return this.currentState.get().toString();
+    }
+
+    public Channel getChannel(String ctrl) {
+        String[] parts = ctrl.split(":");
+        String hostName = parts[1];
+        Integer port = Integer.valueOf(parts[2]);
+        this.state = getState();
+        InetSocketAddress addr = null;
+        for (Channel c : state.keySet()) {
+            if (c == null) {
+                continue;
+            }
+            addr = (InetSocketAddress) c.getRemoteAddress();
+           if (hostName.equals(addr.getHostString()) && port == addr.getPort()) {
+               return c;
+           }
+           if (hostName.equals(addr.getHostName()) && port == addr.getPort()) {
+               return c;
+           }  
+        }
+        return null;
     }
 }

@@ -66,7 +66,7 @@ public class ReconnectHandler extends SimpleChannelHandler {
     @Override
     public void channelClosed(final ChannelHandlerContext ctx,
             final ChannelStateEvent e) {
-        if (!this.sw.isActive()) {
+        if (!this.sw.isActive() || !e.getChannel().isReadable()) {
             return;
         }
         this.sw.removeChannel(e.getChannel());
