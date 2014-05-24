@@ -40,9 +40,9 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-public class AddController extends ApiHandler<Map<String, Object>> {
+public class RemoveController extends ApiHandler<Map<String, Object>> {
 
-    Logger log = LogManager.getLogger(AddController.class.getName());
+    Logger log = LogManager.getLogger(RemoveController.class.getName());
 
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
@@ -61,24 +61,20 @@ public class AddController extends ApiHandler<Map<String, Object>> {
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
-            for (String ctrl : ctrlUrls) {
-                String[] ctrlParts = ctrl.split(":");
-                HandlerUtils.isControllerAvailable(ctrlParts[1],
-                        Integer.parseInt(ctrlParts[2]), tenantId.intValue());
-            }
+            
 
              
             
-            virtualNetwork.addControllers(ctrlUrls);
+            virtualNetwork.removeControllers(ctrlUrls);
             if (virtualNetwork.isBooted()) {
                 for (OVXSwitch sw : virtualNetwork.getSwitches()) {
-                    OpenVirteXController.getInstance().addControllers(sw,
-                            new HashSet<String>(ctrlUrls));
+                    OpenVirteXController.getInstance().removeControllers(sw,
+                            ctrlUrls);
                 }
             }
 
             
-            this.log.info("Adding controllers {} for vnet {}", ctrlUrls,
+            this.log.info("Removing controllers {} for vnet {}", ctrlUrls,
                     virtualNetwork.getTenantId());
             
             resp = new JSONRPC2Response(new LinkedList<String>(
@@ -101,12 +97,7 @@ public class AddController extends ApiHandler<Map<String, Object>> {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": " + e.getMessage()), 0);
-        } catch (ControllerUnavailableException e) {
-            resp = new JSONRPC2Response(
-                    new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
-                            this.cmdName() + ": Controller already in use : "
-                                    + e.getMessage()), 0);
-        }
+        } 
 
         return resp;
     }

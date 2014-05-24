@@ -779,6 +779,20 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
     public void removeChannel(Channel channel) {
         this.roleMan.removeChannel(channel);
     }
+    
+    /**
+     * Removes the given controller.
+     * @param ctrl
+     */
+    public void removeController(String ctrl) {
+        Channel c = this.roleMan.getChannel(ctrl);
+        if (c != null) {
+            this.removeChannel(c);
+            c.setReadable(false);
+            c.close();
+        }
+       
+    }
 
     /**
      * Removes an entry in the mapping.
@@ -910,6 +924,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      *            towards the physical network
      */
     public abstract void sendSouth(OFMessage msg, OVXPort inPort);
+
 
     /**
      * Helper function calling the respective boot() of OVXSwitch subclasses.

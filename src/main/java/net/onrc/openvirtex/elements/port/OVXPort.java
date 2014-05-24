@@ -134,6 +134,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable,
 
                 port.parentSwitch.removePort(port.portNumber);
                 port.physicalPort.removeOVXPort(port);
+                port.parentSwitch.relesePortNumber(port.getPortNumber());
                 port.parentSwitch.generateFeaturesReply();
                 port.cleanUpFlowMods();
             }
@@ -285,6 +286,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable,
             log.error("Port {} not associated with any tenants??", this.toAP());
             return null;
         }
+
     }
 
     // TODO Check if this ISN'T malformed.
@@ -293,6 +295,7 @@ public class OVXPort extends Port<OVXSwitch, OVXLink> implements Persistable,
         status.setDesc(this);
         status.setReason(reason.getReasonCode());
         this.parentSwitch.sendMsg(status, this.parentSwitch);
+
     }
 
     @Override
