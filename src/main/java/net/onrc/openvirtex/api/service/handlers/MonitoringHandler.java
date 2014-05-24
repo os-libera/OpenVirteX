@@ -19,6 +19,7 @@ import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalFlowtable;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalHosts;
+import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalSwitchPorts;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetPhysicalTopology;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetSubnet;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualAddressMapping;
@@ -26,6 +27,7 @@ import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualFlowtable;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualHosts;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualLinkMapping;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualSwitchMapping;
+import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualSwitchPorts;
 import net.onrc.openvirtex.api.service.handlers.monitoring.GetVirtualTopology;
 import net.onrc.openvirtex.api.service.handlers.monitoring.ListVirtualNetworks;
 
@@ -68,12 +70,14 @@ public class MonitoringHandler extends AbstractHandler implements
             this.put("getVirtualTopology", new GetVirtualTopology());
             this.put("getVirtualSwitchMapping", new GetVirtualSwitchMapping());
             this.put("getVirtualLinkMapping", new GetVirtualLinkMapping());
+            this.put("getPhysicalSwitchPorts", new GetPhysicalSwitchPorts());
             this.put("getVirtualHosts", new GetVirtualHosts());
             this.put("getPhysicalHosts", new GetPhysicalHosts());
             this.put("getSubnet", new GetSubnet());
             this.put("getVirtualFlowtable", new GetVirtualFlowtable());
             this.put("getPhysicalFlowtable", new GetPhysicalFlowtable());
             this.put("getVirtualAddressMapping", new GetVirtualAddressMapping());
+            this.put("getVirtualSwitchPorts", new GetVirtualSwitchPorts());
         }
     };
 

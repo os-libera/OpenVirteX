@@ -72,8 +72,10 @@ public class AddController extends ApiHandler<Map<String, Object>> {
 
             OVXSwitch sw = virtualNetwork.getSwitch(dpid.longValue());
             virtualNetwork.addControllers(ctrlUrls);
-            OpenVirteXController.getInstance().addControllers(sw,
+            if (sw.isActive()) {
+            	OpenVirteXController.getInstance().addControllers(sw,
                     new HashSet<String>(ctrlUrls));
+            }
 
             this.log.info("Adding controllers {} for sw {}", ctrlUrls,
                     sw.getSwitchName());
