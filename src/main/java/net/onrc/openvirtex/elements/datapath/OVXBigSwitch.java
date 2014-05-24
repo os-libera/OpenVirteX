@@ -46,7 +46,6 @@ import org.openflow.util.U8;
  */
 public class OVXBigSwitch extends OVXSwitch {
 
-
     private static Logger log = LogManager.getLogger(OVXBigSwitch.class
             .getName());
     private RoutingAlgorithms alg;
@@ -156,7 +155,7 @@ public class OVXBigSwitch extends OVXSwitch {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see net.onrc.openvirtex.elements.datapath.Switch#removePort(short)
      */
     @Override
@@ -303,7 +302,7 @@ public class OVXBigSwitch extends OVXSwitch {
             return null;
         return ingressMap.get(egress);
     }
-    
+
     /**
      * Adds a route between two edge ports of the big switch.
      *
@@ -335,13 +334,16 @@ public class OVXBigSwitch extends OVXSwitch {
          */
         SwitchRoute rtEntry = this.getSwitchRoute(ingress, egress);
         SwitchRoute revRtEntry = this.getSwitchRoute(egress, ingress);
-        
-        if (rtEntry == null && revRtEntry == null) { 
-            rtEntry = new SwitchRoute(this, ingress, egress, routeId, priority);
-            revRtEntry = new SwitchRoute(this, egress, ingress, routeId, priority);
-            this.map.addRoute(rtEntry, path);
-            this.map.addRoute(revRtEntry, revpath);
 
+        if (rtEntry == null && revRtEntry == null) {
+            rtEntry = new SwitchRoute(this, ingress, egress, routeId, priority);
+            revRtEntry = new SwitchRoute(this, egress, ingress, routeId,
+                    priority);
+            /* SwitchRoutes don't necessarily have PhysicalLinks mapped to it. */
+            if ((path != null) && (!path.isEmpty())) {
+                this.map.addRoute(rtEntry, path);
+                this.map.addRoute(revRtEntry, revpath);
+            }
             this.addToRouteMap(ingress, egress, rtEntry);
             this.addToRouteMap(egress, ingress, revRtEntry);
 
