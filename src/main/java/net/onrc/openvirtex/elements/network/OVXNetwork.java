@@ -957,6 +957,10 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 
     public void addControllers(ArrayList<String> ctrlUrls) {
         this.controllerUrls.addAll(ctrlUrls);
-
     }
+    
+    public void removeControllers(ArrayList<String> ctrlUrls) {
+        this.controllerUrls.removeAll(ctrlUrls);
+    }
+    
 }
