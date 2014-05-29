@@ -52,13 +52,11 @@ public class StartOVXPort extends ApiHandler<Map<String, Object>> {
             final Number port = HandlerUtils.<Number>fetchField(
                     TenantHandler.VPORT, params, true, null);
 
-
             HandlerUtils.isValidTenantId(tenantId.intValue());
             HandlerUtils
                     .isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
             HandlerUtils.isValidOVXPort(tenantId.intValue(), dpid.longValue(),
                     port.shortValue());
-
 
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
@@ -104,7 +102,6 @@ public class StartOVXPort extends ApiHandler<Map<String, Object>> {
         }
         return resp;
     }
-
 
     @Override
     public JSONRPC2ParamsType getType() {

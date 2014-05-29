@@ -115,6 +115,7 @@ public class OpenVirteXController implements Runnable {
     public void run() {
         Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
         initVendorMessages();
+        PhysicalNetwork.getInstance().register();
         PhysicalNetwork.getInstance().boot();
 
         this.startDatabase();
@@ -249,6 +250,8 @@ public class OpenVirteXController implements Runnable {
         }
 
         this.log.info("Shutting down database connection");
+        PhysicalNetwork.getInstance().tearDown();
+        PhysicalNetwork.getInstance().unregister();
         DBManager.getInstance().close();
     }
 

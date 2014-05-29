@@ -62,4 +62,5 @@ public class OVXPortStatisticsRequest extends OFPortStatisticsRequest implements
             sw.sendMsg(rep, sw);
         }
     }
+
 }

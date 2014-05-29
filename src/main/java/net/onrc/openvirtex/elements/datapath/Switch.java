@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.onrc.openvirtex.core.io.OVXEventHandler;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.port.Port;
@@ -41,7 +42,7 @@ import org.openflow.util.HexString;
 
 @SuppressWarnings("rawtypes")
 public abstract class Switch<T extends Port> implements OVXEventHandler,
-        OVXSendMsg {
+        OVXSendMsg, Component {
 
     public static final String DB_KEY = "switches";
     // Switch channel status
@@ -108,7 +109,8 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     /**
      * Sets the features reply.
      *
-     * @param m the new features reply
+     * @param m
+     *            the new features reply
      */
     public void setFeaturesReply(final OFFeaturesReply m) {
         this.featuresReply = m;
@@ -175,7 +177,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see
      * net.onrc.openvirtex.core.io.OVXEventHandler#handleIO(org.openflow.protocol
      * .OFMessage)
@@ -223,7 +225,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
     /**
      * Tear down.
      */
-    public abstract void tearDown();
+    public abstract boolean tearDown();
 
     /**
      * Sets the description stats.
@@ -235,6 +237,13 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
         this.desc = description;
 
     }
+
+    /**
+     * Checks if is active.
+     * 
+     * @return true, if is active
+     */
+    public abstract boolean isActive();
 
     @Override
     public String getName() {

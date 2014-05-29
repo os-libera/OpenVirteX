@@ -761,6 +761,9 @@ public final class OVXMap implements Mappable {
      * @return true if the mapping exists, false otherwise
      */
     public boolean hasPhysicalIP(OVXIPAddress vip, Integer tenantId) {
+        if (vip == null) {
+            return false;
+        }
         final ConcurrentHashMap<Integer, PhysicalIPAddress> ips = this.virtualIPMap
                 .getValueForExactKey(vip.toString());
         return (ips != null) && (ips.get(tenantId) != null);
@@ -768,6 +771,9 @@ public final class OVXMap implements Mappable {
 
     @Override
     public boolean hasVirtualIP(PhysicalIPAddress ip) {
+        if (ip == null) {
+            return false;
+        }
         return this.physicalIPMap.getValueForExactKey(ip.toString()) != null;
     }
 
@@ -778,6 +784,9 @@ public final class OVXMap implements Mappable {
      * @return true if the MAC is registered, false otherwise
      */
     public boolean hasMAC(MACAddress mac) {
+        if (mac == null) {
+            return false;
+        }
         return this.macMap.getValueForExactKey(mac.toStringNoColon()) != null;
     }
 
@@ -792,6 +801,9 @@ public final class OVXMap implements Mappable {
      */
     public boolean hasSwitchRoutes(final PhysicalLink physicalLink,
             final Integer tenantId) {
+        if (physicalLink == null) {
+            return false;
+        }
         Map<Integer, Set<SwitchRoute>> pair = this.phyLinktoRouteMap
                 .get(physicalLink);
         return (pair != null) && (pair.get(tenantId) != null);
@@ -807,6 +819,9 @@ public final class OVXMap implements Mappable {
      */
     public boolean hasOVXLinks(final PhysicalLink physicalLink,
             final Integer tenantId) {
+        if (physicalLink == null) {
+            return false;
+        }
         final Map<Integer, List<OVXLink>> pair = this.physicalLinkMap
                 .get(physicalLink);
         return (pair != null) && (pair.get(tenantId) != null);
@@ -814,6 +829,9 @@ public final class OVXMap implements Mappable {
 
     @Override
     public boolean hasVirtualSwitch(PhysicalSwitch physicalSwitch, int tenantId) {
+        if (physicalSwitch == null) {
+            return false;
+        }
         final ConcurrentHashMap<Integer, OVXSwitch> sws = this.physicalSwitchMap
                 .get(physicalSwitch);
         return (sws != null) && (sws.get(tenantId) != null);

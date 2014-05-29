@@ -57,7 +57,6 @@ public class UDP extends BasePacket {
 
     }
 
-
     protected short sourcePort;
     protected short destinationPort;
     protected short length;
@@ -142,7 +141,6 @@ public class UDP extends BasePacket {
 
         final byte[] data = new byte[this.length];
         final ByteBuffer bb = ByteBuffer.wrap(data);
-
 
         bb.putShort(this.sourcePort);
         bb.putShort(this.destinationPort);
@@ -244,7 +242,6 @@ public class UDP extends BasePacket {
         this.destinationPort = bb.getShort();
         this.length = bb.getShort();
         this.checksum = bb.getShort();
-
 
         if (UDP.decodeMap.containsKey(this.destinationPort)) {
             try {

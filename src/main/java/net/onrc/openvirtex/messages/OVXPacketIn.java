@@ -85,7 +85,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
             }
 
             /*
-             * Checks on vSwitch and the virtual port done in swndPkt.
+             * Checks on vSwitch and the virtual port done in sendPkt.
              */
             vSwitch = this.fetchOVXSwitch(sw, vSwitch, map);
             this.ovxPort = this.port.getOVXPort(this.tenantId, 0);
@@ -100,8 +100,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
         /*
          * Below handles packets traveling in the core.
          *
-         *
-         * The idea here si to rewrite the packets such that the controller is
+         * The idea here is to rewrite the packets such that the controller is
          * able to recognize them.
          *
          * For IPv4 packets and ARP packets this means rewriting the IP fields
@@ -233,7 +232,6 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
     private void learnHostIP(OFMatch match, Mappable map) {
         if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-
             try {
                 map.getVirtualNetwork(tenantId).getHost(ovxPort)
                         .setIPAddress(match.getNetworkSource());
@@ -246,7 +244,19 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
                         .getPhysicalPortNumber());
             }
         }
+    }
 
+    private void learnAddresses(final OFMatch match, final Mappable map) {
+        if (match.getDataLayerType() == Ethernet.TYPE_IPV4
+                || match.getDataLayerType() == Ethernet.TYPE_ARP) {
+            if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
+                IPMapper.getPhysicalIp(this.tenantId, match.getNetworkSource());
+            }
+            if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
+                IPMapper.getPhysicalIp(this.tenantId,
+                        match.getNetworkDestination());
+            }
+        }
     }
 
     private void sendPkt(final OVXSwitch vSwitch, final OFMatch match,
@@ -273,24 +283,13 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
         } else if (this.port == null) {
             log.error("The port {} doesn't belong to the physical switch {}",
                     this.getInPort(), sw.getName());
-        } else if (this.ovxPort == null || !this.ovxPort.isActive()) {
+        } else if (this.ovxPort == null) {
             log.error(
                     "Virtual port associated to physical port {} in physical switch {} for "
-                            + "virtual network {} is not defined or inactive",
+                            + "virtual network {} is not defined",
                     this.getInPort(), sw.getName(), this.tenantId);
-        }
-    }
-
-    private void learnAddresses(final OFMatch match, final Mappable map) {
-        if (match.getDataLayerType() == Ethernet.TYPE_IPV4
-                || match.getDataLayerType() == Ethernet.TYPE_ARP) {
-            if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-                IPMapper.getPhysicalIp(this.tenantId, match.getNetworkSource());
-            }
-            if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
-                IPMapper.getPhysicalIp(this.tenantId,
-                        match.getNetworkDestination());
-            }
+        } else if (!this.ovxPort.isActive()) {
+            log.error("virt port associated to physical port {} in physical switch {} not active.");
         }
     }
 

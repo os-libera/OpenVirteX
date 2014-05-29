@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.openflow.util.HexString;
-
+import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -46,6 +45,7 @@ import net.onrc.openvirtex.exceptions.InvalidPortException;
 import net.onrc.openvirtex.exceptions.InvalidPriorityException;
 import net.onrc.openvirtex.exceptions.InvalidRouteException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
+import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
@@ -53,15 +53,15 @@ import net.onrc.openvirtex.exceptions.VirtualLinkException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
 
+import org.openflow.util.HexString;
+
 /**
- * Utility class that implements various checks
- * to validate API input.
+ * Utility class that implements various checks to validate API input.
  */
 public final class HandlerUtils {
 
     /**
-     * Implements no-op private constructor.
-     * Needed for checkstyle.
+     * Implements no-op private constructor. Needed for checkstyle.
      */
     private HandlerUtils() {
     }
@@ -70,7 +70,7 @@ public final class HandlerUtils {
     public static <T> T fetchField(final String fieldName,
             final Map<String, Object> map,
             /* Class<T> type, */final boolean required, final T def)
-                    throws ClassCastException, MissingRequiredField {
+            throws ClassCastException, MissingRequiredField {
         final Object field = map.get(fieldName);
         if (field == null) {
             if (required) {
@@ -92,14 +92,18 @@ public final class HandlerUtils {
      * with is not already being used by another virtual network in our system.
      * No two virtual networks can have the same controller host and port.
      *
-     * @param controllerAddress the controller address
-     * @param controllerPort the controller port
-     * @param tenantId the tenant ID
-     * @throws ControllerUnavailableException if controller port and address are already in use
+     * @param controllerAddress
+     *            the controller address
+     * @param controllerPort
+     *            the controller port
+     * @param tenantId
+     *            the tenant ID
+     * @throws ControllerUnavailableException
+     *             if controller port and address are already in use
      */
     public static void isControllerAvailable(final String controllerAddress,
             final int controllerPort, int tenantId)
-                    throws ControllerUnavailableException {
+            throws ControllerUnavailableException {
         String newCtrl = "";
         String oldCtrl = "";
         try {
@@ -139,8 +143,10 @@ public final class HandlerUtils {
      * Checks that the tenant id specified refers to a virtual network in the
      * system.
      *
-     * @param tenantId the tenant ID
-     * @throws InvalidTenantIdException if tenant ID is invalid
+     * @param tenantId
+     *            the tenant ID
+     * @throws InvalidTenantIdException
+     *             if tenant ID is invalid
      */
     public static void isValidTenantId(final int tenantId)
             throws InvalidTenantIdException {
@@ -158,8 +164,10 @@ public final class HandlerUtils {
      * Checks that the host ID specified refers to a valid host in the virtual
      * network.
      *
-     * @param tenantId the tenant ID
-     * @param hostId the host ID
+     * @param tenantId
+     *            the tenant ID
+     * @param hostId
+     *            the host ID
      * @throws InvalidHostException
      * @throws NetworkMappingException
      */
@@ -177,11 +185,13 @@ public final class HandlerUtils {
     }
 
     /**
-     * Checks that the link id specified refers to a pair of virtual links in the
-     * virtual network.
+     * Checks that the link id specified refers to a pair of virtual links in
+     * the virtual network.
      *
-     * @param tenantId the tenant ID
-     * @param linkId the link ID
+     * @param tenantId
+     *            the tenant ID
+     * @param linkId
+     *            the link ID
      * @throws InvalidLinkException
      */
     public static void isValidLinkId(final int tenantId, final int linkId)
@@ -208,9 +218,12 @@ public final class HandlerUtils {
      * Checks that the route id specified refers to a pair of virtual route in
      * the big-switch belonging to the virtual network.
      *
-     * @param tenantId the tenant ID
-     * @param dpid the datapath ID
-     * @param routeId the route ID
+     * @param tenantId
+     *            the tenant ID
+     * @param dpid
+     *            the datapath ID
+     * @param routeId
+     *            the route ID
      * @throws InvalidRouteException
      * @throws NetworkMappingException
      */
@@ -235,8 +248,10 @@ public final class HandlerUtils {
     /**
      * Checks that the switch id specified belongs to the virtual network.
      *
-     * @param tenantId the tenant ID
-     * @param dpid the datapath ID
+     * @param tenantId
+     *            the tenant ID
+     * @param dpid
+     *            the datapath ID
      * @throws InvalidDPIDException
      */
     public static void isValidOVXSwitch(final int tenantId, final long dpid)
@@ -262,8 +277,10 @@ public final class HandlerUtils {
      * Checks that the switch id specified belongs to the virtual network and is
      * of type OVXBigSwitch.
      *
-     * @param tenantId the tenant ID
-     * @param dpid the datapath ID
+     * @param tenantId
+     *            the tenant ID
+     * @param dpid
+     *            the datapath ID
      * @throws NetworkMappingException
      * @throws InvalidDPIDException
      */
@@ -287,12 +304,14 @@ public final class HandlerUtils {
     /**
      * Checks that the physical dpids that are provided all actually refer to a
      * physical switch in the physical network. If any of them does not exist
-     * then we throw an exception. If a physical dpid is not connected to
-     * any of the other ones, throw an exception. If physical dpid is already
-     * mapped to a virtual switch then throw an exception.
+     * then we throw an exception. If a physical dpid is not connected to any of
+     * the other ones, throw an exception. If physical dpid is already mapped to
+     * a virtual switch then throw an exception.
      *
-     * @param tenantId tenant ID
-     * @param dpids the list of datapath IDs
+     * @param tenantId
+     *            tenant ID
+     * @param dpids
+     *            the list of datapath IDs
      * @throws InvalidDPIDException
      */
     public static void isValidDPID(final int tenantId, final List<Long> dpids)
@@ -316,7 +335,8 @@ public final class HandlerUtils {
 
             // Are all dpids connected - only relevant when creating a bigswitch
             if (dpids.size() > 1) {
-                Set<PhysicalSwitch> neighbours = physicalNetwork.getNeighbors(sw);
+                Set<PhysicalSwitch> neighbours = physicalNetwork
+                        .getNeighbors(sw);
                 Set<Long> neighbourDpids = new HashSet<Long>();
                 for (PhysicalSwitch neighbour : neighbours) {
                     neighbourDpids.add(neighbour.getSwitchId());
@@ -331,7 +351,8 @@ public final class HandlerUtils {
 
             // Is the physical switch already used by another virtual switch?
             try {
-                OVXSwitch vsw = OVXMap.getInstance().getVirtualSwitch(sw, tenantId);
+                OVXSwitch vsw = OVXMap.getInstance().getVirtualSwitch(sw,
+                        tenantId);
                 if (vsw != null) {
                     throw new InvalidDPIDException(
                             "The physical dpid is already part of a "
@@ -339,19 +360,23 @@ public final class HandlerUtils {
                                     + String.valueOf(dpid));
                 }
             } catch (SwitchMappingException e) {
-                // No virtual switch maps to the given physical switch - this is what we want
+                // No virtual switch maps to the given physical switch - this is
+                // what we want
                 continue;
             }
-
         }
     }
 
     /**
-     * Checks if the virtual port number specified is present on the virtual switch.
+     * Checks if the virtual port number specified is present on the virtual
+     * switch.
      *
-     * @param tenantId the tenant ID
-     * @param dpid the datapath ID
-     * @param portNumber the port number
+     * @param tenantId
+     *            the tenant ID
+     * @param dpid
+     *            the datapath ID
+     * @param portNumber
+     *            the port number
      * @throws InvalidPortException
      * @throws NetworkMappingException
      */
@@ -372,7 +397,8 @@ public final class HandlerUtils {
     /**
      * Checks if the priority specified is in the allowed range [0,127].
      *
-     * @param priority the priority value
+     * @param priority
+     *            the priority value
      * @throws InvalidPriorityException
      */
     public static void isValidPriority(final int priority)
@@ -386,7 +412,8 @@ public final class HandlerUtils {
     /**
      * Checks if the host MAC address is not yet registered in the map.
      *
-     * @param mac the MAC address
+     * @param mac
+     *            the MAC address
      * @throws InvalidPriorityException
      */
     public static void isUniqueHostMAC(final MACAddress mac)
@@ -402,9 +429,12 @@ public final class HandlerUtils {
      * Checks if the physical port number specified is present on the physical
      * switch.
      *
-     * @param tenantId the tenant ID
-     * @param dpid the datapath ID
-     * @param portNumber the port number
+     * @param tenantId
+     *            the tenant ID
+     * @param dpid
+     *            the datapath ID
+     * @param portNumber
+     *            the port number
      * @throws InvalidPortException
      * @throws SwitchMappingException
      */
@@ -432,7 +462,8 @@ public final class HandlerUtils {
      * dstSwitch of a physical Link is a SrcSwitch of the next physical link and
      * the physical ports are different).
      *
-     * @param physicalLinks the path
+     * @param physicalLinks
+     *            the path
      * @throws VirtualLinkException
      */
 
@@ -466,19 +497,25 @@ public final class HandlerUtils {
      * Checks that the virtual ports (virtual link end-points) are mapped on the
      * same physical ports that delimit the physical path.
      *
-     * @param tenantId the tenant ID
-     * @param srcDpid the virtual source datapath ID
-     * @param ovxSrcPort the source port number
-     * @param dstDpid the virtual destination datapath ID
-     * @param ovxDstPort the destination port number
-     * @param physicalLinks the path
+     * @param tenantId
+     *            the tenant ID
+     * @param srcDpid
+     *            the virtual source datapath ID
+     * @param ovxSrcPort
+     *            the source port number
+     * @param dstDpid
+     *            the virtual destination datapath ID
+     * @param ovxDstPort
+     *            the destination port number
+     * @param physicalLinks
+     *            the path
      * @throws NetworkMappingException
      * @throws VirtualLinkException
      */
     public static void areValidLinkEndPoints(final int tenantId,
             final long srcDpid, final short ovxSrcPort, final long dstDpid,
             final short ovxDstPort, final List<PhysicalLink> physicalLinks)
-                    throws NetworkMappingException {
+            throws NetworkMappingException {
         OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(tenantId);
         OVXPort srcPort = net.getSwitch(srcDpid).getPort(ovxSrcPort);
         OVXPort dstPort = net.getSwitch(dstDpid).getPort(ovxDstPort);
@@ -486,41 +523,40 @@ public final class HandlerUtils {
                 .equals(physicalLinks.get(0).getSrcPort())) {
             throw new VirtualLinkException(
                     "The virtual link source port and the physical path src port are"
-                    + "not mapped on the same physical port. Virtual port is mapped on: "
+                            + "not mapped on the same physical port. Virtual port is mapped on: "
                             + srcPort.getPhysicalPort().getParentSwitch()
-                            .getSwitchName()
+                                    .getSwitchName()
                             + "/"
                             + srcPort.getPhysicalPort().getPortNumber()
                             + ", physical path starts from: "
                             + physicalLinks.get(0).getSrcPort()
-                            .getParentSwitch().getSwitchName()
-                            + "/"
+                                    .getParentSwitch().getSwitchName() + "/"
                             + physicalLinks.get(0).getSrcPort().getPortNumber());
         }
         if (!dstPort.getPhysicalPort().equals(
                 physicalLinks.get(physicalLinks.size() - 1).getDstPort())) {
             throw new VirtualLinkException(
                     "The virtual link destination port and the physical path dst port are"
-                    + "not mapped on the same physical port. Virtual port is mapped on: "
+                            + "not mapped on the same physical port. Virtual port is mapped on: "
                             + dstPort.getPhysicalPort().getParentSwitch()
-                            .getSwitchName()
+                                    .getSwitchName()
                             + "/"
                             + dstPort.getPhysicalPort().getPortNumber()
                             + ", physical path starts from: "
                             + physicalLinks.get(physicalLinks.size() - 1)
-                            .getDstPort().getParentSwitch()
-                            .getSwitchName()
+                                    .getDstPort().getParentSwitch()
+                                    .getSwitchName()
                             + "/"
                             + physicalLinks.get(physicalLinks.size() - 1)
-                            .getDstPort().getPortNumber());
+                                    .getDstPort().getPortNumber());
         }
     }
 
     /**
-     * Gets the list of physical link instances based on the given
-     * path string.
+     * Gets the list of physical link instances based on the given path string.
      *
-     * @param pathString the path string
+     * @param pathString
+     *            the path string
      * @return list of physical links
      */
     public static List<PhysicalLink> getPhysicalPath(String pathString) {
@@ -548,5 +584,19 @@ public final class HandlerUtils {
                     "Need to specify a path of at least one hop lenght");
         }
         return physicalLinks;
+    }
+
+    protected static List<OVXLink> fetchOVXLink(Mappable map,
+            PhysicalLink phyLink, int tenantId) {
+        if (map.hasOVXLinks(phyLink, tenantId)) {
+            try {
+                return map.getVirtualLinks(phyLink, tenantId);
+            } catch (LinkMappingException e) {
+                throw new RuntimeException(
+                        "Unexpected Inconsistency in OXVMap: " + e.getMessage());
+            }
+        } else {
+            return null;
+        }
     }
 }

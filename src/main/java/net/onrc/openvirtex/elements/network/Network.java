@@ -22,12 +22,15 @@ import java.util.Map;
 import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.port.Port;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.linkdiscovery.LLDPEventHandler;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.util.HexString;
 
 import com.google.gson.annotations.Expose;
@@ -38,13 +41,16 @@ import com.google.gson.annotations.SerializedName;
  * Abstract parent class for networks, maintains data structures for the
  * topology graph.
  *
- * @param <T1> generic Switch type
- * @param <T2> generic Port type
- * @param <T3> Generic Link type
+ * @param <T1>
+ *            generic Switch type
+ * @param <T2>
+ *            generic Port type
+ * @param <T3>
+ *            Generic Link type
  */
 @SuppressWarnings("rawtypes")
 public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link>
-        implements LLDPEventHandler, OVXSendMsg {
+        implements LLDPEventHandler, OVXSendMsg, Component {
 
     @SerializedName("switches")
     @Expose
@@ -55,6 +61,7 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     protected final Map<Long, T1> dpidMap;
     protected final Map<T2, T2> neighborPortMap;
     protected final Map<T1, HashSet<T1>> neighborMap;
+    protected Logger log = LogManager.getLogger(Network.class.getName());
 
     /**
      * Instantiates the network.
@@ -72,7 +79,8 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Adds link to topology data structures.
      *
-     * @param link the link
+     * @param link
+     *            the link
      */
     @SuppressWarnings("unchecked")
     protected void addLink(final T3 link) {
@@ -85,7 +93,11 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
         final Port dstPort = link.getSrcPort();
         srcPort.setEdge(false);
         dstPort.setEdge(false);
-        final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
+        HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
+        if (neighbours == null) {
+            neighbours = new HashSet<T1>();
+            this.neighborMap.put(srcSwitch, neighbours);
+        }
         neighbours.add(dstSwitch);
         this.neighborPortMap
                 .put((T2) link.getSrcPort(), (T2) link.getDstPort());
@@ -94,7 +106,8 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Removes link to topology.
      *
-     * @param link the link
+     * @param link
+     *            the link
      * @return true if successful, false otherwise
      */
     @SuppressWarnings("unchecked")
@@ -107,7 +120,10 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
         srcPort.setEdge(true);
         dstPort.setEdge(true);
         final HashSet<T1> neighbours = this.neighborMap.get(srcSwitch);
-        neighbours.remove(dstSwitch);
+        /* neighbour may have already been removed by symmetric call */
+        if (neighbours != null) {
+            neighbours.remove(dstSwitch);
+        }
         this.neighborPortMap.remove(link.getSrcPort());
         return true;
     }
@@ -115,7 +131,8 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Adds switch to topology.
      *
-     * @param sw the switch
+     * @param sw
+     *            the switch
      */
     protected void addSwitch(final T1 sw) {
         if (this.switchSet.add(sw)) {
@@ -127,7 +144,8 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Removes switch from topology.
      *
-     * @param sw the switch
+     * @param sw
+     *            the switch
      * @return true if successful, false otherwise
      */
     protected boolean removeSwitch(final T1 sw) {
@@ -144,7 +162,8 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Returns neighbor switches of given switch.
      *
-     * @param sw the switch
+     * @param sw
+     *            the switch
      * @return Unmodifiable set of switch instances.
      */
     public Set<T1> getNeighbors(final T1 sw) {
@@ -154,7 +173,8 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Returns neighbor port of given port.
      *
-     * @param port the port
+     * @param port
+     *            the port
      * @return the neighbour port
      */
     public T2 getNeighborPort(final T2 port) {
@@ -164,7 +184,8 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Returns switch instance based on its dpid.
      *
-     * @param dpid the datapath ID
+     * @param dpid
+     *            the datapath ID
      * @return the switch instance
      */
     public T1 getSwitch(final Long dpid) throws InvalidDPIDException {
@@ -197,8 +218,10 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
     /**
      * Gets the link instance between the given ports.
      *
-     * @param srcPort the source port
-     * @param dstPort the destination port
+     * @param srcPort
+     *            the source port
+     * @param dstPort
+     *            the destination port
      * @return the link instance, null if it doesn't exist
      */
     public T3 getLink(final T2 srcPort, final T2 dstPort) {

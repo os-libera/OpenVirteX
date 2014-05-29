@@ -124,8 +124,8 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
      * @param port the port
      */
     public void addPort(final PhysicalPort port) {
-        // Ignore ports that are not on this switch
-        if (port.getParentSwitch().equals(this.sw)) {
+        // Ignore ports that are not on this switch, or already booted. */
+        if (port.boot() && port.getParentSwitch().equals(this.sw)) {
             synchronized (this) {
                 this.log.debug("sending init probe to port {}",
                         port.getPortNumber());
@@ -155,6 +155,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     public void removePort(final PhysicalPort port) {
         // Ignore ports that are not on this switch
         if (port.getParentSwitch().equals(this.sw)) {
+            port.tearDown();
             short portnum = port.getPortNumber();
             synchronized (this) {
                 if (this.slowPorts.contains(portnum)) {
@@ -240,7 +241,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     }
 
     /**
-     * Creates packet_out LLDP for specified output port.
+     * Creates packet_out BDDP for specified output port.
      *
      * @param port the port
      * @return Packet_out message with LLDP data
@@ -273,7 +274,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
         return packetOut;
     }
 
-
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
         this.sw.sendMsg(msg, this);
@@ -292,7 +292,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
         }
         return count;
     }
-
 
     @Override
     public String getName() {

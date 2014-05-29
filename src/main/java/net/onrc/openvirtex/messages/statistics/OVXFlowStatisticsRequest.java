@@ -42,7 +42,6 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 
     Logger log = LogManager.getLogger(OVXFlowStatisticsRequest.class.getName());
 
-
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,
             final OVXStatisticsRequest msg) {
@@ -50,12 +49,8 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
         HashSet<Long> uniqueCookies = new HashSet<Long>();
         int tid = sw.getTenantId();
         int length = 0;
-
-        if ((this.match.getWildcardObj().isFull() || this.match.getWildcards() == -1) // the
-                                                                                      // -1
-                                                                                      // is
-                                                                                      // for
-                                                                                      // beacon...
+        //the -1 is for beacon...
+        if ((this.match.getWildcardObj().isFull() || this.match.getWildcards() == -1)
                 && this.outPort == OFPort.OFPP_NONE.getValue()) {
             for (PhysicalSwitch psw : getPhysicalSwitches(sw)) {
                 List<OVXFlowStatisticsReply> reps = psw.getFlowStats(tid);
