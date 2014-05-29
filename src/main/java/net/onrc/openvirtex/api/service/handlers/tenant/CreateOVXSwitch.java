@@ -44,7 +44,6 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
  */
 public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 
-
     private Logger log = LogManager.getLogger(CreateOVXSwitch.class.getName());
 
     @Override
@@ -126,6 +125,5 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
     public JSONRPC2ParamsType getType() {
         return JSONRPC2ParamsType.OBJECT;
     }
-
 
 }

@@ -30,7 +30,6 @@ public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 
     @Override
     public void virtualize(final PhysicalSwitch sw) {
-
         int tid = (int) (this.cookie >> 32);
 
         /* a PhysSwitch can be a OVXLink */

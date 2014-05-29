@@ -42,7 +42,6 @@ import org.openflow.util.U16;
 
 public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
 
-
     private final Logger log = LogManager.getLogger(OVXPacketOut.class
             .getName());
     private OFMatch match = null;
@@ -169,6 +168,5 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
         this.setLengthU((short) (OFPacketOut.MINIMUM_LENGTH
                 + this.getPacketData().length + OFActionOutput.MINIMUM_LENGTH));
     }
-
 
 }

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.port.Port;
@@ -40,7 +41,7 @@ import com.google.gson.annotations.SerializedName;
  */
 @SuppressWarnings("rawtypes")
 public abstract class Link<T1 extends Port, T2 extends Switch> implements
-        Persistable {
+        Persistable, Component {
 
     private Logger log = LogManager.getLogger(Link.class.getName());
 
@@ -49,10 +50,12 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements
      */
     public static final String DB_KEY = "links";
 
+    /** The source port. */
     @SerializedName("src")
     @Expose
     protected T1 srcPort = null;
 
+    /** The destination port. */
     @SerializedName("dst")
     @Expose
     protected T1 dstPort = null;
@@ -111,11 +114,7 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements
 
     @Override
     public String toString() {
-        final String srcSwitch = this.getSrcSwitch().getSwitchName().toString();
-        final String dstSwitch = this.getDstSwitch().getSwitchName().toString();
-        final short srcPort = this.srcPort.getPortNumber();
-        final short dstPort = this.dstPort.getPortNumber();
-        return srcSwitch + "/" + srcPort + "-" + dstSwitch + "/" + dstPort;
+        return this.srcPort.toAP().concat("-").concat(this.dstPort.toAP());
     }
 
     /**
@@ -216,5 +215,9 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements
                 .getSwitchId());
         dbObject.put(TenantHandler.DST_PORT, this.dstPort.getPortNumber());
         return dbObject;
+    }
+
+    public void register() {
+        // do nothing
     }
 }

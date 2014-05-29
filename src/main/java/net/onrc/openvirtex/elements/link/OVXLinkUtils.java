@@ -41,11 +41,17 @@ public class OVXLinkUtils {
 
     private static Logger log = LogManager.getLogger(OVXLinkUtils.class
             .getName());
+    /** The tenant id. */
     private Integer tenantId;
+    /** The link id. */
     private Integer linkId;
+    /** The flow id. */
     private Integer flowId;
+    /** The src mac address. */
     private MACAddress srcMac;
+    /** The dst mac address. */
     private MACAddress dstMac;
+    /** The vlan. */
     private Short vlan;
 
     /**

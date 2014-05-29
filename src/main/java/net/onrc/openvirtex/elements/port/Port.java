@@ -40,7 +40,6 @@ import org.openflow.protocol.OFPhysicalPort;
  */
 
 @SuppressWarnings("rawtypes")
-
 public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
         implements Persistable {
 
@@ -174,7 +173,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
         final int prime = 307;
         int result = 1;
         result = prime * result + this.advertisedFeatures;
-        result = prime * result + this.config;
+        // result = prime * result + this.config;
         result = prime * result + Arrays.hashCode(this.hardwareAddress);
         result = prime * result
                 + (this.name == null ? 0 : this.name.hashCode());
@@ -230,5 +229,18 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
 
     public DPIDandPort toDPIDandPort() {
         return new DPIDandPort(this.parentSwitch.getSwitchId(), this.portNumber);
+    }
+
+    /**
+     * Pretty "Attachment Point" format string representation of a Port.
+     * @return String in [DPID/port] format
+     */
+    public String toAP() {
+        return "[" + (this.parentSwitch == null ? "null" : this.parentSwitch
+                .getSwitchName()) + "/" + this.getPortNumber() + "]";
+    }
+
+    public boolean isAdminDown() {
+        return (this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) != 0;
     }
 }

@@ -49,16 +49,170 @@ import org.openflow.protocol.OFPort;
 public final class PhysicalNetwork extends
         Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 
+    /**
+     * The states of the PhysicalNetwork. Note, methods like boot() and
+     * register() are there for procedural consistency w.r.t other components.
+     */
+    enum NetworkState {
+        INIT {
+            protected boolean register() {
+                log.info("Booting...");
+                instance.state = NetworkState.INACTIVE;
+                return true;
+            }
+        },
+        INACTIVE {
+            protected boolean boot() {
+                log.info("Enabling...");
+                instance.state = NetworkState.ACTIVE;
+                return true;
+            }
+
+            protected void unregister() {
+                log.info("Shutting down...");
+                instance.state = NetworkState.STOPPED;
+                PhysicalNetwork.reset();
+            }
+        },
+        ACTIVE {
+            protected boolean teardown() {
+                log.info("Disabling...");
+                instance.state = NetworkState.INACTIVE;
+                return true;
+            }
+
+            protected void addSwitch(PhysicalSwitch sw) {
+                log.info("adding new Switch [DPID={}]", sw.getSwitchName());
+                instance.addDP(sw);
+            }
+
+            protected boolean removeSwitch(PhysicalSwitch sw) {
+                log.info("removing Switch [DPID={}]", sw.getSwitchName());
+                return instance.removeDP(sw);
+            }
+
+            protected void addPort(PhysicalPort port) {
+                SwitchDiscoveryManager sdm = instance.discoveryManager.get(port
+                        .getParentSwitch().getSwitchId());
+                if ((sdm != null)
+                        && (port.getPortNumber() != OFPort.OFPP_LOCAL
+                                .getValue())) {
+                    // Do not run discovery on local OpenFlow port
+                    sdm.addPort(port);
+                }
+            }
+
+            protected void removePort(PhysicalPort port) {
+                disablePort(port);
+                /* remove link from this network's mappings */
+                PhysicalPort dst = instance.neighborPortMap.get(port);
+                if (dst != null) {
+                    this.removeLink(port, dst);
+                }
+            }
+
+            protected void removeLink(final PhysicalPort src,
+                    final PhysicalPort dst) {
+                instance.removeEdge(src, dst);
+            }
+
+            @SuppressWarnings("rawtypes")
+            protected void handleLLDP(OFMessage msg, Switch sw) {
+                // Pass msg to appropriate SwitchDiscoveryManager
+                final SwitchDiscoveryManager sdm = instance.discoveryManager
+                        .get(sw.getSwitchId());
+                if (sdm != null) {
+                    sdm.handleLLDP(msg, sw);
+                }
+            }
+
+            protected void disablePort(PhysicalPort port) {
+                SwitchDiscoveryManager sdm;
+                sdm = instance.discoveryManager.get(port.getParentSwitch()
+                        .getSwitchId());
+                if (sdm == null) {
+                    log.warn("Attempted to disable a non-existent PhysicalLink");
+                    return;
+                }
+                sdm.removePort(port);
+            }
+        },
+        STOPPED;
+
+        protected boolean boot() {
+            log.warn("Already booted");
+            return false;
+        }
+
+        protected boolean register() {
+            log.warn("Already registered");
+            return false;
+        }
+
+        protected boolean teardown() {
+            log.warn("Can't disable from state={}", instance.state);
+            return false;
+        }
+
+        protected void unregister() {
+            log.warn("Can't shut down from state={}, teardown first?",
+                    instance.state);
+        }
+
+        @SuppressWarnings("rawtypes")
+        protected void handleLLDP(OFMessage msg, Switch sw) {
+            log.warn("ignoring LLDPs while state={}", instance.state);
+        }
+
+        protected void addPort(PhysicalPort port) {
+            log.warn("can't add new port [{}, DP={}] while state={}", port
+                    .getPortNumber(), port.getParentSwitch().getSwitchName(),
+                    instance.state);
+        }
+
+        protected void removePort(PhysicalPort port) {
+            log.warn("can't remove port [{}, DP={}] while state={}", port
+                    .getPortNumber(), port.getParentSwitch().getSwitchName(),
+                    instance.state);
+        }
+
+        protected void addSwitch(PhysicalSwitch sw) {
+            log.warn("can't add new switch [DPID={}] while state={}",
+                    sw.getSwitchName(), instance.state);
+        }
+
+        protected boolean removeSwitch(PhysicalSwitch sw) {
+            log.warn("can't remove switch [DPID={}] while state={}",
+                    sw.getSwitchName(), instance.state);
+            return false;
+        }
+
+        protected void removeLink(PhysicalPort src, PhysicalPort dst) {
+            log.warn(
+                    "can't remove link [src={}/{}, dst={}/{}] while state={}",
+                    new Object[] { src.getParentSwitch().getSwitchName(),
+                            src.getPortNumber(),
+                            dst.getParentSwitch().getSwitchName(),
+                            dst.getPortNumber(), instance.state });
+        }
+
+        protected void disablePort(PhysicalPort port) {
+
+        }
+    }
+
     private static PhysicalNetwork instance;
     private ArrayList<Uplink> uplinkList;
     private final ConcurrentHashMap<Long, SwitchDiscoveryManager> discoveryManager;
     private static HashedWheelTimer timer;
     private static Logger log = LogManager.getLogger(PhysicalNetwork.class.getName());
+    private NetworkState state;
 
     private PhysicalNetwork() {
         PhysicalNetwork.log.info("Starting network discovery...");
         // PhysicalNetwork.timer = new HashedWheelTimer();
         this.discoveryManager = new ConcurrentHashMap<Long, SwitchDiscoveryManager>();
+        this.state = NetworkState.INIT;
     }
 
     public static PhysicalNetwork getInstance() {
@@ -96,6 +250,15 @@ public final class PhysicalNetwork extends
      */
     @Override
     public synchronized void addSwitch(final PhysicalSwitch sw) {
+        this.state.addSwitch(sw);
+    }
+
+    /**
+     * Helper method to addSwitch, invoked when state is ACTIVE.
+     * 
+     * @param sw
+     */
+    private void addDP(final PhysicalSwitch sw) {
         super.addSwitch(sw);
         this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
                 sw, OpenVirteXController.getInstance().getUseBDDP()));
@@ -108,11 +271,16 @@ public final class PhysicalNetwork extends
      * @param sw the switch
      */
     public boolean removeSwitch(final PhysicalSwitch sw) {
+        return this.state.removeSwitch(sw);
+    }
+
+    private boolean removeDP(final PhysicalSwitch sw) {
         DBManager.getInstance().delSwitch(sw.getSwitchId());
         SwitchDiscoveryManager sdm = this.discoveryManager
                 .get(sw.getSwitchId());
+        /* only called from ACTIVE, so we can do this */
         for (PhysicalPort port : sw.getPorts().values()) {
-            removePort(sdm, port);
+            sdm.removePort(port);
         }
         if (sdm != null) {
             this.discoveryManager.remove(sw.getSwitchId());
@@ -126,15 +294,7 @@ public final class PhysicalNetwork extends
      * @param port the port
      */
     public synchronized void addPort(final PhysicalPort port) {
-        SwitchDiscoveryManager sdm = this.discoveryManager.get(port
-                .getParentSwitch().getSwitchId());
-        if (sdm != null) {
-            // Do not run discovery on local OpenFlow port
-            if (port.getPortNumber() != OFPort.OFPP_LOCAL.getValue()) {
-                sdm.addPort(port);
-            }
-        }
-        DBManager.getInstance().addPort(port.toDPIDandPort());
+        this.state.addPort(port);
     }
 
     /**
@@ -143,25 +303,16 @@ public final class PhysicalNetwork extends
      * @param sdm switch discovery manager
      * @param port the port
      */
-    public synchronized void removePort(SwitchDiscoveryManager sdm,
-            final PhysicalPort port) {
-        DBManager.getInstance().delPort(port.toDPIDandPort());
-        port.unregister();
-        /* remove from topology discovery */
-        if (sdm != null) {
-            log.info("removing port {}", port.getPortNumber());
-            sdm.removePort(port);
-        }
-        /* remove from this network's mappings */
-        PhysicalPort dst = this.neighborPortMap.get(port);
-        if (dst != null) {
-            this.removeLink(port, dst);
-        }
+    public synchronized void removePort(final PhysicalPort port) {
+        this.state.removePort(port);
     }
 
     /**
-     * Creates link and adds it to the topology.
-     *
+     * Create link and add it to the topology. TODO: should only add when ports
+     * are added to the NW. this preserves symmetry wherein links are deleted
+     * ONLY if ports are deleted. Otherwise links should only deactivate, not be
+     * ripped out of the topology.
+     * 
      * @param srcPort source port
      * @param dstPort destination port
      */
@@ -172,10 +323,8 @@ public final class PhysicalNetwork extends
             final PhysicalLink link = new PhysicalLink(srcPort, dstPort);
             OVXMap.getInstance().knownLink(link);
             super.addLink(link);
-            log.info("Adding physical link between {}/{} and {}/{}", link
-                    .getSrcSwitch().getSwitchName(), link.getSrcPort()
-                    .getPortNumber(), link.getDstSwitch().getSwitchName(), link
-                    .getDstPort().getPortNumber());
+            log.info("Adding physical link between {} and {}", link
+                    .getSrcPort().toAP(), link.getDstPort().toAP());
             DPIDandPortPair dpp = new DPIDandPortPair(new DPIDandPort(srcPort
                     .getParentSwitch().getSwitchId(), srcPort.getPortNumber()),
                     new DPIDandPort(dstPort.getParentSwitch().getSwitchId(),
@@ -194,6 +343,14 @@ public final class PhysicalNetwork extends
      */
     public synchronized void removeLink(final PhysicalPort srcPort,
             final PhysicalPort dstPort) {
+        this.state.removeLink(srcPort, dstPort);
+    }
+
+    /**
+     * helper method called by removeLink in ACTIVE state
+     */
+    private synchronized void removeEdge(final PhysicalPort srcPort,
+            final PhysicalPort dstPort) {
         PhysicalPort neighbourPort = this.getNeighborPort(srcPort);
         if ((neighbourPort != null) && (neighbourPort.equals(dstPort))) {
             final PhysicalLink link = super.getLink(srcPort, dstPort);
@@ -202,11 +359,10 @@ public final class PhysicalNetwork extends
                     new DPIDandPort(dstPort.getParentSwitch().getSwitchId(),
                             dstPort.getPortNumber()));
             DBManager.getInstance().delLink(dpp);
-            super.removeLink(link);
-            log.info("Removing physical link between {}/{} and {}/{}", link
-                    .getSrcSwitch().getSwitchName(), link.getSrcPort()
-                    .getPortNumber(), link.getDstSwitch().getSwitchName(), link
-                    .getDstPort().getPortNumber());
+            link.unregister();
+            super.removeLink(link); /* sets ports to edge */
+            log.info("Removing physical link between {} and {}", link
+                    .getSrcPort().toAP(), link.getDstPort().toAP());
             super.removeLink(link);
         } else {
             PhysicalNetwork.log.debug("Tried to remove invalid link");
@@ -236,12 +392,7 @@ public final class PhysicalNetwork extends
     @SuppressWarnings("rawtypes")
     @Override
     public void handleLLDP(final OFMessage msg, final Switch sw) {
-        // Pass msg to appropriate SwitchDiscoveryManager
-        final SwitchDiscoveryManager sdm = this.discoveryManager.get(sw
-                .getSwitchId());
-        if (sdm != null) {
-            sdm.handleLLDP(msg, sw);
-        }
+        this.state.handleLLDP(msg, sw);
     }
 
     @Override
@@ -256,18 +407,43 @@ public final class PhysicalNetwork extends
 
     @Override
     public boolean boot() {
-        return true;
+        return this.state.boot();
     }
 
+    // TODO use MappingException to deal with null SDMs.
     /**
      * Gets the discovery manager for the given switch.
      * TODO use MappingException to deal with null SDMs
      *
-     * @param dpid the datapath ID
+     * @param switchDPID the datapath ID
      * @return the discovery manager instance
      */
-    public SwitchDiscoveryManager getDiscoveryManager(long dpid) {
-        return this.discoveryManager.get(dpid);
+    public SwitchDiscoveryManager getDiscoveryManager(long switchDPID) {
+        return this.discoveryManager.get(switchDPID);
+    }
+
+    @Override
+    public void register() {
+        this.state.register();
+    }
+
+    @Override
+    public void unregister() {
+        this.state.unregister();
+    }
+
+    @Override
+    public boolean tearDown() {
+        return this.state.teardown();
+    }
+
+    /**
+     * Deactivates a PhysicalLink by removing it from topology discovery.
+     * 
+     * @param link
+     */
+    public void disablePort(final PhysicalPort port) {
+        this.state.disablePort(port);
     }
 
 }
