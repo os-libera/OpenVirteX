@@ -17,6 +17,7 @@ package net.onrc.openvirtex.elements.network;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -224,7 +225,12 @@ public final class PhysicalNetwork extends
 
     public static HashedWheelTimer getTimer() {
         if (PhysicalNetwork.timer == null) {
-            PhysicalNetwork.timer = new HashedWheelTimer();
+            /*
+             * 100ms tickduration is absolutely fine for I/O timeouts.
+             * If not, ask yourself "why?"
+             */
+            PhysicalNetwork.timer = new HashedWheelTimer(100, TimeUnit.MILLISECONDS, 
+                    OpenVirteXController.getInstance().getHashSize());
         }
         return PhysicalNetwork.timer;
     }
