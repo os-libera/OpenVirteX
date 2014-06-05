@@ -88,6 +88,8 @@ public class OpenVirteXController implements Runnable {
 
     private final Boolean useBDDP;
 
+	private final Integer hashSize;
+
     public OpenVirteXController(CmdLineSettings settings) {
         this.ofHost = settings.getOFHost();
         this.ofPort = settings.getOFPort();
@@ -99,6 +101,9 @@ public class OpenVirteXController implements Runnable {
         this.nClientThreads = settings.getClientThreads();
         this.nServerThreads = settings.getServerThreads();
         this.useBDDP = settings.getUseBDDP();
+        this.hashSize = settings.getHashSize();
+        OpenVirteXController.instance = this;
+        
         // by default, use Mac addresses to store vLinks informations
         this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
         this.clientThreads = new OrderedMemoryAwareThreadPoolExecutor(
@@ -106,7 +111,6 @@ public class OpenVirteXController implements Runnable {
         this.serverThreads = new OrderedMemoryAwareThreadPoolExecutor(
                 nServerThreads, 1048576, 1048576, 5, TimeUnit.SECONDS);
         this.pfact = new SwitchChannelPipeline(this, this.serverThreads);
-        OpenVirteXController.instance = this;
         OpenVirteXController.tenantIdCounter = new BitSetIndex(
                 IndexType.TENANT_ID);
     }
@@ -292,6 +296,10 @@ public class OpenVirteXController implements Runnable {
 
     public Boolean getUseBDDP() {
         return this.useBDDP;
+    }
+    
+    public Integer getHashSize() {
+        return this.hashSize;
     }
 
 }
