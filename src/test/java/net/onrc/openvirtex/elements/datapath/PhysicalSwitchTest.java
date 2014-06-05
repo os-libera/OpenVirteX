@@ -167,6 +167,7 @@ public class PhysicalSwitchTest extends TestCase {
 		//Test: When both switch and port are active
 		Assert.assertTrue(psw.addPort(pp));
 	}
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
