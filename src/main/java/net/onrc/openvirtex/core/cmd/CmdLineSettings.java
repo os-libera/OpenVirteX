@@ -66,11 +66,15 @@ public class CmdLineSettings {
      * Default value if BDDP is used for discovery.
      */
     public static final Boolean DEFAULT_USE_BDDP = false;
+    /**
+     * Default value if HashedTimer size isn't specified
+     */
+    public static final Integer DEFAULT_HASHWHEEL_SIZE = 512;
 
     @Option(name = "-p", aliases = "--of-port", metaVar = "INT", usage = "OpenVirteX OpenFlow listen port")
     private Integer ofPort = CmdLineSettings.DEFAULT_OF_PORT;
 
-    @Option(name = "-h", aliases = "--of-host", metaVar = "String", usage = "OpenVirteX host")
+    @Option(name = "--of-host", metaVar = "String", usage = "OpenVirteX host")
     private String ofHost = CmdLineSettings.DEFAULT_OF_HOST;
 
     @Option(name = "-n", aliases = "--num-virtual", metaVar = "INT", usage = "The number of virtual networks")
@@ -88,14 +92,20 @@ public class CmdLineSettings {
     @Option(name = "--stats-refresh", usage = "Sets what interval to poll statistics with")
     private Integer statsRefresh = CmdLineSettings.DEFAULT_STATS_REFRESH;
 
-    @Option(name = "--ct", aliases = "--client-threads", metaVar = "INT", usage = "Number of threads handles controller connections")
+    @Option(name = "-ct", aliases = "--client-threads", metaVar = "INT", usage = "Number of threads handles controller connections")
     private Integer clientThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
 
-    @Option(name = "--st", aliases = "--server-threads", metaVar = "INT", usage = "Number of threads handles switch connections")
+    @Option(name = "-st", aliases = "--server-threads", metaVar = "INT", usage = "Number of threads handles switch connections")
     private Integer serverThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
 
-    @Option(name = "--ub", aliases = "--use-bddp", usage = "Use BDDP for network discovery; only use if you know what you are doing.")
+    @Option(name = "-ub", aliases = "--use-bddp", usage = "Use BDDP for network discovery; only use if you know what you are doing.")
     private Boolean useBDDP = CmdLineSettings.DEFAULT_USE_BDDP;
+    
+    @Option(name = "-t", aliases = "--timeout-num", usage = "Specify the number of timeouts supported in OVX; "
+    		+ "use only if you have a huge physical network")
+    private Integer hashSize = CmdLineSettings.DEFAULT_HASHWHEEL_SIZE;
+    
+    
 
     /**
      * Gets the host OVX is running on.
@@ -187,6 +197,15 @@ public class CmdLineSettings {
      */
     public Boolean getUseBDDP() {
         return this.useBDDP;
+    }
+    
+    /**
+     * Returns the hash wheel size
+     *
+     * @return the number of maximum simultaneous timeouts supported
+     */
+    public Integer getHashSize() {
+        return this.hashSize;
     }
 
 }
