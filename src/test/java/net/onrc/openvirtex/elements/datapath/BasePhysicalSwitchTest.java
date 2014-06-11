@@ -13,40 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package net.onrc.openvirtex;
+package net.onrc.openvirtex.elements.datapath;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import net.onrc.openvirtex.api.service.handlers.tenant.APITests;
-import net.onrc.openvirtex.core.BaseCtrlTests;
-import net.onrc.openvirtex.elements.BaseMapTests;
-import net.onrc.openvirtex.elements.address.BaseIPTests;
-import net.onrc.openvirtex.elements.datapath.BasePhysicalSwitchTest;
-import net.onrc.openvirtex.elements.datapath.BaseTranslatorTests;
 
 /**
- * Parent class for tests.
+ * Parent class for PhysicalSwitch tests.
  */
-public final class AllTests {
+public final class BasePhysicalSwitchTest {
 
     /**
      * Overrides default constructor to no-op private constructor.
      * Required by checkstyle.
      */
-    private AllTests() {
+    private BasePhysicalSwitchTest() {
     }
 
     public static Test suite() {
-        final TestSuite suite = new TestSuite(AllTests.class.getName());
+        final TestSuite suite = new TestSuite(
+        		BasePhysicalSwitchTest.class.getName());
         // $JUnit-BEGIN$
-        suite.addTest(BaseCtrlTests.suite());
-        suite.addTest(BaseMapTests.suite());
-        suite.addTest(BaseIPTests.suite());
-        suite.addTest(BaseTranslatorTests.suite());
-        suite.addTest(APITests.suite());
-        suite.addTest(BasePhysicalSwitchTest.suite());
+        suite.addTest(PhysicalSwitchTest.suite());
         // $JUnit-END$
         return suite;
     }
-
 }
