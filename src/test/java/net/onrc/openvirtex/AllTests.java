@@ -21,6 +21,7 @@ import net.onrc.openvirtex.api.service.handlers.tenant.APITests;
 import net.onrc.openvirtex.core.BaseCtrlTests;
 import net.onrc.openvirtex.elements.BaseMapTests;
 import net.onrc.openvirtex.elements.address.BaseIPTests;
+import net.onrc.openvirtex.elements.datapath.BasePhysicalSwitchTests;
 import net.onrc.openvirtex.elements.datapath.BaseTranslatorTests;
 
 /**
@@ -43,6 +44,7 @@ public final class AllTests {
         suite.addTest(BaseIPTests.suite());
         suite.addTest(BaseTranslatorTests.suite());
         suite.addTest(APITests.suite());
+        suite.addTest(BasePhysicalSwitchTests.suite());
         // $JUnit-END$
         return suite;
     }
