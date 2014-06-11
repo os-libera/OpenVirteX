@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
  * Copyright 2014 Open Networking Laboratory
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,29 +15,16 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 
-/**
- * Parent class for transaction ID translator tests.
- */
-public final class BaseTranslatorTests {
+import org.openflow.protocol.OFPhysicalPort;
 
-    /**
-     * Overrides default constructor to no-op private constructor.
-     * Required by checkstyle.
-     */
-    private BaseTranslatorTests() {
+public class TestPort extends PhysicalPort {
+
+    public TestPort(final PhysicalSwitch psw, final boolean IsEdge,
+            final byte[] hw, final short PortNumber) {
+        super(new OFPhysicalPort(), psw, IsEdge);
+        this.hardwareAddress = hw;
+        this.portNumber = PortNumber;
     }
-
-    public static Test suite() {
-        final TestSuite suite = new TestSuite(
-                BaseTranslatorTests.class.getName());
-        // $JUnit-BEGIN$
-        suite.addTest(TranslatorTest.suite());
-        suite.addTest(FlowTableTest.suite());
-        // $JUnit-END$
-        return suite;
-    }
-
 }
