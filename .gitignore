@@ -19,3 +19,11 @@
 *~
 
 .checkstyle
+
+#Content from utils/ui/.gitignore
+*.pyc
+*~
+
+#Content from utils/ui/webapp/static/data/.gitignore
+tmp
+

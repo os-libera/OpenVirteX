@@ -1,0 +1,202 @@
+/************************************************************************************
+layout.css
+
+	CSS related to fluid layout of UI elements
+	Hard coded dimensions, margins etc. are in skin.default.css
+
+************************************************************************************/
+
+
+html, body {
+	height: 100%;
+}
+
+body {
+	display: -webkit-box;
+	margin: 0px;
+}
+
+#background, #background-image {
+	width: 100%;
+	height: 100%;
+}
+
+#contents {
+	width: 100%;
+	height: 100%;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+#physical, #virtual {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+}
+
+#stopPing, #firewallImage {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+}
+
+.host text, .host rect  {
+	visibility: hidden;
+}
+
+.host.used text, .host.used rect  {
+	visibility: visible;
+}
+
+#lastUpdated {
+	position: relative;
+	width: 50%;
+	height: 100%;
+}
+#lastUpdate {
+	position: absolute;
+	bottom: 2px;
+	right: 6px;
+}
+
+
+#physicalContainer, #virtualContainer {
+	width: 100%;
+	position: relative;
+	-webkit-box-flex: 1.0;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+#virtualContainer  {
+	-webkit-box-flex: .9;
+}
+
+#virtualSVGContainer {
+	width: 100%;
+}
+
+#virtualSVGContainerPadding {
+	display: -webkit-box;
+	-webkit-box-flex: 1.0;
+	position: relative;
+	padding: .25em;
+}
+
+
+#flowTableContainer {
+	height: 100%;
+	width: 100%;
+	-webkit-box-flex: 1.0;
+	display: -webkit-box;
+	overflow:scroll;
+	position: relative;
+}
+
+#flowtableContents {
+	width: 100%;
+}
+
+#flowTable {
+	display: -webkit-box;
+	width: 100%;
+	-webkit-box-orient: vertical;
+	-webkit-box-flex: 1.0;
+	position: relative;
+}
+
+#physical-svg, #virtual-svg{
+	width: 100%;
+	height: 100%;
+}
+
+#topologyArea {
+	width: 100%;
+	height: 0px;
+	padding-bottom: 40%;
+	position: relative;
+}
+
+#topologyPanes {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	display: -webkit-box;
+}
+
+#header {
+	width: 100%;
+	display: -webkit-box;
+	-webkit-box-pack: justify;
+	-webkit-box-align: center;
+}
+
+#virtualNetworkSelector {
+	display: -webkit-box;
+	width: 100%;
+}
+
+#virtualNetworkSelector .virtualNetwork {
+	position: relative;
+	-webkit-box-flex: 1.0;
+	position: relative;
+}
+
+#virtualNetworks {
+	display: -webkit-box;
+	-webkit-box-flex: 1.0;
+}
+
+
+.topologyHeaderLabel {
+	display: -webkit-box;
+	-webkit-box-pack: center;
+	-webkit-box-align: center;
+	width: 100%;
+}
+
+#virtualNetworkSelector .eye {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	background-size: auto 100%;
+}
+
+
+.spaceFiller {
+	display: -webkit-box;
+	-webkit-box-flex: 1.0;
+}
+
+.flowtableHeader {
+	display: -webkit-box;
+	color:black;
+	background-color: #748c5c;
+}
+
+.flowtableEntry{
+	display: -webkit-box;
+	color:black;
+	background-color: #ffffff;
+}
+
+.flowtableCell {
+	-webkit-box-flex: 1.0;
+	-webkit-box-pack: center;
+	text-align: center;
+}
+
+
+
+
+
+
+
+
