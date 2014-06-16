@@ -1,0 +1,4 @@
+// install graphviz (varies per platform)
+$ pip install flask
+$ pip install pygraphviz
+$ python proxy.py

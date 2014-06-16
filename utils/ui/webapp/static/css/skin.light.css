@@ -1,0 +1,178 @@
+/******************************************
+TOPOLOGY COLORS
+******************************************/
+/* physical elements not in use by the current virtual network */
+.light .link path.displayarea,
+.light .switch ellipse,
+.light .host polygon {
+	stroke: #aaa;
+}
+
+/**Ami
+.light .switch.core-switch-color ellipse{
+	fill: #0099CC !important;
+}
+**/
+.light .switch ellipse,
+.light .host polygon {
+	fill: #ccc;
+}
+
+/* virtual elements and physical elements in use by the current virtual network */
+.light .link.used path.displayarea,
+.light .switch.used ellipse,
+.light .host.used polygon {
+	stroke: #444;
+}
+
+.light .switch.used ellipse {
+	fill: #666;
+}
+
+/**Ami
+.light .switch.core-switch-used-color ellipse {
+	fill: #336666 !important;
+}
+**/
+.light .host.used polygon {
+	fill: white;
+}
+
+.light .linking.host.used polygon {
+	fill: #0040ff;
+}
+
+.light .flowpath.used,
+.light .flowpath.selected  {
+	stroke:white;
+}
+
+/* mouseover highlight colors */
+.light .highlight.switch ellipse,
+.light .highlight.host polygon {
+	fill: #0040ff;
+	stroke: #222;
+}
+
+.light .link.used.highlight path.displayarea {
+	stroke: #0040ff;
+}
+
+.light .link.pending path.displayarea {
+	stroke: red;
+}
+
+/******************************************
+MISC
+******************************************/
+.light #stopPing {
+	background-color: white;
+}
+
+
+.light .flowtableDisplayed.switch.used ellipse,
+.light .flowtableDisplayed.switch ellipse {
+	stroke: green;
+	fill: green;
+}
+
+.light .host.selected polygon {
+	stroke: green;
+	fill: green;
+}
+
+.light .highlight.selected.host polygon {
+	fill: #0040ff;
+}
+
+/******************************************
+GENERAL COLORS AND BORDER WEIGHTS
+******************************************/
+
+body.light {
+	background-color: white;
+}
+
+.light #topologyPanes {
+	border-bottom: 1px solid #888;
+}
+
+.light #virtualContainer {
+	margin: 6px;
+	border: 1px solid #888;
+	background-color: white;
+}
+
+.light .opacityMask {
+	opacity: .025;
+	background-color: black;
+}
+
+.light #contents {
+	background-color: white;
+}
+
+/******************************************
+TEXT
+******************************************/
+.light .switch text {
+	font-weight: 800;
+	font-size: 13px;
+	fill: #EEE;
+}
+
+.light #header .ovx {
+	color: black;
+	font-size: 43px;
+}
+
+.light .topologyHeaderLabel {
+	color: #222;
+}
+
+.light #header #lastUpdated {
+	color: #666;
+}
+
+/******************************************
+VIRTUAL NETWORK SELECTOR
+******************************************/
+
+.light #virtualNetworkSelectorLabel {
+	color: black;
+}
+
+.light .virtualNetwork {
+	color: black;
+	background-color: #aaa;
+}
+
+.light .virtualNetwork.selected {
+	background-color: #444;
+	border: 1px solid #444;
+	color: white;
+}
+
+.light .virtualNetwork {
+	border: 2px solid #888;
+}
+
+.light .virtualNetwork.selected {
+	border: 2px solid #444;
+}
+
+
+.light .virtualNetwork:hover {
+	border: 2px solid black;
+}
+
+.light .virtualNetwork .eye {
+	background-image: url('../assets/black-eye.svg');
+}
+
+.light .virtualNetwork.selected .eye {
+	background-image: url('../assets/white-eye.svg');
+}
+
+
+

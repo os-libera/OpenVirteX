@@ -1,0 +1,61 @@
+.action, .controller {
+	font-size: 18px;
+}
+
+.black-eye {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 2.25em;
+	background-image: url('../assets/black-eye.svg');
+	background-size: auto 100%;
+	background-repeat: no-repeat;
+	background-position: .25em center;
+}
+
+.white-eye {
+	height: 100%;
+	width: 2.25em;
+	background-image: url('../assets/white-eye.svg');
+	background-size: auto 100%;
+	background-repeat: no-repeat;
+	background-position: .4em center;
+}
+
+.deleteFlow {
+	height: 100%;
+	background-image: url('../assets/delete.svg');
+	background-size: auto 150%;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.edge {
+	stroke: black;
+	stroke-width: 1.5px;
+}
+
+
+.action {
+	margin: .25em;
+	border: 2px solid #AAA;
+	height: 2em;
+	width: 2em;
+	background-color: #444;
+	display: -webkit-box;
+	-webkit-box-pack: center;
+	-webkit-box-align: center;
+	color: #AAA;
+	border-radius: 50%;
+	-webkit-box-sizing: border-box;
+}
+
+.action:hover {
+	border: 2px solid #FFF;
+	color: white;
+}
+
+.action:active {
+	background-color: #222;
+}

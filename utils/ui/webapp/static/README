@@ -1,0 +1,4 @@
+Data model:
+
+	Topology
+		Result of getPhysicalTopology or getVirtualTopology + the response to getPhysicalHosts or getVirtualHosts
