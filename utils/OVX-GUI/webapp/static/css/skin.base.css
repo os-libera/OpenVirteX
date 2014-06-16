@@ -1,0 +1,421 @@
+/******************************************
+TOPOLOGY COLORS
+******************************************/
+/* physical elements not in use by the current virtual network */
+.link path.displayarea, .switch ellipse, .host polygon {
+	stroke: #444;
+}
+
+.switch ellipse, .host polygon {
+	fill: #444;
+}
+/*START:Ami-Firewall Image attributes*/
+#firewallImage{
+	background-repeat: no-repeat;
+	margin: 0 28% 7% 0;
+	width: 64px;
+	height: 64px;
+	background-image: url('../assets/firewall-icon.png');
+	display:none;
+}
+/*END:Ami-Firewall Image attributes*/
+
+/* virtual elements and physical elements in use by the current virtual network */
+.link.used path.displayarea,
+.switch.used ellipse {
+	stroke: #aaa;
+}
+
+.switch.used ellipse {
+	fill: #ccc;
+}
+
+/**Ami**/
+.switch.core-switch ellipse{
+	fill: #0099CC !important;
+	stroke: #3f3f3f;
+}
+
+.switch.core-switch-used ellipse{
+	fill: #336666 !important;
+	stroke: #3f3f3f;
+}
+
+.host.used polygon {
+	fill: white;
+}
+
+.flowpath.used, .flowpath.selected {
+	stroke:black;
+}
+
+.flowpath .background {
+	stroke: transparent;
+}
+
+.flowpath.pending .background,
+.link.pending path.displayarea {
+	stroke: red;
+}
+
+.flowpath.selected .background {
+	stroke: #00ff00;
+}
+
+.host.selected polygon{
+	stroke: grey;
+	fill: #00ff00;
+}
+
+.abc eclipse{
+	
+	fill:red;
+}
+
+
+/* mouseover highlight colors */
+.highlight.switch ellipse {
+	fill: #0040ff;
+	stroke: #222;
+}
+
+
+
+.highlight.host polygon, .linking.host.used polygon {
+	fill: #0040ff;
+}
+
+.link.used.highlight path.displayarea {
+	stroke: #0040ff;
+}
+
+text.hostLabel {
+	fill: white;
+}
+
+text.hqLabel{
+	fill: red;
+}
+
+#linkVector {
+	stroke: red;
+	/*stroke: rgba(0, 64, 255, .75);*/
+	/*stroke: #0040ff;*/
+	stroke-width: 4;
+}
+
+text.tooltip {
+	font-size: 30px
+}
+
+text.tooltip {
+	fill: white;
+}
+
+rect.tooltip {
+	fill: rgba(0, 0, 0, .75);
+}
+
+/******************************************
+TOPOLOGY LINE WEIGHTS
+******************************************/
+
+/* normal line weights */
+.link path {
+	stroke-width: 4px;
+}
+
+.switch ellipse, .host polygon {
+	stroke-width: 3px;
+}
+
+.flowpath {
+	stroke-width: 3px;
+}
+
+.flowpath.selected {
+	stroke-width: 5px;
+}
+
+
+/* heavier line weight when highlighting */
+.link.used.highlight path.displayarea {
+	stroke-width:6px;
+}
+
+.link.inactive path.displayarea {
+	stroke-dasharray: 4 5;
+}
+
+
+/******************************************
+MISC:Ami-Used hand image for stop flow
+******************************************/
+#stopPing {
+	margin: 4px;
+	width: 30px;
+	height: 30px;
+	background-image: url('../assets/stop-hand-icon.png');
+	cursor: pointer;
+}
+
+/******************************************
+MAP:Ami-Changed the stroke of map
+******************************************/
+#physicalTopologyMap {
+	stroke-width: 2px;
+	stroke: #292929;
+}
+
+
+
+/******************************************
+GENERAL COLORS AND BORDER WEIGHTS
+******************************************/
+
+body {
+	background-color: black;
+}
+
+#topologyPanes {
+	border-bottom: 1px solid #888;
+}
+
+#virtualContainer {
+	margin: 6px;
+	border: 1px solid #888;
+	background-color: black;
+}
+
+.opacityMask {
+	position: absolute;
+	pointer-events: none;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	opacity: .025;
+	background-color: white;
+}
+
+#contents {
+	background-color: black;
+}
+
+
+
+/******************************************
+TEXT
+******************************************/
+body {
+	font-family: Helvetica;
+}
+
+/* text for the switches which have names in data/layout.js */
+.switch text, .host text {
+	font-family: Helvetica;
+	font-weight: 500;
+	font-size: 16px;
+	fill: #222;
+	background-color: blue;
+}
+
+.host text {
+	font-size: 18px;    
+	fill: white;
+}
+
+.host rect {
+	fill: rgba(0,0,0,.5);
+}
+
+
+/******************************************
+CURSORS
+******************************************/
+
+.switch:hover {
+	cursor:url(../assets/magnify.png) 9 9, default;
+}
+
+
+/******************************************
+MISC DIMENSIONS
+******************************************/
+
+#map, #physical {
+	margin-left: 2.5%;
+}
+
+#logo {
+	height: 50px;
+}
+
+#virtualSVGContainerPadding: {
+	padding: 6px;
+}
+
+
+
+
+/******************************************
+FLOW TABLE
+******************************************/
+
+.colorNode ellipse{
+	
+	fill: #00ff00 !important;
+}
+
+/* Ami: Adding colorNode instead of the following, reason: buggy code
+
+.flowtableDisplayed.switch.used ellipse,
+.flowtableDisplayed.switch ellipse {
+	stroke: grey;
+	fill: #00ff00;
+}*/
+
+.flowtableCell {
+	padding: .5em;
+	font-size: 18px;
+	
+	text-transform: uppercase;
+}
+
+
+.selected .flowtableCell{
+	background-color: #00ff00;
+	color: black;
+}
+
+.flowtableCell.dl_src,
+.flowtableCell.dl_dst {
+	width: 10em;
+}
+
+.flowtableCell.wildcards,
+.flowtableCell.dl_vlan,
+.flowtableCell.in_port {
+	width: 3em;
+}
+
+.flowtableCell.dl_vlan_pcp {
+	width: 6em;
+}
+
+.flowtableCell.actions {
+	width: 20em;
+}
+
+.flowtableCell {
+	border-right: 1px solid black;
+}
+
+.flowtableCell:last-child {
+	border-right:none;
+}
+
+#flowtableContents .firstAction{
+	background-color: #ffffff;
+	cursor:pointer;
+}
+
+.flowtableEntry.firstAction {
+	border-top: 1px solid black;
+}
+
+
+*/
+.flowtableEntry:last-child {
+	border-bottom: 1px solid black;
+}
+.flowtableEntry.noFlows {
+	border-top: 1px solid black;
+	background-color: white;
+	color: black;
+}
+.flowtableHeader .flowtableCell {
+	border-top: 1px solid black;
+}
+
+
+/******************************************
+HEADER
+******************************************/
+
+#header {
+	height: 50px;
+	border-bottom: 1px solid #AAA;;
+}
+
+/* the OVX "logo" */
+#header .ovx {
+	font-family: 'Baumans', cursive;
+	font-size: 41px;
+	color: white;
+}
+
+#header .verticalLine {
+	width: 1px;
+	height: 75%;
+	background-color: #888;
+	margin-right: 7px;
+}
+
+#header #lastUpdated {
+	font-size: 18px;
+	color: #AAA;
+}
+
+/******************************************
+VIRTUAL NETWORK SELECTOR
+******************************************/
+.virtualNetwork {
+	background-color: #444;
+
+	border: 1px solid #444;
+	border-radius: 8px;
+
+	font-size: 100%; /*Ami:Fix the font on eye*/
+
+	margin: .25em;
+	padding: .25em;
+	padding-left: 2.5em;
+}
+
+.virtualNetwork.selected {
+	color: white;
+	background-color: #888;
+}
+
+.topologyHeaderLabel {
+	color: #aaa;
+	padding-top: .25em;
+	font-size: 24px;
+}
+
+.virtualNetwork:hover {
+	border: 1px solid white;
+}
+
+.eye {
+	background-image: url('../assets/black-eye.svg');
+	background-repeat: no-repeat;
+	background-position: .25em center;
+	width: 2.25em;
+}
+
+.selected .eye {
+	background-image: url('../assets/white-eye.svg');
+}
+
+
+
+
+
+
+
+
+
+
+
