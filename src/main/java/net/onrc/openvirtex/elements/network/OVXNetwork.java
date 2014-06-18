@@ -622,8 +622,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
         OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
 
-        System.err.println(srcPort.toAP()+"-"+dstPort.toAP() + ":"+ 
-                srcPort.getPhysicalPort().toAP()+"-"+dstPort.getPhysicalPort().toAP());
         // boot endpoints automatically only if ports were *not*
         // administratively disabled.
         if (srcPort.isAdminDown()) {
@@ -756,11 +754,20 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         return route;
     }
 
-    public synchronized void removeSwitch(final long ovxDpid) {
+    /**
+     * Removes a specified OVXSwitch from the network.
+     *
+     * @param ovxDpid the DPID of the switch to remove
+     * @return true if switch was removed.
+     */
+    public synchronized boolean removeSwitch(final long ovxDpid) {
         this.dpidCounter.releaseIndex((int) (0x000000 << 32 | ovxDpid));
         OVXSwitch sw = this.getSwitch(ovxDpid);
-        sw.tearDown();
-        sw.unregister();
+        boolean down = sw.tearDown();
+        if (down) {
+            sw.unregister();
+        }
+        return down;
     }
 
     public synchronized void removePort(final long ovxDpid, final short ovxPort) {

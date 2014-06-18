@@ -56,12 +56,15 @@ public class RemoveOVXSwitch extends ApiHandler<Map<String, Object>> {
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
-            virtualNetwork.removeSwitch(dpid.longValue());
-
-            this.log.info("Removed virtual switch {} in virtual network {}",
-                    dpid, virtualNetwork.getTenantId());
+            boolean needrm = virtualNetwork.removeSwitch(dpid.longValue());
+            if (needrm) {
+                this.log.info("Removed virtual switch {} in virtual network {}",
+                        dpid, virtualNetwork.getTenantId());
+            } else {
+                this.log.info("Virtual switch {} in virtual network {} already removed",
+                        dpid, virtualNetwork.getTenantId());
+            }
             resp = new JSONRPC2Response(0);
-
 
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
