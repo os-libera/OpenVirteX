@@ -622,8 +622,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
         OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
 
-        System.err.println(srcPort.toAP()+"-"+dstPort.toAP() + ":"+ 
-                srcPort.getPhysicalPort().toAP()+"-"+dstPort.getPhysicalPort().toAP());
         // boot endpoints automatically only if ports were *not*
         // administratively disabled.
         if (srcPort.isAdminDown()) {
@@ -756,6 +754,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         return route;
     }
 
+    /**
+     * Removes a specified OVXSwitch from the network.
+     *
+     * @param ovxDpid the DPID of the switch to remove
+     */
     public synchronized void removeSwitch(final long ovxDpid) {
         this.dpidCounter.releaseIndex((int) (0x000000 << 32 | ovxDpid));
         OVXSwitch sw = this.getSwitch(ovxDpid);
@@ -763,6 +766,12 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         sw.unregister();
     }
 
+    /**
+     * Removes a specified port from an OVXSwitch.
+     *
+     * @param ovxDpid the DPID of the switch
+     * @param ovxPort the port number of port to remove
+     */
     public synchronized void removePort(final long ovxDpid, final short ovxPort) {
         OVXSwitch vsw = this.getSwitch(ovxDpid);
         OVXPort port = vsw.getPort(ovxPort);
@@ -776,6 +785,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         port.unregister();
     }
 
+    /**
+     * Removes a Host from this network.
+     *
+     * @param hostId the unique identifier of the host.
+     */
     public synchronized void disconnectHost(final int hostId) {
         Host host = this.getHost(hostId);
         host.getPort().tearDown();
@@ -783,6 +797,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         this.hostCounter.releaseIndex(hostId);
     }
 
+    /**
+     * Removes a virtual link from the network.
+     *
+     * @param linkId the unique identifier of the link to remove.
+     */
     public synchronized void disconnectLink(final int linkId) {
         LinkedList<OVXLink> linkPair = (LinkedList<OVXLink>) this
                 .getLinksById(linkId);
@@ -793,17 +812,34 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         }
     }
 
+    /**
+     * Removes a route from an OVXBigSwitch.
+     *
+     * @param ovxDpid the DPID of the OVXBigSwitch.
+     * @param routeId
+     */
     public synchronized void disconnectRoute(final long ovxDpid,
             final int routeId) {
         OVXBigSwitch sw = (OVXBigSwitch) this.getSwitch(ovxDpid);
         sw.unregisterRoute(routeId);
     }
 
+    /**
+     * Starts up (boots) an OVXSwitch.
+     *
+     * @param ovxDpid the DPID of the switch to boot up
+     */
     public synchronized void startSwitch(final long ovxDpid) {
         OVXSwitch sw = this.getSwitch(ovxDpid);
         sw.boot();
     }
 
+    /**
+     * Enables a port on a switch.
+     *
+     * @param ovxDpid the DPID of the switch
+     * @param ovxPort the port number of the port to enable
+     */
     public synchronized void startPort(final long ovxDpid, final short ovxPort) {
         OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
         /* Administratively enable port */
@@ -812,11 +848,23 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         port.boot();
     }
 
+    /**
+     * Deactivates a OVXSwitch. A deactivated switch may still be started up
+     * at a later time.
+     *
+     * @param ovxDpid the DPID of the switch to disable.
+     */
     public synchronized void stopSwitch(final long ovxDpid) {
         OVXSwitch sw = this.getSwitch(ovxDpid);
         sw.tearDown();
     }
 
+    /**
+     * Disables a port on a switch. A disabled port may be enabled at a later time
+     *
+     * @param ovxDpid the DPID of the switch
+     * @param ovxPort the port number of the port to disable.
+     */
     public synchronized void stopPort(final long ovxDpid, final short ovxPort) {
         OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
         /* Administratively disable port */
@@ -936,6 +984,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 
     @Override
     public boolean removeSwitch(final OVXSwitch ovxSwitch) {
+        this.dpidMap.remove(ovxSwitch.getSwitchId());
         return this.switchSet.remove(ovxSwitch);
     }
 
