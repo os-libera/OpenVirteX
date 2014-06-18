@@ -29,6 +29,7 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
@@ -36,6 +37,7 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
+import net.onrc.openvirtex.exceptions.ComponentStateException;
 import net.onrc.openvirtex.exceptions.ControllerUnavailableException;
 import net.onrc.openvirtex.exceptions.DuplicateMACException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
@@ -270,6 +272,24 @@ public final class HandlerUtils {
             throw new InvalidDPIDException(
                     "The switch id you have provided does not belong to this virtual network: "
                             + String.valueOf(tenantId));
+        }
+    }
+
+    /**
+     * Check if a switch is the state expected. If expActive is set to true,
+     * the switch is expected to be ACTIVE. If set to false, the switch is expected
+     * to be INIT, INACTIVE, or STOPPED.
+     *
+     * @param sw the switch
+     * @param expActive if true, expect active switch
+     * @throws ComponentStateException
+     */
+    @SuppressWarnings("rawtypes") 
+    public static void isValidSwitchState(Switch sw, boolean expActive)
+            throws ComponentStateException{
+        if (expActive != sw.isActive()) {
+            throw new ComponentStateException("Expected isActive=" + expActive +
+                    " but Switch "+ sw.getSwitchId() + " is not");
         }
     }
 

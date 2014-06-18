@@ -21,7 +21,9 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
+import net.onrc.openvirtex.exceptions.ComponentStateException;
 import net.onrc.openvirtex.exceptions.InvalidDPIDException;
 import net.onrc.openvirtex.exceptions.InvalidTenantIdException;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
@@ -56,12 +58,12 @@ public class RemoveOVXSwitch extends ApiHandler<Map<String, Object>> {
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
+            OVXSwitch ovxSwitch = virtualNetwork.getSwitch(dpid.longValue());
+            HandlerUtils.isValidSwitchState(ovxSwitch, true);
             virtualNetwork.removeSwitch(dpid.longValue());
-
             this.log.info("Removed virtual switch {} in virtual network {}",
                     dpid, virtualNetwork.getTenantId());
             resp = new JSONRPC2Response(0);
-
 
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
@@ -80,6 +82,10 @@ public class RemoveOVXSwitch extends ApiHandler<Map<String, Object>> {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": " + e.getMessage()), 0);
+        } catch (ComponentStateException e) {
+            resp = new JSONRPC2Response(new JSONRPC2Error(
+                    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+                            + ": Switch was already removed : " + e.getMessage()), 0);
         }
 
         return resp;
