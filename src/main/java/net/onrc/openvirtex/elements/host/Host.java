@@ -26,7 +26,6 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.util.MACAddress;
 
@@ -288,33 +287,6 @@ public class Host implements Persistable, Component {
             return false;
         }
         return true;
-    }
-
-    /*
-     * Converts virtual elements of a host to physical data. TODO: rewrite
-     * 
-     * @return map that contains host data
-     */
-    public HashMap<String, Object> convertToPhysical() {
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("hostId", this.hostId);
-        map.put("dpid", this.port.getPhysicalPort().getParentSwitch()
-                .getSwitchName());
-        map.put("port", port.getPhysicalPortNumber());
-        map.put("mac", this.mac.toString());
-
-        if (this.ipAddress.getIp() != 0) {
-            try {
-                map.put("ipAddress",
-                        OVXMap.getInstance()
-                                .getPhysicalIP(this.ipAddress,
-                                        this.port.getTenantId())
-                                .toSimpleString());
-            } catch (AddressMappingException e) {
-                log.warn("Unable to fetch physical IP for host");
-            }
-        }
-        return map;
     }
 
     @Override

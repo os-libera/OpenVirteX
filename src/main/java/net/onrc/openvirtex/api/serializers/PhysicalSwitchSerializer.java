@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package net.onrc.openvirtex.elements.port;
+package net.onrc.openvirtex.api.serializers;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
-public class OVXPortSerializer implements JsonSerializer<OVXPort> {
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+
+/**
+ * Serializer for PhysicalSwitch. Returns just a value (DPID colon-hex)
+ */
+public class PhysicalSwitchSerializer extends JsonSerializer<PhysicalSwitch> {
 
     @Override
-    public JsonElement serialize(final OVXPort port, final Type portType,
-            final JsonSerializationContext context) {
-        final JsonObject result = new JsonObject();
-        result.addProperty("dpid", port.getParentSwitch().getSwitchName());
-        result.addProperty("port", String.valueOf(port.getPortNumber()));
-        return result;
+    public void serialize(final PhysicalSwitch sw, final JsonGenerator jgen,
+            final SerializerProvider sp) throws IOException,
+            JsonProcessingException {
+        jgen.writeString(sw.getSwitchName());
     }
-
 }

@@ -32,8 +32,9 @@
 
 package org.openflow.protocol.statistics;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.jboss.netty.buffer.ChannelBuffer;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Represents an ofp_port_stats structure

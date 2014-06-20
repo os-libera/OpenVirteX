@@ -34,7 +34,6 @@ package org.openflow.protocol.statistics;
 
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
@@ -224,7 +223,6 @@ public class OFFlowStatisticsReply implements OFStatistics,
     }
 
     @Override
-    @JsonIgnore
     public int getLength() {
         return U16.f(this.length);
     }
