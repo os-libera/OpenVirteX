@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package net.onrc.openvirtex.util;
+package net.onrc.openvirtex.api.serializers;
 
 import java.io.IOException;
+
+import net.onrc.openvirtex.elements.port.PhysicalPort;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,14 +25,18 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
- * Serializer for MAC addresses. Returns just a value.
+ * serializer for PhysicalPorts.
  */
-public class MACAddressSerializer extends JsonSerializer<MACAddress> {
+public class PhysicalPortSerializer extends JsonSerializer<PhysicalPort> {
 
     @Override
-    public void serialize(final MACAddress mac, final JsonGenerator jgen,
+    public void serialize(final PhysicalPort port, final JsonGenerator jgen,
             final SerializerProvider sp) throws IOException,
             JsonProcessingException {
-        jgen.writeString(mac.toString());
+        jgen.writeStartObject();
+        jgen.writeStringField("dpid", port.getParentSwitch().getSwitchName());
+        jgen.writeNumberField("port", port.getPortNumber());
+        jgen.writeEndObject();
     }
+
 }

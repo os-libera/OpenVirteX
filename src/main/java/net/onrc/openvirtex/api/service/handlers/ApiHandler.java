@@ -15,10 +15,14 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers;
 
+import net.onrc.openvirtex.api.serializers.JSONMapper;
+
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 public abstract class ApiHandler<T> {
+
+    protected static final JSONMapper mapper = new JSONMapper();
 
     public abstract JSONRPC2Response process(T params);
 

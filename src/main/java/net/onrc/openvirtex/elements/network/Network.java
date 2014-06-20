@@ -33,8 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.util.HexString;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
@@ -52,11 +51,9 @@ import com.google.gson.annotations.SerializedName;
 public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link>
         implements LLDPEventHandler, OVXSendMsg, Component {
 
-    @SerializedName("switches")
-    @Expose
+    @JsonProperty("switches")
     protected final Set<T1> switchSet;
-    @SerializedName("links")
-    @Expose
+    @JsonProperty("links")
     protected final Set<T3> linkSet;
     protected final Map<Long, T1> dpidMap;
     protected final Map<T2, T2> neighborPortMap;

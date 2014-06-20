@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package net.onrc.openvirtex.elements.datapath;
+package net.onrc.openvirtex.api.serializers;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 
-public class OVXSwitchSerializer implements JsonSerializer<OVXSwitch> {
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+
+/**
+ * Serializer for OVXSwitch. Returns just a value (DPID colon-hex)
+ */
+public class OVXSwitchSerializer extends JsonSerializer<OVXSwitch> {
 
     @Override
-    public JsonElement serialize(final OVXSwitch sw, final Type switchType,
-            final JsonSerializationContext context) {
-        final JsonPrimitive dpid = new JsonPrimitive(sw.switchName);
-        return dpid;
+    public void serialize(final OVXSwitch sw, final JsonGenerator jgen,
+            final SerializerProvider sp) throws IOException,
+            JsonProcessingException {
+        jgen.writeString(sw.getSwitchName());
     }
-
 }
