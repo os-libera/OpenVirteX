@@ -22,8 +22,11 @@ import java.util.List;
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.host.Host;
+import net.onrc.openvirtex.elements.host.PhysicalHostSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -33,6 +36,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
  */
 public class GetPhysicalHosts extends ApiHandler<Object> {
 
+    @SuppressWarnings("unchecked")
     @Override
     public JSONRPC2Response process(Object params) {
 
@@ -43,10 +47,13 @@ public class GetPhysicalHosts extends ApiHandler<Object> {
             OVXMap map = OVXMap.getInstance();
             Collection<OVXNetwork> vnets = map.listVirtualNetworks().values();
 
+            ObjectMapper mapper = new ObjectMapper();
+            SimpleModule module = new SimpleModule();
+            module.addSerializer(Host.class, new PhysicalHostSerializer());
+            mapper.registerModule(module);
+
             for (OVXNetwork vnet : vnets) {
-                for (Host h : vnet.getHosts()) {
-                    hosts.add(h.convertToPhysical());
-                }
+                hosts.addAll(mapper.convertValue(vnet.getHosts(), List.class));
             }
 
             resp = new JSONRPC2Response(hosts, 0);

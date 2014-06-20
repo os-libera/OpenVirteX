@@ -20,13 +20,12 @@ import java.util.Map;
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitchSerializer;
-
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.elements.port.PhysicalPortSerializer;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
@@ -40,23 +39,15 @@ public class GetPhysicalTopology extends ApiHandler<Object> {
     public JSONRPC2Response process(final Object params) {
         Map<String, Object> result;
         JSONRPC2Response resp = null;
-        // TODO: gson objects can be shared with other methods
-        final GsonBuilder gsonBuilder = new GsonBuilder();
-        // gsonBuilder.setPrettyPrinting();
-        gsonBuilder.excludeFieldsWithoutExposeAnnotation();
-        gsonBuilder.registerTypeAdapter(PhysicalSwitch.class,
-                new PhysicalSwitchSerializer());
-        gsonBuilder.registerTypeAdapter(PhysicalPort.class,
-                new PhysicalPortSerializer());
-        /*
-         * gsonBuilder.registerTypeAdapter(PhysicalLink.class, new
-         * PhysicalLinkSerializer());
-         */
 
-        final Gson gson = gsonBuilder.create();
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(PhysicalSwitch.class, new PhysicalSwitchSerializer());
+        module.addSerializer(PhysicalPort.class, new PhysicalPortSerializer());
+        mapper.registerModule(module);
 
-        result = gson.fromJson(gson.toJson(PhysicalNetwork.getInstance()),
-                Map.class);
+        result = mapper.convertValue(PhysicalNetwork.getInstance(), Map.class);
+
         resp = new JSONRPC2Response(result, 0);
         return resp;
     }

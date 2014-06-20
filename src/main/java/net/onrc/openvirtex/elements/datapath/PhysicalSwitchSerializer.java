@@ -15,20 +15,22 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class PhysicalSwitchSerializer implements JsonSerializer<PhysicalSwitch> {
+/**
+ * Serializer for PhysicalSwitch. Returns just a value (DPID colon-hex)
+ */
+public class PhysicalSwitchSerializer extends JsonSerializer<PhysicalSwitch> {
 
     @Override
-    public JsonElement serialize(final PhysicalSwitch sw,
-            final Type switchType, final JsonSerializationContext context) {
-        final JsonPrimitive dpid = new JsonPrimitive(sw.switchName);
-        return dpid;
+    public void serialize(final PhysicalSwitch sw, final JsonGenerator jgen,
+            final SerializerProvider sp) throws IOException,
+            JsonProcessingException {
+        jgen.writeString(sw.switchName);
     }
-
 }

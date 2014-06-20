@@ -57,8 +57,7 @@ import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.protocol.action.OFActionType;
 import org.openflow.util.U8;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Implementation of a virtual link, which adds a unique ID, stores the tenant
@@ -353,13 +352,11 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
     private Logger log = LogManager.getLogger(OVXLink.class.getName());
 
     /** The link id. */
-    @SerializedName("linkId")
-    @Expose
+    @JsonProperty("linkId")
     private final Integer linkId;
 
     /** The tenant id. */
-    @SerializedName("tenantId")
-    @Expose
+    @JsonProperty("tenantId")
     private final Integer tenantId;
     private byte priority;
     private RoutingAlgorithms alg;

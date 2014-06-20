@@ -15,19 +15,22 @@
  ******************************************************************************/
 package net.onrc.openvirtex.util;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class MACAddressSerializer implements JsonSerializer<MACAddress> {
+/**
+ * Serializer for MAC addresses. Returns just a value.
+ */
+public class MACAddressSerializer extends JsonSerializer<MACAddress> {
 
     @Override
-    public JsonElement serialize(MACAddress mac, Type t,
-            JsonSerializationContext c) {
-        final JsonPrimitive res = new JsonPrimitive(mac.toString());
-        return res;
+    public void serialize(final MACAddress mac, final JsonGenerator jgen,
+            final SerializerProvider sp) throws IOException,
+            JsonProcessingException {
+        jgen.writeString(mac.toString());
     }
 }

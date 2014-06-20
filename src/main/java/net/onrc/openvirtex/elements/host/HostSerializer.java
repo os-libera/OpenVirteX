@@ -15,24 +15,29 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.host;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class HostSerializer implements JsonSerializer<Host> {
+/**
+ * Serializer for a Host's virtual attributes.
+ */
+public class HostSerializer extends JsonSerializer<Host> {
 
     @Override
-    public JsonElement serialize(Host host, Type t, JsonSerializationContext c) {
-        final JsonObject result = new JsonObject();
-        result.addProperty("hostId", host.getHostId());
-        result.addProperty("ipAddress", host.getIp().toSimpleString());
-        result.addProperty("mac", host.getMac().toString());
-        result.addProperty("dpid", host.getPort().getParentSwitch()
+    public void serialize(final Host host, final JsonGenerator jgen,
+            final SerializerProvider sp) throws IOException,
+            JsonProcessingException {
+        jgen.writeStartObject();
+        jgen.writeNumberField("hostId", host.getHostId());
+        jgen.writeStringField("ipAddress", host.getIp().toSimpleString());
+        jgen.writeStringField("mac", host.getMac().toString());
+        jgen.writeStringField("dpid", host.getPort().getParentSwitch()
                 .getSwitchName());
-        result.addProperty("port", host.getPort().getPortNumber());
-        return result;
+        jgen.writeNumberField("port", host.getPort().getPortNumber());
+        jgen.writeEndObject();
     }
 }

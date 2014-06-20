@@ -15,22 +15,26 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.port;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class PhysicalPortSerializer implements JsonSerializer<PhysicalPort> {
+/**
+ * serializer for PhysicalPorts.
+ */
+public class PhysicalPortSerializer extends JsonSerializer<PhysicalPort> {
 
     @Override
-    public JsonElement serialize(final PhysicalPort port, final Type portType,
-            final JsonSerializationContext context) {
-        final JsonObject result = new JsonObject();
-        result.addProperty("dpid", port.getParentSwitch().getSwitchName());
-        result.addProperty("port", String.valueOf(port.getPortNumber()));
-        return result;
+    public void serialize(final PhysicalPort port, final JsonGenerator jgen,
+            final SerializerProvider sp) throws IOException,
+            JsonProcessingException {
+        jgen.writeStartObject();
+        jgen.writeStringField("dpid", port.getParentSwitch().getSwitchName());
+        jgen.writeStringField("port", String.valueOf(port.getPortNumber()));
+        jgen.writeEndObject();
     }
 
 }

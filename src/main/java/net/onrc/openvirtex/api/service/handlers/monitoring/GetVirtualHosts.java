@@ -28,12 +28,15 @@ import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
+/**
+ * Handler that gets a list of hosts for a given tenant network.
+ */
 public class GetVirtualHosts extends ApiHandler<Map<String, Object>> {
 
     @SuppressWarnings("unchecked")
@@ -48,14 +51,12 @@ public class GetVirtualHosts extends ApiHandler<Map<String, Object>> {
             final OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
                     tid.intValue());
 
-            // TODO: gson objects can be shared with other methods
-            final GsonBuilder gsonBuilder = new GsonBuilder();
-            // gsonBuilder.setPrettyPrinting();
-            gsonBuilder.registerTypeAdapter(Host.class, new HostSerializer());
-            final Gson gson = gsonBuilder.create();
-            // TODO Fix this GSON crazy shit.
+            ObjectMapper mapper = new ObjectMapper();
+            SimpleModule module = new SimpleModule();
+            module.addSerializer(Host.class, new HostSerializer());
+            mapper.registerModule(module);
 
-            result = gson.fromJson(gson.toJson(vnet.getHosts()), List.class);
+            result = mapper.convertValue(vnet.getHosts(), List.class);
             resp = new JSONRPC2Response(result, 0);
         } catch (ClassCastException | MissingRequiredField e) {
             resp = new JSONRPC2Response(

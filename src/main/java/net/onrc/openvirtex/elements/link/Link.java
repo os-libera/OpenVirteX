@@ -27,8 +27,7 @@ import net.onrc.openvirtex.elements.port.Port;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * This class represents a network link, defined by a source and destination
@@ -42,7 +41,6 @@ import com.google.gson.annotations.SerializedName;
 @SuppressWarnings("rawtypes")
 public abstract class Link<T1 extends Port, T2 extends Switch> implements
         Persistable, Component {
-
     private Logger log = LogManager.getLogger(Link.class.getName());
 
     /**
@@ -51,13 +49,11 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements
     public static final String DB_KEY = "links";
 
     /** The source port. */
-    @SerializedName("src")
-    @Expose
+    @JsonProperty("src")
     protected T1 srcPort = null;
 
     /** The destination port. */
-    @SerializedName("dst")
-    @Expose
+    @JsonProperty("dst")
     protected T1 dstPort = null;
 
     /**

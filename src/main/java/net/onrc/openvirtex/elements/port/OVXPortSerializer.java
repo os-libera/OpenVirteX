@@ -15,22 +15,26 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.port;
 
-import java.lang.reflect.Type;
+import java.io.IOException;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class OVXPortSerializer implements JsonSerializer<OVXPort> {
+/**
+ * serializer for OVXPorts.
+ */
+public class OVXPortSerializer extends JsonSerializer<OVXPort> {
 
     @Override
-    public JsonElement serialize(final OVXPort port, final Type portType,
-            final JsonSerializationContext context) {
-        final JsonObject result = new JsonObject();
-        result.addProperty("dpid", port.getParentSwitch().getSwitchName());
-        result.addProperty("port", String.valueOf(port.getPortNumber()));
-        return result;
+    public void serialize(final OVXPort port, final JsonGenerator jgen,
+            final SerializerProvider sp) throws IOException,
+            JsonProcessingException {
+        jgen.writeStartObject();
+        jgen.writeStringField("dpid", port.getParentSwitch().getSwitchName());
+        jgen.writeStringField("port", String.valueOf(port.getPortNumber()));
+        jgen.writeEndObject();
     }
 
 }
