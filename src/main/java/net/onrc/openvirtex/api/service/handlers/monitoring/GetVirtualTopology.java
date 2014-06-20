@@ -21,16 +21,10 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.elements.datapath.OVXSwitchSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
-import net.onrc.openvirtex.elements.port.OVXPort;
-import net.onrc.openvirtex.elements.port.OVXPortSerializer;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
@@ -51,21 +45,9 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
                     params, true, null);
             OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
                     tid.intValue());
-            // TODO: gson objects can be shared with other methods
-            final GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.setPrettyPrinting();
-            gsonBuilder.excludeFieldsWithoutExposeAnnotation();
-            gsonBuilder.registerTypeAdapter(OVXSwitch.class,
-                    new OVXSwitchSerializer());
-            gsonBuilder.registerTypeAdapter(OVXPort.class,
-                    new OVXPortSerializer());
-            /*
-             * gsonBuilder.registerTypeAdapter(OVXLink.class, new
-             * OVXLinkSerializer());
-             */
 
-            final Gson gson = gsonBuilder.create();
-            result = gson.fromJson(gson.toJson(vnet), Map.class);
+            result = mapper.convertValue(vnet, Map.class);
+
             resp = new JSONRPC2Response(result, 0);
             return resp;
         } catch (ClassCastException | MissingRequiredField e) {

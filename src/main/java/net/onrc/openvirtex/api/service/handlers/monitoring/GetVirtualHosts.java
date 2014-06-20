@@ -18,23 +18,25 @@ package net.onrc.openvirtex.api.service.handlers.monitoring;
 import java.util.List;
 import java.util.Map;
 
+import net.onrc.openvirtex.api.serializers.HostSerializer;
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.host.Host;
-import net.onrc.openvirtex.elements.host.HostSerializer;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
+/**
+ * Handler that gets a list of hosts for a given tenant network.
+ */
 public class GetVirtualHosts extends ApiHandler<Map<String, Object>> {
+
+    HostSerializer hs = new HostSerializer();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -42,20 +44,14 @@ public class GetVirtualHosts extends ApiHandler<Map<String, Object>> {
         List<Object> result;
         JSONRPC2Response resp = null;
         Number tid = null;
+
         try {
             tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT,
                     params, true, null);
             final OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
                     tid.intValue());
 
-            // TODO: gson objects can be shared with other methods
-            final GsonBuilder gsonBuilder = new GsonBuilder();
-            // gsonBuilder.setPrettyPrinting();
-            gsonBuilder.registerTypeAdapter(Host.class, new HostSerializer());
-            final Gson gson = gsonBuilder.create();
-            // TODO Fix this GSON crazy shit.
-
-            result = gson.fromJson(gson.toJson(vnet.getHosts()), List.class);
+            result = mapper.convertValue(vnet.getHosts(), List.class);
             resp = new JSONRPC2Response(result, 0);
         } catch (ClassCastException | MissingRequiredField e) {
             resp = new JSONRPC2Response(
