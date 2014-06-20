@@ -15,14 +15,10 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.monitoring;
 
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
+import net.onrc.openvirtex.api.serializers.HostSerializer;
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
-import net.onrc.openvirtex.elements.OVXMap;
-import net.onrc.openvirtex.elements.host.Host;
-import net.onrc.openvirtex.elements.network.OVXNetwork;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
@@ -33,23 +29,18 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
  */
 public class GetPhysicalHosts extends ApiHandler<Object> {
 
+    HostSerializer hs = new HostSerializer();
+
+    @SuppressWarnings("unchecked")
     @Override
     public JSONRPC2Response process(Object params) {
-
         JSONRPC2Response resp = null;
 
         try {
-            List<Object> hosts = new LinkedList<Object>();
-            OVXMap map = OVXMap.getInstance();
-            Collection<OVXNetwork> vnets = map.listVirtualNetworks().values();
+            List<Object> result;
 
-            for (OVXNetwork vnet : vnets) {
-                for (Host h : vnet.getHosts()) {
-                    hosts.add(h.convertToPhysical());
-                }
-            }
-
-            resp = new JSONRPC2Response(hosts, 0);
+            result = mapper.convertValue(hs.getPhysicalHosts(), List.class);
+            resp = new JSONRPC2Response(result, 0);
         } catch (ClassCastException e) {
             resp = new JSONRPC2Response(
                     new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),

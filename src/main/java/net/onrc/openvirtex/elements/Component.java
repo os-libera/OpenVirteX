@@ -15,6 +15,9 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 /**
  * Methods implemented by classes that represent network elements. Each
  * component is assumed to implement a state machine with the following states:
@@ -31,6 +34,12 @@ package net.onrc.openvirtex.elements;
  * component, but the reverse is not true e.g. ports are removed if a switch is
  * removed, but a switch port can be removed without affecting the whole switch.
  */
+/* For @Expose -like behavior for Component JSON serialization */
+@JsonAutoDetect(creatorVisibility = Visibility.NONE,
+        fieldVisibility = Visibility.NONE,
+        getterVisibility = Visibility.NONE,
+        isGetterVisibility = Visibility.NONE,
+        setterVisibility = Visibility.NONE)
 public interface Component {
 
     /**

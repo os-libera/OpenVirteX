@@ -28,8 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFPhysicalPort.OFPortState;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * The Class PhysicalLink.
@@ -163,8 +162,7 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
     /** Counter for link ID generation */
     private static AtomicInteger linkIds = new AtomicInteger(0);
 
-    @SerializedName("linkId")
-    @Expose
+    @JsonProperty("linkId")
     private Integer linkId = null;
     private LinkState state;
 

@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package net.onrc.openvirtex.util;
+package net.onrc.openvirtex.api.serializers;
 
 import java.io.IOException;
+
+import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.elements.port.OVXPort;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,14 +26,18 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
- * Serializer for MAC addresses. Returns just a value.
+ * serializer for OVXPorts.
  */
-public class MACAddressSerializer extends JsonSerializer<MACAddress> {
+public class OVXPortSerializer extends JsonSerializer<OVXPort> {
 
     @Override
-    public void serialize(final MACAddress mac, final JsonGenerator jgen,
+    public void serialize(final OVXPort port, final JsonGenerator jgen,
             final SerializerProvider sp) throws IOException,
             JsonProcessingException {
-        jgen.writeString(mac.toString());
+        jgen.writeStartObject();
+        jgen.writeStringField(TenantHandler.VDPID, port.getParentSwitch().getSwitchName());
+        jgen.writeNumberField(TenantHandler.VPORT, port.getPortNumber());
+        jgen.writeEndObject();
     }
+
 }

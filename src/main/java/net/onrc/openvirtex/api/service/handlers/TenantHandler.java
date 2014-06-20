@@ -137,6 +137,10 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
      */
     public static final String HOST = "hostId";
     /**
+     * An IP address tied to a host's network interface
+     */
+    public static final String IFADDR = "ipAddress";
+    /**
      * Keyword for the route ID.
      */
     public static final String ROUTE = "routeId";
