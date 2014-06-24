@@ -46,17 +46,18 @@ public final class IPMapper {
     private IPMapper() {
     }
 
-    public static Integer getPhysicalIp(Integer tenantId, Integer virtualIP) {
+    public static Integer getPhysicalIp(Integer tenantId, Integer virtualIP, String ipfor) {
         final Mappable map = OVXMap.getInstance();
         final OVXIPAddress vip = new OVXIPAddress(tenantId, virtualIP);
+        PhysicalIPAddress pip = null;
         try {
-            PhysicalIPAddress pip;
             if (map.hasPhysicalIP(vip, tenantId)) {
                 pip = map.getPhysicalIP(vip, tenantId);
             } else {
                 pip = new PhysicalIPAddress(map.getVirtualNetwork(tenantId)
-                        .nextIP());
-                log.debug("Adding IP mapping {} -> {} for tenant {}", vip, pip,
+                        .nextIP(ipfor));
+                pip.setTenantId(tenantId);
+                log.info("Adding IP mapping {} -> {} for tenant {}", vip, pip,
                         tenantId);
                 map.addIP(pip, vip);
             }
@@ -74,9 +75,9 @@ public final class IPMapper {
     }
 
     public static void rewriteMatch(final Integer tenantId, final OFMatch match) {
-        match.setNetworkSource(getPhysicalIp(tenantId, match.getNetworkSource()));
+        match.setNetworkSource(getPhysicalIp(tenantId, match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE));
         match.setNetworkDestination(getPhysicalIp(tenantId,
-                match.getNetworkDestination()));
+                match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION));
     }
 
     public static List<OFAction> prependRewriteActions(final Integer tenantId,
@@ -85,13 +86,13 @@ public final class IPMapper {
         if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
             final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
             srcAct.setNetworkAddress(getPhysicalIp(tenantId,
-                    match.getNetworkSource()));
+                    match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE));
             actions.add(srcAct);
         }
         if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
             final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
             dstAct.setNetworkAddress(getPhysicalIp(tenantId,
-                    match.getNetworkDestination()));
+                    match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION));
             actions.add(dstAct);
         }
         return actions;
