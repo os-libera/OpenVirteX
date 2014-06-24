@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol.statistics;
@@ -117,16 +117,16 @@ public enum OFStatisticsType {
                 }
             });
 
-    static OFStatisticsType[] requestMapping;
-    static OFStatisticsType[] replyMapping;
+    static OFStatisticsType[]                     requestMapping;
+    static OFStatisticsType[]                     replyMapping;
 
-    protected Class<? extends OFStatistics> requestClass;
+    protected Class<? extends OFStatistics>       requestClass;
     protected Constructor<? extends OFStatistics> requestConstructor;
-    protected Instantiable<OFStatistics> requestInstantiable;
-    protected Class<? extends OFStatistics> replyClass;
+    protected Instantiable<OFStatistics>          requestInstantiable;
+    protected Class<? extends OFStatistics>       replyClass;
     protected Constructor<? extends OFStatistics> replyConstructor;
-    protected Instantiable<OFStatistics> replyInstantiable;
-    protected short type;
+    protected Instantiable<OFStatistics>          replyInstantiable;
+    protected short                               type;
 
     /**
      * Store some information about the OpenFlow Statistic type, including wire
@@ -190,14 +190,16 @@ public enum OFStatisticsType {
                 OFStatisticsType.requestMapping = new OFStatisticsType[16];
             }
             OFStatisticsType.requestMapping[i] = st;
-        } else if (t == OFType.STATS_REPLY) {
-            if (OFStatisticsType.replyMapping == null) {
-                OFStatisticsType.replyMapping = new OFStatisticsType[16];
+        } else
+            if (t == OFType.STATS_REPLY) {
+                if (OFStatisticsType.replyMapping == null) {
+                    OFStatisticsType.replyMapping = new OFStatisticsType[16];
+                }
+                OFStatisticsType.replyMapping[i] = st;
+            } else {
+                throw new RuntimeException(t.toString()
+                        + " is an invalid OFType");
             }
-            OFStatisticsType.replyMapping[i] = st;
-        } else {
-            throw new RuntimeException(t.toString() + " is an invalid OFType");
-        }
     }
 
     /**
@@ -215,11 +217,13 @@ public enum OFStatisticsType {
         }
         if (t == OFType.STATS_REQUEST) {
             OFStatisticsType.requestMapping[i] = null;
-        } else if (t == OFType.STATS_REPLY) {
-            OFStatisticsType.replyMapping[i] = null;
-        } else {
-            throw new RuntimeException(t.toString() + " is an invalid OFType");
-        }
+        } else
+            if (t == OFType.STATS_REPLY) {
+                OFStatisticsType.replyMapping[i] = null;
+            } else {
+                throw new RuntimeException(t.toString()
+                        + " is an invalid OFType");
+            }
     }
 
     /**
@@ -239,11 +243,13 @@ public enum OFStatisticsType {
         }
         if (t == OFType.STATS_REQUEST) {
             return OFStatisticsType.requestMapping[i];
-        } else if (t == OFType.STATS_REPLY) {
-            return OFStatisticsType.replyMapping[i];
-        } else {
-            throw new RuntimeException(t.toString() + " is an invalid OFType");
-        }
+        } else
+            if (t == OFType.STATS_REPLY) {
+                return OFStatisticsType.replyMapping[i];
+            } else {
+                throw new RuntimeException(t.toString()
+                        + " is an invalid OFType");
+            }
     }
 
     /**
@@ -264,11 +270,13 @@ public enum OFStatisticsType {
     public Class<? extends OFStatistics> toClass(final OFType t) {
         if (t == OFType.STATS_REQUEST) {
             return this.requestClass;
-        } else if (t == OFType.STATS_REPLY) {
-            return this.replyClass;
-        } else {
-            throw new RuntimeException(t.toString() + " is an invalid OFType");
-        }
+        } else
+            if (t == OFType.STATS_REPLY) {
+                return this.replyClass;
+            } else {
+                throw new RuntimeException(t.toString()
+                        + " is an invalid OFType");
+            }
     }
 
     /**
@@ -281,11 +289,13 @@ public enum OFStatisticsType {
     public Constructor<? extends OFStatistics> getConstructor(final OFType t) {
         if (t == OFType.STATS_REQUEST) {
             return this.requestConstructor;
-        } else if (t == OFType.STATS_REPLY) {
-            return this.replyConstructor;
-        } else {
-            throw new RuntimeException(t.toString() + " is an invalid OFType");
-        }
+        } else
+            if (t == OFType.STATS_REPLY) {
+                return this.replyConstructor;
+            } else {
+                throw new RuntimeException(t.toString()
+                        + " is an invalid OFType");
+            }
     }
 
     /**
@@ -330,10 +340,12 @@ public enum OFStatisticsType {
     public OFStatistics newInstance(final OFType t) {
         if (t == OFType.STATS_REQUEST) {
             return this.requestInstantiable.instantiate();
-        } else if (t == OFType.STATS_REPLY) {
-            return this.replyInstantiable.instantiate();
-        } else {
-            throw new RuntimeException(t.toString() + " is an invalid OFType");
-        }
+        } else
+            if (t == OFType.STATS_REPLY) {
+                return this.replyInstantiable.instantiate();
+            } else {
+                throw new RuntimeException(t.toString()
+                        + " is an invalid OFType");
+            }
     }
 }

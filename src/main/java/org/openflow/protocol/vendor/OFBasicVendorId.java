@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright 2011, Big Switch Networks, Inc.
- *    Originally created by David Erickson & Rob Sherwood, Stanford University
+ * Copyright 2011, Big Switch Networks, Inc.
+ * Originally created by David Erickson & Rob Sherwood, Stanford University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol.vendor;
@@ -51,7 +51,7 @@ public class OFBasicVendorId extends OFVendorId {
      * associated with this vendor id. The data type size must be either 1, 2, 4
      * or 8.
      */
-    protected int dataTypeSize;
+    protected int                              dataTypeSize;
 
     /**
      * Map of the vendor data types that have been registered for this vendor
@@ -145,23 +145,24 @@ public class OFBasicVendorId extends OFVendorId {
         long dataTypeValue = 0;
         if (length == 0 || length >= this.dataTypeSize) {
             switch (this.dataTypeSize) {
-            case 1:
-                dataTypeValue = data.readByte();
-                break;
-            case 2:
-                dataTypeValue = data.readShort();
-                break;
-            case 4:
-                dataTypeValue = data.readInt();
-                break;
-            case 8:
-                dataTypeValue = data.readLong();
-                break;
-            default:
-                // This would be indicative of a coding error where the
-                // dataTypeSize was specified incorrectly. This should have been
-                // caught in the constructor for OFVendorId.
-                assert false;
+                case 1:
+                    dataTypeValue = data.readByte();
+                    break;
+                case 2:
+                    dataTypeValue = data.readShort();
+                    break;
+                case 4:
+                    dataTypeValue = data.readInt();
+                    break;
+                case 8:
+                    dataTypeValue = data.readLong();
+                    break;
+                default:
+                    // This would be indicative of a coding error where the
+                    // dataTypeSize was specified incorrectly. This should have
+                    // been
+                    // caught in the constructor for OFVendorId.
+                    assert false;
             }
 
             vendorDataType = this.dataTypeMap.get(dataTypeValue);

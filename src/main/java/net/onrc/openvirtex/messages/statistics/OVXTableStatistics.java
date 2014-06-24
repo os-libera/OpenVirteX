@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,6 +23,7 @@ import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 
 import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFStatisticsMessageBase;
 import org.openflow.protocol.statistics.OFStatisticsType;
 import org.openflow.protocol.statistics.OFTableStatistics;
 
@@ -48,11 +49,12 @@ public class OVXTableStatistics extends OFTableStatistics implements
                 & ~OFMatch.OFPFW_NW_DST_ALL;
         this.name = "OVX vFlowTable (incomplete)";
         this.maximumEntries = 100000;
-        OVXStatisticsReply reply = new OVXStatisticsReply();
+        final OVXStatisticsReply reply = new OVXStatisticsReply();
         reply.setXid(msg.getXid());
         reply.setStatisticType(OFStatisticsType.TABLE);
         reply.setStatistics(Collections.singletonList(this));
-        reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + this.getLength());
+        reply.setLengthU(OFStatisticsMessageBase.MINIMUM_LENGTH
+                + this.getLength());
         sw.sendMsg(reply, sw);
     }
 

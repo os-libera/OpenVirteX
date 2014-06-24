@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,7 @@
 package net.onrc.openvirtex.elements.datapath;
 
 public class DPIDandPort {
-    long dpid;
+    long  dpid;
     short port;
 
     public DPIDandPort(final long dpid, final short port) {
@@ -59,27 +59,27 @@ public class DPIDandPort {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (int) (dpid ^ (dpid >>> 32));
-        result = prime * result + port;
+        result = prime * result + (int) (this.dpid ^ this.dpid >>> 32);
+        result = prime * result + this.port;
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
-        DPIDandPort other = (DPIDandPort) obj;
-        if (dpid != other.dpid) {
+        final DPIDandPort other = (DPIDandPort) obj;
+        if (this.dpid != other.dpid) {
             return false;
         }
-        if (port != other.port) {
+        if (this.port != other.port) {
             return false;
         }
         return true;

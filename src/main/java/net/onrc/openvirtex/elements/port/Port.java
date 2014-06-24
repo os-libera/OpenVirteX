@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,17 +15,15 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.port;
 
-import java.util.Map;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.datapath.DPIDandPort;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.link.Link;
-
-import java.util.Arrays;
-
 import net.onrc.openvirtex.util.MACAddress;
 
 import org.openflow.protocol.OFPhysicalPort;
@@ -48,10 +46,10 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
      */
     public static final String DB_KEY = "ports";
 
-    protected MACAddress mac;
-    protected Boolean isEdge;
-    protected T1 parentSwitch;
-    protected LinkPair<T2> portLink;
+    protected MACAddress       mac;
+    protected Boolean          isEdge;
+    protected T1               parentSwitch;
+    protected LinkPair<T2>     portLink;
 
     // TODO: duplexing/speed on port/link???
 
@@ -70,8 +68,8 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
         this.supportedFeatures = ofPort.getSupportedFeatures();
         this.peerFeatures = ofPort.getPeerFeatures();
         if (this.hardwareAddress == null) {
-            this.hardwareAddress = new byte[] {(byte) 0xDE, (byte) 0xAD,
-                    (byte) 0xBE, (byte) 0xEF, (byte) 0xCA, (byte) 0xFE};
+            this.hardwareAddress = new byte[] { (byte) 0xDE, (byte) 0xAD,
+                    (byte) 0xBE, (byte) 0xEF, (byte) 0xCA, (byte) 0xFE };
         }
         this.mac = new MACAddress(this.hardwareAddress);
         this.isEdge = false;
@@ -114,7 +112,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
      *
      * @param link
      */
-    public void setInLink(T2 link) {
+    public void setInLink(final T2 link) {
         if (this.portLink == null) {
             this.portLink = new LinkPair<T2>();
         }
@@ -126,7 +124,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
      *
      * @param link
      */
-    public void setOutLink(T2 link) {
+    public void setOutLink(final T2 link) {
         if (this.portLink == null) {
             this.portLink = new LinkPair<T2>();
         }
@@ -145,7 +143,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
      * @return the highest nominal throughput currently exposed by the port
      */
     public Integer getCurrentThroughput() {
-        PortFeatures feature = new PortFeatures(this.currentFeatures);
+        final PortFeatures feature = new PortFeatures(this.currentFeatures);
         return feature.getHighestThroughput();
     }
 
@@ -183,7 +181,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -193,14 +191,15 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
         if (!(obj instanceof Port)) {
             return false;
         }
-        Port other = (Port) obj;
-        if (parentSwitch == null) {
+        final Port other = (Port) obj;
+        if (this.parentSwitch == null) {
             if (other.parentSwitch != null) {
                 return false;
             }
-        } else if (!parentSwitch.equals(other.parentSwitch)) {
-            return false;
-        }
+        } else
+            if (!this.parentSwitch.equals(other.parentSwitch)) {
+                return false;
+            }
         return true;
     }
 
@@ -221,7 +220,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = new HashMap<String, Object>();
+        final Map<String, Object> dbObject = new HashMap<String, Object>();
         dbObject.put(TenantHandler.DPID, this.parentSwitch.getSwitchId());
         dbObject.put(TenantHandler.PORT, this.getPortNumber());
         return dbObject;
@@ -233,11 +232,13 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
 
     /**
      * Pretty "Attachment Point" format string representation of a Port.
+     * 
      * @return String in [DPID/port] format
      */
     public String toAP() {
-        return "[" + (this.parentSwitch == null ? "null" : this.parentSwitch
-                .getSwitchName()) + "/" + this.getPortNumber() + "]";
+        return "["
+                + (this.parentSwitch == null ? "null" : this.parentSwitch
+                        .getSwitchName()) + "/" + this.getPortNumber() + "]";
     }
 
     public boolean isAdminDown() {

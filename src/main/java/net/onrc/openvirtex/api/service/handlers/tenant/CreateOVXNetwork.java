@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,15 +47,15 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
         try {
 
             final ArrayList<String> ctrlUrls = HandlerUtils
-                    .<ArrayList<String>>fetchField(TenantHandler.CTRLURLS,
+                    .<ArrayList<String>> fetchField(TenantHandler.CTRLURLS,
                             params, true, null);
-            final String netAddress = HandlerUtils.<String>fetchField(
+            final String netAddress = HandlerUtils.<String> fetchField(
                     TenantHandler.NETADD, params, true, null);
-            final Number netMask = HandlerUtils.<Number>fetchField(
+            final Number netMask = HandlerUtils.<Number> fetchField(
                     TenantHandler.NETMASK, params, true, null);
 
-            for (String ctrl : ctrlUrls) {
-                String[] ctrlParts = ctrl.split(":");
+            for (final String ctrl : ctrlUrls) {
+                final String[] ctrlParts = ctrl.split(":");
 
                 HandlerUtils.isControllerAvailable(ctrlParts[1],
                         Integer.parseInt(ctrlParts[2]), -1);
@@ -67,7 +67,7 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
             this.log.info("Created virtual network {}",
                     virtualNetwork.getTenantId());
 
-            Map<String, Object> reply = new HashMap<String, Object>(
+            final Map<String, Object> reply = new HashMap<String, Object>(
                     virtualNetwork.getDBObject());
             resp = new JSONRPC2Response(reply, 0);
 

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,18 +36,18 @@ public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
             return;
         }
 
-        HashMap<Integer, List<OVXFlowStatisticsReply>> stats = new HashMap<Integer, List<OVXFlowStatisticsReply>>();
+        final HashMap<Integer, List<OVXFlowStatisticsReply>> stats = new HashMap<Integer, List<OVXFlowStatisticsReply>>();
 
-        for (OFStatistics stat : msg.getStatistics()) {
-            OVXFlowStatisticsReply reply = (OVXFlowStatisticsReply) stat;
-            int tid = getTidFromCookie(reply.getCookie());
-            addToStats(tid, reply, stats);
+        for (final OFStatistics stat : msg.getStatistics()) {
+            final OVXFlowStatisticsReply reply = (OVXFlowStatisticsReply) stat;
+            final int tid = this.getTidFromCookie(reply.getCookie());
+            this.addToStats(tid, reply, stats);
         }
         sw.setFlowStatistics(stats);
     }
 
-    private void addToStats(int tid, OVXFlowStatisticsReply reply,
-            HashMap<Integer, List<OVXFlowStatisticsReply>> stats) {
+    private void addToStats(final int tid, final OVXFlowStatisticsReply reply,
+            final HashMap<Integer, List<OVXFlowStatisticsReply>> stats) {
         List<OVXFlowStatisticsReply> statsList = stats.get(tid);
         if (statsList == null) {
             statsList = new LinkedList<OVXFlowStatisticsReply>();
@@ -56,7 +56,7 @@ public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
         stats.put(tid, statsList);
     }
 
-    private int getTidFromCookie(long cookie) {
+    private int getTidFromCookie(final long cookie) {
         return (int) (cookie >> 32);
     }
 

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,13 +23,14 @@ import org.openflow.protocol.OFSetConfig;
 
 public class OVXSetConfig extends OFSetConfig implements Devirtualizable {
 
-    private final Logger log = LogManager.getLogger(OVXSetConfig.class
-            .getName());
+    private final Logger      log         = LogManager
+                                                  .getLogger(OVXSetConfig.class
+                                                          .getName());
 
     /**
      * miss_send_len for a full packet (-1).
      */
-    public static final short MSL_FULL = (short) 0xffff;
+    public static final short MSL_FULL    = (short) 0xffff;
     /**
      * Default miss_send_len when unspecified.
      */

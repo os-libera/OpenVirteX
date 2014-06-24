@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,21 +25,22 @@ import com.mongodb.MongoClient;
 
 public class MongoConnection implements DBConnection {
     private static final String DB_NAME = "OVX";
-    private MongoClient mongo;
+    private MongoClient         mongo;
 
-    private static Logger log = LogManager.getLogger(MongoConnection.class
-            .getName());
+    private static Logger       log     = LogManager
+                                                .getLogger(MongoConnection.class
+                                                        .getName());
 
     @Override
-    public void connect(String host, Integer port) {
+    public void connect(final String host, final Integer port) {
         MongoConnection.log.info("Connecting to MongoDB at {}:{}", host, port);
         try {
             this.mongo = new MongoClient(host, port);
-            this.mongo.getConnector().getDBPortPool(mongo.getAddress()).get()
-                    .ensureOpen();
-        } catch (UnknownHostException e) {
+            this.mongo.getConnector().getDBPortPool(this.mongo.getAddress())
+                    .get().ensureOpen();
+        } catch (final UnknownHostException e) {
             MongoConnection.log.error("Invalid MongoDB host");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             MongoConnection.log.error("Error connecting to database");
         }
     }
@@ -50,7 +51,7 @@ public class MongoConnection implements DBConnection {
     }
 
     public DB getDB() {
-        return mongo.getDB(MongoConnection.DB_NAME);
+        return this.mongo.getDB(MongoConnection.DB_NAME);
     }
 
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,13 +22,15 @@ import org.openflow.util.LRULinkedHashMap;
  */
 public class XidTranslator<T> {
 
-    //XID values OVX creates start at MIN_XID
-    static final int MIN_XID = 256;
-    static final int INIT_SIZE = 1 << 10;
-    static final int MAX_SIZE = 1 << 14; // must be larger than the max lifetime
-                                         // of an XID * rate of
-                                         // mesgs/sec
-    int nextID;
+    // XID values OVX creates start at MIN_XID
+    static final int                      MIN_XID   = 256;
+    static final int                      INIT_SIZE = 1 << 10;
+    static final int                      MAX_SIZE  = 1 << 14; // must be larger
+                                                               // than the max
+                                                               // lifetime
+    // of an XID * rate of
+    // mesgs/sec
+    int                                   nextID;
     LRULinkedHashMap<Integer, XidPair<T>> xidMap;
 
     public XidTranslator() {

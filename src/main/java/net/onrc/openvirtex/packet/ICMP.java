@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,8 +40,8 @@ import java.nio.ByteBuffer;
  * @author shudong.zhou@bigswitch.com
  */
 public class ICMP extends BasePacket {
-    protected byte icmpType;
-    protected byte icmpCode;
+    protected byte  icmpType;
+    protected byte  icmpCode;
     protected short checksum;
 
     /**
@@ -144,7 +144,7 @@ public class ICMP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -159,7 +159,7 @@ public class ICMP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

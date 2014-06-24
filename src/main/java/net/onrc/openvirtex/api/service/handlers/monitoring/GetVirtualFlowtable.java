@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,16 +42,16 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
     public JSONRPC2Response process(final Map<String, Object> params) {
         try {
 
-            final Number tid = HandlerUtils.<Number>fetchField(
+            final Number tid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.VDPID, params, false, -1);
             final OVXMap map = OVXMap.getInstance();
             final LinkedList<Map<String, Object>> flows = new LinkedList<Map<String, Object>>();
             if (dpid.longValue() == -1) {
-                HashMap<String, Object> res = new HashMap<String, Object>();
-                for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue())
-                        .getSwitches()) {
+                final HashMap<String, Object> res = new HashMap<String, Object>();
+                for (final OVXSwitch vsw : map
+                        .getVirtualNetwork(tid.intValue()).getSwitches()) {
                     flows.clear();
                     final Collection<OVXFlowMod> fms = vsw.getFlowTable()
                             .getFlowTable();
@@ -85,7 +85,7 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": Unable to fetch virtual topology : "
                             + e.getMessage()), 0);
-        } catch (NetworkMappingException e) {
+        } catch (final NetworkMappingException e) {
             this.resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": Unable to fetch virtual topology : "

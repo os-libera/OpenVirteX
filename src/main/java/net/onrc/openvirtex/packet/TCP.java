@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,15 +40,15 @@ import java.nio.ByteBuffer;
  */
 
 public class TCP extends BasePacket {
-    protected short sourcePort;
-    protected short destinationPort;
-    protected int sequence;
-    protected int acknowledge;
-    protected byte dataOffset;
-    protected short flags;
-    protected short windowSize;
-    protected short checksum;
-    protected short urgentPointer;
+    protected short  sourcePort;
+    protected short  destinationPort;
+    protected int    sequence;
+    protected int    acknowledge;
+    protected byte   dataOffset;
+    protected short  flags;
+    protected short  windowSize;
+    protected short  checksum;
+    protected short  urgentPointer;
     protected byte[] options;
 
     /**
@@ -258,7 +258,7 @@ public class TCP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -273,7 +273,7 @@ public class TCP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

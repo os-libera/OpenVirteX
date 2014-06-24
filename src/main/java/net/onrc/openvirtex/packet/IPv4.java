@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,9 +46,9 @@ import java.util.Map;
  *
  */
 public class IPv4 extends BasePacket {
-    public static final byte PROTOCOL_ICMP = 0x1;
-    public static final byte PROTOCOL_TCP = 0x6;
-    public static final byte PROTOCOL_UDP = 0x11;
+    public static final byte                          PROTOCOL_ICMP = 0x1;
+    public static final byte                          PROTOCOL_TCP  = 0x6;
+    public static final byte                          PROTOCOL_UDP  = 0x11;
     public static Map<Byte, Class<? extends IPacket>> protocolClassMap;
 
     static {
@@ -58,21 +58,21 @@ public class IPv4 extends BasePacket {
         IPv4.protocolClassMap.put(IPv4.PROTOCOL_UDP, UDP.class);
     }
 
-    protected byte version;
-    protected byte headerLength;
-    protected byte diffServ;
-    protected short totalLength;
-    protected short identification;
-    protected byte flags;
-    protected short fragmentOffset;
-    protected byte ttl;
-    protected byte protocol;
-    protected short checksum;
-    protected int sourceAddress;
-    protected int destinationAddress;
-    protected byte[] options;
+    protected byte                                    version;
+    protected byte                                    headerLength;
+    protected byte                                    diffServ;
+    protected short                                   totalLength;
+    protected short                                   identification;
+    protected byte                                    flags;
+    protected short                                   fragmentOffset;
+    protected byte                                    ttl;
+    protected byte                                    protocol;
+    protected short                                   checksum;
+    protected int                                     sourceAddress;
+    protected int                                     destinationAddress;
+    protected byte[]                                  options;
 
-    protected boolean isTruncated;
+    protected boolean                                 isTruncated;
 
     /**
      * Default constructor that sets the version to 4.
@@ -461,8 +461,8 @@ public class IPv4 extends BasePacket {
     }
 
     /**
-     * Accepts an IPv4 address and returns of string of the form xxx.xxx.xxx.xxx,
-     * e.g., 192.168.0.1.
+     * Accepts an IPv4 address and returns of string of the form
+     * xxx.xxx.xxx.xxx, e.g., 192.168.0.1.
      *
      * @param ipAddress
      * @return
@@ -535,14 +535,14 @@ public class IPv4 extends BasePacket {
      * @return The IP address separated into bytes.
      */
     public static byte[] toIPv4AddressBytes(final int ipAddress) {
-        return new byte[] {(byte) (ipAddress >>> 24),
+        return new byte[] { (byte) (ipAddress >>> 24),
                 (byte) (ipAddress >>> 16), (byte) (ipAddress >>> 8),
-                (byte) ipAddress};
+                (byte) ipAddress };
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -567,7 +567,7 @@ public class IPv4 extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

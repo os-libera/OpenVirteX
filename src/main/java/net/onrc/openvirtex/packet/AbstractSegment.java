@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -103,7 +103,7 @@ public abstract class AbstractSegment extends BasePacket {
      * @param length
      *            length of segment
      */
-    public void serialize(final ByteBuffer bb, int length) {
+    public void serialize(final ByteBuffer bb, final int length) {
         // compute checksum if needed
         if (this.checksum == 0) {
             bb.rewind();
@@ -136,7 +136,8 @@ public abstract class AbstractSegment extends BasePacket {
     }
 
     @Override
-    public IPacket deserialize(byte[] data, int offset, int length) {
+    public IPacket deserialize(final byte[] data, final int offset,
+            final int length) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -144,7 +145,7 @@ public abstract class AbstractSegment extends BasePacket {
     /**
      * Method for subclass hashCode() to piggyback onto
      */
-    public int hashCode(int prime) {
+    public int hashCode(final int prime) {
         int result = super.hashCode();
         result = prime * result + this.checksum;
         result = prime * result + this.destinationPort;

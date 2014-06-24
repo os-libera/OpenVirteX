@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol.action;
@@ -45,11 +45,11 @@ import org.jboss.netty.buffer.ChannelBuffer;
  * @author Andreas Wundsam <andreas.wundsam@bigswitch.com>
  */
 public class OFActionVendorGeneric extends OFActionVendor {
-    public static int MINIMUM_LENGTH = 8;
+    public static int           MINIMUM_LENGTH = 8;
 
-    private final static byte[] EMPTY_ARRAY = new byte[0];
+    private final static byte[] EMPTY_ARRAY    = new byte[0];
 
-    protected byte[] vendorData;
+    protected byte[]            vendorData;
 
     public OFActionVendorGeneric() {
         super();

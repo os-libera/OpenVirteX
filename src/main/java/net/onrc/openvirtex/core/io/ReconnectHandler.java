@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,18 +38,20 @@ import org.jboss.netty.util.TimerTask;
 
 public class ReconnectHandler extends SimpleChannelHandler {
 
-    Logger log = LogManager.getLogger(ReconnectHandler.class.getName());
+    Logger                          log       = LogManager
+                                                      .getLogger(ReconnectHandler.class
+                                                              .getName());
 
     static final ReconnectException EXCEPTION = new ReconnectException();
 
-    final ClientBootstrap bootstrap;
-    final Timer timer;
-    volatile Timeout timeout;
-    private final Integer maxBackOff;
+    final ClientBootstrap           bootstrap;
+    final Timer                     timer;
+    volatile Timeout                timeout;
+    private final Integer           maxBackOff;
 
-    private final OVXSwitch sw;
+    private final OVXSwitch         sw;
 
-    private final ChannelGroup cg;
+    private final ChannelGroup      cg;
 
     public ReconnectHandler(final OVXSwitch sw,
             final ClientBootstrap bootstrap, final Timer timer,
@@ -109,7 +111,7 @@ public class ReconnectHandler extends SimpleChannelHandler {
 
     private final class ReconnectTimeoutTask implements TimerTask {
 
-        OVXSwitch sw = null;
+        OVXSwitch                  sw = null;
         private final ChannelGroup cg;
 
         public ReconnectTimeoutTask(final OVXSwitch sw, final ChannelGroup cg) {

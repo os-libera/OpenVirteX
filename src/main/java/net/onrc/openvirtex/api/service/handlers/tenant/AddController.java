@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,12 +49,12 @@ public class AddController extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     TenantHandler.VDPID, params, true, null);
             final ArrayList<String> ctrlUrls = HandlerUtils
-                    .<ArrayList<String>>fetchField(TenantHandler.CTRLURLS,
+                    .<ArrayList<String>> fetchField(TenantHandler.CTRLURLS,
                             params, true, null);
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
@@ -64,13 +64,13 @@ public class AddController extends ApiHandler<Map<String, Object>> {
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
-            for (String ctrl : ctrlUrls) {
-                String[] ctrlParts = ctrl.split(":");
+            for (final String ctrl : ctrlUrls) {
+                final String[] ctrlParts = ctrl.split(":");
                 HandlerUtils.isControllerAvailable(ctrlParts[1],
                         Integer.parseInt(ctrlParts[2]), tenantId.intValue());
             }
 
-            OVXSwitch sw = virtualNetwork.getSwitch(dpid.longValue());
+            final OVXSwitch sw = virtualNetwork.getSwitch(dpid.longValue());
             virtualNetwork.addControllers(ctrlUrls);
             OpenVirteXController.getInstance().addControllers(sw,
                     new HashSet<String>(ctrlUrls));
@@ -97,7 +97,7 @@ public class AddController extends ApiHandler<Map<String, Object>> {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": " + e.getMessage()), 0);
-        } catch (ControllerUnavailableException e) {
+        } catch (final ControllerUnavailableException e) {
             resp = new JSONRPC2Response(
                     new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
                             this.cmdName() + ": Controller already in use : "

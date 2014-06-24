@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,12 +33,14 @@ public class OVXDescriptionStatistics extends OFDescriptionStatistics implements
         VirtualizableStatistic, DevirtualizableStatistic {
 
     /**
-     * Creates a reply object populated with the virtual switch params and
-     * sends it back to the controller.
-     * This is in response to receiving a Description stats request from the controller.
+     * Creates a reply object populated with the virtual switch params and sends
+     * it back to the controller. This is in response to receiving a Description
+     * stats request from the controller.
      *
-     * @param sw the virtual switch
-     * @param msg the statistics request message
+     * @param sw
+     *            the virtual switch
+     * @param msg
+     *            the statistics request message
      */
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,

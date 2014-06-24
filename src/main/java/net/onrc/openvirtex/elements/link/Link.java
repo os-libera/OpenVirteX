@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,22 +43,23 @@ import com.google.gson.annotations.SerializedName;
 public abstract class Link<T1 extends Port, T2 extends Switch> implements
         Persistable, Component {
 
-    private Logger log = LogManager.getLogger(Link.class.getName());
+    private final Logger       log     = LogManager.getLogger(Link.class
+                                               .getName());
 
     /**
      * Database keyword for links.
      */
-    public static final String DB_KEY = "links";
+    public static final String DB_KEY  = "links";
 
     /** The source port. */
     @SerializedName("src")
     @Expose
-    protected T1 srcPort = null;
+    protected T1               srcPort = null;
 
     /** The destination port. */
     @SerializedName("dst")
     @Expose
-    protected T1 dstPort = null;
+    protected T1               dstPort = null;
 
     /**
      * Instantiates a new link.
@@ -120,43 +121,48 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements
     /**
      * Removes mappings and dependencies related to this link.
      */
+    @Override
     public abstract void unregister();
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((dstPort == null) ? 0 : dstPort.hashCode());
-        result = prime * result + ((srcPort == null) ? 0 : srcPort.hashCode());
+        result = prime * result
+                + (this.dstPort == null ? 0 : this.dstPort.hashCode());
+        result = prime * result
+                + (this.srcPort == null ? 0 : this.srcPort.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
-        Link other = (Link) obj;
-        if (dstPort == null) {
+        final Link other = (Link) obj;
+        if (this.dstPort == null) {
             if (other.dstPort != null) {
                 return false;
             }
-        } else if (!dstPort.equals(other.dstPort)) {
-            return false;
-        }
-        if (srcPort == null) {
+        } else
+            if (!this.dstPort.equals(other.dstPort)) {
+                return false;
+            }
+        if (this.srcPort == null) {
             if (other.srcPort != null) {
                 return false;
             }
-        } else if (!srcPort.equals(other.srcPort)) {
-            return false;
-        }
+        } else
+            if (!this.srcPort.equals(other.srcPort)) {
+                return false;
+            }
         return true;
     }
 
@@ -207,7 +213,7 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = new HashMap<String, Object>();
+        final Map<String, Object> dbObject = new HashMap<String, Object>();
         dbObject.put(TenantHandler.SRC_DPID, this.srcPort.getParentSwitch()
                 .getSwitchId());
         dbObject.put(TenantHandler.SRC_PORT, this.srcPort.getPortNumber());
@@ -217,6 +223,7 @@ public abstract class Link<T1 extends Port, T2 extends Switch> implements
         return dbObject;
     }
 
+    @Override
     public void register() {
         // do nothing
     }

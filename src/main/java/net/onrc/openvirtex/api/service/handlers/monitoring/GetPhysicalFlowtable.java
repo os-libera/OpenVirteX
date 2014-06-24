@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,22 +43,22 @@ public class GetPhysicalFlowtable extends ApiHandler<Map<String, Object>> {
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
         try {
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.DPID, params, false, -1);
             final OVXMap map = OVXMap.getInstance();
             LinkedList<OVXFlowStatisticsReply> flows = new LinkedList<OVXFlowStatisticsReply>();
 
             if (dpid.longValue() == -1) {
-                HashMap<String, List<Map<String, Object>>> res = new HashMap<String, List<Map<String, Object>>>();
-                for (PhysicalSwitch sw : PhysicalNetwork.getInstance()
+                final HashMap<String, List<Map<String, Object>>> res = new HashMap<String, List<Map<String, Object>>>();
+                for (final PhysicalSwitch sw : PhysicalNetwork.getInstance()
                         .getSwitches()) {
-                    flows = aggregateFlowsBySwitch(sw.getSwitchId(), map);
-                    res.put(sw.getSwitchName(), flowModsToMap(flows));
+                    flows = this.aggregateFlowsBySwitch(sw.getSwitchId(), map);
+                    res.put(sw.getSwitchName(), this.flowModsToMap(flows));
                 }
                 this.resp = new JSONRPC2Response(res, 0);
             } else {
-                flows = aggregateFlowsBySwitch(dpid.longValue(), map);
-                this.resp = new JSONRPC2Response(flowModsToMap(flows), 0);
+                flows = this.aggregateFlowsBySwitch(dpid.longValue(), map);
+                this.resp = new JSONRPC2Response(this.flowModsToMap(flows), 0);
             }
 
         } catch (ClassCastException | MissingRequiredField e) {
@@ -83,10 +83,10 @@ public class GetPhysicalFlowtable extends ApiHandler<Map<String, Object>> {
     }
 
     private List<Map<String, Object>> flowModsToMap(
-            LinkedList<OVXFlowStatisticsReply> flows) {
+            final LinkedList<OVXFlowStatisticsReply> flows) {
         final List<Map<String, Object>> res = new LinkedList<Map<String, Object>>();
-        for (OVXFlowStatisticsReply frep : flows) {
-            OVXFlowMod fm = new OVXFlowMod();
+        for (final OVXFlowStatisticsReply frep : flows) {
+            final OVXFlowMod fm = new OVXFlowMod();
             fm.setActions(frep.getActions());
             fm.setMatch(frep.getMatch());
             res.add(fm.toMap());
@@ -95,10 +95,10 @@ public class GetPhysicalFlowtable extends ApiHandler<Map<String, Object>> {
     }
 
     private LinkedList<OVXFlowStatisticsReply> aggregateFlowsBySwitch(
-            long dpid, Mappable map) {
-        LinkedList<OVXFlowStatisticsReply> flows = new LinkedList<OVXFlowStatisticsReply>();
+            final long dpid, final Mappable map) {
+        final LinkedList<OVXFlowStatisticsReply> flows = new LinkedList<OVXFlowStatisticsReply>();
         final PhysicalSwitch sw = PhysicalNetwork.getInstance().getSwitch(dpid);
-        for (Integer tid : map.listVirtualNetworks().keySet()) {
+        for (final Integer tid : map.listVirtualNetworks().keySet()) {
             if (sw.getFlowStats(tid) != null) {
                 flows.addAll(sw.getFlowStats(tid));
             }

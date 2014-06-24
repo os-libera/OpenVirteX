@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,7 +68,8 @@ import org.openflow.vendor.nicira.OFRoleRequestVendorData;
 public class ControllerChannelHandler extends OFChannelHandler {
 
     private final Logger log = LogManager
-            .getLogger(ControllerChannelHandler.class.getName());
+                                     .getLogger(ControllerChannelHandler.class
+                                             .getName());
 
     enum ChannelState {
         INIT(false) {
@@ -168,49 +169,49 @@ public class ControllerChannelHandler extends OFChannelHandler {
                     final OFMessage m) throws IOException {
 
                 switch (m.getType()) {
-                case HELLO:
-                    this.processOFHello(h, (OFHello) m);
-                    break;
-                case ECHO_REPLY:
-                    break;
-                case ECHO_REQUEST:
-                    this.processOFEchoRequest(h, (OFEchoRequest) m);
-                    break;
+                    case HELLO:
+                        this.processOFHello(h, (OFHello) m);
+                        break;
+                    case ECHO_REPLY:
+                        break;
+                    case ECHO_REQUEST:
+                        this.processOFEchoRequest(h, (OFEchoRequest) m);
+                        break;
 
-                case FEATURES_REQUEST:
-                    this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
-                    break;
-                case BARRIER_REQUEST:
-                    // TODO: actually implement barrier contract
-                    final OFBarrierReply breply = new OFBarrierReply();
-                    breply.setXid(m.getXid());
-                    h.channel.write(Collections.singletonList(breply));
-                    break;
-                case SET_CONFIG:
-                case ERROR:
-                case PACKET_OUT:
-                case PORT_MOD:
-                case QUEUE_GET_CONFIG_REQUEST:
-                case STATS_REQUEST:
-                case FLOW_MOD:
-                case GET_CONFIG_REQUEST:
-                    h.sw.handleIO(m, h.channel);
-                    break;
-                case VENDOR:
-                    processOFVendor(h, (OFVendor) m);
-                    break;
-                case FEATURES_REPLY:
-                case FLOW_REMOVED:
-                case PACKET_IN:
-                case PORT_STATUS:
-                case BARRIER_REPLY:
-                case GET_CONFIG_REPLY:
-                case STATS_REPLY:
-                case QUEUE_GET_CONFIG_REPLY:
-                    this.illegalMessageReceived(h, m);
-                    break;
-                default:
-                    break;
+                    case FEATURES_REQUEST:
+                        this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
+                        break;
+                    case BARRIER_REQUEST:
+                        // TODO: actually implement barrier contract
+                        final OFBarrierReply breply = new OFBarrierReply();
+                        breply.setXid(m.getXid());
+                        h.channel.write(Collections.singletonList(breply));
+                        break;
+                    case SET_CONFIG:
+                    case ERROR:
+                    case PACKET_OUT:
+                    case PORT_MOD:
+                    case QUEUE_GET_CONFIG_REQUEST:
+                    case STATS_REQUEST:
+                    case FLOW_MOD:
+                    case GET_CONFIG_REQUEST:
+                        h.sw.handleIO(m, h.channel);
+                        break;
+                    case VENDOR:
+                        this.processOFVendor(h, (OFVendor) m);
+                        break;
+                    case FEATURES_REPLY:
+                    case FLOW_REMOVED:
+                    case PACKET_IN:
+                    case PORT_STATUS:
+                    case BARRIER_REPLY:
+                    case GET_CONFIG_REPLY:
+                    case STATS_REPLY:
+                    case QUEUE_GET_CONFIG_REPLY:
+                        this.illegalMessageReceived(h, m);
+                        break;
+                    default:
+                        break;
                 }
             }
 
@@ -276,8 +277,10 @@ public class ControllerChannelHandler extends OFChannelHandler {
          * We have an OFMessage we didn't expect given the current state and we
          * want to ignore the message.
          *
-         * @param h the channel handler the received the message
-         * @param m the message
+         * @param h
+         *            the channel handler the received the message
+         * @param m
+         *            the message
          */
         protected void unhandledMessageReceived(
                 final ControllerChannelHandler h, final OFMessage m) {
@@ -286,14 +289,14 @@ public class ControllerChannelHandler extends OFChannelHandler {
                 h.log.warn(
                         "Received unhandled VENDOR message, sending unsupported error: {}",
                         m);
-                OFMessage e = OVXMessageUtil.makeErrorMsg(
+                final OFMessage e = OVXMessageUtil.makeErrorMsg(
                         OFBadRequestCode.OFPBRC_BAD_VENDOR, m);
                 h.channel.write(Collections.singletonList(e));
             } else {
                 h.log.warn(
                         "Received unhandled message, sending bad type error: {}",
                         m);
-                OFMessage e = OVXMessageUtil.makeErrorMsg(
+                final OFMessage e = OVXMessageUtil.makeErrorMsg(
                         OFBadRequestCode.OFPBRC_BAD_TYPE, m);
                 h.channel.write(Collections.singletonList(e));
             }
@@ -323,64 +326,64 @@ public class ControllerChannelHandler extends OFChannelHandler {
         void processOFMessage(final ControllerChannelHandler h,
                 final OFMessage m) throws IOException {
             switch (m.getType()) {
-            case HELLO:
-                this.processOFHello(h, (OFHello) m);
-                break;
-            case ECHO_REPLY:
-                this.processOFEchoReply(h, (OFEchoReply) m);
-                break;
-            case ECHO_REQUEST:
-                this.processOFEchoRequest(h, (OFEchoRequest) m);
-                break;
-            case ERROR:
-                this.processOFError(h, (OFError) m);
-                break;
-            case VENDOR:
-                this.processOFVendor(h, (OFVendor) m);
-                break;
-            // The following messages are sent to switches. The controller
-            // should never receive them
-            case SET_CONFIG:
-                this.processOFSetConfig(h, (OFSetConfig) m);
-                break;
-            case PACKET_OUT:
-                this.processOFPacketOut(h, (OFPacketOut) m);
-                break;
-            case PORT_MOD:
-                this.processOFPortMod(h, (OFPortMod) m);
-                break;
-            case QUEUE_GET_CONFIG_REQUEST:
-                this.processOFQueueGetConfigRequest(h,
-                        (OFQueueGetConfigRequest) m);
-                break;
-            case BARRIER_REQUEST:
-                this.processOFBarrierRequest(h, (OFBarrierRequest) m);
-                break;
-            case STATS_REQUEST:
-                this.processOFStatsRequest(h, (OFStatisticsRequest) m);
-                break;
-            case FEATURES_REQUEST:
-                this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
-                break;
-            case FLOW_MOD:
-                this.processOFFlowMod(h, (OFFlowMod) m);
-                break;
-            case GET_CONFIG_REQUEST:
-                this.processOFGetConfigRequest(h, (OFGetConfigRequest) m);
-                break;
+                case HELLO:
+                    this.processOFHello(h, (OFHello) m);
+                    break;
+                case ECHO_REPLY:
+                    this.processOFEchoReply(h, (OFEchoReply) m);
+                    break;
+                case ECHO_REQUEST:
+                    this.processOFEchoRequest(h, (OFEchoRequest) m);
+                    break;
+                case ERROR:
+                    this.processOFError(h, (OFError) m);
+                    break;
+                case VENDOR:
+                    this.processOFVendor(h, (OFVendor) m);
+                    break;
+                // The following messages are sent to switches. The controller
+                // should never receive them
+                case SET_CONFIG:
+                    this.processOFSetConfig(h, (OFSetConfig) m);
+                    break;
+                case PACKET_OUT:
+                    this.processOFPacketOut(h, (OFPacketOut) m);
+                    break;
+                case PORT_MOD:
+                    this.processOFPortMod(h, (OFPortMod) m);
+                    break;
+                case QUEUE_GET_CONFIG_REQUEST:
+                    this.processOFQueueGetConfigRequest(h,
+                            (OFQueueGetConfigRequest) m);
+                    break;
+                case BARRIER_REQUEST:
+                    this.processOFBarrierRequest(h, (OFBarrierRequest) m);
+                    break;
+                case STATS_REQUEST:
+                    this.processOFStatsRequest(h, (OFStatisticsRequest) m);
+                    break;
+                case FEATURES_REQUEST:
+                    this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
+                    break;
+                case FLOW_MOD:
+                    this.processOFFlowMod(h, (OFFlowMod) m);
+                    break;
+                case GET_CONFIG_REQUEST:
+                    this.processOFGetConfigRequest(h, (OFGetConfigRequest) m);
+                    break;
 
-            case FEATURES_REPLY:
-            case FLOW_REMOVED:
-            case PACKET_IN:
-            case PORT_STATUS:
-            case BARRIER_REPLY:
-            case GET_CONFIG_REPLY:
-            case STATS_REPLY:
-            case QUEUE_GET_CONFIG_REPLY:
-                this.illegalMessageReceived(h, m);
-                break;
-            default:
-                break;
+                case FEATURES_REPLY:
+                case FLOW_REMOVED:
+                case PACKET_IN:
+                case PORT_STATUS:
+                case BARRIER_REPLY:
+                case GET_CONFIG_REPLY:
+                case STATS_REPLY:
+                case QUEUE_GET_CONFIG_REPLY:
+                    this.illegalMessageReceived(h, m);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -421,7 +424,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 
         void processOFFeaturesRequest(final ControllerChannelHandler h,
                 final OFFeaturesRequest m) {
-            OFFeaturesReply fr = h.sw.getFeaturesReply();
+            final OFFeaturesReply fr = h.sw.getFeaturesReply();
             fr.setXid(m.getXid());
             h.channel.write(Collections.singletonList(fr));
         }
@@ -480,7 +483,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
     }
 
     private ChannelState state;
-    private Integer handshakeTransactionIds = -1;
+    private Integer      handshakeTransactionIds = -1;
 
     public ControllerChannelHandler(final OpenVirteXController ctrl,
             final OVXSwitch sw) {
@@ -533,7 +536,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
         /*
          * Pass all messages to the handlers, except LLDP which goes to the
          * virtual network handler.
-         *
+         * 
          * This should be implemented with a token bucket in order to rate limit
          * the connections a little.
          */
@@ -545,26 +548,28 @@ public class ControllerChannelHandler extends OFChannelHandler {
 
                 try {
                     switch (ofm.getType()) {
-                    case PACKET_OUT:
-                        /*
-                         * Is this packet a packet out? If yes is it an lldp?
-                         * then send it to the OVXNetwork.
-                         */
-                        final byte[] data = ((OFPacketOut) ofm).getPacketData();
-                        if (data.length >= 14) {
-                            final int tenantId = ((OVXSwitch) this.sw)
-                                    .getTenantId();
-                            if (OVXLLDP.isLLDP(data)) {
-                                OVXMap.getInstance()
-                                        .getVirtualNetwork(tenantId)
-                                        .handleLLDP(ofm, this.sw);
-                                break;
+                        case PACKET_OUT:
+                            /*
+                             * Is this packet a packet out? If yes is it an
+                             * lldp?
+                             * then send it to the OVXNetwork.
+                             */
+                            final byte[] data = ((OFPacketOut) ofm)
+                                    .getPacketData();
+                            if (data.length >= 14) {
+                                final int tenantId = ((OVXSwitch) this.sw)
+                                        .getTenantId();
+                                if (OVXLLDP.isLLDP(data)) {
+                                    OVXMap.getInstance()
+                                            .getVirtualNetwork(tenantId)
+                                            .handleLLDP(ofm, this.sw);
+                                    break;
+                                }
                             }
-                        }
-                    default:
-                        // Process all non-packet-ins
-                        this.state.processOFMessage(this, ofm);
-                        break;
+                        default:
+                            // Process all non-packet-ins
+                            this.state.processOFMessage(this, ofm);
+                            break;
                     }
 
                 } catch (final Exception ex) {
@@ -609,40 +614,51 @@ public class ControllerChannelHandler extends OFChannelHandler {
             this.log.error("Disconnecting ctrl {} due to read timeout ",
                     this.getSwitchInfoString(), e.getCause());
             ctx.getChannel().close();
-        } else if (e.getCause() instanceof HandshakeTimeoutException) {
-            this.log.error(
-                    "Disconnecting ctrl {} failed to complete handshake ",
-                    this.getSwitchInfoString(), e.getCause());
-            ctx.getChannel().close();
-        } else if (e.getCause() instanceof ClosedChannelException) {
-            this.log.error("Channel for ctrl {} already closed",
-                    this.getSwitchInfoString(), e.getCause());
-        } else if (e.getCause() instanceof IOException) {
-            this.log.error("Disconnecting ctrl {} due to IO Error.",
-                    this.getSwitchInfoString(), e.getCause());
-            ctx.getChannel().close();
-        } else if (e.getCause() instanceof SwitchStateException) {
-            this.log.error("Disconnecting ctrl {} due to switch state error",
-                    this.getSwitchInfoString(), e.getCause());
-            ctx.getChannel().close();
-        } else if (e.getCause() instanceof MessageParseException) {
-            this.log.error(
-                    "Disconnecting ctrl {} due to message parse failure",
-                    this.getSwitchInfoString(), e.getCause());
-            ctx.getChannel().close();
-        } else if (e.getCause() instanceof RejectedExecutionException) {
-            this.log.error("Could not process message: queue full",
-                    e.getCause());
+        } else
+            if (e.getCause() instanceof HandshakeTimeoutException) {
+                this.log.error(
+                        "Disconnecting ctrl {} failed to complete handshake ",
+                        this.getSwitchInfoString(), e.getCause());
+                ctx.getChannel().close();
+            } else
+                if (e.getCause() instanceof ClosedChannelException) {
+                    this.log.error("Channel for ctrl {} already closed",
+                            this.getSwitchInfoString(), e.getCause());
+                } else
+                    if (e.getCause() instanceof IOException) {
+                        this.log.error(
+                                "Disconnecting ctrl {} due to IO Error.",
+                                this.getSwitchInfoString(), e.getCause());
+                        ctx.getChannel().close();
+                    } else
+                        if (e.getCause() instanceof SwitchStateException) {
+                            this.log.error(
+                                    "Disconnecting ctrl {} due to switch state error",
+                                    this.getSwitchInfoString(), e.getCause());
+                            ctx.getChannel().close();
+                        } else
+                            if (e.getCause() instanceof MessageParseException) {
+                                this.log.error(
+                                        "Disconnecting ctrl {} due to message parse failure",
+                                        this.getSwitchInfoString(),
+                                        e.getCause());
+                                ctx.getChannel().close();
+                            } else
+                                if (e.getCause() instanceof RejectedExecutionException) {
+                                    this.log.error(
+                                            "Could not process message: queue full",
+                                            e.getCause());
 
-        } else {
+                                } else {
 
-            this.log.error(
-                    "Error while processing message from switch {} state {}",
-                    this.getSwitchInfoString(), this.state, e.getCause());
+                                    this.log.error(
+                                            "Error while processing message from switch {} state {}",
+                                            this.getSwitchInfoString(),
+                                            this.state, e.getCause());
 
-            ctx.getChannel().close();
-            throw new RuntimeException(e.getCause());
-        }
+                                    ctx.getChannel().close();
+                                    throw new RuntimeException(e.getCause());
+                                }
     }
 
 }

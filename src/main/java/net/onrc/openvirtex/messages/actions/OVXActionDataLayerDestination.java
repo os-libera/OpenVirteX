@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,7 +47,7 @@ public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
                         OFBadActionCode.OFPBAC_EPERM);
             }
             approvedActions.add(this);
-        } catch (AddressMappingException e) {
+        } catch (final AddressMappingException e) {
             throw new ActionVirtualizationDenied("Target mac " + mac
                     + " is invalid ", OFBadActionCode.OFPBAC_EPERM);
         }

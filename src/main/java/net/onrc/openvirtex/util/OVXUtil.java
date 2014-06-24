@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,17 +40,17 @@ import org.openflow.protocol.action.OFActionVirtualLanPriorityCodePoint;
 public final class OVXUtil {
 
     /**
-     * Override default constructor with no-op private constructor.
-     * Needed for checkstyle.
+     * Override default constructor with no-op private constructor. Needed for
+     * checkstyle.
      */
     private OVXUtil() {
     }
 
     /**
-     * Gets the minimum number of bits needed to represent the given
-     * integer.
+     * Gets the minimum number of bits needed to represent the given integer.
      *
-     * @param x the integer to represent in binary
+     * @param x
+     *            the integer to represent in binary
      * @return the number of bits
      */
     public static int numBitsneeded(int x) {
@@ -63,86 +63,88 @@ public final class OVXUtil {
     }
 
     /**
-     * Gets a map with string keys and object values from
-     * the given action.
+     * Gets a map with string keys and object values from the given action.
      *
-     * @param act the action
+     * @param act
+     *            the action
      * @return string-to-object map
      * @throws UnknownActionException
      */
-    public static Map<String, Object> actionToMap(OFAction act)
+    public static Map<String, Object> actionToMap(final OFAction act)
             throws UnknownActionException {
-        HashMap<String, Object> ret = new HashMap<String, Object>();
+        final HashMap<String, Object> ret = new HashMap<String, Object>();
 
         switch (act.getType()) {
-        case OUTPUT:
-            OFActionOutput out = (OFActionOutput) act;
-            ret.put("type", "OUTPUT");
-            ret.put("port", out.getPort());
-            break;
-        case SET_DL_DST:
-            OFActionDataLayerDestination dldst = (OFActionDataLayerDestination) act;
-            ret.put("type", "DL_DST");
-            ret.put("dl_dst",
-                    new MACAddress(dldst.getDataLayerAddress()).toString());
-            break;
-        case SET_DL_SRC:
-            OFActionDataLayerSource dlsrc = (OFActionDataLayerSource) act;
-            ret.put("type", "DL_SRC");
-            ret.put("dl_src",
-                    new MACAddress(dlsrc.getDataLayerAddress()).toString());
-            break;
-        case SET_NW_DST:
-            OFActionNetworkLayerDestination nwdst = (OFActionNetworkLayerDestination) act;
-            ret.put("type", "NW_DST");
-            ret.put("nw_dst", new PhysicalIPAddress(nwdst.getNetworkAddress())
-                    .toSimpleString());
-            break;
-        case SET_NW_SRC:
-            OFActionNetworkLayerSource nwsrc = (OFActionNetworkLayerSource) act;
-            ret.put("type", "NW_SRC");
-            ret.put("nw_src", new PhysicalIPAddress(nwsrc.getNetworkAddress())
-                    .toSimpleString());
-            break;
-        case SET_NW_TOS:
-            OFActionNetworkTypeOfService nwtos = (OFActionNetworkTypeOfService) act;
-            ret.put("type", "NW_TOS");
-            ret.put("nw_tos", nwtos.getNetworkTypeOfService());
-            break;
-        case SET_TP_DST:
-            OFActionTransportLayerDestination tpdst = (OFActionTransportLayerDestination) act;
-            ret.put("type", "TP_DST");
-            ret.put("tp_dst", tpdst.getTransportPort());
-            break;
-        case SET_TP_SRC:
-            OFActionTransportLayerSource tpsrc = (OFActionTransportLayerSource) act;
-            ret.put("type", "TP_SRC");
-            ret.put("tp_src", tpsrc.getTransportPort());
-            break;
-        case SET_VLAN_ID:
-            OFActionVirtualLanIdentifier vlan = (OFActionVirtualLanIdentifier) act;
-            ret.put("type", "SET_VLAN");
-            ret.put("vlan_id", vlan.getVirtualLanIdentifier());
-            break;
-        case SET_VLAN_PCP:
-            OFActionVirtualLanPriorityCodePoint pcp = (OFActionVirtualLanPriorityCodePoint) act;
-            ret.put("type", "SET_VLAN_PCP");
-            ret.put("vlan_pcp", pcp.getVirtualLanPriorityCodePoint());
-            break;
-        case STRIP_VLAN:
-            ret.put("type", "STRIP_VLAN");
-            break;
-        case OPAQUE_ENQUEUE:
-            OFActionEnqueue enq = (OFActionEnqueue) act;
-            ret.put("type", "ENQUEUE");
-            ret.put("queue", enq.getQueueId());
-            break;
-        case VENDOR:
-            ret.put("type", "VENDOR");
-            break;
-        default:
-            throw new UnknownActionException("Action " + act.getType()
-                    + " is unknown.");
+            case OUTPUT:
+                final OFActionOutput out = (OFActionOutput) act;
+                ret.put("type", "OUTPUT");
+                ret.put("port", out.getPort());
+                break;
+            case SET_DL_DST:
+                final OFActionDataLayerDestination dldst = (OFActionDataLayerDestination) act;
+                ret.put("type", "DL_DST");
+                ret.put("dl_dst",
+                        new MACAddress(dldst.getDataLayerAddress()).toString());
+                break;
+            case SET_DL_SRC:
+                final OFActionDataLayerSource dlsrc = (OFActionDataLayerSource) act;
+                ret.put("type", "DL_SRC");
+                ret.put("dl_src",
+                        new MACAddress(dlsrc.getDataLayerAddress()).toString());
+                break;
+            case SET_NW_DST:
+                final OFActionNetworkLayerDestination nwdst = (OFActionNetworkLayerDestination) act;
+                ret.put("type", "NW_DST");
+                ret.put("nw_dst",
+                        new PhysicalIPAddress(nwdst.getNetworkAddress())
+                                .toSimpleString());
+                break;
+            case SET_NW_SRC:
+                final OFActionNetworkLayerSource nwsrc = (OFActionNetworkLayerSource) act;
+                ret.put("type", "NW_SRC");
+                ret.put("nw_src",
+                        new PhysicalIPAddress(nwsrc.getNetworkAddress())
+                                .toSimpleString());
+                break;
+            case SET_NW_TOS:
+                final OFActionNetworkTypeOfService nwtos = (OFActionNetworkTypeOfService) act;
+                ret.put("type", "NW_TOS");
+                ret.put("nw_tos", nwtos.getNetworkTypeOfService());
+                break;
+            case SET_TP_DST:
+                final OFActionTransportLayerDestination tpdst = (OFActionTransportLayerDestination) act;
+                ret.put("type", "TP_DST");
+                ret.put("tp_dst", tpdst.getTransportPort());
+                break;
+            case SET_TP_SRC:
+                final OFActionTransportLayerSource tpsrc = (OFActionTransportLayerSource) act;
+                ret.put("type", "TP_SRC");
+                ret.put("tp_src", tpsrc.getTransportPort());
+                break;
+            case SET_VLAN_ID:
+                final OFActionVirtualLanIdentifier vlan = (OFActionVirtualLanIdentifier) act;
+                ret.put("type", "SET_VLAN");
+                ret.put("vlan_id", vlan.getVirtualLanIdentifier());
+                break;
+            case SET_VLAN_PCP:
+                final OFActionVirtualLanPriorityCodePoint pcp = (OFActionVirtualLanPriorityCodePoint) act;
+                ret.put("type", "SET_VLAN_PCP");
+                ret.put("vlan_pcp", pcp.getVirtualLanPriorityCodePoint());
+                break;
+            case STRIP_VLAN:
+                ret.put("type", "STRIP_VLAN");
+                break;
+            case OPAQUE_ENQUEUE:
+                final OFActionEnqueue enq = (OFActionEnqueue) act;
+                ret.put("type", "ENQUEUE");
+                ret.put("queue", enq.getQueueId());
+                break;
+            case VENDOR:
+                ret.put("type", "VENDOR");
+                break;
+            default:
+                throw new UnknownActionException("Action " + act.getType()
+                        + " is unknown.");
 
         }
 

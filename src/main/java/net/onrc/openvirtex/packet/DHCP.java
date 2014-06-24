@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,11 +60,11 @@ public class DHCP extends BasePacket {
      *
      */
     // Header + magic without options
-    public static final int MIN_HEADER_LENGTH = 240;
-    public static final byte OPCODE_REQUEST = 0x1;
-    public static final byte OPCODE_REPLY = 0x2;
+    public static final int  MIN_HEADER_LENGTH = 240;
+    public static final byte OPCODE_REQUEST    = 0x1;
+    public static final byte OPCODE_REPLY      = 0x2;
 
-    public static final byte HWTYPE_ETHERNET = 0x1;
+    public static final byte HWTYPE_ETHERNET   = 0x1;
 
     public enum DHCPOptionCode {
         OptionCode_SubnetMask((byte) 1), OptionCode_RequestedIP((byte) 50), OptionCode_LeaseTime(
@@ -84,20 +84,20 @@ public class DHCP extends BasePacket {
         }
     }
 
-    protected byte opCode;
-    protected byte hardwareType;
-    protected byte hardwareAddressLength;
-    protected byte hops;
-    protected int transactionId;
-    protected short seconds;
-    protected short flags;
-    protected int clientIPAddress;
-    protected int yourIPAddress;
-    protected int serverIPAddress;
-    protected int gatewayIPAddress;
-    protected byte[] clientHardwareAddress;
-    protected String serverName;
-    protected String bootFileName;
+    protected byte             opCode;
+    protected byte             hardwareType;
+    protected byte             hardwareAddressLength;
+    protected byte             hops;
+    protected int              transactionId;
+    protected short            seconds;
+    protected short            flags;
+    protected int              clientIPAddress;
+    protected int              yourIPAddress;
+    protected int              serverIPAddress;
+    protected int              gatewayIPAddress;
+    protected byte[]           clientHardwareAddress;
+    protected String           serverName;
+    protected String           bootFileName;
     protected List<DHCPOption> options = new ArrayList<DHCPOption>();
 
     /**
@@ -496,28 +496,29 @@ public class DHCP extends BasePacket {
             if (code == 0) {
                 // skip these
                 continue;
-            } else if (code != 255) {
-                if (bb.hasRemaining()) {
-                    final int l = 0xff & bb.get(); // convert signed byte to
-                    // int in range [0,255]
-                    option.setLength((byte) l);
-                    if (bb.remaining() >= l) {
-                        final byte[] optionData = new byte[l];
-                        bb.get(optionData);
-                        option.setData(optionData);
+            } else
+                if (code != 255) {
+                    if (bb.hasRemaining()) {
+                        final int l = 0xff & bb.get(); // convert signed byte to
+                        // int in range [0,255]
+                        option.setLength((byte) l);
+                        if (bb.remaining() >= l) {
+                            final byte[] optionData = new byte[l];
+                            bb.get(optionData);
+                            option.setData(optionData);
+                        } else {
+                            // Skip the invalid option and set the END option
+                            code = 0xff;
+                            option.setCode((byte) code);
+                            option.setLength((byte) 0);
+                        }
                     } else {
                         // Skip the invalid option and set the END option
                         code = 0xff;
                         option.setCode((byte) code);
                         option.setLength((byte) 0);
                     }
-                } else {
-                    // Skip the invalid option and set the END option
-                    code = 0xff;
-                    option.setCode((byte) code);
-                    option.setLength((byte) 0);
                 }
-            }
             this.options.add(option);
             if (code == 255) {
                 // remaining bytes are supposed to be 0, but ignore them just in

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,47 +50,52 @@ import org.openflow.vendor.nicira.OFNiciraVendorExtensions;
 
 public class OpenVirteXController implements Runnable {
 
-    Logger log = LogManager.getLogger(OpenVirteXController.class.getName());
+    Logger                                      log              = LogManager
+                                                                         .getLogger(OpenVirteXController.class
+                                                                                 .getName());
 
-    private static final int SEND_BUFFER_SIZE = 1024 * 1024;
-    private static OpenVirteXController instance = null;
-    private static BitSetIndex tenantIdCounter = null;
+    private static final int                    SEND_BUFFER_SIZE = 1024 * 1024;
+    private static OpenVirteXController         instance         = null;
+    private static BitSetIndex                  tenantIdCounter  = null;
 
     @SuppressWarnings("unused")
-    private String configFile = null;
-    private String ofHost = null;
-    private Integer ofPort = null;
-    private String dbHost = null;
-    private Integer dbPort = null;
-    private Boolean dbClear = null;
-    Thread server;
+    private final String                        configFile       = null;
+    private String                              ofHost           = null;
+    private Integer                             ofPort           = null;
+    private String                              dbHost           = null;
+    private Integer                             dbPort           = null;
+    private Boolean                             dbClear          = null;
+    Thread                                      server;
 
-    private final NioClientSocketChannelFactory clientSockets = new NioClientSocketChannelFactory(
-            Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+    private final NioClientSocketChannelFactory clientSockets    = new NioClientSocketChannelFactory(
+                                                                         Executors
+                                                                                 .newCachedThreadPool(),
+                                                                         Executors
+                                                                                 .newCachedThreadPool());
 
-    private ThreadPoolExecutor clientThreads = null;
-    private ThreadPoolExecutor serverThreads = null;
+    private ThreadPoolExecutor                  clientThreads    = null;
+    private ThreadPoolExecutor                  serverThreads    = null;
 
-    private final ChannelGroup sg = new DefaultChannelGroup();
-    private final ChannelGroup cg = new DefaultChannelGroup();
+    private final ChannelGroup                  sg               = new DefaultChannelGroup();
+    private final ChannelGroup                  cg               = new DefaultChannelGroup();
 
-    private SwitchChannelPipeline pfact = null;
-    private ClientChannelPipeline cfact = null;
+    private SwitchChannelPipeline               pfact            = null;
+    private ClientChannelPipeline               cfact            = null;
 
-    private int maxVirtual = 0;
-    private OVXLinkField ovxLinkField;
+    private int                                 maxVirtual       = 0;
+    private final OVXLinkField                  ovxLinkField;
 
-    private Integer statsRefresh;
+    private final Integer                       statsRefresh;
 
-    private Integer nClientThreads;
+    private final Integer                       nClientThreads;
 
-    private Integer nServerThreads;
+    private final Integer                       nServerThreads;
 
-    private final Boolean useBDDP;
+    private final Boolean                       useBDDP;
 
-    private final Integer hashSize;
+    private final Integer                       hashSize;
 
-    public OpenVirteXController(CmdLineSettings settings) {
+    public OpenVirteXController(final CmdLineSettings settings) {
         this.ofHost = settings.getOFHost();
         this.ofPort = settings.getOFPort();
         this.dbHost = settings.getDBHost();
@@ -107,9 +112,9 @@ public class OpenVirteXController implements Runnable {
         // by default, use Mac addresses to store vLinks informations
         this.ovxLinkField = OVXLinkField.MAC_ADDRESS;
         this.clientThreads = new OrderedMemoryAwareThreadPoolExecutor(
-                nClientThreads, 1048576, 1048576, 5, TimeUnit.SECONDS);
+                this.nClientThreads, 1048576, 1048576, 5, TimeUnit.SECONDS);
         this.serverThreads = new OrderedMemoryAwareThreadPoolExecutor(
-                nServerThreads, 1048576, 1048576, 5, TimeUnit.SECONDS);
+                this.nServerThreads, 1048576, 1048576, 5, TimeUnit.SECONDS);
         this.pfact = new SwitchChannelPipeline(this, this.serverThreads);
         OpenVirteXController.tenantIdCounter = new BitSetIndex(
                 IndexType.TENANT_ID);
@@ -118,7 +123,7 @@ public class OpenVirteXController implements Runnable {
     @Override
     public void run() {
         Runtime.getRuntime().addShutdownHook(new OpenVirtexShutdownHook(this));
-        initVendorMessages();
+        this.initVendorMessages();
         PhysicalNetwork.getInstance().register();
         PhysicalNetwork.getInstance().boot();
 
@@ -145,7 +150,7 @@ public class OpenVirteXController implements Runnable {
 
     public void addControllers(final OVXSwitch sw, final Set<String> ctrls) {
         String[] ctrlParts = null;
-        for (String ctrl : ctrls) {
+        for (final String ctrl : ctrls) {
             ctrlParts = ctrl.split(":");
             final ClientBootstrap clientBootStrap = this
                     .createClientBootStrap();
@@ -183,7 +188,7 @@ public class OpenVirteXController implements Runnable {
         OVXNetwork ovxNetwork;
         try {
             ovxNetwork = sw.getMap().getVirtualNetwork(sw.getTenantId());
-        } catch (NetworkMappingException e) {
+        } catch (final NetworkMappingException e) {
             OpenVirteXController.this.log
                     .error("Could not connect to controller for switch: "
                             + e.getMessage());
@@ -191,7 +196,7 @@ public class OpenVirteXController implements Runnable {
         }
 
         final Set<String> ctrls = ovxNetwork.getControllerUrls();
-        addControllers(sw, ctrls);
+        this.addControllers(sw, ctrls);
     }
 
     private void setServerBootStrapParams(final ServerBootstrap bootstrap) {
@@ -223,7 +228,7 @@ public class OpenVirteXController implements Runnable {
     }
 
     private void startDatabase() {
-        DBManager dbManager = DBManager.getInstance();
+        final DBManager dbManager = DBManager.getInstance();
         dbManager.init(this.dbHost, this.dbPort, this.dbClear);
     }
 
@@ -287,7 +292,7 @@ public class OpenVirteXController implements Runnable {
             throw new RuntimeException(
                     "The OpenVirtexController has not been initialized; quitting.");
         }
-        return tenantIdCounter;
+        return OpenVirteXController.tenantIdCounter;
     }
 
     private void initVendorMessages() {

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,23 +34,24 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 public class GetPhysicalHosts extends ApiHandler<Object> {
 
     @Override
-    public JSONRPC2Response process(Object params) {
+    public JSONRPC2Response process(final Object params) {
 
         JSONRPC2Response resp = null;
 
         try {
-            List<Object> hosts = new LinkedList<Object>();
-            OVXMap map = OVXMap.getInstance();
-            Collection<OVXNetwork> vnets = map.listVirtualNetworks().values();
+            final List<Object> hosts = new LinkedList<Object>();
+            final OVXMap map = OVXMap.getInstance();
+            final Collection<OVXNetwork> vnets = map.listVirtualNetworks()
+                    .values();
 
-            for (OVXNetwork vnet : vnets) {
-                for (Host h : vnet.getHosts()) {
+            for (final OVXNetwork vnet : vnets) {
+                for (final Host h : vnet.getHosts()) {
                     hosts.add(h.convertToPhysical());
                 }
             }
 
             resp = new JSONRPC2Response(hosts, 0);
-        } catch (ClassCastException e) {
+        } catch (final ClassCastException e) {
             resp = new JSONRPC2Response(
                     new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
                             this.cmdName() + ": Unable to fetch host list : "

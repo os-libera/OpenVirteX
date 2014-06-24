@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,7 +43,7 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
@@ -54,7 +54,7 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
 
             virtualNetwork.tearDown();
             this.log.info("Stop virtual network {}", tenantId);
-            Map<String, Object> reply = new HashMap<String, Object>(
+            final Map<String, Object> reply = new HashMap<String, Object>(
                     virtualNetwork.getDBObject());
             resp = new JSONRPC2Response(reply, 0);
 

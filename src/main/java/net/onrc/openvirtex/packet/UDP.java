@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,8 +43,8 @@ import java.util.Map;
 
 public class UDP extends BasePacket {
     public static Map<Short, Class<? extends IPacket>> decodeMap;
-    public static final short DHCP_SERVER_PORT = (short) 67;
-    public static final short DHCP_CLIENT_PORT = (short) 68;
+    public static final short                          DHCP_SERVER_PORT = (short) 67;
+    public static final short                          DHCP_CLIENT_PORT = (short) 68;
 
     static {
         UDP.decodeMap = new HashMap<Short, Class<? extends IPacket>>();
@@ -57,10 +57,10 @@ public class UDP extends BasePacket {
 
     }
 
-    protected short sourcePort;
-    protected short destinationPort;
-    protected short length;
-    protected short checksum;
+    protected short                                    sourcePort;
+    protected short                                    destinationPort;
+    protected short                                    length;
+    protected short                                    checksum;
 
     /**
      * @return the sourcePort
@@ -188,7 +188,7 @@ public class UDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -204,7 +204,7 @@ public class UDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -250,16 +250,17 @@ public class UDP extends BasePacket {
             } catch (final Exception e) {
                 throw new RuntimeException("Failure instantiating class", e);
             }
-        } else if (UDP.decodeMap.containsKey(this.sourcePort)) {
-            try {
-                this.payload = UDP.decodeMap.get(this.sourcePort)
-                        .getConstructor().newInstance();
-            } catch (final Exception e) {
-                throw new RuntimeException("Failure instantiating class", e);
+        } else
+            if (UDP.decodeMap.containsKey(this.sourcePort)) {
+                try {
+                    this.payload = UDP.decodeMap.get(this.sourcePort)
+                            .getConstructor().newInstance();
+                } catch (final Exception e) {
+                    throw new RuntimeException("Failure instantiating class", e);
+                }
+            } else {
+                this.payload = new Data();
             }
-        } else {
-            this.payload = new Data();
-        }
         this.payload = this.payload.deserialize(data, bb.position(), bb.limit()
                 - bb.position());
         this.payload.setParent(this);

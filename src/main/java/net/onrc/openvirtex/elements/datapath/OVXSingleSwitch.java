@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,7 @@ import org.openflow.protocol.OFMessage;
 public class OVXSingleSwitch extends OVXSwitch {
 
     private static Logger log = LogManager.getLogger(OVXSingleSwitch.class
-            .getName());
+                                      .getName());
 
     public OVXSingleSwitch(final long switchId, final int tenantId) {
         super(switchId, tenantId);
@@ -50,24 +50,25 @@ public class OVXSingleSwitch extends OVXSwitch {
     @Override
     // TODO: this is probably not optimal
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
-        PhysicalSwitch psw = getPhySwitch(inPort);
+        final PhysicalSwitch psw = this.getPhySwitch(inPort);
         psw.sendMsg(msg, this);
     }
 
     @Override
     public int translate(final OFMessage ofm, final OVXPort inPort) {
         // get new xid from only PhysicalSwitch tied to this switch
-        PhysicalSwitch psw = getPhySwitch(inPort);
+        final PhysicalSwitch psw = this.getPhySwitch(inPort);
         return psw.translate(ofm, this);
     }
 
-    private PhysicalSwitch getPhySwitch(OVXPort inPort) {
+    private PhysicalSwitch getPhySwitch(final OVXPort inPort) {
         PhysicalSwitch psw = null;
         if (inPort == null) {
             try {
                 psw = this.map.getPhysicalSwitches(this).get(0);
-            } catch (SwitchMappingException e) {
-                log.warn("Cannot recover physical switch : {}", e);
+            } catch (final SwitchMappingException e) {
+                OVXSingleSwitch.log.warn("Cannot recover physical switch : {}",
+                        e);
             }
         } else {
             return inPort.getPhysicalPort().getParentSwitch();
@@ -80,7 +81,8 @@ public class OVXSingleSwitch extends OVXSwitch {
         return super.bootDP();
     }
 
-    protected void unregSwitch(boolean synch) {
+    @Override
+    protected void unregSwitch(final boolean synch) {
         super.unregisterDP(synch);
     }
 }

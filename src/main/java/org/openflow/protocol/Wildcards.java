@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,19 +14,19 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright 2013, Big Switch Networks, Inc.
+ * Copyright 2013, Big Switch Networks, Inc.
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol;
@@ -70,16 +70,16 @@ import com.google.common.base.Joiner;
  */
 public class Wildcards {
 
-    public final static Wildcards FULL = new Wildcards(
-            OFMatch.OFPFW_ALL_SANITIZED);
-    private static final int FULL_INT = Wildcards.FULL.getInt();
+    public final static Wildcards FULL                = new Wildcards(
+                                                              OFMatch.OFPFW_ALL_SANITIZED);
+    private static final int      FULL_INT            = Wildcards.FULL.getInt();
 
-    public final static Wildcards EXACT = new Wildcards(0);
+    public final static Wildcards EXACT               = new Wildcards(0);
 
     // floodlight common case: matches on inport + l2
-    public final static int INT_INPORT_L2_MATCH = 0x3820e0;
-    public final static Wildcards INPORT_L2_MATCH = new Wildcards(
-            Wildcards.INT_INPORT_L2_MATCH);
+    public final static int       INT_INPORT_L2_MATCH = 0x3820e0;
+    public final static Wildcards INPORT_L2_MATCH     = new Wildcards(
+                                                              Wildcards.INT_INPORT_L2_MATCH);
 
     /**
      * enum type for the binary flags that can be set in the wildcards field of
@@ -261,14 +261,14 @@ public class Wildcards {
     public static Wildcards of(final int paramFlags) {
         final int flags = Wildcards.sanitizeInt(paramFlags);
         switch (flags) {
-        case 0x0000:
-            return Wildcards.EXACT;
-        case OFMatch.OFPFW_ALL_SANITIZED:
-            return Wildcards.FULL;
-        case INT_INPORT_L2_MATCH:
-            return Wildcards.INPORT_L2_MATCH;
-        default:
-            return new Wildcards(flags);
+            case 0x0000:
+                return Wildcards.EXACT;
+            case OFMatch.OFPFW_ALL_SANITIZED:
+                return Wildcards.FULL;
+            case INT_INPORT_L2_MATCH:
+                return Wildcards.INPORT_L2_MATCH;
+            default:
+                return new Wildcards(flags);
         }
     }
 
@@ -596,9 +596,10 @@ public class Wildcards {
     public String toJava() {
         if (this.isFull()) {
             return "Wildcards.FULL";
-        } else if (this.isExact()) {
-            return "Wildcards.EXACT";
-        }
+        } else
+            if (this.isExact()) {
+                return "Wildcards.EXACT";
+            }
 
         final StringBuilder b = new StringBuilder();
 

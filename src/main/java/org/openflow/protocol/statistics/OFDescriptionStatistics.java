@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol.statistics;
@@ -42,13 +42,13 @@ import org.openflow.util.StringByteSerializer;
  */
 public class OFDescriptionStatistics implements OFStatistics {
     public static int DESCRIPTION_STRING_LENGTH = 256;
-    public static int SERIAL_NUMBER_LENGTH = 32;
+    public static int SERIAL_NUMBER_LENGTH      = 32;
 
-    protected String manufacturerDescription;
-    protected String hardwareDescription;
-    protected String softwareDescription;
-    protected String serialNumber;
-    protected String datapathDescription;
+    protected String  manufacturerDescription;
+    protected String  hardwareDescription;
+    protected String  softwareDescription;
+    protected String  serialNumber;
+    protected String  datapathDescription;
 
     /**
      * @return the manufacturerDescription
@@ -205,38 +205,43 @@ public class OFDescriptionStatistics implements OFStatistics {
             if (other.datapathDescription != null) {
                 return false;
             }
-        } else if (!this.datapathDescription.equals(other.datapathDescription)) {
-            return false;
-        }
+        } else
+            if (!this.datapathDescription.equals(other.datapathDescription)) {
+                return false;
+            }
         if (this.hardwareDescription == null) {
             if (other.hardwareDescription != null) {
                 return false;
             }
-        } else if (!this.hardwareDescription.equals(other.hardwareDescription)) {
-            return false;
-        }
+        } else
+            if (!this.hardwareDescription.equals(other.hardwareDescription)) {
+                return false;
+            }
         if (this.manufacturerDescription == null) {
             if (other.manufacturerDescription != null) {
                 return false;
             }
-        } else if (!this.manufacturerDescription
-                .equals(other.manufacturerDescription)) {
-            return false;
-        }
+        } else
+            if (!this.manufacturerDescription
+                    .equals(other.manufacturerDescription)) {
+                return false;
+            }
         if (this.serialNumber == null) {
             if (other.serialNumber != null) {
                 return false;
             }
-        } else if (!this.serialNumber.equals(other.serialNumber)) {
-            return false;
-        }
+        } else
+            if (!this.serialNumber.equals(other.serialNumber)) {
+                return false;
+            }
         if (this.softwareDescription == null) {
             if (other.softwareDescription != null) {
                 return false;
             }
-        } else if (!this.softwareDescription.equals(other.softwareDescription)) {
-            return false;
-        }
+        } else
+            if (!this.softwareDescription.equals(other.softwareDescription)) {
+                return false;
+            }
         return true;
     }
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,23 +30,23 @@ public class LinkMappingException extends MappingException {
         super();
     }
 
-    public LinkMappingException(String cause) {
+    public LinkMappingException(final String cause) {
         super(cause);
     }
 
-    public LinkMappingException(Integer key, Class value) {
+    public LinkMappingException(final Integer key, final Class value) {
         super(value.getName() + " not found for tenant with ID " + key);
     }
 
-    public LinkMappingException(Link key, Class value) {
+    public LinkMappingException(final Link key, final Class value) {
         super(value.getName() + " not found for Link [" + key + "]");
     }
 
-    public LinkMappingException(Object key, Class value) {
+    public LinkMappingException(final Object key, final Class value) {
         super(key, value);
     }
 
-    public LinkMappingException(Throwable cause) {
+    public LinkMappingException(final Throwable cause) {
         super(cause);
     }
 

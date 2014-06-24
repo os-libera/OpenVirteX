@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,26 +27,27 @@ public class OVXStatisticsReply extends OFStatisticsReply implements
         Virtualizable {
 
     private final Logger log = LogManager.getLogger(OVXStatisticsReply.class
-            .getName());
+                                     .getName());
 
     @Override
     public void virtualize(final PhysicalSwitch sw) {
         /*
          * The entire stat message will be handled in the specific stattype
          * handler.
-         *
+         * 
          * This means that for stattypes that have a list of replies the handles
          * will have to call getStatistics to handle them all.
          */
         try {
 
             if (this.getStatistics().size() > 0) {
-                VirtualizableStatistic stat = (VirtualizableStatistic) this
+                final VirtualizableStatistic stat = (VirtualizableStatistic) this
                         .getStatistics().get(0);
                 stat.virtualizeStatistic(sw, this);
-            } else if (this.getStatisticType() == OFStatisticsType.FLOW) {
-                sw.setFlowStatistics(null);
-            }
+            } else
+                if (this.getStatisticType() == OFStatisticsType.FLOW) {
+                    sw.setFlowStatistics(null);
+                }
 
         } catch (final ClassCastException e) {
             this.log.error("Statistic received is not virtualizable {}", this);

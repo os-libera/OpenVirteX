@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -102,14 +102,15 @@ public final class HandlerUtils {
      *             if controller port and address are already in use
      */
     public static void isControllerAvailable(final String controllerAddress,
-            final int controllerPort, int tenantId)
+            final int controllerPort, final int tenantId)
             throws ControllerUnavailableException {
         String newCtrl = "";
         String oldCtrl = "";
         try {
-            InetAddress address = InetAddress.getByName(controllerAddress);
+            final InetAddress address = InetAddress
+                    .getByName(controllerAddress);
             newCtrl = address.getHostAddress();
-        } catch (UnknownHostException e) {
+        } catch (final UnknownHostException e) {
             newCtrl = controllerAddress;
         }
 
@@ -119,14 +120,14 @@ public final class HandlerUtils {
                 continue;
             }
             final Set<String> ctrlUrls = network.getControllerUrls();
-            for (String url : ctrlUrls) {
-                String[] urlParts = url.split(":");
+            for (final String url : ctrlUrls) {
+                final String[] urlParts = url.split(":");
                 final int port = Integer.parseInt(urlParts[2]);
                 final String host = urlParts[1];
                 try {
-                    InetAddress address = InetAddress.getByName(host);
+                    final InetAddress address = InetAddress.getByName(host);
                     oldCtrl = address.getHostAddress();
-                } catch (UnknownHostException e) {
+                } catch (final UnknownHostException e) {
                     oldCtrl = host;
                 }
                 if (port == controllerPort && newCtrl.equals(oldCtrl)) {
@@ -153,7 +154,7 @@ public final class HandlerUtils {
         final OVXMap map = OVXMap.getInstance();
         try {
             map.getVirtualNetwork(tenantId);
-        } catch (NetworkMappingException e) {
+        } catch (final NetworkMappingException e) {
             throw new InvalidTenantIdException(
                     "The tenant id you have provided does not refer to a virtual network. TenantId: "
                             + String.valueOf(tenantId));
@@ -175,7 +176,7 @@ public final class HandlerUtils {
             throws InvalidHostException, NetworkMappingException {
         final OVXMap map = OVXMap.getInstance();
         final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
-        Host host = virtualNetwork.getHost(hostId);
+        final Host host = virtualNetwork.getHost(hostId);
         if (host == null) {
             throw new InvalidHostException(
                     "The host id you have provided does not refer to a valid host. TenantId: "
@@ -200,12 +201,12 @@ public final class HandlerUtils {
         OVXNetwork virtualNetwork;
         try {
             virtualNetwork = map.getVirtualNetwork(tenantId);
-        } catch (NetworkMappingException e) {
+        } catch (final NetworkMappingException e) {
             throw new InvalidTenantIdException(
                     "The tenant id you have provided does not refer to a virtual network. TenantId: "
                             + String.valueOf(tenantId));
         }
-        List<OVXLink> linkList = virtualNetwork.getLinksById(linkId);
+        final List<OVXLink> linkList = virtualNetwork.getLinksById(linkId);
         if (linkList == null) {
             throw new InvalidLinkException(
                     "The link id you have provided does not refer to a virtual link. TenantId: "
@@ -232,8 +233,8 @@ public final class HandlerUtils {
             NetworkMappingException {
         final OVXMap map = OVXMap.getInstance();
         final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
-        OVXBigSwitch sw = (OVXBigSwitch) virtualNetwork.getSwitch(dpid);
-        Set<SwitchRoute> routes = sw.getRoutebyId(routeId);
+        final OVXBigSwitch sw = (OVXBigSwitch) virtualNetwork.getSwitch(dpid);
+        final Set<SwitchRoute> routes = sw.getRoutebyId(routeId);
         if (routes.size() == 0) {
             throw new InvalidRouteException(
                     "The route id you have provided does not refer to a big-switch internal route. TenantId: "
@@ -260,12 +261,12 @@ public final class HandlerUtils {
         OVXNetwork virtualNetwork;
         try {
             virtualNetwork = map.getVirtualNetwork(tenantId);
-        } catch (NetworkMappingException e) {
+        } catch (final NetworkMappingException e) {
             throw new InvalidTenantIdException(
                     "The tenant id you have provided does not refer to a virtual network. TenantId: "
                             + String.valueOf(tenantId));
         }
-        OVXSwitch sw = virtualNetwork.getSwitch(dpid);
+        final OVXSwitch sw = virtualNetwork.getSwitch(dpid);
         if (sw == null) {
             throw new InvalidDPIDException(
                     "The switch id you have provided does not belong to this virtual network: "
@@ -288,7 +289,7 @@ public final class HandlerUtils {
             throws NetworkMappingException {
         final OVXMap map = OVXMap.getInstance();
         final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId);
-        OVXSwitch sw = virtualNetwork.getSwitch(dpid);
+        final OVXSwitch sw = virtualNetwork.getSwitch(dpid);
         if (sw == null) {
             throw new InvalidDPIDException(
                     "The switch id you have provided does not belong to this virtual network: "
@@ -335,10 +336,10 @@ public final class HandlerUtils {
 
             // Are all dpids connected - only relevant when creating a bigswitch
             if (dpids.size() > 1) {
-                Set<PhysicalSwitch> neighbours = physicalNetwork
+                final Set<PhysicalSwitch> neighbours = physicalNetwork
                         .getNeighbors(sw);
-                Set<Long> neighbourDpids = new HashSet<Long>();
-                for (PhysicalSwitch neighbour : neighbours) {
+                final Set<Long> neighbourDpids = new HashSet<Long>();
+                for (final PhysicalSwitch neighbour : neighbours) {
                     neighbourDpids.add(neighbour.getSwitchId());
                 }
                 if (Collections.disjoint(dpids, neighbourDpids)) {
@@ -351,7 +352,7 @@ public final class HandlerUtils {
 
             // Is the physical switch already used by another virtual switch?
             try {
-                OVXSwitch vsw = OVXMap.getInstance().getVirtualSwitch(sw,
+                final OVXSwitch vsw = OVXMap.getInstance().getVirtualSwitch(sw,
                         tenantId);
                 if (vsw != null) {
                     throw new InvalidDPIDException(
@@ -359,7 +360,7 @@ public final class HandlerUtils {
                                     + "virtual switch in the virtual network you have specified. DPID: "
                                     + String.valueOf(dpid));
                 }
-            } catch (SwitchMappingException e) {
+            } catch (final SwitchMappingException e) {
                 // No virtual switch maps to the given physical switch - this is
                 // what we want
                 continue;
@@ -470,7 +471,7 @@ public final class HandlerUtils {
     public static void isValidVirtualLink(final List<PhysicalLink> physicalLinks)
             throws VirtualLinkException {
         PhysicalLink oldLink = null;
-        for (PhysicalLink link : physicalLinks) {
+        for (final PhysicalLink link : physicalLinks) {
             if (oldLink != null) {
                 if (!oldLink.getDstSwitch().equals(link.getSrcSwitch())) {
                     throw new VirtualLinkException(
@@ -516,9 +517,9 @@ public final class HandlerUtils {
             final long srcDpid, final short ovxSrcPort, final long dstDpid,
             final short ovxDstPort, final List<PhysicalLink> physicalLinks)
             throws NetworkMappingException {
-        OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(tenantId);
-        OVXPort srcPort = net.getSwitch(srcDpid).getPort(ovxSrcPort);
-        OVXPort dstPort = net.getSwitch(dstDpid).getPort(ovxDstPort);
+        final OVXNetwork net = OVXMap.getInstance().getVirtualNetwork(tenantId);
+        final OVXPort srcPort = net.getSwitch(srcDpid).getPort(ovxSrcPort);
+        final OVXPort dstPort = net.getSwitch(dstDpid).getPort(ovxDstPort);
         if (!srcPort.getPhysicalPort()
                 .equals(physicalLinks.get(0).getSrcPort())) {
             throw new VirtualLinkException(
@@ -559,7 +560,7 @@ public final class HandlerUtils {
      *            the path string
      * @return list of physical links
      */
-    public static List<PhysicalLink> getPhysicalPath(String pathString) {
+    public static List<PhysicalLink> getPhysicalPath(final String pathString) {
         final List<PhysicalLink> physicalLinks = new LinkedList<PhysicalLink>();
         for (final String hop : pathString.split(",")) {
             final String srcString = hop.split("-")[0];
@@ -586,12 +587,12 @@ public final class HandlerUtils {
         return physicalLinks;
     }
 
-    protected static List<OVXLink> fetchOVXLink(Mappable map,
-            PhysicalLink phyLink, int tenantId) {
+    protected static List<OVXLink> fetchOVXLink(final Mappable map,
+            final PhysicalLink phyLink, final int tenantId) {
         if (map.hasOVXLinks(phyLink, tenantId)) {
             try {
                 return map.getVirtualLinks(phyLink, tenantId);
-            } catch (LinkMappingException e) {
+            } catch (final LinkMappingException e) {
                 throw new RuntimeException(
                         "Unexpected Inconsistency in OXVMap: " + e.getMessage());
             }

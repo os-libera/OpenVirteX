@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol;
@@ -53,21 +53,60 @@ public class OFMatch implements Cloneable, Serializable {
     /**
      *
      */
-    private static final long serialVersionUID = 1L;
-    public static int MINIMUM_LENGTH = 40;
-    final public static int OFPFW_ALL = (1 << 22) - 1;
+    private static final long  serialVersionUID    = 1L;
+    public static int          MINIMUM_LENGTH      = 40;
+    final public static int    OFPFW_ALL           = (1 << 22) - 1;
 
-    final public static int OFPFW_IN_PORT = 1 << 0; /* Switch input port. */
-    final public static int OFPFW_DL_VLAN = 1 << 1; /* VLAN id. */
-    final public static int OFPFW_DL_SRC = 1 << 2; /* Ethernet source address. */
-    final public static int OFPFW_DL_DST = 1 << 3; /*
-                                                    * Ethernet destination
-                                                    * address.
-                                                    */
-    final public static int OFPFW_DL_TYPE = 1 << 4; /* Ethernet frame type. */
-    final public static int OFPFW_NW_PROTO = 1 << 5; /* IP protocol. */
-    final public static int OFPFW_TP_SRC = 1 << 6; /* TCP/UDP source port. */
-    final public static int OFPFW_TP_DST = 1 << 7; /* TCP/UDP destination port. */
+    final public static int    OFPFW_IN_PORT       = 1 << 0;                                                            /*
+                                                                                                                          * Switch
+                                                                                                                          * input
+                                                                                                                          * port
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_DL_VLAN       = 1 << 1;                                                            /*
+                                                                                                                          * VLAN
+                                                                                                                          * id
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_DL_SRC        = 1 << 2;                                                            /*
+                                                                                                                          * Ethernet
+                                                                                                                          * source
+                                                                                                                          * address
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_DL_DST        = 1 << 3;                                                            /*
+                                                                                                                          * Ethernet
+                                                                                                                          * destination
+                                                                                                                          * address
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_DL_TYPE       = 1 << 4;                                                            /*
+                                                                                                                          * Ethernet
+                                                                                                                          * frame
+                                                                                                                          * type
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_NW_PROTO      = 1 << 5;                                                            /*
+                                                                                                                          * IP
+                                                                                                                          * protocol
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_TP_SRC        = 1 << 6;                                                            /*
+                                                                                                                          * TCP
+                                                                                                                          * /
+                                                                                                                          * UDP
+                                                                                                                          * source
+                                                                                                                          * port
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_TP_DST        = 1 << 7;                                                            /*
+                                                                                                                          * TCP
+                                                                                                                          * /
+                                                                                                                          * UDP
+                                                                                                                          * destination
+                                                                                                                          * port
+                                                                                                                          * .
+                                                                                                                          */
 
     /*
      * IP source address wildcard bit count. 0 is exact match, 1 ignores the
@@ -75,54 +114,69 @@ public class OFMatch implements Cloneable, Serializable {
      * the entire field. This is the *opposite* of the usual convention where
      * e.g. /24 indicates that 8 bits (not 24 bits) are wildcarded.
      */
-    final public static int OFPFW_NW_SRC_SHIFT = 8;
-    final public static int OFPFW_NW_SRC_BITS = 6;
-    final public static int OFPFW_NW_SRC_MASK = (1 << OFMatch.OFPFW_NW_SRC_BITS) - 1 << OFMatch.OFPFW_NW_SRC_SHIFT;
-    final public static int OFPFW_NW_SRC_ALL = 32 << OFMatch.OFPFW_NW_SRC_SHIFT;
+    final public static int    OFPFW_NW_SRC_SHIFT  = 8;
+    final public static int    OFPFW_NW_SRC_BITS   = 6;
+    final public static int    OFPFW_NW_SRC_MASK   = (1 << OFMatch.OFPFW_NW_SRC_BITS) - 1 << OFMatch.OFPFW_NW_SRC_SHIFT;
+    final public static int    OFPFW_NW_SRC_ALL    = 32 << OFMatch.OFPFW_NW_SRC_SHIFT;
 
     /* IP destination address wildcard bit count. Same format as source. */
-    final public static int OFPFW_NW_DST_SHIFT = 14;
-    final public static int OFPFW_NW_DST_BITS = 6;
-    final public static int OFPFW_NW_DST_MASK = (1 << OFMatch.OFPFW_NW_DST_BITS) - 1 << OFMatch.OFPFW_NW_DST_SHIFT;
-    final public static int OFPFW_NW_DST_ALL = 32 << OFMatch.OFPFW_NW_DST_SHIFT;
+    final public static int    OFPFW_NW_DST_SHIFT  = 14;
+    final public static int    OFPFW_NW_DST_BITS   = 6;
+    final public static int    OFPFW_NW_DST_MASK   = (1 << OFMatch.OFPFW_NW_DST_BITS) - 1 << OFMatch.OFPFW_NW_DST_SHIFT;
+    final public static int    OFPFW_NW_DST_ALL    = 32 << OFMatch.OFPFW_NW_DST_SHIFT;
 
-    final public static int OFPFW_DL_VLAN_PCP = 1 << 20; /* VLAN priority. */
-    final public static int OFPFW_NW_TOS = 1 << 21; /*
-                                                     * IP ToS (DSCP field, 6
-                                                     * bits).
-                                                     */
+    final public static int    OFPFW_DL_VLAN_PCP   = 1 << 20;                                                           /*
+                                                                                                                          * VLAN
+                                                                                                                          * priority
+                                                                                                                          * .
+                                                                                                                          */
+    final public static int    OFPFW_NW_TOS        = 1 << 21;                                                           /*
+                                                                                                                          * IP
+                                                                                                                          * ToS
+                                                                                                                          * (
+                                                                                                                          * DSCP
+                                                                                                                          * field
+                                                                                                                          * ,
+                                                                                                                          * 6
+                                                                                                                          * bits
+                                                                                                                          * )
+                                                                                                                          * .
+                                                                                                                          */
 
-    final public static int OFPFW_ALL_SANITIZED = (1 << 22) - 1
-            & ~OFMatch.OFPFW_NW_SRC_MASK & ~OFMatch.OFPFW_NW_DST_MASK
-            | OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_DST_ALL;
+    final public static int    OFPFW_ALL_SANITIZED = (1 << 22)
+                                                           - 1
+                                                           & ~OFMatch.OFPFW_NW_SRC_MASK
+                                                           & ~OFMatch.OFPFW_NW_DST_MASK
+                                                           | OFMatch.OFPFW_NW_SRC_ALL
+                                                           | OFMatch.OFPFW_NW_DST_ALL;
 
     /* List of Strings for marshalling and unmarshalling to human readable forms */
-    final public static String STR_IN_PORT = "in_port";
-    final public static String STR_DL_DST = "dl_dst";
-    final public static String STR_DL_SRC = "dl_src";
-    final public static String STR_DL_TYPE = "dl_type";
-    final public static String STR_DL_VLAN = "dl_vlan";
-    final public static String STR_DL_VLAN_PCP = "dl_vlan_pcp";
-    final public static String STR_NW_DST = "nw_dst";
-    final public static String STR_NW_SRC = "nw_src";
-    final public static String STR_NW_PROTO = "nw_proto";
-    final public static String STR_NW_TOS = "nw_tos";
-    final public static String STR_TP_DST = "tp_dst";
-    final public static String STR_TP_SRC = "tp_src";
+    final public static String STR_IN_PORT         = "in_port";
+    final public static String STR_DL_DST          = "dl_dst";
+    final public static String STR_DL_SRC          = "dl_src";
+    final public static String STR_DL_TYPE         = "dl_type";
+    final public static String STR_DL_VLAN         = "dl_vlan";
+    final public static String STR_DL_VLAN_PCP     = "dl_vlan_pcp";
+    final public static String STR_NW_DST          = "nw_dst";
+    final public static String STR_NW_SRC          = "nw_src";
+    final public static String STR_NW_PROTO        = "nw_proto";
+    final public static String STR_NW_TOS          = "nw_tos";
+    final public static String STR_TP_DST          = "tp_dst";
+    final public static String STR_TP_SRC          = "tp_src";
 
-    protected int wildcards;
-    protected short inputPort;
-    protected byte[] dataLayerSource;
-    protected byte[] dataLayerDestination;
-    protected short dataLayerVirtualLan;
-    protected byte dataLayerVirtualLanPriorityCodePoint;
-    protected short dataLayerType;
-    protected byte networkTypeOfService;
-    protected byte networkProtocol;
-    protected int networkSource;
-    protected int networkDestination;
-    protected short transportSource;
-    protected short transportDestination;
+    protected int              wildcards;
+    protected short            inputPort;
+    protected byte[]           dataLayerSource;
+    protected byte[]           dataLayerDestination;
+    protected short            dataLayerVirtualLan;
+    protected byte             dataLayerVirtualLanPriorityCodePoint;
+    protected short            dataLayerType;
+    protected byte             networkTypeOfService;
+    protected byte             networkProtocol;
+    protected int              networkSource;
+    protected int              networkDestination;
+    protected short            transportSource;
+    protected short            transportDestination;
 
     /**
      * By default, create a OFMatch that matches everything (mostly because it's
@@ -508,7 +562,7 @@ public class OFMatch implements Cloneable, Serializable {
         this.dataLayerType = packetDataBB.getShort();
 
         if (this.getDataLayerType() != (short) 0x8100) { // need cast to avoid
-                                                         // signed
+            // signed
             // bug
             this.setDataLayerVirtualLan((short) 0xffff);
             this.setDataLayerVirtualLanPriorityCodePoint((byte) 0);
@@ -521,84 +575,84 @@ public class OFMatch implements Cloneable, Serializable {
         }
 
         switch (this.getDataLayerType()) {
-        case 0x0800:
-            // ipv4
-            // check packet length
-            scratch = packetDataBB.get();
-            scratch = (short) (0xf & scratch);
-            transportOffset = packetDataBB.position() - 1 + scratch * 4;
-            // nw tos (dscp)
-            scratch = packetDataBB.get();
-            this.setNetworkTypeOfService((byte) ((0xfc & scratch) >> 2));
-            // nw protocol
-            packetDataBB.position(packetDataBB.position() + 7);
-            this.networkProtocol = packetDataBB.get();
-            // nw src
-            packetDataBB.position(packetDataBB.position() + 2);
-            this.networkSource = packetDataBB.getInt();
-            // nw dst
-            this.networkDestination = packetDataBB.getInt();
-            packetDataBB.position(transportOffset);
-            break;
-        case 0x0806:
-            // arp
-            final int arpPos = packetDataBB.position();
-            // opcode
-            scratch = packetDataBB.getShort(arpPos + 6);
-            this.setNetworkProtocol((byte) (0xff & scratch));
-
-            scratch = packetDataBB.getShort(arpPos + 2);
-            // if ipv4 and addr len is 4
-            if (scratch == 0x800 && packetDataBB.get(arpPos + 5) == 4) {
+            case 0x0800:
+                // ipv4
+                // check packet length
+                scratch = packetDataBB.get();
+                scratch = (short) (0xf & scratch);
+                transportOffset = packetDataBB.position() - 1 + scratch * 4;
+                // nw tos (dscp)
+                scratch = packetDataBB.get();
+                this.setNetworkTypeOfService((byte) ((0xfc & scratch) >> 2));
+                // nw protocol
+                packetDataBB.position(packetDataBB.position() + 7);
+                this.networkProtocol = packetDataBB.get();
                 // nw src
-                this.networkSource = packetDataBB.getInt(arpPos + 14);
+                packetDataBB.position(packetDataBB.position() + 2);
+                this.networkSource = packetDataBB.getInt();
                 // nw dst
-                this.networkDestination = packetDataBB.getInt(arpPos + 24);
-            } else {
+                this.networkDestination = packetDataBB.getInt();
+                packetDataBB.position(transportOffset);
+                break;
+            case 0x0806:
+                // arp
+                final int arpPos = packetDataBB.position();
+                // opcode
+                scratch = packetDataBB.getShort(arpPos + 6);
+                this.setNetworkProtocol((byte) (0xff & scratch));
+
+                scratch = packetDataBB.getShort(arpPos + 2);
+                // if ipv4 and addr len is 4
+                if (scratch == 0x800 && packetDataBB.get(arpPos + 5) == 4) {
+                    // nw src
+                    this.networkSource = packetDataBB.getInt(arpPos + 14);
+                    // nw dst
+                    this.networkDestination = packetDataBB.getInt(arpPos + 24);
+                } else {
+                    this.setNetworkSource(0);
+                    this.setNetworkDestination(0);
+                }
+                break;
+            default:
+                // Not ARP or IP. Wildcard NW_DST and NW_SRC
+                this.wildcards |= OFMatch.OFPFW_NW_DST_ALL
+                        | OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_PROTO
+                        | OFMatch.OFPFW_NW_TOS;
+                this.setNetworkTypeOfService((byte) 0);
+                this.setNetworkProtocol((byte) 0);
                 this.setNetworkSource(0);
                 this.setNetworkDestination(0);
-            }
-            break;
-        default:
-            // Not ARP or IP. Wildcard NW_DST and NW_SRC
-            this.wildcards |= OFMatch.OFPFW_NW_DST_ALL
-                    | OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_PROTO
-                    | OFMatch.OFPFW_NW_TOS;
-            this.setNetworkTypeOfService((byte) 0);
-            this.setNetworkProtocol((byte) 0);
-            this.setNetworkSource(0);
-            this.setNetworkDestination(0);
-            break;
+                break;
         }
 
         switch (this.getNetworkProtocol()) {
-        case 0x01:
-            // icmp
-            // type
-            this.transportSource = U8.f(packetDataBB.get());
-            // code
-            this.transportDestination = U8.f(packetDataBB.get());
-            break;
-        case 0x06:
-            // tcp
-            // tcp src
-            this.transportSource = packetDataBB.getShort();
-            // tcp dest
-            this.transportDestination = packetDataBB.getShort();
-            break;
-        case 0x11:
-            // udp
-            // udp src
-            this.transportSource = packetDataBB.getShort();
-            // udp dest
-            this.transportDestination = packetDataBB.getShort();
-            break;
-        default:
-            // Unknown network proto.
-            this.wildcards |= OFMatch.OFPFW_TP_DST | OFMatch.OFPFW_TP_SRC;
-            this.setTransportDestination((short) 0);
-            this.setTransportSource((short) 0);
-            break;
+            case 0x01:
+                // icmp
+                // type
+                this.transportSource = U8.f(packetDataBB.get());
+                // code
+                this.transportDestination = U8.f(packetDataBB.get());
+                break;
+            case 0x06:
+                // tcp
+                // tcp src
+                this.transportSource = packetDataBB.getShort();
+                // tcp dest
+                this.transportDestination = packetDataBB.getShort();
+                break;
+            case 0x11:
+                // udp
+                // udp src
+                this.transportSource = packetDataBB.getShort();
+                // udp dest
+                this.transportDestination = packetDataBB.getShort();
+                break;
+            default:
+                // Unknown network proto.
+                this.wildcards |= OFMatch.OFPFW_TP_DST | OFMatch.OFPFW_TP_SRC;
+                this.setTransportDestination((short) 0);
+                this.setTransportSource((short) 0);
+                break;
         }
         return this;
     }
@@ -1025,63 +1079,99 @@ public class OFMatch implements Cloneable, Serializable {
                     || values[0].equals("input_port")) {
                 this.inputPort = U16.t(Integer.valueOf(values[1]));
                 this.wildcards &= ~OFMatch.OFPFW_IN_PORT;
-            } else if (values[0].equals(OFMatch.STR_DL_DST)
-                    || values[0].equals("eth_dst")) {
-                this.dataLayerDestination = HexString.fromHexString(values[1]);
-                this.wildcards &= ~OFMatch.OFPFW_DL_DST;
-            } else if (values[0].equals(OFMatch.STR_DL_SRC)
-                    || values[0].equals("eth_src")) {
-                this.dataLayerSource = HexString.fromHexString(values[1]);
-                this.wildcards &= ~OFMatch.OFPFW_DL_SRC;
-            } else if (values[0].equals(OFMatch.STR_DL_TYPE)
-                    || values[0].equals("eth_type")) {
-                if (values[1].startsWith("0x")) {
-                    this.dataLayerType = U16.t(Integer.valueOf(
-                            values[1].replaceFirst("0x", ""), 16));
-                } else {
-                    this.dataLayerType = U16.t(Integer.valueOf(values[1]));
-                }
-                this.wildcards &= ~OFMatch.OFPFW_DL_TYPE;
-            } else if (values[0].equals(OFMatch.STR_DL_VLAN)) {
-                if (values[1].startsWith("0x")) {
-                    this.dataLayerVirtualLan = U16.t(Integer.valueOf(
-                            values[1].replaceFirst("0x", ""), 16));
-                } else {
-                    this.dataLayerVirtualLan = U16
-                            .t(Integer.valueOf(values[1]));
-                }
-                this.wildcards &= ~OFMatch.OFPFW_DL_VLAN;
-            } else if (values[0].equals(OFMatch.STR_DL_VLAN_PCP)) {
-                this.dataLayerVirtualLanPriorityCodePoint = U8.t(Short
-                        .valueOf(values[1]));
-                this.wildcards &= ~OFMatch.OFPFW_DL_VLAN_PCP;
-            } else if (values[0].equals(OFMatch.STR_NW_DST)
-                    || values[0].equals("ip_dst")) {
-                this.setFromCIDR(values[1], OFMatch.STR_NW_DST);
-            } else if (values[0].equals(OFMatch.STR_NW_SRC)
-                    || values[0].equals("ip_src")) {
-                this.setFromCIDR(values[1], OFMatch.STR_NW_SRC);
-            } else if (values[0].equals(OFMatch.STR_NW_PROTO)) {
-                if (values[1].startsWith("0x")) {
-                    this.networkProtocol = U8.t(Short.valueOf(
-                            values[1].replaceFirst("0x", ""), 16));
-                } else {
-                    this.networkProtocol = U8.t(Short.valueOf(values[1]));
-                }
-                this.wildcards &= ~OFMatch.OFPFW_NW_PROTO;
-            } else if (values[0].equals(OFMatch.STR_NW_TOS)) {
-                this.setNetworkTypeOfService(U8.t(Short.valueOf(values[1])));
-                this.wildcards &= ~OFMatch.OFPFW_NW_TOS;
-            } else if (values[0].equals(OFMatch.STR_TP_DST)) {
-                this.transportDestination = U16.t(Integer.valueOf(values[1]));
-                this.wildcards &= ~OFMatch.OFPFW_TP_DST;
-            } else if (values[0].equals(OFMatch.STR_TP_SRC)) {
-                this.transportSource = U16.t(Integer.valueOf(values[1]));
-                this.wildcards &= ~OFMatch.OFPFW_TP_SRC;
-            } else {
-                throw new IllegalArgumentException("unknown token " + tokens[i]
-                        + " parsing " + match);
-            }
+            } else
+                if (values[0].equals(OFMatch.STR_DL_DST)
+                        || values[0].equals("eth_dst")) {
+                    this.dataLayerDestination = HexString
+                            .fromHexString(values[1]);
+                    this.wildcards &= ~OFMatch.OFPFW_DL_DST;
+                } else
+                    if (values[0].equals(OFMatch.STR_DL_SRC)
+                            || values[0].equals("eth_src")) {
+                        this.dataLayerSource = HexString
+                                .fromHexString(values[1]);
+                        this.wildcards &= ~OFMatch.OFPFW_DL_SRC;
+                    } else
+                        if (values[0].equals(OFMatch.STR_DL_TYPE)
+                                || values[0].equals("eth_type")) {
+                            if (values[1].startsWith("0x")) {
+                                this.dataLayerType = U16.t(Integer.valueOf(
+                                        values[1].replaceFirst("0x", ""), 16));
+                            } else {
+                                this.dataLayerType = U16.t(Integer
+                                        .valueOf(values[1]));
+                            }
+                            this.wildcards &= ~OFMatch.OFPFW_DL_TYPE;
+                        } else
+                            if (values[0].equals(OFMatch.STR_DL_VLAN)) {
+                                if (values[1].startsWith("0x")) {
+                                    this.dataLayerVirtualLan = U16.t(Integer
+                                            .valueOf(values[1].replaceFirst(
+                                                    "0x", ""), 16));
+                                } else {
+                                    this.dataLayerVirtualLan = U16.t(Integer
+                                            .valueOf(values[1]));
+                                }
+                                this.wildcards &= ~OFMatch.OFPFW_DL_VLAN;
+                            } else
+                                if (values[0].equals(OFMatch.STR_DL_VLAN_PCP)) {
+                                    this.dataLayerVirtualLanPriorityCodePoint = U8
+                                            .t(Short.valueOf(values[1]));
+                                    this.wildcards &= ~OFMatch.OFPFW_DL_VLAN_PCP;
+                                } else
+                                    if (values[0].equals(OFMatch.STR_NW_DST)
+                                            || values[0].equals("ip_dst")) {
+                                        this.setFromCIDR(values[1],
+                                                OFMatch.STR_NW_DST);
+                                    } else
+                                        if (values[0]
+                                                .equals(OFMatch.STR_NW_SRC)
+                                                || values[0].equals("ip_src")) {
+                                            this.setFromCIDR(values[1],
+                                                    OFMatch.STR_NW_SRC);
+                                        } else
+                                            if (values[0]
+                                                    .equals(OFMatch.STR_NW_PROTO)) {
+                                                if (values[1].startsWith("0x")) {
+                                                    this.networkProtocol = U8
+                                                            .t(Short.valueOf(
+                                                                    values[1]
+                                                                            .replaceFirst(
+                                                                                    "0x",
+                                                                                    ""),
+                                                                    16));
+                                                } else {
+                                                    this.networkProtocol = U8
+                                                            .t(Short.valueOf(values[1]));
+                                                }
+                                                this.wildcards &= ~OFMatch.OFPFW_NW_PROTO;
+                                            } else
+                                                if (values[0]
+                                                        .equals(OFMatch.STR_NW_TOS)) {
+                                                    this.setNetworkTypeOfService(U8.t(Short
+                                                            .valueOf(values[1])));
+                                                    this.wildcards &= ~OFMatch.OFPFW_NW_TOS;
+                                                } else
+                                                    if (values[0]
+                                                            .equals(OFMatch.STR_TP_DST)) {
+                                                        this.transportDestination = U16
+                                                                .t(Integer
+                                                                        .valueOf(values[1]));
+                                                        this.wildcards &= ~OFMatch.OFPFW_TP_DST;
+                                                    } else
+                                                        if (values[0]
+                                                                .equals(OFMatch.STR_TP_SRC)) {
+                                                            this.transportSource = U16
+                                                                    .t(Integer
+                                                                            .valueOf(values[1]));
+                                                            this.wildcards &= ~OFMatch.OFPFW_TP_SRC;
+                                                        } else {
+                                                            throw new IllegalArgumentException(
+                                                                    "unknown token "
+                                                                            + tokens[i]
+                                                                            + " parsing "
+                                                                            + match);
+                                                        }
         }
     }
 
@@ -1114,11 +1204,12 @@ public class OFMatch implements Cloneable, Serializable {
             this.networkDestination = ip;
             this.wildcards = this.wildcards & ~OFMatch.OFPFW_NW_DST_MASK
                     | mask << OFMatch.OFPFW_NW_DST_SHIFT;
-        } else if (which.equals(OFMatch.STR_NW_SRC)) {
-            this.networkSource = ip;
-            this.wildcards = this.wildcards & ~OFMatch.OFPFW_NW_SRC_MASK
-                    | mask << OFMatch.OFPFW_NW_SRC_SHIFT;
-        }
+        } else
+            if (which.equals(OFMatch.STR_NW_SRC)) {
+                this.networkSource = ip;
+                this.wildcards = this.wildcards & ~OFMatch.OFPFW_NW_SRC_MASK
+                        | mask << OFMatch.OFPFW_NW_SRC_SHIFT;
+            }
     }
 
     protected static String ipToString(final int ip) {

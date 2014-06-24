@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,16 +42,14 @@ public class RemoveOVXNetwork extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
 
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
-
 
             if (virtualNetwork == null) {
                 resp = new JSONRPC2Response(
@@ -63,7 +61,6 @@ public class RemoveOVXNetwork extends ApiHandler<Map<String, Object>> {
                 this.log.info("Removed virtual network {}", tenantId);
                 resp = new JSONRPC2Response(0);
             }
-
 
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
@@ -79,7 +76,6 @@ public class RemoveOVXNetwork extends ApiHandler<Map<String, Object>> {
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": " + e.getMessage()), 0);
         }
-
 
         return resp;
     }

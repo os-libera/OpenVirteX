@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,34 +32,36 @@ import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFStatisticsMessageBase;
 import org.openflow.protocol.statistics.OFAggregateStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
 public class OVXAggregateStatisticsRequest extends OFAggregateStatisticsRequest
         implements DevirtualizableStatistic {
 
-    private Logger log = LogManager.getLogger(
-            OVXAggregateStatisticsRequest.class.getName());
+    private final Logger log = LogManager
+                                     .getLogger(OVXAggregateStatisticsRequest.class
+                                             .getName());
 
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,
             final OVXStatisticsRequest msg) {
 
-        OVXAggregateStatisticsReply stat = new OVXAggregateStatisticsReply();
-        int tid = sw.getTenantId();
-        HashSet<Long> uniqueCookies = new HashSet<Long>();
+        final OVXAggregateStatisticsReply stat = new OVXAggregateStatisticsReply();
+        final int tid = sw.getTenantId();
+        final HashSet<Long> uniqueCookies = new HashSet<Long>();
 
         // the -1 is for beacon...
         if ((this.match.getWildcardObj().isFull() || this.match.getWildcards() == -1)
                 && this.outPort == OFPort.OFPP_NONE.getValue()) {
-            FlowTable ft = sw.getFlowTable();
+            final FlowTable ft = sw.getFlowTable();
             stat.setFlowCount(ft.getFlowTable().size());
             stat.setByteCount(0);
             stat.setPacketCount(0);
-            for (PhysicalSwitch psw : getPhysicalSwitches(sw)) {
-                List<OVXFlowStatisticsReply> reps = psw.getFlowStats(tid);
+            for (final PhysicalSwitch psw : this.getPhysicalSwitches(sw)) {
+                final List<OVXFlowStatisticsReply> reps = psw.getFlowStats(tid);
                 if (reps != null) {
-                    for (OVXFlowStatisticsReply s : reps) {
+                    for (final OVXFlowStatisticsReply s : reps) {
 
                         if (!uniqueCookies.contains(s.getCookie())) {
 
@@ -76,29 +78,31 @@ public class OVXAggregateStatisticsRequest extends OFAggregateStatisticsRequest
             }
         }
 
-        OVXStatisticsReply reply = new OVXStatisticsReply();
+        final OVXStatisticsReply reply = new OVXStatisticsReply();
         reply.setXid(msg.getXid());
         reply.setStatisticType(OFStatisticsType.AGGREGATE);
         reply.setStatistics(Collections.singletonList(stat));
 
-        reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + stat.getLength());
+        reply.setLengthU(OFStatisticsMessageBase.MINIMUM_LENGTH
+                + stat.getLength());
 
         sw.sendMsg(reply, sw);
 
     }
 
-    private List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch sw) {
+    private List<PhysicalSwitch> getPhysicalSwitches(final OVXSwitch sw) {
         if (sw instanceof OVXSingleSwitch) {
             try {
                 return sw.getMap().getPhysicalSwitches(sw);
-            } catch (SwitchMappingException e) {
-                log.debug("OVXSwitch {} does not map to any physical switches",
+            } catch (final SwitchMappingException e) {
+                this.log.debug(
+                        "OVXSwitch {} does not map to any physical switches",
                         sw.getSwitchName());
                 return new LinkedList<>();
             }
         }
-        LinkedList<PhysicalSwitch> sws = new LinkedList<PhysicalSwitch>();
-        for (OVXPort p : sw.getPorts().values()) {
+        final LinkedList<PhysicalSwitch> sws = new LinkedList<PhysicalSwitch>();
+        for (final OVXPort p : sw.getPorts().values()) {
             if (!sws.contains(p.getPhysicalPort().getParentSwitch())) {
                 sws.add(p.getPhysicalPort().getParentSwitch());
             }

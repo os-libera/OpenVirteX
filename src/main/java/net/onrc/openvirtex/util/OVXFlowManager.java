@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,14 +32,17 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.HashBiMap;
 
 public class OVXFlowManager {
-    static Logger log = LogManager.getLogger(OVXFlowManager.class.getName());
+    static Logger                                log = LogManager
+                                                             .getLogger(OVXFlowManager.class
+                                                                     .getName());
 
     private final HashBiMap<Integer, BigInteger> flowValues;
-    private final BitSetIndex flowCounter;
-    private final Integer tenantId;
-    private Collection<Host> hostList;
+    private final BitSetIndex                    flowCounter;
+    private final Integer                        tenantId;
+    private final Collection<Host>               hostList;
 
-    public OVXFlowManager(Integer tenantId, Collection<Host> hostList) {
+    public OVXFlowManager(final Integer tenantId,
+            final Collection<Host> hostList) {
         this.flowValues = HashBiMap.create();
         this.flowCounter = new BitSetIndex(IndexType.FLOW_COUNTER);
         this.tenantId = tenantId;
@@ -54,10 +57,11 @@ public class OVXFlowManager {
         Integer flowId = this.flowValues.inverse().get(dualMac);
         if (flowId == null) {
             flowId = this.flowCounter.getNewIndex();
-            log.debug(
-                    "virtual net = {}: save flowId = {} that is associated to {} {}",
-                    this.tenantId, flowId, MACAddress.valueOf(srcMac)
-                            .toString(), MACAddress.valueOf(dstMac).toString());
+            OVXFlowManager.log
+                    .debug("virtual net = {}: save flowId = {} that is associated to {} {}",
+                            this.tenantId, flowId, MACAddress.valueOf(srcMac)
+                                    .toString(), MACAddress.valueOf(dstMac)
+                                    .toString());
             this.flowValues.put(flowId, dualMac);
         }
         return flowId;
@@ -82,10 +86,11 @@ public class OVXFlowManager {
                 dstMac));
         final Integer flowId = this.flowValues.inverse().get(dualMac);
         if (flowId != null && flowId != 0) {
-            log.debug(
-                    "virtual net = {}: retrieving flowId {} that is associated to {} {}",
-                    this.tenantId, flowId, MACAddress.valueOf(srcMac)
-                            .toString(), MACAddress.valueOf(dstMac).toString());
+            OVXFlowManager.log
+                    .debug("virtual net = {}: retrieving flowId {} that is associated to {} {}",
+                            this.tenantId, flowId, MACAddress.valueOf(srcMac)
+                                    .toString(), MACAddress.valueOf(dstMac)
+                                    .toString());
             return flowId;
         }
         throw new DroppedMessageException(

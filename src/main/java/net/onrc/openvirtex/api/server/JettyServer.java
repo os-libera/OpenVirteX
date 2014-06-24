@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,16 +43,16 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
  */
 public class JettyServer implements Runnable {
 
-    private static Logger log = LogManager.getLogger(JettyServer.class
-            .getName());
+    private static Logger      log     = LogManager.getLogger(JettyServer.class
+                                               .getName());
 
     /**
      * Web server realm name.
      */
-    public static final String REALM = "OVXREALM";
+    public static final String REALM   = "OVXREALM";
 
-    private JSONRPCAPI service = null;
-    private Server server = null;
+    private JSONRPCAPI         service = null;
+    private Server             server  = null;
 
     /**
      * Constructs and initializes a web server.
@@ -121,21 +121,21 @@ public class JettyServer implements Runnable {
         https.setIdleTimeout(500000);
 
         // Set the connectors
-        this.server.setConnectors(new Connector[] {http, https});
+        this.server.setConnectors(new Connector[] { http, https });
 
         final Constraint userConstraint = new Constraint();
         userConstraint.setName(Constraint.__BASIC_AUTH);
-        userConstraint.setRoles(new String[] {"user"});
+        userConstraint.setRoles(new String[] { "user" });
         userConstraint.setAuthenticate(true);
 
         final Constraint adminConstraint = new Constraint();
         adminConstraint.setName(Constraint.__BASIC_AUTH);
-        adminConstraint.setRoles(new String[] {"admin"});
+        adminConstraint.setRoles(new String[] { "admin" });
         adminConstraint.setAuthenticate(true);
 
         final Constraint uiConstraint = new Constraint();
         uiConstraint.setName(Constraint.__BASIC_AUTH);
-        uiConstraint.setRoles(new String[] {"ui"});
+        uiConstraint.setRoles(new String[] { "ui" });
         uiConstraint.setAuthenticate(true);
 
         final ConstraintMapping usermapping = new ConstraintMapping();
@@ -152,8 +152,8 @@ public class JettyServer implements Runnable {
 
         final ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
         sh.setRealmName(JettyServer.REALM);
-        sh.setConstraintMappings(new ConstraintMapping[] {usermapping,
-                adminmapping, uimapping});
+        sh.setConstraintMappings(new ConstraintMapping[] { usermapping,
+                adminmapping, uimapping });
         sh.setAuthenticator(new BasicAuthenticator());
         sh.setHandler(this.service);
         final LoginService loginSrv = new OVXLoginService();

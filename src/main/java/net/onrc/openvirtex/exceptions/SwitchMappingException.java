@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,24 +30,24 @@ public class SwitchMappingException extends MappingException {
         super();
     }
 
-    public SwitchMappingException(String cause) {
+    public SwitchMappingException(final String cause) {
         super(cause);
     }
 
-    public SwitchMappingException(Integer key, Class value) {
+    public SwitchMappingException(final Integer key, final Class value) {
         super(value.getName() + " not found for tenant with ID " + key);
     }
 
-    public SwitchMappingException(Switch key, Class value) {
+    public SwitchMappingException(final Switch key, final Class value) {
         super(value.getName() + " not found for switch [" + key.getSwitchId()
                 + "]");
     }
 
-    public SwitchMappingException(Object key, Class value) {
+    public SwitchMappingException(final Object key, final Class value) {
         super(key, value);
     }
 
-    public SwitchMappingException(Throwable cause) {
+    public SwitchMappingException(final Throwable cause) {
         super(cause);
     }
 

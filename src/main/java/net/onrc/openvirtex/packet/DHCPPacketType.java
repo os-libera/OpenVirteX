@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,34 +60,34 @@ public enum DHCPPacketType {
     @Override
     public String toString() {
         switch (this.value) {
-        case 1:
-            return "DHCPDISCOVER";
-        case 2:
-            return "DHCPOFFER";
-        case 3:
-            return "DHCPREQUEST";
-        case 4:
-            return "DHCPDECLINE";
-        case 5:
-            return "DHCPACK";
-        case 6:
-            return "DHCPNAK";
-        case 7:
-            return "DHCPRELEASE";
-        case 8:
-            return "DHCPINFORM";
-        case 9:
-            return "DHCPFORCERENEW";
-        case 10:
-            return "DHCPLEASEQUERY";
-        case 11:
-            return "DHCPLEASEUNASSIGNED";
-        case 12:
-            return "DHCPLEASEUNKNOWN";
-        case 13:
-            return "DHCPLEASEACTIVE";
-        default:
-            break;
+            case 1:
+                return "DHCPDISCOVER";
+            case 2:
+                return "DHCPOFFER";
+            case 3:
+                return "DHCPREQUEST";
+            case 4:
+                return "DHCPDECLINE";
+            case 5:
+                return "DHCPACK";
+            case 6:
+                return "DHCPNAK";
+            case 7:
+                return "DHCPRELEASE";
+            case 8:
+                return "DHCPINFORM";
+            case 9:
+                return "DHCPFORCERENEW";
+            case 10:
+                return "DHCPLEASEQUERY";
+            case 11:
+                return "DHCPLEASEUNASSIGNED";
+            case 12:
+                return "DHCPLEASEUNKNOWN";
+            case 13:
+                return "DHCPLEASEACTIVE";
+            default:
+                break;
         }
 
         return null;
@@ -95,34 +95,34 @@ public enum DHCPPacketType {
 
     public static DHCPPacketType getType(final int value) {
         switch (value) {
-        case 1:
-            return DHCPDISCOVER;
-        case 2:
-            return DHCPOFFER;
-        case 3:
-            return DHCPREQUEST;
-        case 4:
-            return DHCPDECLINE;
-        case 5:
-            return DHCPACK;
-        case 6:
-            return DHCPNAK;
-        case 7:
-            return DHCPRELEASE;
-        case 8:
-            return DHCPINFORM;
-        case 9:
-            return DHCPFORCERENEW;
-        case 10:
-            return DHCPLEASEQUERY;
-        case 11:
-            return DHCPLEASEUNASSIGNED;
-        case 12:
-            return DHCPLEASEUNKNOWN;
-        case 13:
-            return DHCPLEASEACTIVE;
-        default:
-            break;
+            case 1:
+                return DHCPDISCOVER;
+            case 2:
+                return DHCPOFFER;
+            case 3:
+                return DHCPREQUEST;
+            case 4:
+                return DHCPDECLINE;
+            case 5:
+                return DHCPACK;
+            case 6:
+                return DHCPNAK;
+            case 7:
+                return DHCPRELEASE;
+            case 8:
+                return DHCPINFORM;
+            case 9:
+                return DHCPFORCERENEW;
+            case 10:
+                return DHCPLEASEQUERY;
+            case 11:
+                return DHCPLEASEUNASSIGNED;
+            case 12:
+                return DHCPLEASEUNKNOWN;
+            case 13:
+                return DHCPLEASEACTIVE;
+            default:
+                break;
         }
 
         return null;

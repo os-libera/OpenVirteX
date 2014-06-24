@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,13 +33,13 @@ public class OVXPortStatisticsReply extends OFPortStatisticsReply implements
     @Override
     public void virtualizeStatistic(final PhysicalSwitch sw,
             final OVXStatisticsReply msg) {
-        stats = new HashMap<Short, OVXPortStatisticsReply>();
-        List<? extends OFStatistics> statList = msg.getStatistics();
-        for (OFStatistics stat : statList) {
-            OVXPortStatisticsReply pStat = (OVXPortStatisticsReply) stat;
-            stats.put(pStat.getPortNumber(), pStat);
+        this.stats = new HashMap<Short, OVXPortStatisticsReply>();
+        final List<? extends OFStatistics> statList = msg.getStatistics();
+        for (final OFStatistics stat : statList) {
+            final OVXPortStatisticsReply pStat = (OVXPortStatisticsReply) stat;
+            this.stats.put(pStat.getPortNumber(), pStat);
         }
-        sw.setPortStatistics(stats);
+        sw.setPortStatistics(this.stats);
 
     }
 }

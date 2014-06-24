@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,12 +35,12 @@ public class GetVirtualAddressMapping extends ApiHandler<Map<String, Object>> {
     JSONRPC2Response resp = null;
 
     @Override
-    public JSONRPC2Response process(Map<String, Object> params) {
+    public JSONRPC2Response process(final Map<String, Object> params) {
         try {
-            Map<String, String> res = new HashMap<String, String>();
-            Number tid = HandlerUtils.<Number>fetchField(
+            final Map<String, String> res = new HashMap<String, String>();
+            final Number tid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.TENANT, params, true, null);
-            OVXMap map = OVXMap.getInstance();
+            final OVXMap map = OVXMap.getInstance();
 
             /*
              * for (Host host :
@@ -49,25 +49,25 @@ public class GetVirtualAddressMapping extends ApiHandler<Map<String, Object>> {
              * for (PhysicalLink link : map.getPhysicalLinks(vlink))
              * list.add(link.getLinkId()); res.put(vlink.getLinkId(), list); }
              */
-            for (CharSequence vip : map.getAllKeys()) {
-                String ip = vip.toString().replace("OVXIPAddress[", "")
+            for (final CharSequence vip : map.getAllKeys()) {
+                final String ip = vip.toString().replace("OVXIPAddress[", "")
                         .replace("]", "");
                 res.put(ip,
                         map.getPhysicalIP(new OVXIPAddress(ip, tid.intValue()),
                                 tid.intValue()).toSimpleString());
             }
 
-            resp = new JSONRPC2Response(res, 0);
+            this.resp = new JSONRPC2Response(res, 0);
 
         } catch (ClassCastException | MissingRequiredField
                 | AddressMappingException e) {
-            resp = new JSONRPC2Response(new JSONRPC2Error(
+            this.resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": Unable to fetch virtual topology : "
                             + e.getMessage()), 0);
         }
 
-        return resp;
+        return this.resp;
 
     }
 

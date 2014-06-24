@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,19 +14,19 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright 2012, Andrew Ferguson, Brown University
+ * Copyright 2012, Andrew Ferguson, Brown University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol;
@@ -56,20 +56,20 @@ public class OFQueueProp {
 
         public static OFQueuePropType fromShort(final short x) {
             switch (x) {
-            case 0:
-                return OFPQT_NONE;
-            case 1:
-                return OFPQT_MIN_RATE;
-            case 2:
-                return OFPQT_MAX_RATE;
+                case 0:
+                    return OFPQT_NONE;
+                case 1:
+                    return OFPQT_MIN_RATE;
+                case 2:
+                    return OFPQT_MAX_RATE;
             }
             return null;
         }
     }
 
     protected OFQueuePropType type;
-    protected short length;
-    protected short rate = -1; // not valid if type == OFPQT_NONE
+    protected short           length;
+    protected short           rate = -1; // not valid if type == OFPQT_NONE
 
     public OFQueueProp() {
         this.type = OFQueuePropType.OFPQT_NONE;
@@ -91,15 +91,15 @@ public class OFQueueProp {
         this.type = type;
 
         switch (type) {
-        case OFPQT_NONE:
-            this.length = U16.t(this.NONE_MINIMUM_LENGTH);
-            break;
-        case OFPQT_MIN_RATE:
-            this.length = U16.t(this.RATE_MINIMUM_LENGTH);
-            break;
-        case OFPQT_MAX_RATE:
-            this.length = U16.t(this.RATE_MINIMUM_LENGTH);
-            break;
+            case OFPQT_NONE:
+                this.length = U16.t(this.NONE_MINIMUM_LENGTH);
+                break;
+            case OFPQT_MIN_RATE:
+                this.length = U16.t(this.RATE_MINIMUM_LENGTH);
+                break;
+            case OFPQT_MAX_RATE:
+                this.length = U16.t(this.RATE_MINIMUM_LENGTH);
+                break;
         }
     }
 

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,22 +42,22 @@ import java.util.Arrays;
 public class ARP extends BasePacket {
     public static final short HW_TYPE_ETHERNET = 0x1;
 
-    public static final short PROTO_TYPE_IP = 0x800;
+    public static final short PROTO_TYPE_IP    = 0x800;
 
-    public static final short OP_REQUEST = 0x1;
-    public static final short OP_REPLY = 0x2;
-    public static final short OP_RARP_REQUEST = 0x3;
-    public static final short OP_RARP_REPLY = 0x4;
+    public static final short OP_REQUEST       = 0x1;
+    public static final short OP_REPLY         = 0x2;
+    public static final short OP_RARP_REQUEST  = 0x3;
+    public static final short OP_RARP_REPLY    = 0x4;
 
-    protected short hardwareType;
-    protected short protocolType;
-    protected byte hardwareAddressLength;
-    protected byte protocolAddressLength;
-    protected short opCode;
-    protected byte[] senderHardwareAddress;
-    protected byte[] senderProtocolAddress;
-    protected byte[] targetHardwareAddress;
-    protected byte[] targetProtocolAddress;
+    protected short           hardwareType;
+    protected short           protocolType;
+    protected byte            hardwareAddressLength;
+    protected byte            protocolAddressLength;
+    protected short           opCode;
+    protected byte[]          senderHardwareAddress;
+    protected byte[]          senderProtocolAddress;
+    protected byte[]          targetHardwareAddress;
+    protected byte[]          targetProtocolAddress;
 
     /**
      * @return the hardwareType
@@ -272,7 +272,7 @@ public class ARP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -293,7 +293,7 @@ public class ARP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -344,7 +344,7 @@ public class ARP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override

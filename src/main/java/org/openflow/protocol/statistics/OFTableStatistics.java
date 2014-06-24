@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol.statistics;
@@ -43,13 +43,13 @@ import org.openflow.util.StringByteSerializer;
 public class OFTableStatistics implements OFStatistics {
     public static int MAX_TABLE_NAME_LEN = 32;
 
-    protected byte tableId;
-    protected String name;
-    protected int wildcards;
-    protected int maximumEntries;
-    protected int activeCount;
-    protected long lookupCount;
-    protected long matchedCount;
+    protected byte    tableId;
+    protected String  name;
+    protected int     wildcards;
+    protected int     maximumEntries;
+    protected int     activeCount;
+    protected long    lookupCount;
+    protected long    matchedCount;
 
     /**
      * @return the tableId
@@ -236,9 +236,10 @@ public class OFTableStatistics implements OFStatistics {
             if (other.name != null) {
                 return false;
             }
-        } else if (!this.name.equals(other.name)) {
-            return false;
-        }
+        } else
+            if (!this.name.equals(other.name)) {
+                return false;
+            }
         if (this.tableId != other.tableId) {
             return false;
         }

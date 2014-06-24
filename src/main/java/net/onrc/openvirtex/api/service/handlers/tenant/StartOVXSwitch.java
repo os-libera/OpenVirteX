@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,11 +44,10 @@ public class StartOVXSwitch extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     TenantHandler.VDPID, params, true, null);
-
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
             HandlerUtils
@@ -61,8 +60,9 @@ public class StartOVXSwitch extends ApiHandler<Map<String, Object>> {
 
             this.log.info("Start virtual switch {} in virtual network {}",
                     dpid, virtualNetwork.getTenantId());
-            OVXSwitch ovxSwitch = virtualNetwork.getSwitch(dpid.longValue());
-            Map<String, Object> reply = new HashMap<String, Object>(
+            final OVXSwitch ovxSwitch = virtualNetwork.getSwitch(dpid
+                    .longValue());
+            final Map<String, Object> reply = new HashMap<String, Object>(
                     ovxSwitch.getDBObject());
             reply.put(TenantHandler.TENANT, ovxSwitch.getTenantId());
             resp = new JSONRPC2Response(reply, 0);

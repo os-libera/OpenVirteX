@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,36 +46,58 @@ public class MonitoringHandler extends AbstractHandler implements
     /**
      * Virtual network ID.
      */
-    public static final String TENANT = "tenantId";
+    public static final String                TENANT   = "tenantId";
     /**
      * MAC address.
      */
-    public static final String MAC = "mac";
+    public static final String                MAC      = "mac";
     /**
      * Datapath ID.
      */
-    public static final String DPID = "dpid";
+    public static final String                DPID     = "dpid";
     /**
      * Virtual datapath ID.
      */
-    public static final String VDPID = "vdpid";
+    public static final String                VDPID    = "vdpid";
 
     @SuppressWarnings({ "serial", "rawtypes" })
-    private HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
-        {
-            this.put("getPhysicalTopology", new GetPhysicalTopology());
-            this.put("listVirtualNetworks", new ListVirtualNetworks());
-            this.put("getVirtualTopology", new GetVirtualTopology());
-            this.put("getVirtualSwitchMapping", new GetVirtualSwitchMapping());
-            this.put("getVirtualLinkMapping", new GetVirtualLinkMapping());
-            this.put("getVirtualHosts", new GetVirtualHosts());
-            this.put("getPhysicalHosts", new GetPhysicalHosts());
-            this.put("getSubnet", new GetSubnet());
-            this.put("getVirtualFlowtable", new GetVirtualFlowtable());
-            this.put("getPhysicalFlowtable", new GetPhysicalFlowtable());
-            this.put("getVirtualAddressMapping", new GetVirtualAddressMapping());
-        }
-    };
+    private final HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
+                                                           {
+                                                               this.put(
+                                                                       "getPhysicalTopology",
+                                                                       new GetPhysicalTopology());
+                                                               this.put(
+                                                                       "listVirtualNetworks",
+                                                                       new ListVirtualNetworks());
+                                                               this.put(
+                                                                       "getVirtualTopology",
+                                                                       new GetVirtualTopology());
+                                                               this.put(
+                                                                       "getVirtualSwitchMapping",
+                                                                       new GetVirtualSwitchMapping());
+                                                               this.put(
+                                                                       "getVirtualLinkMapping",
+                                                                       new GetVirtualLinkMapping());
+                                                               this.put(
+                                                                       "getVirtualHosts",
+                                                                       new GetVirtualHosts());
+                                                               this.put(
+                                                                       "getPhysicalHosts",
+                                                                       new GetPhysicalHosts());
+                                                               this.put(
+                                                                       "getSubnet",
+                                                                       new GetSubnet());
+                                                               this.put(
+                                                                       "getVirtualFlowtable",
+                                                                       new GetVirtualFlowtable());
+                                                               this.put(
+                                                                       "getPhysicalFlowtable",
+                                                                       new GetPhysicalFlowtable());
+                                                               this.put(
+                                                                       "getVirtualAddressMapping",
+                                                                       new GetVirtualAddressMapping());
+                                                           }
+                                                       };
 
     @Override
     public String[] handledRequests() {
@@ -99,14 +121,14 @@ public class MonitoringHandler extends AbstractHandler implements
             }
 
             switch (m.getType()) {
-            case NO_PARAMS:
-                return m.process(null);
-            case ARRAY:
-                return m.process(req.getPositionalParams());
-            case OBJECT:
-                return m.process(req.getNamedParams());
-            default:
-                break;
+                case NO_PARAMS:
+                    return m.process(null);
+                case ARRAY:
+                    return m.process(req.getPositionalParams());
+                case OBJECT:
+                    return m.process(req.getNamedParams());
+                default:
+                    break;
             }
         }
 

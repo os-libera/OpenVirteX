@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,11 +44,11 @@ import java.util.List;
  *
  */
 public class LLDP extends BasePacket {
-    protected LLDPTLV chassisId;
-    protected LLDPTLV portId;
-    protected LLDPTLV ttl;
+    protected LLDPTLV       chassisId;
+    protected LLDPTLV       portId;
+    protected LLDPTLV       ttl;
     protected List<LLDPTLV> optionalTLVList;
-    protected short ethType;
+    protected short         ethType;
 
     public LLDP() {
         this.optionalTLVList = new ArrayList<LLDPTLV>();
@@ -158,21 +158,21 @@ public class LLDP extends BasePacket {
                 break;
             }
             switch (tlv.getType()) {
-            case 0x0:
-                // can throw this one away, its just an end delimiter
-                break;
-            case 0x1:
-                this.chassisId = tlv;
-                break;
-            case 0x2:
-                this.portId = tlv;
-                break;
-            case 0x3:
-                this.ttl = tlv;
-                break;
-            default:
-                this.optionalTLVList.add(tlv);
-                break;
+                case 0x0:
+                    // can throw this one away, its just an end delimiter
+                    break;
+                case 0x1:
+                    this.chassisId = tlv;
+                    break;
+                case 0x2:
+                    this.portId = tlv;
+                    break;
+                case 0x3:
+                    this.ttl = tlv;
+                    break;
+                default:
+                    this.optionalTLVList.add(tlv);
+                    break;
             }
         } while (tlv.getType() != 0 && bb.hasRemaining());
         return this;
@@ -180,7 +180,7 @@ public class LLDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -198,7 +198,7 @@ public class LLDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -217,9 +217,10 @@ public class LLDP extends BasePacket {
             if (other.chassisId != null) {
                 return false;
             }
-        } else if (!this.chassisId.equals(other.chassisId)) {
-            return false;
-        }
+        } else
+            if (!this.chassisId.equals(other.chassisId)) {
+                return false;
+            }
         if (!this.optionalTLVList.equals(other.optionalTLVList)) {
             return false;
         }
@@ -227,16 +228,18 @@ public class LLDP extends BasePacket {
             if (other.portId != null) {
                 return false;
             }
-        } else if (!this.portId.equals(other.portId)) {
-            return false;
-        }
+        } else
+            if (!this.portId.equals(other.portId)) {
+                return false;
+            }
         if (this.ttl == null) {
             if (other.ttl != null) {
                 return false;
             }
-        } else if (!this.ttl.equals(other.ttl)) {
-            return false;
-        }
+        } else
+            if (!this.ttl.equals(other.ttl)) {
+                return false;
+            }
         return true;
     }
 }

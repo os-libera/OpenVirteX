@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,13 +30,13 @@ public class Uplink {
 
     private PhysicalPort uplinkPort;
 
-    private IPAddress uplinkIp;
+    private IPAddress    uplinkIp;
 
-    private MACAddress uplinkMac;
+    private MACAddress   uplinkMac;
 
-    private IPAddress nextHopIp;
+    private IPAddress    nextHopIp;
 
-    private MACAddress nectHopMac;
+    private MACAddress   nectHopMac;
 
     public PhysicalPort getUplinkPort() {
         return this.uplinkPort;

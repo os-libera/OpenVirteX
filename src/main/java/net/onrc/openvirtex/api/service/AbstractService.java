@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,13 +36,15 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 public abstract class AbstractService {
 
     private static Logger log = LogManager.getLogger(AbstractService.class
-            .getName());
+                                      .getName());
 
     /**
      * Handles the service request and stores the result in the response.
      *
-     * @param request the request
-     * @param response the response
+     * @param request
+     *            the request
+     * @param response
+     *            the response
      */
     public abstract void handle(HttpServletRequest request,
             HttpServletResponse response);
@@ -55,7 +57,8 @@ public abstract class AbstractService {
      * @return the JSON object
      * @throws IOException
      *             Signals that an I/O exception has occurred.
-     * @throws JSONRPC2ParseException if JSON request is invalid
+     * @throws JSONRPC2ParseException
+     *             if JSON request is invalid
      */
     protected JSONRPC2Request parseJSONRequest(final HttpServletRequest request)
             throws IOException, JSONRPC2ParseException {
@@ -78,7 +81,8 @@ public abstract class AbstractService {
      *
      * @param response
      *            the response
-     * @param jresp the JSON response
+     * @param jresp
+     *            the JSON response
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
@@ -97,7 +101,8 @@ public abstract class AbstractService {
     /**
      * Gets the exception stack trace in a string.
      *
-     * @param e the exception
+     * @param e
+     *            the exception
      * @return a string
      */
     protected static String stack2string(final Exception e) {

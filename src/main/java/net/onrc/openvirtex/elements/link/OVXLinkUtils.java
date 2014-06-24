@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,19 +40,19 @@ import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
 public class OVXLinkUtils {
 
     private static Logger log = LogManager.getLogger(OVXLinkUtils.class
-            .getName());
+                                      .getName());
     /** The tenant id. */
-    private Integer tenantId;
+    private Integer       tenantId;
     /** The link id. */
-    private Integer linkId;
+    private Integer       linkId;
     /** The flow id. */
-    private Integer flowId;
+    private Integer       flowId;
     /** The src mac address. */
-    private MACAddress srcMac;
+    private MACAddress    srcMac;
     /** The dst mac address. */
-    private MACAddress dstMac;
+    private MACAddress    dstMac;
     /** The vlan. */
-    private Short vlan;
+    private Short         vlan;
 
     /**
      * Instantiates a new link utils instance. Never called by external classes.
@@ -233,7 +233,7 @@ public class OVXLinkUtils {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -255,9 +255,10 @@ public class OVXLinkUtils {
         if (linkField == OVXLinkField.MAC_ADDRESS) {
             match.setDataLayerSource(this.getSrcMac().toBytes());
             match.setDataLayerDestination(this.getDstMac().toBytes());
-        } else if (linkField == OVXLinkField.VLAN) {
-            match.setDataLayerVirtualLan(this.getVlan());
-        }
+        } else
+            if (linkField == OVXLinkField.VLAN) {
+                match.setDataLayerVirtualLan(this.getVlan());
+            }
     }
 
     /**
@@ -273,9 +274,10 @@ public class OVXLinkUtils {
             actions.add(new OFActionDataLayerSource(this.getSrcMac().toBytes()));
             actions.add(new OFActionDataLayerDestination(this.getDstMac()
                     .toBytes()));
-        } else if (linkField == OVXLinkField.VLAN) {
-            actions.add(new OFActionVirtualLanIdentifier(this.getVlan()));
-        }
+        } else
+            if (linkField == OVXLinkField.VLAN) {
+                actions.add(new OFActionVirtualLanIdentifier(this.getVlan()));
+            }
         return actions;
     }
 
@@ -296,7 +298,7 @@ public class OVXLinkUtils {
                         .toBytes()));
                 actions.add(new OFActionDataLayerDestination(macList.get(1)
                         .toBytes()));
-            } catch (NetworkMappingException e) {
+            } catch (final NetworkMappingException e) {
                 OVXLinkUtils.log.error("Unable to restore actions: " + e);
             }
         } else {

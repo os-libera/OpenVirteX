@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,16 +32,17 @@ public class OVXActionNetworkLayerSource extends OFActionNetworkLayerSource
         implements VirtualizableAction {
 
     private final Logger log = LogManager
-            .getLogger(OVXActionNetworkLayerSource.class.getName());
+                                     .getLogger(OVXActionNetworkLayerSource.class
+                                             .getName());
 
     @Override
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
             throws ActionVirtualizationDenied {
         this.networkAddress = IPMapper.getPhysicalIp(sw.getTenantId(),
-                this.networkAddress);
-        log.debug("Allocating Physical IP {}", new PhysicalIPAddress(
-                networkAddress));
+                this.networkAddress, PhysicalIPAddress.IP_FOR_SOURCE);
+        this.log.debug("Allocating Physical IP {}", new PhysicalIPAddress(
+                this.networkAddress));
         approvedActions.add(this);
     }
 

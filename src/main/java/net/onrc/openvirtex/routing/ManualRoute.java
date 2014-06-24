@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,19 +17,19 @@ package net.onrc.openvirtex.routing;
 
 import java.util.LinkedList;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ManualRoute implements Routable {
 
     /** The log. */
     private static Logger log = LogManager.getLogger(ManualRoute.class
-            .getName());
+                                      .getName());
 
     @Override
     public LinkedList<PhysicalLink> computePath(final OVXPort srcPort,
@@ -56,9 +56,10 @@ public class ManualRoute implements Routable {
     }
 
     @Override
-    public void setLinkPath(OVXLink ovxLink) {
-        log.warn("The manual routing should never call the method [setLinkPath(OVXLink)]. "
-                + "To define a manual path for the virtual link, use the API call [SetLinkPath].");
+    public void setLinkPath(final OVXLink ovxLink) {
+        ManualRoute.log
+                .warn("The manual routing should never call the method [setLinkPath(OVXLink)]. "
+                        + "To define a manual path for the virtual link, use the API call [SetLinkPath].");
 
     }
 

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol;
@@ -48,15 +48,15 @@ public class OFFlowRemoved extends OFMessage {
         OFPRR_IDLE_TIMEOUT, OFPRR_HARD_TIMEOUT, OFPRR_DELETE
     }
 
-    protected OFMatch match;
-    protected long cookie;
-    protected short priority;
+    protected OFMatch             match;
+    protected long                cookie;
+    protected short               priority;
     protected OFFlowRemovedReason reason;
-    protected int durationSeconds;
-    protected int durationNanoseconds;
-    protected short idleTimeout;
-    protected long packetCount;
-    protected long byteCount;
+    protected int                 durationSeconds;
+    protected int                 durationNanoseconds;
+    protected short               idleTimeout;
+    protected long                packetCount;
+    protected long                byteCount;
 
     public OFFlowRemoved() {
         super();
@@ -304,9 +304,10 @@ public class OFFlowRemoved extends OFMessage {
             if (other.match != null) {
                 return false;
             }
-        } else if (!this.match.equals(other.match)) {
-            return false;
-        }
+        } else
+            if (!this.match.equals(other.match)) {
+                return false;
+            }
         if (this.packetCount != other.packetCount) {
             return false;
         }
@@ -317,9 +318,10 @@ public class OFFlowRemoved extends OFMessage {
             if (other.reason != null) {
                 return false;
             }
-        } else if (!this.reason.equals(other.reason)) {
-            return false;
-        }
+        } else
+            if (!this.reason.equals(other.reason)) {
+                return false;
+            }
         return true;
     }
 }

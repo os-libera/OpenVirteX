@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,60 +40,63 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
 
     @Override
     public void virtualize(final PhysicalSwitch sw) {
-        log.debug("Received {} from switch {} for port {}", this.toString(), sw
-                .getSwitchId(),
+        this.log.debug("Received {} from switch {} for port {}", this
+                .toString(), sw.getSwitchId(),
                 sw.getPort(this.desc.getPortNumber()) == null ? "null" : sw
                         .getPort(this.desc.getPortNumber()).toAP());
 
-        PhysicalPort p = sw.getPort(this.desc.getPortNumber());
+        final PhysicalPort p = sw.getPort(this.desc.getPortNumber());
         if (p == null) {
-            handlePortAdd(sw);
+            this.handlePortAdd(sw);
             return;
         }
 
-        LinkPair<PhysicalLink> plink = p.getLink();
-        OVXStateManager mgr = new OVXStateManager();
+        final LinkPair<PhysicalLink> plink = p.getLink();
+        final OVXStateManager mgr = new OVXStateManager();
 
         if (this.isReason(OFPortReason.OFPPR_MODIFY)) {
-            if (isState(OFPortState.OFPPS_LINK_DOWN)) {
+            if (this.isState(OFPortState.OFPPS_LINK_DOWN)) {
                 /* Link went down or port was disabled */
                 mgr.deactivateOVXPorts(p, false);
-                if ((plink != null) && (plink.exists())) {
+                if (plink != null && plink.exists()) {
                     mgr.deactivateVLinks(plink.getOutLink(), false);
                     mgr.deactivateVLinks(plink.getInLink(), false);
                 }
                 p.setConfig(this.getDesc().getConfig());
                 p.tearDown();
-            } else if (!isState(OFPortState.OFPPS_LINK_DOWN)) {
-                /* Link is back up or port was enabled */
-                p.setConfig(this.getDesc().getConfig());
-                p.boot();
-                mgr.activateOVXPorts(p);
-                if ((plink != null) && (plink.exists())) {
-                    mgr.activateVLinks(plink.getOutLink());
-                    mgr.activateVLinks(plink.getInLink());
+            } else
+                if (!this.isState(OFPortState.OFPPS_LINK_DOWN)) {
+                    /* Link is back up or port was enabled */
+                    p.setConfig(this.getDesc().getConfig());
+                    p.boot();
+                    mgr.activateOVXPorts(p);
+                    if (plink != null && plink.exists()) {
+                        mgr.activateVLinks(plink.getOutLink());
+                        mgr.activateVLinks(plink.getInLink());
+                    }
+                } else {
+                    /* Some port attribute has changed */
+                    this.updateOVXPorts(p);
                 }
+        } else
+            if (this.isReason(OFPortReason.OFPPR_DELETE)) {
+                mgr.deactivateOVXPorts(p, true);
+                if (plink != null && plink.exists()) {
+                    mgr.deactivateVLinks(plink.getOutLink(), true);
+                    mgr.deactivateVLinks(plink.getInLink(), true);
+                }
+                p.tearDown();
+                p.unregister();
             } else {
-                /* Some port attribute has changed */
-                this.updateOVXPorts(p);
+                this.log.warn("Unknown PortReason [code={}], ignoring",
+                        this.reason);
             }
-        } else if (this.isReason(OFPortReason.OFPPR_DELETE)) {
-            mgr.deactivateOVXPorts(p, true);
-            if ((plink != null) && (plink.exists())) {
-                mgr.deactivateVLinks(plink.getOutLink(), true);
-                mgr.deactivateVLinks(plink.getInLink(), true);
-            }
-            p.tearDown();
-            p.unregister();
-        } else {
-            log.warn("Unknown PortReason [code={}], ignoring", this.reason);
-        }
     }
 
-    private void handlePortAdd(PhysicalSwitch sw) {
+    private void handlePortAdd(final PhysicalSwitch sw) {
         /* add a new port to PhySwitch if add message, quit otherwise */
-        if (isReason(OFPortReason.OFPPR_ADD)) {
-            PhysicalPort p = new PhysicalPort(this.desc, sw, true);
+        if (this.isReason(OFPortReason.OFPPR_ADD)) {
+            final PhysicalPort p = new PhysicalPort(this.desc, sw, true);
             p.register();
         }
     }
@@ -106,19 +109,19 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
      * @param ppt
      *            the PhysicalPort
      */
-    private void updateOVXPorts(PhysicalPort ppt) {
-        for (Map<Integer, OVXPort> el : ppt.getOVXPorts(null)) {
-            for (OVXPort vp : el.values()) {
+    private void updateOVXPorts(final PhysicalPort ppt) {
+        for (final Map<Integer, OVXPort> el : ppt.getOVXPorts(null)) {
+            for (final OVXPort vp : el.values()) {
                 vp.applyPortStatus(this);
             }
         }
     }
 
-    public boolean isReason(OFPortReason reason) {
+    public boolean isReason(final OFPortReason reason) {
         return this.reason == reason.getReasonCode();
     }
 
-    public boolean isState(OFPortState state) {
+    public boolean isState(final OFPortState state) {
         return this.desc.getState() == state.getValue();
     }
 

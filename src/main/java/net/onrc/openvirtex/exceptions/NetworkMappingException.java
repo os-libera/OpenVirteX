@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,19 +27,19 @@ public class NetworkMappingException extends MappingException {
         super();
     }
 
-    public NetworkMappingException(String cause) {
+    public NetworkMappingException(final String cause) {
         super(cause);
     }
 
-    public NetworkMappingException(Integer key) {
+    public NetworkMappingException(final Integer key) {
         super("Virtual network not found for tenant with ID " + key);
     }
 
-    public NetworkMappingException(Object key, Class value) {
+    public NetworkMappingException(final Object key, final Class value) {
         super(key, value);
     }
 
-    public NetworkMappingException(Throwable cause) {
+    public NetworkMappingException(final Throwable cause) {
         super(cause);
     }
 

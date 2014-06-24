@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,6 @@ import net.onrc.openvirtex.api.service.TenantService;
 
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 /**
@@ -39,8 +38,8 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 public class JSONRPCAPI extends AbstractHandler {
 
     private final MonitoringService monitoringService;
-    private final TenantService tenantService;
-    private final AdminService adminService;
+    private final TenantService     tenantService;
+    private final AdminService      adminService;
 
     /**
      * Constructor for JSON RPC handler. Creates tenant, monitoring and admin
@@ -60,7 +59,8 @@ public class JSONRPCAPI extends AbstractHandler {
         if (baseRequest.getAuthentication() == null
                 || baseRequest.getAuthentication().equals(
                         Authentication.UNAUTHENTICATED)) {
-            response.sendError(Response.SC_UNAUTHORIZED, "Permission denied.");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    "Permission denied.");
             baseRequest.setHandled(true);
 
             return;
@@ -68,17 +68,19 @@ public class JSONRPCAPI extends AbstractHandler {
         if (target.equals("/status")) {
             this.monitoringService.handle(request, response);
 
-        } else if (target.equals("/tenant")) {
-            this.tenantService.handle(request, response);
+        } else
+            if (target.equals("/tenant")) {
+                this.tenantService.handle(request, response);
 
-        } else if (target.equals("/admin")) {
-            this.adminService.handle(request, response);
+            } else
+                if (target.equals("/admin")) {
+                    this.adminService.handle(request, response);
 
-        } else {
-            response.sendError(Response.SC_NOT_FOUND, target
-                    + " is not a service offered by OVX");
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, target
+                            + " is not a service offered by OVX");
 
-        }
+                }
         baseRequest.setHandled(true);
     }
 

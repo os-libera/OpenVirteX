@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,10 +33,10 @@ import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 
 public class TenantService extends AbstractService {
 
-    private static Logger log = LogManager.getLogger(TenantService.class
-            .getName());
+    private static Logger log        = LogManager.getLogger(TenantService.class
+                                             .getName());
 
-    Dispatcher dispatcher = new Dispatcher();
+    Dispatcher            dispatcher = new Dispatcher();
 
     public TenantService() {
         this.dispatcher.register(new TenantHandler());

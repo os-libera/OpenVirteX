@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +35,7 @@ public class FlowTableTest extends TestCase {
     OpenVirteXController ctl = null;
 
     public OVXFlowMod getFlowMod() {
-        OVXFlowMod fm = new OVXFlowMod();
+        final OVXFlowMod fm = new OVXFlowMod();
         fm.setMatch(new OFMatch()).setActions(new ArrayList<OFAction>());
         return fm;
     }
@@ -98,11 +98,11 @@ public class FlowTableTest extends TestCase {
         /* 2 FMs that deliberately don't match */
         final OVXFlowMod fm1 = this.getFlowMod();
         fm1.setCommand(OFFlowMod.OFPFC_ADD).setMatch(
-                (new OFMatch()).setInputPort((short) 1).setWildcards(
+                new OFMatch().setInputPort((short) 1).setWildcards(
                         OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT));
         final OVXFlowMod fm2 = this.getFlowMod();
         fm2.setCommand(OFFlowMod.OFPFC_ADD).setMatch(
-                (new OFMatch()).setInputPort((short) 2).setWildcards(
+                new OFMatch().setInputPort((short) 2).setWildcards(
                         OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT));
 
         final long c1 = (long) vsw.getTenantId() << 32 | 1;
@@ -120,7 +120,7 @@ public class FlowTableTest extends TestCase {
 
         // should re-use first cookie that was freed up
         oft.deleteFlowMod(c1);
-        long c = oft.getCookie();
+        final long c = oft.getCookie();
         Assert.assertEquals(c, c1);
     }
 
@@ -128,8 +128,8 @@ public class FlowTableTest extends TestCase {
     public void testFlowEntryCompare() {
         final OFMatch baseM = new OFMatch();
         baseM.setDataLayerDestination(
-                new byte[] {0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
-                        (byte) 0xef})
+                new byte[] { 0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
+                        (byte) 0xef })
                 .setInputPort((short) 23)
                 .setNetworkDestination(5692)
                 .setWildcards(
@@ -158,11 +158,11 @@ public class FlowTableTest extends TestCase {
         /* a subset match should make base_m its superset */
         final OFMatch subM = new OFMatch();
         subM.setDataLayerDestination(
-                new byte[] {0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
-                        (byte) 0xef})
+                new byte[] { 0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
+                        (byte) 0xef })
                 .setDataLayerSource(
-                        new byte[] {0x11, 0x22, 0x33, (byte) 0xaa,
-                                (byte) 0xcc, (byte) 0xee})
+                        new byte[] { 0x11, 0x22, 0x33, (byte) 0xaa,
+                                (byte) 0xcc, (byte) 0xee })
                 .setInputPort((short) 23)
                 .setNetworkDestination(5692)
                 .setWildcards(
@@ -183,14 +183,14 @@ public class FlowTableTest extends TestCase {
     public void testHandleFlowMod() {
         final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
         final PhysicalSwitch psw = new PhysicalSwitch(0);
-        ArrayList<PhysicalSwitch> l = new ArrayList<PhysicalSwitch>();
+        final ArrayList<PhysicalSwitch> l = new ArrayList<PhysicalSwitch>();
         l.add(psw);
         OVXMap.getInstance().addSwitches(l, vsw);
         final OVXFlowTable oft = new OVXFlowTable(vsw);
         final OFMatch baseM = new OFMatch();
         baseM.setDataLayerDestination(
-                new byte[] {0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
-                        (byte) 0xef})
+                new byte[] { 0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
+                        (byte) 0xef })
                 .setInputPort((short) 23)
                 .setNetworkDestination(5692)
                 .setWildcards(
@@ -234,7 +234,7 @@ public class FlowTableTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ctl = new OpenVirteXController(new CmdLineSettings());
+        this.ctl = new OpenVirteXController(new CmdLineSettings());
     }
 
     @Override

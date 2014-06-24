@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -78,48 +78,58 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      */
     enum SwitchState {
         INIT {
-            public void register(OVXSwitch vsw,
-                    List<PhysicalSwitch> physicalSwitches) {
-                log.debug("Registering switch {}", vsw.getSwitchName());
+            @Override
+            public void register(final OVXSwitch vsw,
+                    final List<PhysicalSwitch> physicalSwitches) {
+                OVXSwitch.log.debug("Registering switch {}",
+                        vsw.getSwitchName());
                 OVXMap.getInstance().addSwitches(physicalSwitches, vsw);
                 DBManager.getInstance().save(vsw);
                 vsw.state = SwitchState.INACTIVE;
             }
         },
         INACTIVE {
-            public boolean boot(OVXSwitch vsw) {
-                log.debug("Booting switch {}", vsw.getSwitchName());
+            @Override
+            public boolean boot(final OVXSwitch vsw) {
+                OVXSwitch.log.debug("Booting switch {}", vsw.getSwitchName());
                 return vsw.bootSwitch();
             }
 
-            public void unregister(OVXSwitch vsw, boolean synch) {
-                log.debug("Unregistering switch {}", vsw.getSwitchName());
+            @Override
+            public void unregister(final OVXSwitch vsw, final boolean synch) {
+                OVXSwitch.log.debug("Unregistering switch {}",
+                        vsw.getSwitchName());
                 vsw.state = SwitchState.STOPPED;
                 vsw.unregSwitch(synch);
             }
         },
         ACTIVE {
-            public boolean teardown(OVXSwitch vsw, boolean synch) {
-                log.debug("Tearing down switch {}", vsw.getSwitchName());
+            @Override
+            public boolean teardown(final OVXSwitch vsw, final boolean synch) {
+                OVXSwitch.log.debug("Tearing down switch {}",
+                        vsw.getSwitchName());
                 vsw.state = SwitchState.INACTIVE;
                 vsw.roleMan.shutDown();
-                if ((vsw.channel != null) && (vsw.channel.isOpen()))
+                if (vsw.channel != null && vsw.channel.isOpen()) {
                     vsw.channel.close();
+                }
                 /* if (synch), a PhysicalSwitch has already done this */
                 if (!synch) {
                     vsw.cleanUpFlowMods(true);
                 }
-                for (OVXPort p : vsw.getPorts().values()) {
-                    if (p.isLink())
+                for (final OVXPort p : vsw.getPorts().values()) {
+                    if (p.isLink()) {
                         p.tearDown();
+                    }
                 }
                 return true;
             }
 
-            public void sendMsg(OVXSwitch vsw, final OFMessage msg,
+            @Override
+            public void sendMsg(final OVXSwitch vsw, final OFMessage msg,
                     final OVXSendMsg from) {
-                XidPair<Channel> pair = vsw.channelMux
-                        .untranslate(msg.getXid());
+                final XidPair<Channel> pair = vsw.channelMux.untranslate(msg
+                        .getXid());
                 Channel c = null;
                 if (pair != null) {
                     msg.setXid(pair.getXid());
@@ -130,13 +140,15 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
                     vsw.roleMan.sendMsg(msg, c);
                 } else {
                     // TODO: we probably should install a drop rule here.
-                    log.warn(
-                            "Virtual switch {} is not connected to a controller",
-                            vsw.switchName);
+                    OVXSwitch.log
+                            .warn("Virtual switch {} is not connected to a controller",
+                                    vsw.switchName);
                 }
             }
 
-            public void handleIO(OVXSwitch vsw, final OFMessage msg, Channel ch) {
+            @Override
+            public void handleIO(final OVXSwitch vsw, final OFMessage msg,
+                    final Channel ch) {
                 /*
                  * Save the channel the msg came in on
                  */
@@ -157,15 +169,17 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
                 }
             }
 
-            public void handleRoleIO(OVXSwitch vsw, OFVendor msg, Channel ch) {
-                Role role = vsw.extractNiciraRoleRequest(ch, msg);
+            @Override
+            public void handleRoleIO(final OVXSwitch vsw, final OFVendor msg,
+                    final Channel ch) {
+                final Role role = vsw.extractNiciraRoleRequest(ch, msg);
                 try {
                     vsw.roleMan.setRole(ch, role);
                     vsw.sendRoleReply(role, msg.getXid(), ch);
-                    log.info("Finished handling role for {}",
+                    OVXSwitch.log.info("Finished handling role for {}",
                             ch.getRemoteAddress());
                 } catch (IllegalArgumentException | UnknownRoleException ex) {
-                    log.warn(ex.getMessage());
+                    OVXSwitch.log.warn(ex.getMessage());
                 }
             }
         },
@@ -179,9 +193,9 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
          * @param physicalSwitches
          *            The PhysicalSwitches mapped to vsw
          */
-        public void register(OVXSwitch vsw,
-                List<PhysicalSwitch> physicalSwitches) {
-            log.debug("Switch {} has already been registered",
+        public void register(final OVXSwitch vsw,
+                final List<PhysicalSwitch> physicalSwitches) {
+            OVXSwitch.log.debug("Switch {} has already been registered",
                     vsw.getSwitchName());
         }
 
@@ -192,8 +206,9 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
          *            This OVXSwitch instance.
          * @return true if OVXSwitch is enabled
          */
-        public boolean boot(OVXSwitch vsw) {
-            log.debug("Switch {} has already been enabled", vsw.getSwitchName());
+        public boolean boot(final OVXSwitch vsw) {
+            OVXSwitch.log.debug("Switch {} has already been enabled",
+                    vsw.getSwitchName());
             return false;
         }
 
@@ -203,8 +218,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
          *            true if teardown is initiated by a PhysicalSwitch.
          * @return
          */
-        public boolean teardown(OVXSwitch vsw, boolean synch) {
-            log.debug("Switch {} has already been disabled",
+        public boolean teardown(final OVXSwitch vsw, final boolean synch) {
+            OVXSwitch.log.debug("Switch {} has already been disabled",
                     vsw.getSwitchName());
             return false;
         }
@@ -218,16 +233,18 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
          * @param synch
          *            true if called from context of a PhysicalSwitch
          */
-        public void unregister(OVXSwitch vsw, boolean synch) {
-            log.debug("Switch {} can't shut down from state={}", vsw.state);
+        public void unregister(final OVXSwitch vsw, final boolean synch) {
+            OVXSwitch.log.debug("Switch {} can't shut down from state={}",
+                    vsw.state);
         }
 
         /**
          * Handler for north- (controller-) bound messages.
          */
-        public void sendMsg(OVXSwitch vsw, final OFMessage msg,
+        public void sendMsg(final OVXSwitch vsw, final OFMessage msg,
                 final OVXSendMsg from) {
-            log.debug("Tried sending message while Switch {} not ACTIVE",
+            OVXSwitch.log.debug(
+                    "Tried sending message while Switch {} not ACTIVE",
                     vsw.getSwitchName());
         }
 
@@ -237,70 +254,74 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
          * 
          * translate(), addToBufferMap(), deleteFlowMod(), sendSouth()
          */
-        public void handleIO(OVXSwitch vsw, OFMessage msg, Channel ch) {
-            log.debug(
+        public void handleIO(final OVXSwitch vsw, final OFMessage msg,
+                final Channel ch) {
+            OVXSwitch.log.debug(
                     "Tried to handle message \n{}\nwhile Switch {} not ACTIVE",
                     msg, vsw.getSwitchName());
         }
 
-        public void handleRoleIO(OVXSwitch vsw, OFVendor msg, Channel ch) {
-            log.debug(
+        public void handleRoleIO(final OVXSwitch vsw, final OFVendor msg,
+                final Channel ch) {
+            OVXSwitch.log.debug(
                     "Tried to handle message \n{}\nwhile Switch {} not ACTIVE",
                     msg, vsw.getSwitchName());
         }
 
     }
 
-    private static Logger log = LogManager.getLogger(OVXSwitch.class.getName());
+    private static Logger                            log              = LogManager
+                                                                              .getLogger(OVXSwitch.class
+                                                                                      .getName());
 
     /**
      * Datapath description string should this be made specific per type of
      * virtual switch
      */
-    public static final String DPDESCSTRING = "OpenVirteX Virtual Switch";
+    public static final String                       DPDESCSTRING     = "OpenVirteX Virtual Switch";
 
     /* The supported actions. */
-    protected static int supportedActions = 0xFFF;
+    protected static int                             supportedActions = 0xFFF;
 
     /* The buffer dimension. */
-    protected static int bufferDimension = 4096;
+    protected static int                             bufferDimension  = 4096;
 
     /* The tenant id. */
-    protected Integer tenantId = 0;
+    protected Integer                                tenantId         = 0;
 
     /* The miss send len. Default in spec is 128 */
-    protected Short missSendLen = 128;
+    protected Short                                  missSendLen      = 128;
 
     /* The capabilities. */
-    protected OVXSwitchCapabilities capabilities;
+    protected OVXSwitchCapabilities                  capabilities;
 
     /* The backoff counter for this switch when unconnected */
-    private AtomicInteger backOffCounter = null;
+    private AtomicInteger                            backOffCounter   = null;
 
     /* The buffer map */
     protected LRULinkedHashMap<Integer, OVXPacketIn> bufferMap;
 
-    private AtomicInteger bufferId = null;
+    private AtomicInteger                            bufferId         = null;
 
-    private final BitSetIndex portCounter;
+    private final BitSetIndex                        portCounter;
 
     /* The virtual flow table */
-    protected FlowTable flowTable;
+    protected FlowTable                              flowTable;
 
     /**
      * Used to save which channel the message came in on.
      */
-    private final XidTranslator<Channel> channelMux;
+    private final XidTranslator<Channel>             channelMux;
 
     /**
      * Role Manager. Saves all role requests coming from each controller. It is
      * also responsible for permitting or denying certain operations based on
      * the current role of a controller.
      */
-    private final RoleManager roleMan;
+    private final RoleManager                        roleMan;
 
     /** The component state of this OVXSwitch */
-    protected SwitchState state;
+    protected SwitchState                            state;
 
     /**
      * Instantiates a new OVX switch.
@@ -362,6 +383,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      *
      * @return true, if is active
      */
+    @Override
     public boolean isActive() {
         return this.state.equals(SwitchState.ACTIVE);
     }
@@ -410,7 +432,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * @param portNumber
      *            the port number
      */
-    public void relesePortNumber(short portNumber) {
+    public void relesePortNumber(final short portNumber) {
         this.portCounter.releaseIndex((int) portNumber);
     }
 
@@ -449,6 +471,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * Unregisters switch from persistent storage, from the mapping, and removes
      * all virtual elements that rely on this switch.
      */
+    @Override
     public void unregister() {
         /*
          * calls unregSwitch() in OVXSwitch subclasses, which calls
@@ -464,9 +487,9 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * needed.
      *
      * @param synch
-     *             true if called by a Physical event.
+     *            true if called by a Physical event.
      */
-    public void unregister(boolean synch) {
+    public void unregister(final boolean synch) {
         /*
          * calls unregSwitch() in OVXSwitch subclasses, which calls
          * unregisterDP()
@@ -481,21 +504,21 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      *            synchronize with the Physical Switch that this switch maps
      *            onto.
      */
-    protected void unregisterDP(boolean synch) {
+    protected void unregisterDP(final boolean synch) {
         DBManager.getInstance().remove(this);
         OVXNetwork net;
         try {
             net = this.getMap().getVirtualNetwork(this.tenantId);
-        } catch (NetworkMappingException e) {
-            log.error(
-                    "Error retrieving the network with id {}. Unregister for OVXSwitch {} not fully done!",
-                    this.getTenantId(), this.getSwitchName());
+        } catch (final NetworkMappingException e) {
+            OVXSwitch.log
+                    .error("Error retrieving the network with id {}. Unregister for OVXSwitch {} not fully done!",
+                            this.getTenantId(), this.getSwitchName());
             return;
         }
         if (this.getPorts() != null) {
             final Set<OVXPort> ports = new HashSet<OVXPort>(this.getPorts()
                     .values());
-            for (OVXPort port : ports) {
+            for (final OVXPort port : ports) {
                 port.tearDown();
                 port.unregister();
             }
@@ -503,7 +526,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
         net.removeSwitch(this);
         /* if (synch), a PhysicalSwitch has already done this */
         if (!synch) {
-            cleanUpFlowMods(false);
+            this.cleanUpFlowMods(false);
         }
         this.map.removeVirtualSwitch(this);
     }
@@ -513,27 +536,27 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      *
      * @param isOk
      */
-    private void cleanUpFlowMods(boolean isOk) {
-        log.info("Cleaning up flowmods");
+    private void cleanUpFlowMods(final boolean isOk) {
+        OVXSwitch.log.info("Cleaning up flowmods");
         List<PhysicalSwitch> physicalSwitches;
         try {
             physicalSwitches = this.map.getPhysicalSwitches(this);
-        } catch (SwitchMappingException e) {
+        } catch (final SwitchMappingException e) {
             if (!isOk) {
-                log.warn(
-                        "Failed to cleanUp flowmods for tenant {} on switch {}",
-                        this.tenantId, this.getSwitchName());
+                OVXSwitch.log
+                        .warn("Failed to cleanUp flowmods for tenant {} on switch {}",
+                                this.tenantId, this.getSwitchName());
             }
             return;
         }
-        for (PhysicalSwitch sw : physicalSwitches) {
+        for (final PhysicalSwitch sw : physicalSwitches) {
             sw.cleanUpTenant(this.tenantId, (short) 0);
         }
     }
 
     @Override
     public Map<String, Object> getDBIndex() {
-        Map<String, Object> index = new HashMap<String, Object>();
+        final Map<String, Object> index = new HashMap<String, Object>();
         index.put(TenantHandler.TENANT, this.tenantId);
         return index;
     }
@@ -550,14 +573,14 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = new HashMap<String, Object>();
+        final Map<String, Object> dbObject = new HashMap<String, Object>();
         dbObject.put(TenantHandler.VDPID, this.switchId);
-        List<Long> switches = new ArrayList<Long>();
+        final List<Long> switches = new ArrayList<Long>();
         try {
-            for (PhysicalSwitch sw : this.map.getPhysicalSwitches(this)) {
+            for (final PhysicalSwitch sw : this.map.getPhysicalSwitches(this)) {
                 switches.add(sw.getSwitchId());
             }
-        } catch (SwitchMappingException e) {
+        } catch (final SwitchMappingException e) {
             return null;
         }
         dbObject.put(TenantHandler.DPIDS, switches);
@@ -576,7 +599,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * @param synch
      * @return
      */
-    public boolean tearDown(boolean synch) {
+    public boolean tearDown(final boolean synch) {
         return this.state.teardown(this, synch);
     }
 
@@ -639,7 +662,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      */
     protected boolean bootDP() {
         this.state = SwitchState.ACTIVE;
-        for (OVXPort p : getPorts().values()) {
+        for (final OVXPort p : this.getPorts().values()) {
             if (p.isLink()) {
                 p.boot();
             }
@@ -705,12 +728,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
         final int prime = 31;
         int result = 1;
         result = prime * result
-                + ((tenantId == null) ? 0 : tenantId.hashCode());
+                + (this.tenantId == null ? 0 : this.tenantId.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -720,8 +743,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
         if (!(obj instanceof OVXSwitch)) {
             return false;
         }
-        OVXSwitch other = (OVXSwitch) obj;
-        if (tenantId == null) {
+        final OVXSwitch other = (OVXSwitch) obj;
+        if (this.tenantId == null) {
             if (other.tenantId != null) {
                 return false;
             }
@@ -738,12 +761,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * .OFMessage)
      */
     @Override
-    public void handleIO(final OFMessage msg, Channel channel) {
+    public void handleIO(final OFMessage msg, final Channel channel) {
         this.state.handleIO(this, msg, channel);
     }
 
     @Override
-    public void handleRoleIO(OFVendor msg, Channel channel) {
+    public void handleRoleIO(final OFVendor msg, final Channel channel) {
         this.state.handleRoleIO(this, msg, channel);
     }
 
@@ -766,7 +789,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * @param channel
      *            the channel
      */
-    public void setChannel(Channel channel) {
+    @Override
+    public void setChannel(final Channel channel) {
         this.roleMan.addController(channel);
     }
 
@@ -776,7 +800,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * @param channel
      *            the channel
      */
-    public void removeChannel(Channel channel) {
+    @Override
+    public void removeChannel(final Channel channel) {
         this.roleMan.removeChannel(channel);
     }
 
@@ -799,19 +824,20 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      *            the vendor message
      * @return the role
      */
-    private Role extractNiciraRoleRequest(Channel chan, OFVendor vendorMessage) {
-        int vendor = vendorMessage.getVendor();
+    private Role extractNiciraRoleRequest(final Channel chan,
+            final OFVendor vendorMessage) {
+        final int vendor = vendorMessage.getVendor();
         if (vendor != OFNiciraVendorData.NX_VENDOR_ID) {
             return null;
         }
         if (!(vendorMessage.getVendorData() instanceof OFRoleRequestVendorData)) {
             return null;
         }
-        OFRoleRequestVendorData roleRequestVendorData = (OFRoleRequestVendorData) vendorMessage
+        final OFRoleRequestVendorData roleRequestVendorData = (OFRoleRequestVendorData) vendorMessage
                 .getVendorData();
-        Role role = Role.fromNxRole(roleRequestVendorData.getRole());
+        final Role role = Role.fromNxRole(roleRequestVendorData.getRole());
         if (role == null) {
-            String msg = String.format("Controller: [%s], State: [%s], "
+            final String msg = String.format("Controller: [%s], State: [%s], "
                     + "received NX_ROLE_REPLY with invalid role " + "value %d",
                     chan.getRemoteAddress(), this.toString(),
                     roleRequestVendorData.getRole());
@@ -830,11 +856,12 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * @param role
      *            the role
      */
-    private void denyAccess(Channel channel, OFMessage m, Role role) {
-        log.warn(
-                "Controller {} may not send message {} because role state is {}",
-                channel.getRemoteAddress(), m, role);
-        OFMessage e = OVXMessageUtil.makeErrorMsg(
+    private void denyAccess(final Channel channel, final OFMessage m,
+            final Role role) {
+        OVXSwitch.log
+                .warn("Controller {} may not send message {} because role state is {}",
+                        channel.getRemoteAddress(), m, role);
+        final OFMessage e = OVXMessageUtil.makeErrorMsg(
                 OFBadRequestCode.OFPBRC_EPERM, m);
         channel.write(Collections.singletonList(e));
     }
@@ -849,11 +876,13 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * @param channel
      *            the channel on which to send
      */
-    private void sendRoleReply(Role role, int xid, Channel channel) {
-        OFVendor vendor = new OFVendor();
+    private void sendRoleReply(final Role role, final int xid,
+            final Channel channel) {
+        final OFVendor vendor = new OFVendor();
         vendor.setXid(xid);
         vendor.setVendor(OFNiciraVendorData.NX_VENDOR_ID);
-        OFRoleReplyVendorData reply = new OFRoleReplyVendorData(role.toNxRole());
+        final OFRoleReplyVendorData reply = new OFRoleReplyVendorData(
+                role.toNxRole());
         vendor.setVendorData(reply);
         vendor.setLengthU(OFVendor.MINIMUM_LENGTH + reply.getLength());
         channel.write(Collections.singletonList(vendor));
@@ -866,6 +895,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * net.onrc.openvirtex.core.io.OVXSendMsg#sendMsg(org.openflow.protocol.
      * OFMessage, net.onrc.openvirtex.core.io.OVXSendMsg)
      */
+    @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
         this.state.sendMsg(this, msg, from);
     }
@@ -877,7 +907,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      *            The OVXPort to check
      * @return true if this switch has route associated with specified port.
      */
-    public boolean hasRoute(OVXPort port) {
+    public boolean hasRoute(final OVXPort port) {
         return false;
     }
 

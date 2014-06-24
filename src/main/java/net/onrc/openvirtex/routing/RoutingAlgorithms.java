@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,23 +34,24 @@ public class RoutingAlgorithms {
     }
 
     protected final RoutingType type;
-    protected final Routable routing;
-    protected final byte backups;
+    protected final Routable    routing;
+    protected final byte        backups;
 
     public RoutingAlgorithms(final String type, final byte backups)
             throws RoutingAlgorithmException {
         if (type.equals(RoutingType.NONE.getValue())) {
             this.type = RoutingType.NONE;
             this.routing = new ManualRoute();
-        } else if (type.equals(RoutingType.SPF.getValue())) {
-            this.type = RoutingType.SPF;
-            this.routing = new ShortestPath();
-        } else {
-            throw new RoutingAlgorithmException("The algorithm " + type
-                    + " is not supported." + "Supported values are "
-                    + RoutingType.NONE.getValue() + ", "
-                    + RoutingType.SPF.getValue());
-        }
+        } else
+            if (type.equals(RoutingType.SPF.getValue())) {
+                this.type = RoutingType.SPF;
+                this.routing = new ShortestPath();
+            } else {
+                throw new RoutingAlgorithmException("The algorithm " + type
+                        + " is not supported." + "Supported values are "
+                        + RoutingType.NONE.getValue() + ", "
+                        + RoutingType.SPF.getValue());
+            }
         this.backups = backups;
     }
 
@@ -63,6 +64,6 @@ public class RoutingAlgorithms {
     }
 
     public byte getBackups() {
-        return backups;
+        return this.backups;
     }
 }

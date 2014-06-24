@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,14 +54,16 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
 
     @SerializedName("switches")
     @Expose
-    protected final Set<T1> switchSet;
+    protected final Set<T1>              switchSet;
     @SerializedName("links")
     @Expose
-    protected final Set<T3> linkSet;
-    protected final Map<Long, T1> dpidMap;
-    protected final Map<T2, T2> neighborPortMap;
+    protected final Set<T3>              linkSet;
+    protected final Map<Long, T1>        dpidMap;
+    protected final Map<T2, T2>          neighborPortMap;
     protected final Map<T1, HashSet<T1>> neighborMap;
-    protected Logger log = LogManager.getLogger(Network.class.getName());
+    protected Logger                     log = LogManager
+                                                     .getLogger(Network.class
+                                                             .getName());
 
     /**
      * Instantiates the network.
@@ -240,6 +242,7 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
      *
      * @return true if successful, false otherwise
      */
+    @Override
     public abstract boolean boot();
 
 }

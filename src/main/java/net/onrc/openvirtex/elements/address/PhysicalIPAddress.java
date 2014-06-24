@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,9 +15,11 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.address;
 
-import net.onrc.openvirtex.core.OpenVirteXController;
-
 public class PhysicalIPAddress extends IPAddress {
+    final public static int IP_FOR_SOURCE      = 1<<0;
+    final public static int IP_FOR_DESTINATION = 1<<1;
+
+    private int                tid;
 
     public PhysicalIPAddress(final Integer ip) {
         this.ip = ip;
@@ -27,9 +29,12 @@ public class PhysicalIPAddress extends IPAddress {
         super(ipAddress);
     }
 
+    public void setTenantId(final Integer tid) {
+        this.tid = tid;
+    }
+
     public Integer getTenantId() {
-        return ip >> (32 - OpenVirteXController.getInstance()
-                .getNumberVirtualNets());
+        return this.tid;
     }
 
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,28 +44,28 @@ import org.openflow.util.HexString;
 public abstract class Switch<T extends Port> implements OVXEventHandler,
         OVXSendMsg, Component {
 
-    public static final String DB_KEY = "switches";
+    public static final String         DB_KEY        = "switches";
     // Switch channel status
-    protected boolean isConnected = false;
+    protected boolean                  isConnected   = false;
     // The channel descriptor
-    protected Channel channel = null;
+    protected Channel                  channel       = null;
     // The description of OXV stats
-    protected OVXDescriptionStatistics desc = null;
+    protected OVXDescriptionStatistics desc          = null;
     // The switch name (converted from the DPID)
-    protected String switchName = null;
-    protected Mappable map = null;
+    protected String                   switchName    = null;
+    protected Mappable                 map           = null;
 
     /**
      * The port map. Associate all the port instances with the switch. The port
      * number is the key.
      */
-    protected HashMap<Short, T> portMap = null;
+    protected HashMap<Short, T>        portMap       = null;
 
     /** The features reply message. */
-    protected OFFeaturesReply featuresReply = null;
+    protected OFFeaturesReply          featuresReply = null;
 
     /** The switch id (DPID). */
-    protected Long switchId = (long) 0;
+    protected Long                     switchId      = (long) 0;
 
     /**
      * Instantiates a new switch (should be never used).
@@ -167,7 +167,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port number
      * @return true, if successful
      */
-    public boolean removePort(Short portNumber) {
+    public boolean removePort(final Short portNumber) {
         if (this.portMap.containsKey(portNumber)) {
             this.portMap.remove(portNumber);
             return true;
@@ -213,6 +213,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *
      * @return true upon success startup.
      */
+    @Override
     public abstract boolean boot();
 
     /**
@@ -220,11 +221,13 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * triggered by an API call (in the case of a OVXSwitch) or disconnection of
      * a switch connected to us (in the case of a PhysicalSwitch).
      */
+    @Override
     public abstract void unregister();
 
     /**
      * Tear down.
      */
+    @Override
     public abstract boolean tearDown();
 
     /**

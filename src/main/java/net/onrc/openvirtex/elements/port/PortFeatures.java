@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,40 +24,40 @@ import org.openflow.protocol.OFPhysicalPort.OFPortFeatures;
 public class PortFeatures {
 
     /** The speed 10 Mbps half-duplex. */
-    private boolean speed10MHD = false;
+    private boolean speed10MHD      = false;
 
     /** The speed 10 Mbps full-duplex. */
-    private boolean speed10MFD = false;
+    private boolean speed10MFD      = false;
 
     /** The speed 100 Mbps half-duplex. */
-    private boolean speed100MHD = false;
+    private boolean speed100MHD     = false;
 
     /** The speed 100 Mbps full-duplex. */
-    private boolean speed100MFD = false;
+    private boolean speed100MFD     = false;
 
     /** The speed 1 Gbps half-duplex. */
-    private boolean speed1GHD = false;
+    private boolean speed1GHD       = false;
 
     /** The speed 1 Gbps full-duplex. */
-    private boolean speed1GFD = false;
+    private boolean speed1GFD       = false;
 
     /** The speed 10 Gbps full-duplex. */
-    private boolean speed10GFD = false;
+    private boolean speed10GFD      = false;
 
     /** The copper interface. */
-    private boolean copper = false;
+    private boolean copper          = false;
 
     /** The fiber interface. */
-    private boolean fiber = false;
+    private boolean fiber           = false;
 
     /** The autonegotiation. */
     private boolean autonegotiation = false;
 
     /** The pause. */
-    private boolean pause = false;
+    private boolean pause           = false;
 
     /** The pause asym. */
-    private boolean pauseAsym = false;
+    private boolean pauseAsym       = false;
 
     /**
      * Instantiates a new port features.

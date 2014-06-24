@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,20 +14,20 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- *    Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
- *    University
+ * Copyright (c) 2008 The Board of Trustees of The Leland Stanford Junior
+ * University
  *
- *    Licensed under the Apache License, Version 2.0 (the "License"); you may
- *    not use this file except in compliance with the License. You may obtain
- *    a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *    License for the specific language governing permissions and limitations
- *    under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  **/
 
 package org.openflow.protocol;
@@ -49,37 +49,44 @@ import org.openflow.util.U16;
  */
 public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
         Cloneable {
-    public static int MINIMUM_LENGTH = 72;
+    public static int         MINIMUM_LENGTH      = 72;
 
-    public static final short OFPFC_ADD = 0; /* New flow. */
-    public static final short OFPFC_MODIFY = 1; /* Modify all matching flows. */
-    public static final short OFPFC_MODIFY_STRICT = 2; /*
-                                                        * Modify entry strictly
-                                                        * matching wildcards
-                                                        */
-    public static final short OFPFC_DELETE = 3; /* Delete all matching flows. */
-    public static final short OFPFC_DELETE_STRICT = 4; /*
-                                                        * Strictly match
-                                                        * wildcards and
-                                                        * priority.
-                                                        */
+    public static final short OFPFC_ADD           = 0;  /* New flow. */
+    public static final short OFPFC_MODIFY        = 1;  /*
+                                                          * Modify all matching
+                                                          * flows.
+                                                          */
+    public static final short OFPFC_MODIFY_STRICT = 2;  /*
+                                                          * Modify entry
+                                                          * strictly
+                                                          * matching wildcards
+                                                          */
+    public static final short OFPFC_DELETE        = 3;  /*
+                                                          * Delete all matching
+                                                          * flows.
+                                                          */
+    public static final short OFPFC_DELETE_STRICT = 4;  /*
+                                                          * Strictly match
+                                                          * wildcards and
+                                                          * priority.
+                                                          */
 
     // Open Flow Flow Mod Flags. Use "or" operation to set multiple flags
     public static final short OFPFF_SEND_FLOW_REM = 0x1; // 1 << 0
     public static final short OFPFF_CHECK_OVERLAP = 0x2; // 1 << 1
-    public static final short OFPFF_EMERG = 0x4; // 1 << 2
+    public static final short OFPFF_EMERG         = 0x4; // 1 << 2
 
     protected OFActionFactory actionFactory;
-    protected OFMatch match;
-    protected long cookie;
-    protected short command;
-    protected short idleTimeout;
-    protected short hardTimeout;
-    protected short priority;
-    protected int bufferId;
-    protected short outPort;
-    protected short flags;
-    protected List<OFAction> actions;
+    protected OFMatch         match;
+    protected long            cookie;
+    protected short           command;
+    protected short           idleTimeout;
+    protected short           hardTimeout;
+    protected short           priority;
+    protected int             bufferId;
+    protected short           outPort;
+    protected short           flags;
+    protected List<OFAction>  actions;
 
     public OFFlowMod() {
         super();
@@ -371,9 +378,10 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
             if (other.actions != null) {
                 return false;
             }
-        } else if (!this.actions.equals(other.actions)) {
-            return false;
-        }
+        } else
+            if (!this.actions.equals(other.actions)) {
+                return false;
+            }
         if (this.bufferId != other.bufferId) {
             return false;
         }
@@ -396,9 +404,10 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
             if (other.match != null) {
                 return false;
             }
-        } else if (!this.match.equals(other.match)) {
-            return false;
-        }
+        } else
+            if (!this.match.equals(other.match)) {
+                return false;
+            }
         if (this.outPort != other.outPort) {
             return false;
         }
@@ -410,7 +419,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#clone()
      */
     @Override
@@ -428,7 +437,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,7 +24,7 @@ import java.util.Arrays;
  */
 public class MACAddress {
     public static final int MAC_ADDRESS_LENGTH = 6;
-    private byte[] address = new byte[MACAddress.MAC_ADDRESS_LENGTH];
+    private byte[]          address            = new byte[MACAddress.MAC_ADDRESS_LENGTH];
 
     public MACAddress(final byte[] address) {
         this.address = Arrays.copyOf(address, MACAddress.MAC_ADDRESS_LENGTH);

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,9 +47,9 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
         Number tid = null;
         try {
-            tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT,
+            tid = HandlerUtils.<Number> fetchField(MonitoringHandler.TENANT,
                     params, true, null);
-            OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
+            final OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
                     tid.intValue());
             // TODO: gson objects can be shared with other methods
             final GsonBuilder gsonBuilder = new GsonBuilder();
@@ -73,7 +73,7 @@ public class GetVirtualTopology extends ApiHandler<Map<String, Object>> {
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": Unable to fetch virtual topology : "
                             + e.getMessage()), 0);
-        } catch (NetworkMappingException e) {
+        } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
                             + ": Invalid tenantId : " + tid), 0);
