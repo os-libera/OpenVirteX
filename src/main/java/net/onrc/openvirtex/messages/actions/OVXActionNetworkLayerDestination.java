@@ -38,9 +38,8 @@ public class OVXActionNetworkLayerDestination extends
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
             throws ActionVirtualizationDenied {
-
         this.networkAddress = IPMapper.getPhysicalIp(sw.getTenantId(),
-                this.networkAddress);
+                this.networkAddress, PhysicalIPAddress.IP_FOR_DESTINATION);
         log.debug("Allocating Physical IP {}", new PhysicalIPAddress(
                 networkAddress));
         approvedActions.add(this);

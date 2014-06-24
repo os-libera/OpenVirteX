@@ -250,11 +250,11 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
         if (match.getDataLayerType() == Ethernet.TYPE_IPV4
                 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
             if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-                IPMapper.getPhysicalIp(this.tenantId, match.getNetworkSource());
+                IPMapper.getPhysicalIp(this.tenantId, match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE);
             }
             if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
                 IPMapper.getPhysicalIp(this.tenantId,
-                        match.getNetworkDestination());
+                        match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION);
             }
         }
     }
