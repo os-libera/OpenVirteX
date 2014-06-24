@@ -42,7 +42,7 @@ import org.openflow.util.HexString;
 
 @SuppressWarnings("rawtypes")
 public abstract class Switch<T extends Port> implements OVXEventHandler,
-        OVXSendMsg, Component {
+OVXSendMsg, Component {
 
     public static final String DB_KEY = "switches";
     // Switch channel status
@@ -167,7 +167,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *            the port number
      * @return true, if successful
      */
-    public boolean removePort(Short portNumber) {
+    public boolean removePort(final Short portNumber) {
         if (this.portMap.containsKey(portNumber)) {
             this.portMap.remove(portNumber);
             return true;
@@ -213,6 +213,7 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      *
      * @return true upon success startup.
      */
+    @Override
     public abstract boolean boot();
 
     /**
@@ -220,11 +221,13 @@ public abstract class Switch<T extends Port> implements OVXEventHandler,
      * triggered by an API call (in the case of a OVXSwitch) or disconnection of
      * a switch connected to us (in the case of a PhysicalSwitch).
      */
+    @Override
     public abstract void unregister();
 
     /**
      * Tear down.
      */
+    @Override
     public abstract boolean tearDown();
 
     /**

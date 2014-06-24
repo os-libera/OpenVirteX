@@ -50,7 +50,7 @@ import com.google.gson.annotations.SerializedName;
  */
 @SuppressWarnings("rawtypes")
 public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Link>
-        implements LLDPEventHandler, OVXSendMsg, Component {
+implements LLDPEventHandler, OVXSendMsg, Component {
 
     @SerializedName("switches")
     @Expose
@@ -100,7 +100,7 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
         }
         neighbours.add(dstSwitch);
         this.neighborPortMap
-                .put((T2) link.getSrcPort(), (T2) link.getDstPort());
+        .put((T2) link.getSrcPort(), (T2) link.getDstPort());
     }
 
     /**
@@ -240,6 +240,7 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
      *
      * @return true if successful, false otherwise
      */
+    @Override
     public abstract boolean boot();
 
 }

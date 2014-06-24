@@ -25,12 +25,12 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionTransportLayerDestination;
 
 public class OVXActionTransportLayerDestination extends
-        OFActionTransportLayerDestination implements VirtualizableAction {
+OFActionTransportLayerDestination implements VirtualizableAction {
 
     @Override
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
-            throws ActionVirtualizationDenied {
+                    throws ActionVirtualizationDenied {
         approvedActions.add(this);
     }
 

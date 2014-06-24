@@ -47,7 +47,7 @@ public class OVXLoginService implements LoginService {
     @Override
     public UserIdentity login(final String username, final Object credentials) {
         return new OpenVirteXAuthenticatedUser(username, (String) credentials)
-                .getUserIdentity();
+        .getUserIdentity();
     }
 
     @Override
@@ -98,13 +98,13 @@ public class OVXLoginService implements LoginService {
             // Permitting specific logins for now with no passwords
             if (this.user.equals("tenant")) {
                 return new DefaultUserIdentity(new Subject(), new JMXPrincipal(
-                        this.user), new String[] {"user"});
+                        this.user), new String[] { "user" });
             } else if (this.user.equals("ui")) {
                 return new DefaultUserIdentity(new Subject(), new JMXPrincipal(
-                        this.user), new String[] {"ui"});
+                        this.user), new String[] { "ui" });
             } else if (this.user.equals("admin")) {
                 return new DefaultUserIdentity(new Subject(), new JMXPrincipal(
-                        this.user), new String[] {"user", "admin", "ui"});
+                        this.user), new String[] { "user", "admin", "ui" });
             } else {
                 return null;
             }

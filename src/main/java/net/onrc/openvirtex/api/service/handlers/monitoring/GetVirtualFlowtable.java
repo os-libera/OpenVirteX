@@ -42,16 +42,16 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
     public JSONRPC2Response process(final Map<String, Object> params) {
         try {
 
-            final Number tid = HandlerUtils.<Number>fetchField(
+            final Number tid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.VDPID, params, false, -1);
             final OVXMap map = OVXMap.getInstance();
             final LinkedList<Map<String, Object>> flows = new LinkedList<Map<String, Object>>();
             if (dpid.longValue() == -1) {
-                HashMap<String, Object> res = new HashMap<String, Object>();
-                for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue())
-                        .getSwitches()) {
+                final HashMap<String, Object> res = new HashMap<String, Object>();
+                for (final OVXSwitch vsw : map
+						.getVirtualNetwork(tid.intValue()).getSwitches()) {
                     flows.clear();
                     final Collection<OVXFlowMod> fms = vsw.getFlowTable()
                             .getFlowTable();
@@ -78,18 +78,18 @@ public class GetVirtualFlowtable extends ApiHandler<Map<String, Object>> {
         } catch (ClassCastException | MissingRequiredField e) {
             this.resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to fetch virtual topology : "
-                            + e.getMessage()), 0);
+                    + ": Unable to fetch virtual topology : "
+                    + e.getMessage()), 0);
         } catch (final InvalidDPIDException e) {
             this.resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to fetch virtual topology : "
-                            + e.getMessage()), 0);
-        } catch (NetworkMappingException e) {
+                    + ": Unable to fetch virtual topology : "
+                    + e.getMessage()), 0);
+        } catch (final NetworkMappingException e) {
             this.resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to fetch virtual topology : "
-                            + e.getMessage()), 0);
+                    + ": Unable to fetch virtual topology : "
+                    + e.getMessage()), 0);
         }
 
         return this.resp;

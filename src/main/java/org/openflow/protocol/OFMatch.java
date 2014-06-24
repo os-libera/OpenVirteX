@@ -61,9 +61,9 @@ public class OFMatch implements Cloneable, Serializable {
     final public static int OFPFW_DL_VLAN = 1 << 1; /* VLAN id. */
     final public static int OFPFW_DL_SRC = 1 << 2; /* Ethernet source address. */
     final public static int OFPFW_DL_DST = 1 << 3; /*
-                                                    * Ethernet destination
-                                                    * address.
-                                                    */
+     * Ethernet destination
+     * address.
+     */
     final public static int OFPFW_DL_TYPE = 1 << 4; /* Ethernet frame type. */
     final public static int OFPFW_NW_PROTO = 1 << 5; /* IP protocol. */
     final public static int OFPFW_TP_SRC = 1 << 6; /* TCP/UDP source port. */
@@ -88,9 +88,9 @@ public class OFMatch implements Cloneable, Serializable {
 
     final public static int OFPFW_DL_VLAN_PCP = 1 << 20; /* VLAN priority. */
     final public static int OFPFW_NW_TOS = 1 << 21; /*
-                                                     * IP ToS (DSCP field, 6
-                                                     * bits).
-                                                     */
+     * IP ToS (DSCP field, 6
+     * bits).
+     */
 
     final public static int OFPFW_ALL_SANITIZED = (1 << 22) - 1
             & ~OFMatch.OFPFW_NW_SRC_MASK & ~OFMatch.OFPFW_NW_DST_MASK
@@ -508,7 +508,7 @@ public class OFMatch implements Cloneable, Serializable {
         this.dataLayerType = packetDataBB.getShort();
 
         if (this.getDataLayerType() != (short) 0x8100) { // need cast to avoid
-                                                         // signed
+            // signed
             // bug
             this.setDataLayerVirtualLan((short) 0xffff);
             this.setDataLayerVirtualLanPriorityCodePoint((byte) 0);
@@ -521,84 +521,84 @@ public class OFMatch implements Cloneable, Serializable {
         }
 
         switch (this.getDataLayerType()) {
-        case 0x0800:
-            // ipv4
-            // check packet length
-            scratch = packetDataBB.get();
-            scratch = (short) (0xf & scratch);
-            transportOffset = packetDataBB.position() - 1 + scratch * 4;
-            // nw tos (dscp)
-            scratch = packetDataBB.get();
-            this.setNetworkTypeOfService((byte) ((0xfc & scratch) >> 2));
-            // nw protocol
-            packetDataBB.position(packetDataBB.position() + 7);
-            this.networkProtocol = packetDataBB.get();
-            // nw src
-            packetDataBB.position(packetDataBB.position() + 2);
-            this.networkSource = packetDataBB.getInt();
-            // nw dst
-            this.networkDestination = packetDataBB.getInt();
-            packetDataBB.position(transportOffset);
-            break;
-        case 0x0806:
-            // arp
-            final int arpPos = packetDataBB.position();
-            // opcode
-            scratch = packetDataBB.getShort(arpPos + 6);
-            this.setNetworkProtocol((byte) (0xff & scratch));
-
-            scratch = packetDataBB.getShort(arpPos + 2);
-            // if ipv4 and addr len is 4
-            if (scratch == 0x800 && packetDataBB.get(arpPos + 5) == 4) {
+            case 0x0800:
+                // ipv4
+                // check packet length
+                scratch = packetDataBB.get();
+                scratch = (short) (0xf & scratch);
+                transportOffset = packetDataBB.position() - 1 + scratch * 4;
+                // nw tos (dscp)
+                scratch = packetDataBB.get();
+                this.setNetworkTypeOfService((byte) ((0xfc & scratch) >> 2));
+                // nw protocol
+                packetDataBB.position(packetDataBB.position() + 7);
+                this.networkProtocol = packetDataBB.get();
                 // nw src
-                this.networkSource = packetDataBB.getInt(arpPos + 14);
+                packetDataBB.position(packetDataBB.position() + 2);
+                this.networkSource = packetDataBB.getInt();
                 // nw dst
-                this.networkDestination = packetDataBB.getInt(arpPos + 24);
-            } else {
+                this.networkDestination = packetDataBB.getInt();
+                packetDataBB.position(transportOffset);
+                break;
+            case 0x0806:
+                // arp
+                final int arpPos = packetDataBB.position();
+                // opcode
+                scratch = packetDataBB.getShort(arpPos + 6);
+                this.setNetworkProtocol((byte) (0xff & scratch));
+
+                scratch = packetDataBB.getShort(arpPos + 2);
+                // if ipv4 and addr len is 4
+                if (scratch == 0x800 && packetDataBB.get(arpPos + 5) == 4) {
+                    // nw src
+                    this.networkSource = packetDataBB.getInt(arpPos + 14);
+                    // nw dst
+                    this.networkDestination = packetDataBB.getInt(arpPos + 24);
+                } else {
+                    this.setNetworkSource(0);
+                    this.setNetworkDestination(0);
+                }
+                break;
+            default:
+                // Not ARP or IP. Wildcard NW_DST and NW_SRC
+                this.wildcards |= OFMatch.OFPFW_NW_DST_ALL
+                | OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_PROTO
+                | OFMatch.OFPFW_NW_TOS;
+                this.setNetworkTypeOfService((byte) 0);
+                this.setNetworkProtocol((byte) 0);
                 this.setNetworkSource(0);
                 this.setNetworkDestination(0);
-            }
-            break;
-        default:
-            // Not ARP or IP. Wildcard NW_DST and NW_SRC
-            this.wildcards |= OFMatch.OFPFW_NW_DST_ALL
-                    | OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_PROTO
-                    | OFMatch.OFPFW_NW_TOS;
-            this.setNetworkTypeOfService((byte) 0);
-            this.setNetworkProtocol((byte) 0);
-            this.setNetworkSource(0);
-            this.setNetworkDestination(0);
-            break;
+                break;
         }
 
         switch (this.getNetworkProtocol()) {
-        case 0x01:
-            // icmp
-            // type
-            this.transportSource = U8.f(packetDataBB.get());
-            // code
-            this.transportDestination = U8.f(packetDataBB.get());
-            break;
-        case 0x06:
-            // tcp
-            // tcp src
-            this.transportSource = packetDataBB.getShort();
-            // tcp dest
-            this.transportDestination = packetDataBB.getShort();
-            break;
-        case 0x11:
-            // udp
-            // udp src
-            this.transportSource = packetDataBB.getShort();
-            // udp dest
-            this.transportDestination = packetDataBB.getShort();
-            break;
-        default:
-            // Unknown network proto.
-            this.wildcards |= OFMatch.OFPFW_TP_DST | OFMatch.OFPFW_TP_SRC;
-            this.setTransportDestination((short) 0);
-            this.setTransportSource((short) 0);
-            break;
+            case 0x01:
+                // icmp
+                // type
+                this.transportSource = U8.f(packetDataBB.get());
+                // code
+                this.transportDestination = U8.f(packetDataBB.get());
+                break;
+            case 0x06:
+                // tcp
+                // tcp src
+                this.transportSource = packetDataBB.getShort();
+                // tcp dest
+                this.transportDestination = packetDataBB.getShort();
+                break;
+            case 0x11:
+                // udp
+                // udp src
+                this.transportSource = packetDataBB.getShort();
+                // udp dest
+                this.transportDestination = packetDataBB.getShort();
+                break;
+            default:
+                // Unknown network proto.
+                this.wildcards |= OFMatch.OFPFW_TP_DST | OFMatch.OFPFW_TP_SRC;
+                this.setTransportDestination((short) 0);
+                this.setTransportSource((short) 0);
+                break;
         }
         return this;
     }
@@ -752,7 +752,7 @@ public class OFMatch implements Cloneable, Serializable {
      * Output a dpctl-styled string, i.e., only list the elements that are not
      * wildcarded A match-everything OFMatch outputs "OFMatch[]"
      *
-     * @return
+     * @return 
      *         "OFMatch[dl_src:00:20:01:11:22:33,nw_src:192.168.0.0/24,tp_dst:80]"
      */
     @Override

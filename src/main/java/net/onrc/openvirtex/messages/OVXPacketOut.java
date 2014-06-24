@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
@@ -53,7 +54,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
         final OVXPort inport = sw.getPort(this.getInPort());
         OVXMatch ovxMatch = null;
 
-        if (this.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
+        if (this.getBufferId() == OFPacketOut.BUFFER_ID_NONE) {
             if (this.getPacketData().length <= 14) {
                 this.log.error("PacketOut has no buffer or data {}; dropping",
                         this);
@@ -63,7 +64,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
             }
             this.match = new OFMatch().loadFromPacket(this.packetData,
                     this.inPort);
-            ovxMatch = new OVXMatch(match);
+            ovxMatch = new OVXMatch(this.match);
             ovxMatch.setPktData(this.packetData);
         } else {
             final OVXPacketIn cause = sw.getFromBufferMap(this.bufferId);
@@ -77,9 +78,9 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
             this.match = new OFMatch().loadFromPacket(cause.getPacketData(),
                     this.inPort);
             this.setBufferId(cause.getBufferId());
-            ovxMatch = new OVXMatch(match);
+            ovxMatch = new OVXMatch(this.match);
             ovxMatch.setPktData(cause.getPacketData());
-            if (cause.getBufferId() == OVXPacketOut.BUFFER_ID_NONE) {
+            if (cause.getBufferId() == OFPacketOut.BUFFER_ID_NONE) {
                 this.setPacketData(cause.getPacketData());
                 this.setLengthU(this.getLengthU() + this.packetData.length);
             }
@@ -107,7 +108,7 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
         this.prependRewriteActions(sw);
         this.setActions(this.approvedActions);
         this.setActionsLength((short) 0);
-        this.setLengthU(OVXPacketOut.MINIMUM_LENGTH + this.packetData.length);
+        this.setLengthU(OFPacketOut.MINIMUM_LENGTH + this.packetData.length);
         for (final OFAction act : this.approvedActions) {
             this.setLengthU(this.getLengthU() + act.getLengthU());
             this.setActionsLength((short) (this.getActionsLength() + act
@@ -127,14 +128,16 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
         if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
             final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
             srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(),
-                    this.match.getNetworkSource()));
+                    this.match.getNetworkSource(),
+                    PhysicalIPAddress.IP_FOR_SOURCE));
             this.approvedActions.add(0, srcAct);
         }
 
         if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
             final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
             dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(),
-                    this.match.getNetworkDestination()));
+                    this.match.getNetworkDestination(),
+                    PhysicalIPAddress.IP_FOR_DESTINATION));
             this.approvedActions.add(0, dstAct);
         }
     }

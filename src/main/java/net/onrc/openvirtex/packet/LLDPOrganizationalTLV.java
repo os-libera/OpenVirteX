@@ -163,8 +163,8 @@ public class LLDPOrganizationalTLV extends LLDPTLV {
         this.setSubType(optionalField.get());
 
         final byte[] infoString = new byte[this.getLength()
-                - LLDPOrganizationalTLV.OUI_LENGTH
-                - LLDPOrganizationalTLV.SUBTYPE_LENGTH];
+                                           - LLDPOrganizationalTLV.OUI_LENGTH
+                                           - LLDPOrganizationalTLV.SUBTYPE_LENGTH];
         optionalField.get(infoString);
         this.setInfoString(infoString);
         return this;

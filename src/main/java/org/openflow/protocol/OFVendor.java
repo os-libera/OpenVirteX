@@ -114,7 +114,7 @@ public class OFVendor extends OFMessage implements OFVendorDataFactoryAware {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -130,7 +130,7 @@ public class OFVendor extends OFMessage implements OFVendorDataFactoryAware {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

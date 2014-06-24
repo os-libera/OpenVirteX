@@ -156,8 +156,8 @@ public class OFDescriptionStatistics implements OFStatistics {
                 OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH,
                 this.softwareDescription);
         StringByteSerializer
-                .writeTo(data, OFDescriptionStatistics.SERIAL_NUMBER_LENGTH,
-                        this.serialNumber);
+        .writeTo(data, OFDescriptionStatistics.SERIAL_NUMBER_LENGTH,
+                this.serialNumber);
         StringByteSerializer.writeTo(data,
                 OFDescriptionStatistics.DESCRIPTION_STRING_LENGTH,
                 this.datapathDescription);

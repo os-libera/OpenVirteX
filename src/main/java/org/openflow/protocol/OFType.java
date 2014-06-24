@@ -70,29 +70,29 @@ public enum OFType {
         }
     }), FEATURES_REQUEST(5, OFFeaturesRequest.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFFeaturesRequest();
-                }
-            }), FEATURES_REPLY(6, OFFeaturesReply.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFFeaturesRequest();
+        }
+    }), FEATURES_REPLY(6, OFFeaturesReply.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFFeaturesReply();
-                }
-            }), GET_CONFIG_REQUEST(7, OFGetConfigRequest.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFFeaturesReply();
+        }
+    }), GET_CONFIG_REQUEST(7, OFGetConfigRequest.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFGetConfigRequest();
-                }
-            }), GET_CONFIG_REPLY(8, OFGetConfigReply.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFGetConfigRequest();
+        }
+    }), GET_CONFIG_REPLY(8, OFGetConfigReply.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFGetConfigReply();
-                }
-            }), SET_CONFIG(9, OFSetConfig.class, new Instantiable<OFMessage>() {
+        @Override
+        public OFMessage instantiate() {
+            return new OFGetConfigReply();
+        }
+    }), SET_CONFIG(9, OFSetConfig.class, new Instantiable<OFMessage>() {
         @Override
         public OFMessage instantiate() {
             return new OFSetConfig();
@@ -129,41 +129,41 @@ public enum OFType {
         }
     }), STATS_REQUEST(16, OFStatisticsRequest.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFStatisticsRequest();
-                }
-            }), STATS_REPLY(17, OFStatisticsReply.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFStatisticsRequest();
+        }
+    }), STATS_REPLY(17, OFStatisticsReply.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFStatisticsReply();
-                }
-            }), BARRIER_REQUEST(18, OFBarrierRequest.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFStatisticsReply();
+        }
+    }), BARRIER_REQUEST(18, OFBarrierRequest.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFBarrierRequest();
-                }
-            }), BARRIER_REPLY(19, OFBarrierReply.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFBarrierRequest();
+        }
+    }), BARRIER_REPLY(19, OFBarrierReply.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFBarrierReply();
-                }
-            }), QUEUE_GET_CONFIG_REQUEST(20, OFQueueGetConfigRequest.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFBarrierReply();
+        }
+    }), QUEUE_GET_CONFIG_REQUEST(20, OFQueueGetConfigRequest.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFQueueGetConfigRequest();
-                }
-            }), QUEUE_GET_CONFIG_REPLY(21, OFQueueGetConfigReply.class,
+        @Override
+        public OFMessage instantiate() {
+            return new OFQueueGetConfigRequest();
+        }
+    }), QUEUE_GET_CONFIG_REPLY(21, OFQueueGetConfigReply.class,
             new Instantiable<OFMessage>() {
-                @Override
-                public OFMessage instantiate() {
-                    return new OFQueueGetConfigReply();
-                }
-            });
+        @Override
+        public OFMessage instantiate() {
+            return new OFQueueGetConfigReply();
+        }
+    });
 
     static OFType[] mapping;
 

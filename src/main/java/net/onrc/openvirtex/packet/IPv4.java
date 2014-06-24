@@ -461,8 +461,8 @@ public class IPv4 extends BasePacket {
     }
 
     /**
-     * Accepts an IPv4 address and returns of string of the form xxx.xxx.xxx.xxx,
-     * e.g., 192.168.0.1.
+     * Accepts an IPv4 address and returns of string of the form
+     * xxx.xxx.xxx.xxx, e.g., 192.168.0.1.
      *
      * @param ipAddress
      * @return
@@ -472,10 +472,10 @@ public class IPv4 extends BasePacket {
         int result = 0;
         for (int i = 0; i < 4; ++i) {
             result = ipAddress >> (3 - i) * 8 & 0xff;
-            sb.append(Integer.valueOf(result).toString());
-            if (i != 3) {
-                sb.append(".");
-            }
+        sb.append(Integer.valueOf(result).toString());
+        if (i != 3) {
+            sb.append(".");
+        }
         }
         return sb.toString();
     }
@@ -535,14 +535,14 @@ public class IPv4 extends BasePacket {
      * @return The IP address separated into bytes.
      */
     public static byte[] toIPv4AddressBytes(final int ipAddress) {
-        return new byte[] {(byte) (ipAddress >>> 24),
+        return new byte[] { (byte) (ipAddress >>> 24),
                 (byte) (ipAddress >>> 16), (byte) (ipAddress >>> 8),
-                (byte) ipAddress};
+                (byte) ipAddress };
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -567,7 +567,7 @@ public class IPv4 extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

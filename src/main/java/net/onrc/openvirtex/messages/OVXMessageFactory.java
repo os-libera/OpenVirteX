@@ -62,43 +62,43 @@ public class OVXMessageFactory extends BasicFactory {
     // not sure how to deal with this...
     // HACK to convert OFMessage* to OVXMessage*
     @SuppressWarnings("rawtypes")
-    static final Class[] CONVERT_MAP = {OVXHello.class, OVXError.class,
-            OVXEchoRequest.class, OVXEchoReply.class, OVXVendor.class,
-            OVXFeaturesRequest.class, OVXFeaturesReply.class,
-            OVXGetConfigRequest.class, OVXGetConfigReply.class,
-            OVXSetConfig.class, OVXPacketIn.class, OVXFlowRemoved.class,
-            OVXPortStatus.class, OVXPacketOut.class, OVXFlowMod.class,
-            OVXPortMod.class, OVXStatisticsRequest.class,
-            OVXStatisticsReply.class, OVXBarrierRequest.class,
-            OVXBarrierReply.class, OVXQueueGetConfigRequest.class,
-            OVXQueueGetConfigReply.class};
+    static final Class[] CONVERT_MAP = { OVXHello.class, OVXError.class,
+        OVXEchoRequest.class, OVXEchoReply.class, OVXVendor.class,
+        OVXFeaturesRequest.class, OVXFeaturesReply.class,
+        OVXGetConfigRequest.class, OVXGetConfigReply.class,
+        OVXSetConfig.class, OVXPacketIn.class, OVXFlowRemoved.class,
+        OVXPortStatus.class, OVXPacketOut.class, OVXFlowMod.class,
+        OVXPortMod.class, OVXStatisticsRequest.class,
+        OVXStatisticsReply.class, OVXBarrierRequest.class,
+        OVXBarrierReply.class, OVXQueueGetConfigRequest.class,
+        OVXQueueGetConfigReply.class };
 
     @SuppressWarnings({ "rawtypes" })
-    static final Class[] CONVERT_ACTIONS_MAP = {OVXActionOutput.class,
-            OVXActionVirtualLanIdentifier.class,
-            OVXActionVirtualLanPriorityCodePoint.class,
-            OVXActionStripVirtualLan.class, OVXActionDataLayerSource.class,
-            OVXActionDataLayerDestination.class,
-            OVXActionNetworkLayerSource.class,
-            OVXActionNetworkLayerDestination.class,
-            OVXActionNetworkTypeOfService.class,
-            OVXActionTransportLayerSource.class,
-            OVXActionTransportLayerDestination.class, OVXActionEnqueue.class,
-            OVXActionVendor.class};
+    static final Class[] CONVERT_ACTIONS_MAP = { OVXActionOutput.class,
+        OVXActionVirtualLanIdentifier.class,
+        OVXActionVirtualLanPriorityCodePoint.class,
+        OVXActionStripVirtualLan.class, OVXActionDataLayerSource.class,
+        OVXActionDataLayerDestination.class,
+        OVXActionNetworkLayerSource.class,
+        OVXActionNetworkLayerDestination.class,
+        OVXActionNetworkTypeOfService.class,
+        OVXActionTransportLayerSource.class,
+        OVXActionTransportLayerDestination.class, OVXActionEnqueue.class,
+        OVXActionVendor.class };
 
     @SuppressWarnings("rawtypes")
     static final Class[] CONVERT_STATS_REQUEST_MAP = {
-            OVXDescriptionStatistics.class, OVXFlowStatisticsRequest.class,
-            OVXAggregateStatisticsRequest.class, OVXTableStatistics.class,
-            OVXPortStatisticsRequest.class, OVXQueueStatisticsRequest.class,
-            OVXVendorStatistics.class};
+        OVXDescriptionStatistics.class, OVXFlowStatisticsRequest.class,
+        OVXAggregateStatisticsRequest.class, OVXTableStatistics.class,
+        OVXPortStatisticsRequest.class, OVXQueueStatisticsRequest.class,
+        OVXVendorStatistics.class };
 
     @SuppressWarnings("rawtypes")
     static final Class[] CONVERT_STATS_REPLY_MAP = {
-            OVXDescriptionStatistics.class, OVXFlowStatisticsReply.class,
-            OVXAggregateStatisticsReply.class, OVXTableStatistics.class,
-            OVXPortStatisticsReply.class, OVXQueueStatisticsReply.class,
-            OVXVendorStatistics.class};
+        OVXDescriptionStatistics.class, OVXFlowStatisticsReply.class,
+        OVXAggregateStatisticsReply.class, OVXTableStatistics.class,
+        OVXPortStatisticsReply.class, OVXQueueStatisticsReply.class,
+        OVXVendorStatistics.class };
 
     protected OVXMessageFactory() {
         super();
@@ -147,7 +147,7 @@ public class OVXMessageFactory extends BasicFactory {
     @Override
     public OFAction getAction(final OFActionType t) {
         final Class<? extends OFAction> c = OVXMessageFactory.CONVERT_ACTIONS_MAP[t
-                .getTypeValue()];
+                                                                                  .getTypeValue()];
         try {
             return c.getConstructor(new Class[] {}).newInstance();
         } catch (final Exception e) {
@@ -170,7 +170,8 @@ public class OVXMessageFactory extends BasicFactory {
             if (st.getTypeValue() == -1) {
                 c = OVXVendorStatistics.class;
             } else {
-                c = OVXMessageFactory.CONVERT_STATS_REQUEST_MAP[st.getTypeValue()];
+                c = OVXMessageFactory.CONVERT_STATS_REQUEST_MAP[st
+                                                                .getTypeValue()];
             }
         } else {
             throw new RuntimeException("non-stats type in stats factory: " + t);

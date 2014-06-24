@@ -26,20 +26,20 @@ import org.openflow.protocol.statistics.OFPortStatisticsReply;
 import org.openflow.protocol.statistics.OFStatistics;
 
 public class OVXPortStatisticsReply extends OFPortStatisticsReply implements
-        VirtualizableStatistic {
+VirtualizableStatistic {
 
     private Map<Short, OVXPortStatisticsReply> stats = null;
 
     @Override
     public void virtualizeStatistic(final PhysicalSwitch sw,
             final OVXStatisticsReply msg) {
-        stats = new HashMap<Short, OVXPortStatisticsReply>();
-        List<? extends OFStatistics> statList = msg.getStatistics();
-        for (OFStatistics stat : statList) {
-            OVXPortStatisticsReply pStat = (OVXPortStatisticsReply) stat;
-            stats.put(pStat.getPortNumber(), pStat);
+        this.stats = new HashMap<Short, OVXPortStatisticsReply>();
+        final List<? extends OFStatistics> statList = msg.getStatistics();
+        for (final OFStatistics stat : statList) {
+            final OVXPortStatisticsReply pStat = (OVXPortStatisticsReply) stat;
+            this.stats.put(pStat.getPortNumber(), pStat);
         }
-        sw.setPortStatistics(stats);
+        sw.setPortStatistics(this.stats);
 
     }
 }

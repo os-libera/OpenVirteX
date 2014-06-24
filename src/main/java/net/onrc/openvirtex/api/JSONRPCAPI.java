@@ -27,7 +27,6 @@ import net.onrc.openvirtex.api.service.TenantService;
 
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 /**
@@ -55,12 +54,13 @@ public class JSONRPCAPI extends AbstractHandler {
     @Override
     public void handle(final String target, final Request baseRequest,
             final HttpServletRequest request, final HttpServletResponse response)
-            throws IOException, ServletException {
+                    throws IOException, ServletException {
 
         if (baseRequest.getAuthentication() == null
                 || baseRequest.getAuthentication().equals(
                         Authentication.UNAUTHENTICATED)) {
-            response.sendError(Response.SC_UNAUTHORIZED, "Permission denied.");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    "Permission denied.");
             baseRequest.setHandled(true);
 
             return;
@@ -75,7 +75,7 @@ public class JSONRPCAPI extends AbstractHandler {
             this.adminService.handle(request, response);
 
         } else {
-            response.sendError(Response.SC_NOT_FOUND, target
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, target
                     + " is not a service offered by OVX");
 
         }

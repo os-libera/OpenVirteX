@@ -30,15 +30,17 @@ import org.openflow.protocol.statistics.OFStatisticsType;
  * Virtual description statistics message handling.
  */
 public class OVXDescriptionStatistics extends OFDescriptionStatistics implements
-        VirtualizableStatistic, DevirtualizableStatistic {
+VirtualizableStatistic, DevirtualizableStatistic {
 
     /**
-     * Creates a reply object populated with the virtual switch params and
-     * sends it back to the controller.
-     * This is in response to receiving a Description stats request from the controller.
+     * Creates a reply object populated with the virtual switch params and sends
+     * it back to the controller. This is in response to receiving a Description
+     * stats request from the controller.
      *
-     * @param sw the virtual switch
-     * @param msg the statistics request message
+     * @param sw
+     *            the virtual switch
+     * @param msg
+     *            the statistics request message
      */
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,

@@ -24,7 +24,7 @@ import org.openflow.protocol.OFStatisticsReply;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
 public class OVXStatisticsReply extends OFStatisticsReply implements
-        Virtualizable {
+Virtualizable {
 
     private final Logger log = LogManager.getLogger(OVXStatisticsReply.class
             .getName());
@@ -34,14 +34,14 @@ public class OVXStatisticsReply extends OFStatisticsReply implements
         /*
          * The entire stat message will be handled in the specific stattype
          * handler.
-         *
+         * 
          * This means that for stattypes that have a list of replies the handles
          * will have to call getStatistics to handle them all.
          */
         try {
 
             if (this.getStatistics().size() > 0) {
-                VirtualizableStatistic stat = (VirtualizableStatistic) this
+                final VirtualizableStatistic stat = (VirtualizableStatistic) this
                         .getStatistics().get(0);
                 stat.virtualizeStatistic(sw, this);
             } else if (this.getStatisticType() == OFStatisticsType.FLOW) {

@@ -22,7 +22,7 @@ import org.openflow.protocol.OFError.OFBadRequestCode;
 import org.openflow.protocol.OFQueueGetConfigRequest;
 
 public class OVXQueueGetConfigRequest extends OFQueueGetConfigRequest implements
-        Devirtualizable {
+Devirtualizable {
 
     @Override
     public void devirtualize(final OVXSwitch sw) {

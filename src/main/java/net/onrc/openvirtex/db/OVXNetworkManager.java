@@ -53,23 +53,24 @@ import org.apache.logging.log4j.Logger;
 
 public class OVXNetworkManager {
 
-    private Map<String, Object> vnet;
-    private Integer tenantId;
+    private final Map<String, Object> vnet;
+    private final Integer tenantId;
     // Set of offline and online physical switches
-    private Set<Long> offlineSwitches;
-    private Set<Long> onlineSwitches;
-    // Set of offline and online physical links identified as (dpid, port number)-pair
-    private Set<DPIDandPortPair> offlineLinks;
-    private Set<DPIDandPortPair> onlineLinks;
+    private final Set<Long> offlineSwitches;
+    private final Set<Long> onlineSwitches;
+    // Set of offline and online physical links identified as (dpid, port
+    // number)-pair
+    private final Set<DPIDandPortPair> offlineLinks;
+    private final Set<DPIDandPortPair> onlineLinks;
     // Set of offline and online physical ports
-    private Set<DPIDandPort> offlinePorts;
-    private Set<DPIDandPort> onlinePorts;
+    private final Set<DPIDandPort> offlinePorts;
+    private final Set<DPIDandPort> onlinePorts;
     private boolean bootState;
 
     private static Logger log = LogManager.getLogger(OVXNetworkManager.class
             .getName());
 
-    public OVXNetworkManager(Map<String, Object> vnet)
+    public OVXNetworkManager(final Map<String, Object> vnet)
             throws IndexOutOfBoundException, DuplicateIndexException {
         this.vnet = vnet;
         this.tenantId = (Integer) vnet.get(TenantHandler.TENANT);
@@ -103,30 +104,33 @@ public class OVXNetworkManager {
     }
 
     /**
-     * Registers switch identified by the given DPID, ensuring
-     * the virtual network is spawned only after the switch is online.
+     * Registers switch identified by the given DPID, ensuring the virtual
+     * network is spawned only after the switch is online.
      *
-     * @param dpid the switch DPID
+     * @param dpid
+     *            the switch DPID
      */
     public void registerSwitch(final Long dpid) {
         this.offlineSwitches.add(dpid);
     }
 
     /**
-     * Registers the given link, ensuring the virtual network is spawned
-     * only after the link is online.
+     * Registers the given link, ensuring the virtual network is spawned only
+     * after the link is online.
      *
-     * @param dpp the link as a pair of DPID and port number
+     * @param dpp
+     *            the link as a pair of DPID and port number
      */
     public void registerLink(final DPIDandPortPair dpp) {
         this.offlineLinks.add(dpp);
     }
 
     /**
-     * Registers the given port, ensuring the virtual network is spawned
-     * only after the port is online.
+     * Registers the given port, ensuring the virtual network is spawned only
+     * after the port is online.
      *
-     * @param port the port given as DPID and port number
+     * @param port
+     *            the port given as DPID and port number
      */
     public void registerPort(final DPIDandPort port) {
         this.offlinePorts.add(port);
@@ -136,7 +140,8 @@ public class OVXNetworkManager {
      * Changes switch from offline to online state. Creates and starts virtual
      * network if all links and switches are online.
      *
-     * @param dpid the switch DPID.
+     * @param dpid
+     *            the switch DPID.
      */
     public synchronized void setSwitch(final Long dpid) {
         this.offlineSwitches.remove(dpid);
@@ -150,7 +155,8 @@ public class OVXNetworkManager {
     /**
      * Change. switch from online to offline state.
      *
-     * @param dpid unique datapath id
+     * @param dpid
+     *            unique datapath id
      */
     public synchronized void unsetSwitch(final Long dpid) {
         this.offlineSwitches.add(dpid);
@@ -162,7 +168,8 @@ public class OVXNetworkManager {
      * direction to online. Create and start virtual network if all links and
      * switches are online.
      *
-     * @param dpp physical link given as pair of DPID and port
+     * @param dpp
+     *            physical link given as pair of DPID and port
      */
     public synchronized void setLink(final DPIDandPortPair dpp) {
         // Link might have been set already, so check first if it's still
@@ -180,7 +187,8 @@ public class OVXNetworkManager {
     /**
      * Changes link from online to offline state.
      *
-     * @param dpp physical link given as pair of DPID and port
+     * @param dpp
+     *            physical link given as pair of DPID and port
      */
     public synchronized void unsetLink(final DPIDandPortPair dpp) {
         if (this.onlineLinks.contains(dpp)) {
@@ -226,15 +234,16 @@ public class OVXNetworkManager {
     /**
      * Converts path in db map format to list of physical links.
      *
-     * @param path the path in database map format
+     * @param path
+     *            the path in database map format
      * @return
      */
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private List<PhysicalLink> pathToPhyLinkList(List<Map> path) {
+    private List<PhysicalLink> pathToPhyLinkList(final List<Map> path) {
         // Build list of physical links
         final List<PhysicalLink> result = new ArrayList<PhysicalLink>();
-        for (Map<String, Object> hop : path) {
+        for (final Map<String, Object> hop : path) {
             // Get src/dst dpid & port number from map
             final Long sDpid = (Long) hop.get(TenantHandler.SRC_DPID);
             final Short sPort = ((Integer) hop.get(TenantHandler.SRC_PORT))
@@ -261,8 +270,7 @@ public class OVXNetworkManager {
 
     /**
      * Creates OVX network and elements based on persistent storage, boots
-     * network afterwards.
-     * TODO: proper error handling (roll-back?).
+     * network afterwards. TODO: proper error handling (roll-back?).
      */
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -282,7 +290,7 @@ public class OVXNetworkManager {
         try {
             virtualNetwork = new OVXNetwork(this.tenantId, ctrlUrls, addr,
                     netMask);
-        } catch (IndexOutOfBoundException e) {
+        } catch (final IndexOutOfBoundException e) {
             OVXNetworkManager.log.error(
                     "Error recreating virtual network {} from database",
                     this.tenantId);
@@ -294,12 +302,13 @@ public class OVXNetworkManager {
         final List<Map<String, Object>> switches = (List<Map<String, Object>>) this.vnet
                 .get(Switch.DB_KEY);
         if (switches != null) {
-            for (Map<String, Object> sw : switches) {
-                List<Long> dpids = (List<Long>) sw.get(TenantHandler.DPIDS);
-                long switchId = (long) sw.get(TenantHandler.VDPID);
+            for (final Map<String, Object> sw : switches) {
+                final List<Long> dpids = (List<Long>) sw
+						.get(TenantHandler.DPIDS);
+                final long switchId = (long) sw.get(TenantHandler.VDPID);
                 try {
                     virtualNetwork.createSwitch(dpids, switchId);
-                } catch (IndexOutOfBoundException e) {
+                } catch (final IndexOutOfBoundException e) {
                     OVXNetworkManager.log.error(
                             "Error recreating virtual switch {} from database",
                             switchId);
@@ -312,16 +321,16 @@ public class OVXNetworkManager {
         final List<Map<String, Object>> ports = (List<Map<String, Object>>) this.vnet
                 .get(Port.DB_KEY);
         if (ports != null) {
-            for (Map<String, Object> port : ports) {
-                long physicalDpid = (Long) port.get(TenantHandler.DPID);
-                short portNumber = ((Integer) port.get(TenantHandler.PORT))
-                        .shortValue();
-                short vportNumber = ((Integer) port.get(TenantHandler.VPORT))
-                        .shortValue();
+            for (final Map<String, Object> port : ports) {
+                final long physicalDpid = (Long) port.get(TenantHandler.DPID);
+                final short portNumber = ((Integer) port
+						.get(TenantHandler.PORT)).shortValue();
+                final short vportNumber = ((Integer) port
+						.get(TenantHandler.VPORT)).shortValue();
                 try {
                     virtualNetwork.createPort(physicalDpid, portNumber,
                             vportNumber);
-                } catch (IndexOutOfBoundException e) {
+                } catch (final IndexOutOfBoundException e) {
                     OVXNetworkManager.log.error(
                             "Error recreating virtual port {} from database",
                             vportNumber);
@@ -332,20 +341,21 @@ public class OVXNetworkManager {
 
         // Create OVX big switch routes if manual
         if (switches != null) {
-            for (Map<String, Object> sw : switches) {
-                long switchId = (long) sw.get(TenantHandler.VDPID);
-                String alg = (String) sw.get(TenantHandler.ALGORITHM);
-                Integer backups = (Integer) sw.get(TenantHandler.BACKUPS);
+            for (final Map<String, Object> sw : switches) {
+                final long switchId = (long) sw.get(TenantHandler.VDPID);
+                final String alg = (String) sw.get(TenantHandler.ALGORITHM);
+                final Integer backups = (Integer) sw.get(TenantHandler.BACKUPS);
                 // Don't bother with switch routes if not a bigswitch
-                if ((alg == null) || (backups == null)) {
+                if (alg == null || backups == null) {
                     continue;
                 }
                 try {
                     virtualNetwork.setOVXBigSwitchRouting(switchId, alg,
                             backups.byteValue());
-                } catch (RoutingAlgorithmException e) {
-                    OVXNetworkManager.log.error(
-                            "Error setting routing mode for switch {} from database", switchId);
+                } catch (final RoutingAlgorithmException e) {
+                    OVXNetworkManager.log
+                    .error("Error setting routing mode for switch {} from database",
+                            switchId);
                     continue;
                 }
 
@@ -357,15 +367,16 @@ public class OVXNetworkManager {
                     // List of created routeId's per switch
                     final Map<Long, List<Integer>> routeIds = new HashMap<Long, List<Integer>>();
                     if (routes != null) {
-                        for (Map<String, Object> route : routes) {
-                            long dpid = (Long) route.get(TenantHandler.VDPID);
-                            short srcPort = ((Integer) route
+                        for (final Map<String, Object> route : routes) {
+                            final long dpid = (Long) route
+									.get(TenantHandler.VDPID);
+                            final short srcPort = ((Integer) route
                                     .get(TenantHandler.SRC_PORT)).shortValue();
-                            short dstPort = ((Integer) route
+                            final short dstPort = ((Integer) route
                                     .get(TenantHandler.DST_PORT)).shortValue();
-                            byte priority = ((Integer) route
+                            final byte priority = ((Integer) route
                                     .get(TenantHandler.PRIORITY)).byteValue();
-                            int routeId = (Integer) route
+                            final int routeId = (Integer) route
                                     .get(TenantHandler.ROUTE);
                             // Maintain id's of routes per switch so we don't
                             // create reverse
@@ -380,26 +391,26 @@ public class OVXNetworkManager {
                                 visited.add(routeId);
                             }
 
-                            List<Map> path = (List<Map>) route
+                            final List<Map> path = (List<Map>) route
                                     .get(TenantHandler.PATH);
-                            List<PhysicalLink> physicalLinks = this
+                            final List<PhysicalLink> physicalLinks = this
                                     .pathToPhyLinkList(path);
 
                             try {
                                 virtualNetwork.connectRoute(dpid, srcPort,
                                         dstPort, physicalLinks, priority,
                                         routeId);
-                            } catch (IndexOutOfBoundException e) {
+                            } catch (final IndexOutOfBoundException e) {
                                 OVXNetworkManager.log
-                                        .error("Error recreating virtual switch route {} from database",
-                                                routeId);
+                                .error("Error recreating virtual switch route {} from database",
+                                        routeId);
                                 continue;
                             }
                         }
                     }
                 } else {
-                    DBManager.getInstance()
-                            .removeSwitchPath(tenantId, switchId);
+                    DBManager.getInstance().removeSwitchPath(this.tenantId,
+							switchId);
                 }
             }
         }
@@ -411,34 +422,36 @@ public class OVXNetworkManager {
         // link is not created again
         final List<Integer> linkIds = new ArrayList<Integer>();
         if (links != null) {
-            for (Map<String, Object> link : links) {
+            for (final Map<String, Object> link : links) {
                 // Skip link if we already handled the reverse
-                Integer linkId = (Integer) link.get(TenantHandler.LINK);
+                final Integer linkId = (Integer) link.get(TenantHandler.LINK);
                 if (linkIds.contains(linkId)) {
                     continue;
                 } else {
                     linkIds.add(linkId);
                 }
                 // Obtain virtual src and dst dpid/port, priority
-                Long srcDpid = (Long) link.get(TenantHandler.SRC_DPID);
-                Short srcPort = ((Integer) link.get(TenantHandler.SRC_PORT))
-                        .shortValue();
-                Long dstDpid = (Long) link.get(TenantHandler.DST_DPID);
-                Short dstPort = ((Integer) link.get(TenantHandler.DST_PORT))
-                        .shortValue();
-                Byte priority = ((Integer) link.get(TenantHandler.PRIORITY))
-                        .byteValue();
-                String alg = (String) link.get(TenantHandler.ALGORITHM);
-                byte backups = ((Integer) link.get(TenantHandler.BACKUPS))
+                final Long srcDpid = (Long) link.get(TenantHandler.SRC_DPID);
+                final Short srcPort = ((Integer) link
+						.get(TenantHandler.SRC_PORT)).shortValue();
+                final Long dstDpid = (Long) link.get(TenantHandler.DST_DPID);
+                final Short dstPort = ((Integer) link
+						.get(TenantHandler.DST_PORT)).shortValue();
+                final Byte priority = ((Integer) link
+						.get(TenantHandler.PRIORITY)).byteValue();
+                final String alg = (String) link.get(TenantHandler.ALGORITHM);
+                final byte backups = ((Integer) link.get(TenantHandler.BACKUPS))
                         .byteValue();
 
                 // Build list of physical links
-                List<Map> path = (List<Map>) link.get(TenantHandler.PATH);
-                List<PhysicalLink> physicalLinks = this.pathToPhyLinkList(path);
+                final List<Map> path = (List<Map>) link.get(TenantHandler.PATH);
+                final List<PhysicalLink> physicalLinks = this
+						.pathToPhyLinkList(path);
 
                 // Create virtual link
                 try {
-                    DBManager.getInstance().removeLinkPath(tenantId, linkId);
+                    DBManager.getInstance().removeLinkPath(this.tenantId,
+							linkId);
 
                     virtualNetwork.connectLink(srcDpid, srcPort, dstDpid,
                             dstPort, alg, backups, linkId);
@@ -462,7 +475,7 @@ public class OVXNetworkManager {
         final List<Map<String, Object>> hosts = (List<Map<String, Object>>) this.vnet
                 .get(Host.DB_KEY);
         if (hosts != null) {
-            for (Map<String, Object> host : hosts) {
+            for (final Map<String, Object> host : hosts) {
                 final long dpid = (Long) host.get(TenantHandler.VDPID);
                 final short port = ((Integer) host.get(TenantHandler.VPORT))
                         .shortValue();
@@ -471,7 +484,7 @@ public class OVXNetworkManager {
                 final int hostId = (Integer) host.get(TenantHandler.HOST);
                 try {
                     virtualNetwork.connectHost(dpid, port, macAddr, hostId);
-                } catch (IndexOutOfBoundException e) {
+                } catch (final IndexOutOfBoundException e) {
                     OVXNetworkManager.log.error("Failed to create host {}",
                             hostId);
                     continue;

@@ -25,11 +25,11 @@ public class PortMappingException extends MappingException {
         super();
     }
 
-    public PortMappingException(String cause) {
+    public PortMappingException(final String cause) {
         super(cause);
     }
 
-    public PortMappingException(Throwable cause) {
+    public PortMappingException(final Throwable cause) {
         super(cause);
     }
 

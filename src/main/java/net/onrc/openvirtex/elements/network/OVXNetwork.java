@@ -32,6 +32,7 @@ import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.address.IPAddress;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -48,6 +49,7 @@ import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
+import net.onrc.openvirtex.packet.IPv4;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.BitSetIndex;
@@ -73,30 +75,32 @@ import com.google.common.collect.Lists;
  *
  */
 public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
-        Persistable {
+Persistable {
 
     /**
      * FSM representing the states of a virtual network.
      */
     enum NetworkState {
         INIT {
-            protected void register(OVXNetwork vnet) {
-                log.debug("registering tenant {}", vnet.tenantId);
+            @Override
+            protected void register(final OVXNetwork vnet) {
+                OVXNetwork.log.debug("registering tenant {}", vnet.tenantId);
                 OVXMap.getInstance().addNetwork(vnet);
                 DBManager.getInstance().createDoc(vnet);
                 vnet.state = NetworkState.INACTIVE;
             }
         },
         INACTIVE {
-            protected boolean boot(OVXNetwork vnet) {
-                log.debug("booting tenant {}", vnet.tenantId);
+            @Override
+            protected boolean boot(final OVXNetwork vnet) {
+                OVXNetwork.log.debug("booting tenant {}", vnet.tenantId);
                 boolean result = true;
                 try {
                     vnet.flowManager.boot();
                 } catch (final IndexOutOfBoundException e) {
                     OVXNetwork.log
-                            .error("Too many host to generate the flow pairs. Tear down the virtual network {}",
-                                    vnet.tenantId);
+                    .error("Too many host to generate the flow pairs. Tear down the virtual network {}",
+                            vnet.tenantId);
                     return false;
                 }
                 for (final OVXSwitch sw : vnet.getSwitches()) {
@@ -108,8 +112,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                 return result;
             }
 
-            protected void unregister(OVXNetwork vnet) {
-                log.debug("unregistering tenant {}", vnet.tenantId);
+            @Override
+            protected void unregister(final OVXNetwork vnet) {
+                OVXNetwork.log.debug("unregistering tenant {}", vnet.tenantId);
                 DBManager.getInstance().removeDoc(vnet);
                 final LinkedList<Long> dpids = new LinkedList<>();
                 for (final OVXSwitch virtualSwitch : vnet.getSwitches()) {
@@ -130,8 +135,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
             }
         },
         ACTIVE {
-            protected boolean teardown(OVXNetwork vnet) {
-                log.debug("disabling tenant {}", vnet.tenantId);
+            @Override
+            protected boolean teardown(final OVXNetwork vnet) {
+                OVXNetwork.log.debug("disabling tenant {}", vnet.tenantId);
                 /*
                  * tear-down all vswitches. Need to really think about retries
                  * and when states go wonky
@@ -143,14 +149,18 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                 if (res) {
                     vnet.state = NetworkState.INACTIVE;
                 } else {
-                    log.warn("Not all virtual switches have been torn down: "
-                            + "Tenant {} can't shut down", vnet.tenantId);
+                    OVXNetwork.log.warn(
+							"Not all virtual switches have been torn down: "
+									+ "Tenant {} can't shut down",
+							vnet.tenantId);
                 }
                 return res;
             }
 
+            @Override
             @SuppressWarnings("rawtypes")
-            protected void handleLLDP(OVXNetwork vnet, OFMessage msg, Switch sw) {
+            protected void handleLLDP(final OVXNetwork vnet,
+					final OFMessage msg, final Switch sw) {
                 final OVXPacketOut po = (OVXPacketOut) msg;
                 final byte[] pkt = po.getPacketData();
                 // Create LLDP response for each output action port
@@ -188,8 +198,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
          * @param vnet
          *            this tenant OVXNetwork
          */
-        protected void register(OVXNetwork vnet) {
-            log.debug("Cannot register tenant {} while status={}",
+        protected void register(final OVXNetwork vnet) {
+            OVXNetwork.log.debug("Cannot register tenant {} while status={}",
                     vnet.tenantId, vnet.state);
         }
 
@@ -201,9 +211,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
          *            this tenant OVXNetwork
          * @return true, if successfully activated
          */
-        protected boolean boot(OVXNetwork vnet) {
-            log.debug("Cannot boot tenant {} while status={}", vnet.tenantId,
-                    vnet.state);
+        protected boolean boot(final OVXNetwork vnet) {
+            OVXNetwork.log.debug("Cannot boot tenant {} while status={}",
+					vnet.tenantId, vnet.state);
             return false;
         }
 
@@ -215,8 +225,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
          *            this tenant OVXNetwork
          * @return true, if successfully inactivated.
          */
-        protected boolean teardown(OVXNetwork vnet) {
-            log.debug("Cannot teardown tenant {} while status={}",
+        protected boolean teardown(final OVXNetwork vnet) {
+            OVXNetwork.log.debug("Cannot teardown tenant {} while status={}",
                     vnet.tenantId, vnet.state);
             return false;
         }
@@ -229,8 +239,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
          * @param vnet
          *            this tenant OVXNetwork
          */
-        protected void unregister(OVXNetwork vnet) {
-            log.debug("Cannot unregister tenant {} while status={}",
+        protected void unregister(final OVXNetwork vnet) {
+            OVXNetwork.log.debug("Cannot unregister tenant {} while status={}",
                     vnet.tenantId, vnet.state);
         }
 
@@ -248,8 +258,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
          *            The switch "sending out" the LLDP
          */
         @SuppressWarnings("rawtypes")
-        protected void handleLLDP(OVXNetwork ovxNetwork, OFMessage msg,
-                Switch sw) {
+        protected void handleLLDP(final OVXNetwork ovxNetwork,
+				final OFMessage msg, final Switch sw) {
         }
 
     }
@@ -262,7 +272,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     private final IPAddress network;
     private final short mask;
     private HashMap<IPAddress, MACAddress> gwsMap;
-    private final BitSetIndex dpidCounter;
+    private final BitSetIndex dpihostCounter;
     private final BitSetIndex linkCounter;
     private final BitSetIndex ipCounter;
     private final BitSetIndex hostCounter;
@@ -293,7 +303,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         this.controllerUrls.addAll(controllerUrls);
         this.network = network;
         this.mask = mask;
-        this.dpidCounter = new BitSetIndex(IndexType.SWITCH_ID);
+        this.dpihostCounter = new BitSetIndex(IndexType.SWITCH_ID);
         this.linkCounter = new BitSetIndex(IndexType.LINK_ID);
         this.ipCounter = new BitSetIndex(IndexType.IP_ID);
         this.hostCounter = new BitSetIndex(IndexType.HOST_ID);
@@ -316,7 +326,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
      */
     public OVXNetwork(final ArrayList<String> controllerUrls,
             final IPAddress network, final short mask)
-            throws IndexOutOfBoundException {
+                    throws IndexOutOfBoundException {
         this(OpenVirteXController.getTenantCounter().getNewIndex(),
                 controllerUrls, network, mask);
     }
@@ -356,7 +366,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
      * @throws IndexOutOfBoundException
      * @throws DuplicateIndexException
      */
-    public static void reserveTenantId(Integer tenantId)
+    public static void reserveTenantId(final Integer tenantId)
             throws IndexOutOfBoundException, DuplicateIndexException {
         OpenVirteXController.getTenantCounter().getNewIndex(tenantId);
     }
@@ -393,9 +403,10 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     }
 
     public OVXFlowManager getFlowManager() {
-        return flowManager;
+        return this.flowManager;
     }
 
+    @Override
     public void register() {
         this.state.register(this);
     }
@@ -421,6 +432,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         return null;
     }
 
+    @Override
     public void unregister() {
         this.state.unregister(this);
     }
@@ -477,7 +489,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     public OVXSwitch createSwitch(final List<Long> dpids)
             throws IndexOutOfBoundException {
         final long switchId = (long) 0xa42305 << 32
-                | this.dpidCounter.getNewIndex();
+                | this.dpihostCounter.getNewIndex();
         return this.createSwitch(dpids, switchId);
     }
 
@@ -525,8 +537,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
      */
     public RoutingAlgorithms setOVXBigSwitchRouting(final long dpid,
             final String alg, final byte numBackups)
-            throws RoutingAlgorithmException {
-        RoutingAlgorithms algorithm = new RoutingAlgorithms(alg, numBackups);
+                    throws RoutingAlgorithmException {
+        final RoutingAlgorithms algorithm = new RoutingAlgorithms(alg,
+				numBackups);
         ((OVXBigSwitch) this.getSwitch(dpid)).setAlg(algorithm);
         return algorithm;
     }
@@ -548,8 +561,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
      */
     public Host connectHost(final long ovxDpid, final short ovxPort,
             final MACAddress mac, final int hostId)
-            throws IndexOutOfBoundException {
-        OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+                    throws IndexOutOfBoundException {
+        final OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
         port.boot();
         final Host host = new Host(mac, port, hostId);
         host.register();
@@ -607,33 +620,36 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         RoutingAlgorithms algorithm = null;
         try {
             algorithm = new RoutingAlgorithms(alg, numBackups);
-        } catch (RoutingAlgorithmException e) {
-            log.error("The algorithm provided ({}) is currently not supported."
-                    + " Use default: shortest-path with one backup route.", alg);
+        } catch (final RoutingAlgorithmException e) {
+            OVXNetwork.log
+					.error("The algorithm provided ({}) is currently not supported."
+							+ " Use default: shortest-path with one backup route.",
+							alg);
             try {
                 algorithm = new RoutingAlgorithms("spf", (byte) 1);
-            } catch (RoutingAlgorithmException e1) {
-                log.error("Could not connect link: {}", e1);
+            } catch (final RoutingAlgorithmException e1) {
+                OVXNetwork.log.error("Could not connect link: {}", e1);
                 return null;
             }
         }
 
         // get the virtual end ports
-        OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
-        OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
+        final OVXPort srcPort = this.getSwitch(ovxSrcDpid).getPort(ovxSrcPort);
+        final OVXPort dstPort = this.getSwitch(ovxDstDpid).getPort(ovxDstPort);
 
-        System.err.println(srcPort.toAP()+"-"+dstPort.toAP() + ":"+ 
-                srcPort.getPhysicalPort().toAP()+"-"+dstPort.getPhysicalPort().toAP());
+        System.err.println(srcPort.toAP() + "-" + dstPort.toAP() + ":"
+                + srcPort.getPhysicalPort().toAP() + "-"
+                + dstPort.getPhysicalPort().toAP());
         // boot endpoints automatically only if ports were *not*
         // administratively disabled.
         if (srcPort.isAdminDown()) {
-            log.info(
-                    "port {} was administratively disabled, can't automatically enable",
-                    srcPort.toAP());
+            OVXNetwork.log
+					.info("port {} was administratively disabled, can't automatically enable",
+							srcPort.toAP());
         } else if (dstPort.isAdminDown()) {
-            log.info(
-                    "port {} was administratively disabled, can't automatically enable",
-                    dstPort.toAP());
+            OVXNetwork.log
+					.info("port {} was administratively disabled, can't automatically enable",
+							dstPort.toAP());
         } else {
             dstPort.boot();
             srcPort.boot();
@@ -642,9 +658,9 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         // Create link, add it to the topology, register it in the map(if
         // algo=spf)
         // TODO separate link registration to clean this up.
-        OVXLink link = new OVXLink(linkId, this.tenantId, srcPort, dstPort,
-                algorithm);
-        OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
+        final OVXLink link = new OVXLink(linkId, this.tenantId, srcPort,
+				dstPort, algorithm);
+        final OVXLink reverseLink = new OVXLink(linkId, this.tenantId, dstPort,
                 srcPort, algorithm);
         return link;
     }
@@ -673,7 +689,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     public synchronized OVXLink connectLink(final long ovxSrcDpid,
             final short ovxSrcPort, final long ovxDstDpid,
             final short ovxDstPort, final String alg, final byte numBackups)
-            throws IndexOutOfBoundException, PortMappingException {
+                    throws IndexOutOfBoundException, PortMappingException {
         final int linkId = this.linkCounter.getNewIndex();
         return this.connectLink(ovxSrcDpid, ovxSrcPort, ovxDstDpid, ovxDstPort,
                 alg, numBackups, linkId);
@@ -693,7 +709,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
      */
     public synchronized OVXLink setLinkPath(final int linkId,
             final List<PhysicalLink> physicalLinks, final byte priority)
-            throws IndexOutOfBoundException {
+                    throws IndexOutOfBoundException {
         // create the map to the reverse list of physical links
         final List<PhysicalLink> reversePhysicalLinks = new LinkedList<PhysicalLink>();
         for (final PhysicalLink phyLink : Lists.reverse(physicalLinks)) {
@@ -701,7 +717,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                     phyLink.getDstPort(), phyLink.getSrcPort()));
         }
 
-        List<OVXLink> links = this.getLinksById(linkId);
+        final List<OVXLink> links = this.getLinksById(linkId);
         /*
          * TODO: links is a list, so i need to check is the first link has to be
          * mapped to the physicalPath or viceversa. If we'll split the link
@@ -717,10 +733,11 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                 .equals(physicalLinks.get(0).getSrcPort())) {
             link = links.get(1);
             reverseLink = links.get(0);
-        } else
-            log.error(
-                    "Cannot retrieve the virtual links associated to linkId {}",
-                    linkId);
+        } else {
+            OVXNetwork.log
+					.error("Cannot retrieve the virtual links associated to linkId {}",
+							linkId);
+        }
         link.register(physicalLinks, priority);
         reverseLink.register(reversePhysicalLinks, priority);
         link.boot();
@@ -732,13 +749,13 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
             final short ovxSrcPort, final short ovxDstPort,
             final List<PhysicalLink> physicalLinks, final byte priority,
             final int... routeId) throws IndexOutOfBoundException {
-        OVXBigSwitch sw = (OVXBigSwitch) this.getSwitch(ovxDpid);
-        OVXPort srcPort = sw.getPort(ovxSrcPort);
-        OVXPort dstPort = sw.getPort(ovxDstPort);
+        final OVXBigSwitch sw = (OVXBigSwitch) this.getSwitch(ovxDpid);
+        final OVXPort srcPort = sw.getPort(ovxSrcPort);
+        final OVXPort dstPort = sw.getPort(ovxDstPort);
 
-        List<PhysicalLink> reverseLinks = new LinkedList<PhysicalLink>();
-        for (PhysicalLink link : physicalLinks) {
-            PhysicalLink revLink = new PhysicalLink(link.getDstPort(),
+        final List<PhysicalLink> reverseLinks = new LinkedList<PhysicalLink>();
+        for (final PhysicalLink link : physicalLinks) {
+            final PhysicalLink revLink = new PhysicalLink(link.getDstPort(),
                     link.getSrcPort());
             reverseLinks.add(revLink);
         }
@@ -757,19 +774,19 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     }
 
     public synchronized void removeSwitch(final long ovxDpid) {
-        this.dpidCounter.releaseIndex((int) (0x000000 << 32 | ovxDpid));
-        OVXSwitch sw = this.getSwitch(ovxDpid);
+        this.dpihostCounter.releaseIndex((int) (0x000000 << 32 | ovxDpid));
+        final OVXSwitch sw = this.getSwitch(ovxDpid);
         sw.tearDown();
         sw.unregister();
     }
 
     public synchronized void removePort(final long ovxDpid, final short ovxPort) {
-        OVXSwitch vsw = this.getSwitch(ovxDpid);
-        OVXPort port = vsw.getPort(ovxPort);
+        final OVXSwitch vsw = this.getSwitch(ovxDpid);
+        final OVXPort port = vsw.getPort(ovxPort);
         if (port == null) {
-            log.warn(
-                    "port number {} not associated with any ports on switch {}",
-                    ovxPort, vsw.getSwitchName());
+            OVXNetwork.log
+					.warn("port number {} not associated with any ports on switch {}",
+							ovxPort, vsw.getSwitchName());
             return;
         }
         port.tearDown();
@@ -777,17 +794,17 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     }
 
     public synchronized void disconnectHost(final int hostId) {
-        Host host = this.getHost(hostId);
+        final Host host = this.getHost(hostId);
         host.getPort().tearDown();
         host.unregister();
         this.hostCounter.releaseIndex(hostId);
     }
 
     public synchronized void disconnectLink(final int linkId) {
-        LinkedList<OVXLink> linkPair = (LinkedList<OVXLink>) this
+        final LinkedList<OVXLink> linkPair = (LinkedList<OVXLink>) this
                 .getLinksById(linkId);
         this.linkCounter.releaseIndex(linkPair.getFirst().getLinkId());
-        for (OVXLink link : linkPair) {
+        for (final OVXLink link : linkPair) {
             link.tearDown();
             link.unregister();
         }
@@ -795,30 +812,30 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 
     public synchronized void disconnectRoute(final long ovxDpid,
             final int routeId) {
-        OVXBigSwitch sw = (OVXBigSwitch) this.getSwitch(ovxDpid);
+        final OVXBigSwitch sw = (OVXBigSwitch) this.getSwitch(ovxDpid);
         sw.unregisterRoute(routeId);
     }
 
     public synchronized void startSwitch(final long ovxDpid) {
-        OVXSwitch sw = this.getSwitch(ovxDpid);
+        final OVXSwitch sw = this.getSwitch(ovxDpid);
         sw.boot();
     }
 
     public synchronized void startPort(final long ovxDpid, final short ovxPort) {
-        OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+        final OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
         /* Administratively enable port */
         port.setConfig(port.getConfig()
-                & ~(OFPortConfig.OFPPC_PORT_DOWN.getValue()));
+                & ~OFPortConfig.OFPPC_PORT_DOWN.getValue());
         port.boot();
     }
 
     public synchronized void stopSwitch(final long ovxDpid) {
-        OVXSwitch sw = this.getSwitch(ovxDpid);
+        final OVXSwitch sw = this.getSwitch(ovxDpid);
         sw.tearDown();
     }
 
     public synchronized void stopPort(final long ovxDpid, final short ovxPort) {
-        OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+        final OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
         /* Administratively disable port */
         port.setConfig(port.getConfig()
                 | OFPortConfig.OFPPC_PORT_DOWN.getValue());
@@ -863,23 +880,63 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         return "Virtual network:" + this.tenantId.toString();
     }
 
-    public Integer nextIP() throws IndexOutOfBoundException {
-        return (this.tenantId << 32 - OpenVirteXController.getInstance()
-                .getNumberVirtualNets()) + this.ipCounter.getNewIndex();
+    /*
+     * Generating the nextIp (PhysicalIp) Splitting the tenantId into two
+     * Assigning Most Significant Bits to Source Assigning Least Significant
+     * Bits to Destination In Case of Odd tenant bits, assigning half + 1 bit to
+     * Source
+     */
+    public Integer nextIP(final String ipfor) throws IndexOutOfBoundException {
+        int j = 1;
+        // Check if requested ip is for Source or destination
+        if (ipfor.equals(PhysicalIPAddress.IP_FOR_SOURCE)) {
+            if (OpenVirteXController.getInstance().getNumberVirtualNets() / 2 == 0) {
+                j = (1 << OpenVirteXController.getInstance()
+                        .getNumberVirtualNets() / 2) - 1;
+            } else {
+                /*
+                 * for Odd Max_tanentId bits, taking more bit on source side i.e
+                 * half + 1
+                 */
+                j = (1 << OpenVirteXController.getInstance()
+                        .getNumberVirtualNets() / 2 + 1) - 1;
+            }
+            final int MSB_tid = this.tenantId
+                    & j << OpenVirteXController.getInstance()
+                    .getNumberVirtualNets() / 2;
+            final int networkAddr = MSB_tid << 32 - OpenVirteXController
+                    .getInstance().getNumberVirtualNets();
+            final int hostCounter = this.ipCounter.getNewIndex();
+            return networkAddr + hostCounter;
+
+        } else if (ipfor.equals(PhysicalIPAddress.IP_FOR_DESTINATION)) {
+            j = (1 << OpenVirteXController.getInstance().getNumberVirtualNets() / 2) - 1;
+            final int LSB_tid = this.tenantId & j;
+            final int networkAddr = LSB_tid << 32 - OpenVirteXController
+                    .getInstance().getNumberVirtualNets() / 2;
+            final int hostCounter = this.ipCounter.getNewIndex();
+            System.out.println("DestinationAddr: "
+                    + IPv4.fromIPv4Address(networkAddr + hostCounter));
+            return networkAddr + hostCounter;
+
+        } else {
+            System.out.println("Physical IP neither Source nor Destination: 1");
+            return Integer.valueOf(-1);
+        }
     }
 
     // TODO should this be here? OVXNetwork seems to have too narrow a view for
     // this to be safe.
     public static void reset() {
         OVXNetwork.log
-                .debug("Resetting tenantId counter to initial state. Don't do this at runtime!");
+        .debug("Resetting tenantId counter to initial state. Don't do this at runtime!");
         OpenVirteXController.getTenantCounter().reset();
 
     }
 
     public List<OVXLink> getLinksById(final Integer linkId) {
         final List<OVXLink> linkList = new LinkedList<OVXLink>();
-        for (OVXLink link : this.getLinks()) {
+        for (final OVXLink link : this.getLinks()) {
             if (link.getLinkId().equals(linkId)) {
                 linkList.add(link);
             }
@@ -894,7 +951,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 
     @Override
     public Map<String, Object> getDBIndex() {
-        Map<String, Object> index = new HashMap<String, Object>();
+        final Map<String, Object> index = new HashMap<String, Object>();
         index.put(TenantHandler.TENANT, this.tenantId);
         return index;
     }
@@ -911,7 +968,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = new HashMap<String, Object>();
+        final Map<String, Object> dbObject = new HashMap<String, Object>();
         dbObject.put(TenantHandler.TENANT, this.tenantId);
         dbObject.put(TenantHandler.CTRLURLS, this.controllerUrls);
         dbObject.put(TenantHandler.NETADD, this.network.getIp());
@@ -955,7 +1012,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         return this.state.teardown(this);
     }
 
-    public void addControllers(ArrayList<String> ctrlUrls) {
+    public void addControllers(final ArrayList<String> ctrlUrls) {
         this.controllerUrls.addAll(ctrlUrls);
 
     }

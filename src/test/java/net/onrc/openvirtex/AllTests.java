@@ -29,8 +29,8 @@ import net.onrc.openvirtex.elements.datapath.BaseTranslatorTests;
 public final class AllTests {
 
     /**
-     * Overrides default constructor to no-op private constructor.
-     * Required by checkstyle.
+     * Overrides default constructor to no-op private constructor. Required by
+     * checkstyle.
      */
     private AllTests() {
     }

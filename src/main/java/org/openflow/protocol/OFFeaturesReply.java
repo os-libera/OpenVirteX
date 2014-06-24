@@ -54,7 +54,7 @@ public class OFFeaturesReply extends OFMessage {
     public enum OFCapabilities {
         OFPC_FLOW_STATS(1 << 0), OFPC_TABLE_STATS(1 << 1), OFPC_PORT_STATS(
                 1 << 2), OFPC_STP(1 << 3), OFPC_RESERVED(1 << 4), OFPC_IP_REASM(
-                1 << 5), OFPC_QUEUE_STATS(1 << 6), OFPC_ARP_MATCH_IP(1 << 7);
+                        1 << 5), OFPC_QUEUE_STATS(1 << 6), OFPC_ARP_MATCH_IP(1 << 7);
 
         protected int value;
 

@@ -41,8 +41,10 @@ public abstract class AbstractService {
     /**
      * Handles the service request and stores the result in the response.
      *
-     * @param request the request
-     * @param response the response
+     * @param request
+     *            the request
+     * @param response
+     *            the response
      */
     public abstract void handle(HttpServletRequest request,
             HttpServletResponse response);
@@ -55,7 +57,8 @@ public abstract class AbstractService {
      * @return the JSON object
      * @throws IOException
      *             Signals that an I/O exception has occurred.
-     * @throws JSONRPC2ParseException if JSON request is invalid
+     * @throws JSONRPC2ParseException
+     *             if JSON request is invalid
      */
     protected JSONRPC2Request parseJSONRequest(final HttpServletRequest request)
             throws IOException, JSONRPC2ParseException {
@@ -78,7 +81,8 @@ public abstract class AbstractService {
      *
      * @param response
      *            the response
-     * @param jresp the JSON response
+     * @param jresp
+     *            the JSON response
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
@@ -97,7 +101,8 @@ public abstract class AbstractService {
     /**
      * Gets the exception stack trace in a string.
      *
-     * @param e the exception
+     * @param e
+     *            the exception
      * @return a string
      */
     protected static String stack2string(final Exception e) {

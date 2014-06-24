@@ -43,15 +43,14 @@ public class RemoveOVXSwitch extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     TenantHandler.VDPID, params, true, null);
-
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
             HandlerUtils
-                    .isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
+            .isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
 
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
@@ -62,24 +61,23 @@ public class RemoveOVXSwitch extends ApiHandler<Map<String, Object>> {
                     dpid, virtualNetwork.getTenantId());
             resp = new JSONRPC2Response(0);
 
-
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to remove virtual network : "
-                            + e.getMessage()), 0);
+                    + ": Unable to remove virtual network : "
+                    + e.getMessage()), 0);
         } catch (final InvalidDPIDException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid DPID : " + e.getMessage()), 0);
+                    + ": Invalid DPID : " + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         }
 
         return resp;

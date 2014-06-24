@@ -22,12 +22,12 @@ import org.openflow.util.LRULinkedHashMap;
  */
 public class XidTranslator<T> {
 
-    //XID values OVX creates start at MIN_XID
+    // XID values OVX creates start at MIN_XID
     static final int MIN_XID = 256;
     static final int INIT_SIZE = 1 << 10;
     static final int MAX_SIZE = 1 << 14; // must be larger than the max lifetime
-                                         // of an XID * rate of
-                                         // mesgs/sec
+    // of an XID * rate of
+    // mesgs/sec
     int nextID;
     LRULinkedHashMap<Integer, XidPair<T>> xidMap;
 

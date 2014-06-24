@@ -47,23 +47,25 @@ public class Host implements Persistable, Component {
      */
     enum HostState {
         INIT {
-            protected void register(Host h) {
-                log.debug("registering {}", h);
+            @Override
+            protected void register(final Host h) {
+                Host.log.debug("registering {}", h);
                 try {
-                    Mappable map = OVXMap.getInstance();
+                    final Mappable map = OVXMap.getInstance();
                     map.addMAC(h.mac, h.port.getTenantId());
                     map.getVirtualNetwork(h.port.getTenantId()).addHost(h);
                     DBManager.getInstance().save(h);
                     h.state = HostState.INACTIVE;
-                } catch (NetworkMappingException e) {
-                    log.warn("tenant {} was not found in global map",
+                } catch (final NetworkMappingException e) {
+                    Host.log.warn("tenant {} was not found in global map",
                             h.port.getTenantId());
                 }
             }
         },
         INACTIVE {
-            protected boolean boot(Host h) {
-                log.debug("booting {}", h);
+            @Override
+            protected boolean boot(final Host h) {
+                Host.log.debug("booting {}", h);
                 /*
                  * port to host goes up GIVEN port is ACTIVE. Host can attach to
                  * an inactive port.
@@ -75,23 +77,25 @@ public class Host implements Persistable, Component {
                 return true;
             }
 
-            protected void unregister(Host h) {
-                log.debug("un-registering {}", h);
+            @Override
+            protected void unregister(final Host h) {
+                Host.log.debug("un-registering {}", h);
                 try {
-                    Mappable map = OVXMap.getInstance();
+                    final Mappable map = OVXMap.getInstance();
                     map.removeMAC(h.mac);
                     map.getVirtualNetwork(h.port.getTenantId()).removeHost(h);
                     DBManager.getInstance().remove(h);
                     h.state = HostState.STOPPED;
-                } catch (NetworkMappingException e) {
-                    log.warn("tenant {} was not found in global map",
+                } catch (final NetworkMappingException e) {
+                    Host.log.warn("tenant {} was not found in global map",
                             h.port.getTenantId());
                 }
             }
         },
         ACTIVE {
-            protected boolean teardown(Host h) {
-                log.debug("inactivating {}", h);
+            @Override
+            protected boolean teardown(final Host h) {
+                Host.log.debug("inactivating {}", h);
                 /* port to host goes down GIVEN port is ACTIVE. */
                 h.state = HostState.INACTIVE;
                 h.port.setState(h.port.getState()
@@ -101,22 +105,22 @@ public class Host implements Persistable, Component {
         },
         STOPPED;
 
-        protected void register(Host h) {
-            log.warn("Cannot register {} while status={}", h, h.state);
+        protected void register(final Host h) {
+            Host.log.warn("Cannot register {} while status={}", h, h.state);
         }
 
-        protected boolean boot(Host h) {
-            log.warn("Cannot boot {} while status={}", h, h.state);
+        protected boolean boot(final Host h) {
+            Host.log.warn("Cannot boot {} while status={}", h, h.state);
             return false;
         }
 
-        protected boolean teardown(Host h) {
-            log.warn("Cannot teardown {} while status={}", h, h.state);
+        protected boolean teardown(final Host h) {
+            Host.log.warn("Cannot teardown {} while status={}", h, h.state);
             return false;
         }
 
-        protected void unregister(Host h) {
-            log.warn("Cannot unregister {} while status={}", h, h.state);
+        protected void unregister(final Host h) {
+            Host.log.warn("Cannot unregister {} while status={}", h, h.state);
         }
 
     }
@@ -158,7 +162,7 @@ public class Host implements Persistable, Component {
      * @param ip
      *            the virtual IP address
      */
-    public void setIPAddress(int ip) {
+    public void setIPAddress(final int ip) {
         this.ipAddress = new OVXIPAddress(this.port.getTenantId(), ip);
     }
 
@@ -177,7 +181,7 @@ public class Host implements Persistable, Component {
      * @return the MAC address.
      */
     public MACAddress getMac() {
-        return mac;
+        return this.mac;
     }
 
     /**
@@ -186,19 +190,20 @@ public class Host implements Persistable, Component {
      * @return the port
      */
     public OVXPort getPort() {
-        return port;
+        return this.port;
     }
 
     /**
      * Registers the host in persistent storage.
      */
+    @Override
     public void register() {
         this.state.register(this);
     }
 
     @Override
     public Map<String, Object> getDBIndex() {
-        Map<String, Object> index = new HashMap<String, Object>();
+        final Map<String, Object> index = new HashMap<String, Object>();
         index.put(TenantHandler.TENANT, this.port.getTenantId());
         return index;
     }
@@ -215,7 +220,7 @@ public class Host implements Persistable, Component {
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = new HashMap<String, Object>();
+        final Map<String, Object> dbObject = new HashMap<String, Object>();
         dbObject.put(TenantHandler.VDPID, this.port.getParentSwitch()
                 .getSwitchId());
         dbObject.put(TenantHandler.VPORT, this.port.getPortNumber());
@@ -230,13 +235,14 @@ public class Host implements Persistable, Component {
      * @return the host ID
      */
     public Integer getHostId() {
-        return hostId;
+        return this.hostId;
     }
 
     /**
      * Unregisters the host from the persistent storage and removes all
      * references from the map.
      */
+    @Override
     public void unregister() {
         this.state.unregister(this);
     }
@@ -244,10 +250,12 @@ public class Host implements Persistable, Component {
     /**
      * Tears down the port to which the host is connected.
      */
+    @Override
     public boolean tearDown() {
         return this.state.teardown(this);
     }
 
+    @Override
     public boolean boot() {
         return this.state.boot(this);
     }
@@ -256,35 +264,36 @@ public class Host implements Persistable, Component {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((mac == null) ? 0 : mac.hashCode());
-        result = prime * result + ((port == null) ? 0 : port.hashCode());
+        result = prime * result + (this.mac == null ? 0 : this.mac.hashCode());
+        result = prime * result
+				+ (this.port == null ? 0 : this.port.hashCode());
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
-        Host other = (Host) obj;
-        if (mac == null) {
+        final Host other = (Host) obj;
+        if (this.mac == null) {
             if (other.mac != null) {
                 return false;
             }
-        } else if (!mac.equals(other.mac)) {
+        } else if (!this.mac.equals(other.mac)) {
             return false;
         }
-        if (port == null) {
+        if (this.port == null) {
             if (other.port != null) {
                 return false;
             }
-        } else if (!port.equals(other.port)) {
+        } else if (!this.port.equals(other.port)) {
             return false;
         }
         return true;
@@ -296,22 +305,22 @@ public class Host implements Persistable, Component {
      * @return map that contains host data
      */
     public HashMap<String, Object> convertToPhysical() {
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        final HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("hostId", this.hostId);
         map.put("dpid", this.port.getPhysicalPort().getParentSwitch()
                 .getSwitchName());
-        map.put("port", port.getPhysicalPortNumber());
+        map.put("port", this.port.getPhysicalPortNumber());
         map.put("mac", this.mac.toString());
 
         if (this.ipAddress.getIp() != 0) {
             try {
                 map.put("ipAddress",
                         OVXMap.getInstance()
-                                .getPhysicalIP(this.ipAddress,
-                                        this.port.getTenantId())
+                        .getPhysicalIP(this.ipAddress,
+                                this.port.getTenantId())
                                 .toSimpleString());
-            } catch (AddressMappingException e) {
-                log.warn("Unable to fetch physical IP for host");
+            } catch (final AddressMappingException e) {
+                Host.log.warn("Unable to fetch physical IP for host");
             }
         }
         return map;

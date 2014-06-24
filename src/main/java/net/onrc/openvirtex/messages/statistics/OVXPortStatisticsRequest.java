@@ -22,7 +22,9 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
+
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFStatisticsMessageBase;
 import org.openflow.protocol.statistics.OFPortStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
@@ -30,16 +32,16 @@ import org.openflow.protocol.statistics.OFStatisticsType;
  * Implementation of virtual port statistics request.
  */
 public class OVXPortStatisticsRequest extends OFPortStatisticsRequest implements
-        DevirtualizableStatistic {
+DevirtualizableStatistic {
 
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,
             final OVXStatisticsRequest msg) {
-        List<OVXPortStatisticsReply> replies = new LinkedList<OVXPortStatisticsReply>();
+        final List<OVXPortStatisticsReply> replies = new LinkedList<OVXPortStatisticsReply>();
         int length = 0;
         if (this.portNumber == OFPort.OFPP_NONE.getValue()) {
-            for (OVXPort p : sw.getPorts().values()) {
-                OVXPortStatisticsReply reply = p.getPhysicalPort()
+            for (final OVXPort p : sw.getPorts().values()) {
+                final OVXPortStatisticsReply reply = p.getPhysicalPort()
                         .getParentSwitch()
                         .getPortStat(p.getPhysicalPort().getPortNumber());
                 if (reply != null) {
@@ -54,11 +56,11 @@ public class OVXPortStatisticsRequest extends OFPortStatisticsRequest implements
                     length += reply.getLength();
                 }
             }
-            OVXStatisticsReply rep = new OVXStatisticsReply();
+            final OVXStatisticsReply rep = new OVXStatisticsReply();
             rep.setStatisticType(OFStatisticsType.PORT);
             rep.setStatistics(replies);
             rep.setXid(msg.getXid());
-            rep.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + length);
+            rep.setLengthU(OFStatisticsMessageBase.MINIMUM_LENGTH + length);
             sw.sendMsg(rep, sw);
         }
     }

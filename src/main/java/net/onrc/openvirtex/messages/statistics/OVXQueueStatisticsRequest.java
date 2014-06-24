@@ -20,11 +20,10 @@ import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.openflow.protocol.statistics.OFQueueStatisticsRequest;
 
 public class OVXQueueStatisticsRequest extends OFQueueStatisticsRequest
-        implements DevirtualizableStatistic {
+implements DevirtualizableStatistic {
 
     Logger log = LogManager
             .getLogger(OVXQueueStatisticsRequest.class.getName());
@@ -33,7 +32,7 @@ public class OVXQueueStatisticsRequest extends OFQueueStatisticsRequest
     public void devirtualizeStatistic(final OVXSwitch sw,
             final OVXStatisticsRequest msg) {
         // TODO
-        log.info("Queue statistics handling not yet implemented");
+        this.log.info("Queue statistics handling not yet implemented");
     }
 
 }

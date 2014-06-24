@@ -69,9 +69,9 @@ public class DHCP extends BasePacket {
     public enum DHCPOptionCode {
         OptionCode_SubnetMask((byte) 1), OptionCode_RequestedIP((byte) 50), OptionCode_LeaseTime(
                 (byte) 51), OptionCode_MessageType((byte) 53), OptionCode_DHCPServerIp(
-                (byte) 54), OptionCode_RequestedParameters((byte) 55), OptionCode_RenewalTime(
-                (byte) 58), OPtionCode_RebindingTime((byte) 59), OptionCode_ClientID(
-                (byte) 61), OptionCode_END((byte) 255);
+                        (byte) 54), OptionCode_RequestedParameters((byte) 55), OptionCode_RenewalTime(
+                                (byte) 58), OPtionCode_RebindingTime((byte) 59), OptionCode_ClientID(
+                                        (byte) 61), OptionCode_END((byte) 255);
 
         protected byte value;
 

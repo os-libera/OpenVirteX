@@ -26,7 +26,7 @@ import org.openflow.protocol.statistics.OFFlowStatisticsReply;
 import org.openflow.protocol.statistics.OFStatistics;
 
 public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
-        VirtualizableStatistic {
+VirtualizableStatistic {
 
     @Override
     public void virtualizeStatistic(final PhysicalSwitch sw,
@@ -36,18 +36,18 @@ public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
             return;
         }
 
-        HashMap<Integer, List<OVXFlowStatisticsReply>> stats = new HashMap<Integer, List<OVXFlowStatisticsReply>>();
+        final HashMap<Integer, List<OVXFlowStatisticsReply>> stats = new HashMap<Integer, List<OVXFlowStatisticsReply>>();
 
-        for (OFStatistics stat : msg.getStatistics()) {
-            OVXFlowStatisticsReply reply = (OVXFlowStatisticsReply) stat;
-            int tid = getTidFromCookie(reply.getCookie());
-            addToStats(tid, reply, stats);
+        for (final OFStatistics stat : msg.getStatistics()) {
+            final OVXFlowStatisticsReply reply = (OVXFlowStatisticsReply) stat;
+            final int tid = this.getTidFromCookie(reply.getCookie());
+            this.addToStats(tid, reply, stats);
         }
         sw.setFlowStatistics(stats);
     }
 
-    private void addToStats(int tid, OVXFlowStatisticsReply reply,
-            HashMap<Integer, List<OVXFlowStatisticsReply>> stats) {
+    private void addToStats(final int tid, final OVXFlowStatisticsReply reply,
+            final HashMap<Integer, List<OVXFlowStatisticsReply>> stats) {
         List<OVXFlowStatisticsReply> statsList = stats.get(tid);
         if (statsList == null) {
             statsList = new LinkedList<OVXFlowStatisticsReply>();
@@ -56,7 +56,7 @@ public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
         stats.put(tid, statsList);
     }
 
-    private int getTidFromCookie(long cookie) {
+    private int getTidFromCookie(final long cookie) {
         return (int) (cookie >> 32);
     }
 

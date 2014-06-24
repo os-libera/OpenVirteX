@@ -167,7 +167,7 @@ public class OFActionOutput extends OFAction implements Cloneable {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override

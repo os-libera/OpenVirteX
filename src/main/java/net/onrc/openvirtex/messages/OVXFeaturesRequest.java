@@ -20,7 +20,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import org.openflow.protocol.OFFeaturesRequest;
 
 public class OVXFeaturesRequest extends OFFeaturesRequest implements
-        Devirtualizable {
+Devirtualizable {
 
     @Override
     public void devirtualize(final OVXSwitch sw) {

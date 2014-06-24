@@ -39,17 +39,17 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
  */
 public class DisconnectOVXLink extends ApiHandler<Map<String, Object>> {
 
-
-    private Logger log = LogManager.getLogger(DisconnectOVXLink.class.getName());
+    private final Logger log = LogManager.getLogger(DisconnectOVXLink.class
+			.getName());
 
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number linkId = HandlerUtils.<Number>fetchField(
+            final Number linkId = HandlerUtils.<Number> fetchField(
                     TenantHandler.LINK, params, true, null);
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
@@ -69,20 +69,20 @@ public class DisconnectOVXLink extends ApiHandler<Map<String, Object>> {
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to disconnect virtual link : "
-                            + e.getMessage()), 0);
+                    + ": Unable to disconnect virtual link : "
+                    + e.getMessage()), 0);
         } catch (final InvalidLinkException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid virtual link : " + e.getMessage()), 0);
+                    + ": Invalid virtual link : " + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         }
         return resp;
     }

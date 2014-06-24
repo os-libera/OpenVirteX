@@ -46,7 +46,7 @@ import org.openflow.protocol.statistics.OFStatisticsType;
  * @author David Erickson (daviderickson@cs.stanford.edu) - Mar 27, 2010
  */
 public abstract class OFStatisticsMessageBase extends OFMessage implements
-        OFStatisticsFactoryAware {
+OFStatisticsFactoryAware {
     public static int MINIMUM_LENGTH = 12;
 
     protected OFStatisticsFactory statisticsFactory;
@@ -145,7 +145,7 @@ public abstract class OFStatisticsMessageBase extends OFMessage implements
         }
         this.statistics = this.statisticsFactory.parseStatistics(
                 this.getType(), this.statisticType, data, super.getLengthU()
-                        - OFStatisticsMessageBase.MINIMUM_LENGTH);
+                - OFStatisticsMessageBase.MINIMUM_LENGTH);
     }
 
     @Override

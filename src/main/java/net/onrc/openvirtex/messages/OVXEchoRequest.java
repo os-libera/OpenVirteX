@@ -21,7 +21,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import org.openflow.protocol.OFEchoRequest;
 
 public class OVXEchoRequest extends OFEchoRequest implements Virtualizable,
-        Devirtualizable {
+Devirtualizable {
 
     @Override
     public void devirtualize(final OVXSwitch sw) {

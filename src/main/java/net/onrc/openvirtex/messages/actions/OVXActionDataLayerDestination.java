@@ -31,12 +31,12 @@ import org.openflow.protocol.action.OFActionDataLayerDestination;
  * Virtual destination data layer action message.
  */
 public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
-        implements VirtualizableAction {
+implements VirtualizableAction {
 
     @Override
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
-            throws ActionVirtualizationDenied {
+                    throws ActionVirtualizationDenied {
         final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
         final int tid;
         try {
@@ -47,7 +47,7 @@ public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
                         OFBadActionCode.OFPBAC_EPERM);
             }
             approvedActions.add(this);
-        } catch (AddressMappingException e) {
+        } catch (final AddressMappingException e) {
             throw new ActionVirtualizationDenied("Target mac " + mac
                     + " is invalid ", OFBadActionCode.OFPBAC_EPERM);
         }

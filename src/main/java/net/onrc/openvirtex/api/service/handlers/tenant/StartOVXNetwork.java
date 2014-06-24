@@ -43,7 +43,7 @@ public class StartOVXNetwork extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
@@ -55,23 +55,23 @@ public class StartOVXNetwork extends ApiHandler<Map<String, Object>> {
             virtualNetwork.boot();
             this.log.info("Booted virtual network {}",
                     virtualNetwork.getTenantId());
-            Map<String, Object> reply = new HashMap<String, Object>(
+            final Map<String, Object> reply = new HashMap<String, Object>(
                     virtualNetwork.getDBObject());
             resp = new JSONRPC2Response(reply, 0);
 
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to start virtual network : "
-                            + e.getMessage()), 0);
+                    + ": Unable to start virtual network : "
+                    + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         }
         return resp;
     }

@@ -83,10 +83,10 @@ public class SwitchChannelHandler extends OFChannelHandler {
 
     /**
      *
-     * The ChannelState enum implements the connection state machine. Each method in
-     * individual enum elements override previous implementations of each
-     * message processor. Each state expects some event and passes to the next
-     * state.
+     * The ChannelState enum implements the connection state machine. Each
+     * method in individual enum elements override previous implementations of
+     * each message processor. Each state expects some event and passes to the
+     * next state.
      */
     enum ChannelState {
         INIT(false) {
@@ -187,7 +187,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
                                                 .getDatapathId()));
                     }
 
-                } catch (MessageParseException e) {
+                } catch (final MessageParseException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -212,7 +212,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
                 final OFStatistics f = m.getFirstStatistics();
                 f.writeTo(data);
                 description.readFrom(data);
-                OFFlowMod fm = new OFFlowMod();
+                final OFFlowMod fm = new OFFlowMod();
                 fm.setCommand(OFFlowMod.OFPFC_DELETE);
                 fm.setMatch(new OFMatch());
                 h.channel.write(Collections.singletonList(fm));
@@ -257,45 +257,45 @@ public class SwitchChannelHandler extends OFChannelHandler {
                     final OFMessage m) throws IOException {
 
                 switch (m.getType()) {
-                case ECHO_REQUEST:
-                    this.processOFEchoRequest(h, (OFEchoRequest) m);
-                    break;
-                case BARRIER_REPLY:
-                case ECHO_REPLY:
-                    // do nothing but thank the switch
-                    break;
-                case HELLO:
-                    h.sendHandShakeMessage(OFType.FEATURES_REQUEST);
-                    break;
-                case FEATURES_REPLY:
-                    h.featuresReply = (OFFeaturesReply) m;
-                    h.sw.setFeaturesReply(h.featuresReply);
-                    break;
-                case ERROR:
-                case FLOW_REMOVED:
-                case GET_CONFIG_REPLY:
-                case PACKET_IN:
-                case PORT_STATUS:
-                case QUEUE_GET_CONFIG_REPLY:
-                case STATS_REPLY:
-                case VENDOR:
-                    h.sw.handleIO(m, h.channel);
-                    break;
-                    // The following messages are sent to switches. The controller
-                    // should never receive them
-                case SET_CONFIG:
-                case GET_CONFIG_REQUEST:
-                case PACKET_OUT:
-                case PORT_MOD:
-                case QUEUE_GET_CONFIG_REQUEST:
-                case BARRIER_REQUEST:
-                case STATS_REQUEST:
-                case FEATURES_REQUEST:
-                case FLOW_MOD:
-                    this.illegalMessageReceived(h, m);
-                    break;
-                default:
-                    break;
+                    case ECHO_REQUEST:
+                        this.processOFEchoRequest(h, (OFEchoRequest) m);
+                        break;
+                    case BARRIER_REPLY:
+                    case ECHO_REPLY:
+                        // do nothing but thank the switch
+                        break;
+                    case HELLO:
+                        h.sendHandShakeMessage(OFType.FEATURES_REQUEST);
+                        break;
+                    case FEATURES_REPLY:
+                        h.featuresReply = (OFFeaturesReply) m;
+                        h.sw.setFeaturesReply(h.featuresReply);
+                        break;
+                    case ERROR:
+                    case FLOW_REMOVED:
+                    case GET_CONFIG_REPLY:
+                    case PACKET_IN:
+                    case PORT_STATUS:
+                    case QUEUE_GET_CONFIG_REPLY:
+                    case STATS_REPLY:
+                    case VENDOR:
+                        h.sw.handleIO(m, h.channel);
+                        break;
+                        // The following messages are sent to switches. The controller
+                        // should never receive them
+                    case SET_CONFIG:
+                    case GET_CONFIG_REQUEST:
+                    case PACKET_OUT:
+                    case PORT_MOD:
+                    case QUEUE_GET_CONFIG_REQUEST:
+                    case BARRIER_REQUEST:
+                    case STATS_REQUEST:
+                    case FEATURES_REQUEST:
+                    case FLOW_MOD:
+                        this.illegalMessageReceived(h, m);
+                        break;
+                    default:
+                        break;
                 }
 
             }
@@ -434,78 +434,79 @@ public class SwitchChannelHandler extends OFChannelHandler {
         void processOFMessage(final SwitchChannelHandler h, final OFMessage m)
                 throws IOException {
             switch (m.getType()) {
-            case HELLO:
-                this.processOFHello(h, (OFHello) m);
-                break;
-            case BARRIER_REPLY:
-                this.processOFBarrierReply(h, (OFBarrierReply) m);
-                break;
-            case ECHO_REPLY:
-                this.processOFEchoReply(h, (OFEchoReply) m);
-                break;
-            case ECHO_REQUEST:
-                this.processOFEchoRequest(h, (OFEchoRequest) m);
-                break;
-            case ERROR:
-                this.processOFError(h, (OFError) m);
-                break;
-            case FEATURES_REPLY:
-                this.processOFFeaturesReply(h, (OFFeaturesReply) m);
-                break;
-            case FLOW_REMOVED:
-                this.processOFFlowRemoved(h, (OFFlowRemoved) m);
-                break;
-            case GET_CONFIG_REPLY:
-                this.processOFGetConfigReply(h, (OFGetConfigReply) m);
-                break;
-            case PACKET_IN:
-                this.processOFPacketIn(h, (OFPacketIn) m);
-                break;
-            case PORT_STATUS:
-                this.processOFPortStatus(h, (OFPortStatus) m);
-                break;
-            case QUEUE_GET_CONFIG_REPLY:
-                this.processOFQueueGetConfigReply(h, (OFQueueGetConfigReply) m);
-                break;
-            case STATS_REPLY:
-                this.processOFStatisticsReply(h, (OFStatisticsReply) m);
-                break;
-            case VENDOR:
-                this.processOFVendor(h, (OFVendor) m);
-                break;
-                // The following messages are sent to switches. The controller
-                // should never receive them
-            case SET_CONFIG:
-            case GET_CONFIG_REQUEST:
-            case PACKET_OUT:
-            case PORT_MOD:
-            case QUEUE_GET_CONFIG_REQUEST:
-            case BARRIER_REQUEST:
-            case STATS_REQUEST:
-            case FEATURES_REQUEST:
-            case FLOW_MOD:
-                this.illegalMessageReceived(h, m);
-                break;
-            default:
-                break;
+                case HELLO:
+                    this.processOFHello(h, (OFHello) m);
+                    break;
+                case BARRIER_REPLY:
+                    this.processOFBarrierReply(h, (OFBarrierReply) m);
+                    break;
+                case ECHO_REPLY:
+                    this.processOFEchoReply(h, (OFEchoReply) m);
+                    break;
+                case ECHO_REQUEST:
+                    this.processOFEchoRequest(h, (OFEchoRequest) m);
+                    break;
+                case ERROR:
+                    this.processOFError(h, (OFError) m);
+                    break;
+                case FEATURES_REPLY:
+                    this.processOFFeaturesReply(h, (OFFeaturesReply) m);
+                    break;
+                case FLOW_REMOVED:
+                    this.processOFFlowRemoved(h, (OFFlowRemoved) m);
+                    break;
+                case GET_CONFIG_REPLY:
+                    this.processOFGetConfigReply(h, (OFGetConfigReply) m);
+                    break;
+                case PACKET_IN:
+                    this.processOFPacketIn(h, (OFPacketIn) m);
+                    break;
+                case PORT_STATUS:
+                    this.processOFPortStatus(h, (OFPortStatus) m);
+                    break;
+                case QUEUE_GET_CONFIG_REPLY:
+                    this.processOFQueueGetConfigReply(h, (OFQueueGetConfigReply) m);
+                    break;
+                case STATS_REPLY:
+                    this.processOFStatisticsReply(h, (OFStatisticsReply) m);
+                    break;
+                case VENDOR:
+                    this.processOFVendor(h, (OFVendor) m);
+                    break;
+                    // The following messages are sent to switches. The controller
+                    // should never receive them
+                case SET_CONFIG:
+                case GET_CONFIG_REQUEST:
+                case PACKET_OUT:
+                case PORT_MOD:
+                case QUEUE_GET_CONFIG_REQUEST:
+                case BARRIER_REQUEST:
+                case STATS_REQUEST:
+                case FEATURES_REQUEST:
+                case FLOW_MOD:
+                    this.illegalMessageReceived(h, m);
+                    break;
+                default:
+                    break;
             }
         }
 
         /**
          * Default implementation for message handlers in any state.
          *
-         * Individual states must override these if they want a behavior
-         * that differs from the default.
+         * Individual states must override these if they want a behavior that
+         * differs from the default.
          *
-         * In general, these handlers simply ignore the message and do
-         * nothing.
+         * In general, these handlers simply ignore the message and do nothing.
          *
-         * There are some exceptions though, since some messages really
-         * are handled the same way in every state (e.g., ECHO_REQUST) or
-         * that are only valid in a single state (e.g., HELLO, GET_CONFIG_REPLY
+         * There are some exceptions though, since some messages really are
+         * handled the same way in every state (e.g., ECHO_REQUST) or that are
+         * only valid in a single state (e.g., HELLO, GET_CONFIG_REPLY
          *
-         * @param h the switch channel handler
-         * @param m the OpenFlow hello message
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the OpenFlow hello message
          * @throws IOException
          **/
         void processOFHello(final SwitchChannelHandler h, final OFHello m)
@@ -515,12 +516,14 @@ public class SwitchChannelHandler extends OFChannelHandler {
         }
 
         /**
-         * Processes OpenFlow barrier reply message.
-         * UNIMPLEMENTED
+         * Processes OpenFlow barrier reply message. UNIMPLEMENTED
          *
-         * @param h the switch channel handler
-         * @param m the the barrier reply message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the the barrier reply message
+         * @throws IOException
+         *             TODO
          */
         void processOFBarrierReply(final SwitchChannelHandler h,
                 final OFBarrierReply m) throws IOException {
@@ -531,9 +534,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow echo request message.
          *
-         * @param h the switch channel handler
-         * @param m the echo request message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the echo request message
+         * @throws IOException
+         *             TODO
          */
         void processOFEchoRequest(final SwitchChannelHandler h,
                 final OFEchoRequest m) throws IOException {
@@ -548,9 +554,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow echo reply.
          *
-         * @param h the switch channel handler
-         * @param m the echo reply message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the echo reply message
+         * @throws IOException
+         *             TODO
          */
         void processOFEchoReply(final SwitchChannelHandler h,
                 final OFEchoReply m) throws IOException {
@@ -558,13 +567,15 @@ public class SwitchChannelHandler extends OFChannelHandler {
         }
 
         /**
-         * Processes OpenFlow error message. We don't have
-         * a default implementation for OFError, every state
-         * must override it.
+         * Processes OpenFlow error message. We don't have a default
+         * implementation for OFError, every state must override it.
          *
-         * @param h the switch channel handler
-         * @param m the error message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the error message
+         * @throws IOException
+         *             TODO
          */
         abstract void processOFError(SwitchChannelHandler h, OFError m)
                 throws IOException;
@@ -572,9 +583,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow features reply message.
          *
-         * @param h the switch channel handler
-         * @param m the features reply message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the features reply message
+         * @throws IOException
+         *             TODO
          */
         void processOFFeaturesReply(final SwitchChannelHandler h,
                 final OFFeaturesReply m) throws IOException {
@@ -584,9 +598,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow flow removed message.
          *
-         * @param h the switch channel handler
-         * @param m the flow removed message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the flow removed message
+         * @throws IOException
+         *             TODO
          */
         void processOFFlowRemoved(final SwitchChannelHandler h,
                 final OFFlowRemoved m) throws IOException {
@@ -596,9 +613,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow config reply message.
          *
-         * @param h the switch channel handler
-         * @param m the config reply message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the config reply message
+         * @throws IOException
+         *             TODO
          */
         void processOFGetConfigReply(final SwitchChannelHandler h,
                 final OFGetConfigReply m) throws IOException {
@@ -609,9 +629,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow packet in message.
          *
-         * @param h the switch channel handler
-         * @param m the packet in message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the packet in message
+         * @throws IOException
+         *             TODO
          */
         void processOFPacketIn(final SwitchChannelHandler h, final OFPacketIn m)
                 throws IOException {
@@ -619,12 +642,15 @@ public class SwitchChannelHandler extends OFChannelHandler {
         }
 
         /**
-         * Processes OpenFlow port status message.
-         * No default implementation, every state needs to handle it.
+         * Processes OpenFlow port status message. No default implementation,
+         * every state needs to handle it.
          *
-         * @param h the switch channel handler
-         * @param m the port status message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the port status message
+         * @throws IOException
+         *             TODO
          */
         abstract void processOFPortStatus(SwitchChannelHandler h, OFPortStatus m)
                 throws IOException;
@@ -632,9 +658,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow queue config reply message.
          *
-         * @param h the switch channel handler
-         * @param m the queue config reply message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the queue config reply message
+         * @throws IOException
+         *             TODO
          */
         void processOFQueueGetConfigReply(final SwitchChannelHandler h,
                 final OFQueueGetConfigReply m) throws IOException {
@@ -644,9 +673,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow statistics reply message.
          *
-         * @param h the switch channel handler
-         * @param m the statistics reply message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the statistics reply message
+         * @throws IOException
+         *             TODO
          */
         void processOFStatisticsReply(final SwitchChannelHandler h,
                 final OFStatisticsReply m) throws IOException {
@@ -656,9 +688,12 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /**
          * Processes OpenFlow vendor message.
          *
-         * @param h the switch channel handler
-         * @param m the vendor message
-         * @throws IOException TODO
+         * @param h
+         *            the switch channel handler
+         * @param m
+         *            the vendor message
+         * @throws IOException
+         *             TODO
          */
         void processOFVendor(final SwitchChannelHandler h, final OFVendor m)
                 throws IOException {
@@ -734,7 +769,8 @@ public class SwitchChannelHandler extends OFChannelHandler {
     /**
      * Send a message to the switch using the handshake transactions ids.
      *
-     * @param type the type
+     * @param type
+     *            the type
      * @throws IOException
      */
 
@@ -800,7 +836,7 @@ public class SwitchChannelHandler extends OFChannelHandler {
         /*
          * Pass all messages to the handlers, except LLDP which we send straight
          * to the topology controller.
-         *
+         * 
          * This should be implemented with a token bucket in order to rate limit
          * the connections a little.
          */
@@ -813,25 +849,25 @@ public class SwitchChannelHandler extends OFChannelHandler {
                 try {
 
                     switch (ofm.getType()) {
-                    case PACKET_IN:
-                        /*
-                         * Is this packet a packet in? If yes is it an lldp?
-                         * then send it to the PhysicalNetwork.
-                         */
-                        final byte[] data = ((OFPacketIn) ofm).getPacketData();
-                        if (OVXLLDP.isLLDP(data)) {
-                            if ((this.sw != null) && (this.sw.isActive())) {
-                                PhysicalNetwork.getInstance().handleLLDP(ofm,
-                                        this.sw);
-                            } else {
-                                this.log.warn("Switch has not connected yet; dropping LLDP for now");
+                        case PACKET_IN:
+                            /*
+                             * Is this packet a packet in? If yes is it an lldp?
+                             * then send it to the PhysicalNetwork.
+                             */
+                            final byte[] data = ((OFPacketIn) ofm).getPacketData();
+                            if (OVXLLDP.isLLDP(data)) {
+                                if (this.sw != null && this.sw.isActive()) {
+                                    PhysicalNetwork.getInstance().handleLLDP(ofm,
+                                            this.sw);
+                                } else {
+                                    this.log.warn("Switch has not connected yet; dropping LLDP for now");
+                                }
+                                break;
                             }
+                        default:
+                            // Process all non-packet-ins
+                            this.state.processOFMessage(this, ofm);
                             break;
-                        }
-                    default:
-                        // Process all non-packet-ins
-                        this.state.processOFMessage(this, ofm);
-                        break;
                     }
 
                 } catch (final Exception ex) {

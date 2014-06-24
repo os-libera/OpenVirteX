@@ -39,7 +39,7 @@ import org.openflow.protocol.OFPortStatus.OFPortReason;
  * it.
  */
 public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
-        Component {
+Component {
 
     /**
      * The FSM for a port, as relevant to OVX in terms of behavior, not in terms
@@ -56,7 +56,8 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
      */
     enum PortState {
         INIT {
-            protected void register(PhysicalPort port) {
+            @Override
+            protected void register(final PhysicalPort port) {
                 port.pstate = PortState.INACTIVE;
                 /* port will be boot()ed from SwitchDiscoveryManager */
                 if (port.parentSwitch.addPort(port)) {
@@ -69,15 +70,17 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
             }
         },
         INACTIVE {
-            protected boolean boot(PhysicalPort port) {
+            @Override
+            protected boolean boot(final PhysicalPort port) {
                 port.log.debug("enabling port={}", port.toAP());
                 port.pstate = PortState.ACTIVE;
 
                 /* Add to discovery manager */
                 PhysicalNetwork.getInstance().addPort(port);
-                if ((port.portLink != null) && (port.portLink.exists())) {
+                if (port.portLink != null && port.portLink.exists()) {
                     /* if neighbor port is ACTIVE, boot up link */
-                    PhysicalPort dst = port.portLink.egressLink.getDstPort();
+                    final PhysicalPort dst = port.portLink.egressLink
+							.getDstPort();
                     if (dst.pstate.equals(port.pstate)) {
                         port.portLink.egressLink.boot();
                         port.portLink.ingressLink.boot();
@@ -86,32 +89,35 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
                 return true;
             }
 
-            protected void unregister(PhysicalPort port) {
+            @Override
+            protected void unregister(final PhysicalPort port) {
                 port.log.debug("removing port={}", port.toAP());
 
                 port.pstate = PortState.STOPPED;
                 if (port.parentSwitch.removePort(port)) {
-                    PhysicalNetwork pnet = PhysicalNetwork.getInstance();
+                    final PhysicalNetwork pnet = PhysicalNetwork.getInstance();
                     pnet.removePort(port);
                     DBManager.getInstance().delPort(port.toDPIDandPort());
                 }
 
                 /* remove link - calls unregister() on links */
-                if ((port.portLink != null) && (port.portLink.exists())) {
-                    PhysicalPort dst = port.portLink.egressLink.getDstPort();
+                if (port.portLink != null && port.portLink.exists()) {
+                    final PhysicalPort dst = port.portLink.egressLink
+							.getDstPort();
                     PhysicalNetwork.getInstance().removeLink(port, dst);
                     PhysicalNetwork.getInstance().removeLink(dst, port);
                 }
             }
         },
         ACTIVE {
-            protected boolean teardown(PhysicalPort port) {
+            @Override
+            protected boolean teardown(final PhysicalPort port) {
                 port.log.debug("disabling port={}", port.toAP());
 
                 port.pstate = PortState.INACTIVE;
                 PhysicalNetwork.getInstance().disablePort(port);
 
-                if ((port.portLink != null) && (port.portLink.exists())) {
+                if (port.portLink != null && port.portLink.exists()) {
                     /* it only takes one inactive port to teardown link */
                     port.portLink.egressLink.tearDown();
                     port.portLink.ingressLink.tearDown();
@@ -122,24 +128,24 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
         },
         STOPPED;
 
-        protected void register(PhysicalPort port) {
+        protected void register(final PhysicalPort port) {
             port.log.debug("Port {} is already registered [state={}]",
                     port.toAP(), port.pstate);
         }
 
-        protected boolean boot(PhysicalPort port) {
+        protected boolean boot(final PhysicalPort port) {
             port.log.debug("Port {} can't be enabled from state={}",
                     port.toAP(), port.pstate);
             return false;
         }
 
-        protected boolean teardown(PhysicalPort port) {
+        protected boolean teardown(final PhysicalPort port) {
             port.log.debug("Port {} can't be disabled from state={}",
                     port.toAP(), port.pstate);
             return false;
         }
 
-        protected void unregister(PhysicalPort port) {
+        protected void unregister(final PhysicalPort port) {
             port.log.debug("Port {} can't be unregistered from state={}",
                     port.toAP(), port.pstate);
         }
@@ -197,7 +203,7 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
         if (this.ovxPortMap.get(tenantId) == null) {
             return null;
         }
-        OVXPort p = this.ovxPortMap.get(tenantId).get(vLinkId);
+        final OVXPort p = this.ovxPortMap.get(tenantId).get(vLinkId);
         if (p != null && !p.isActive()) {
             return null;
         }
@@ -246,7 +252,7 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = new HashMap<String, Object>();
+        final Map<String, Object> dbObject = new HashMap<String, Object>();
         dbObject.put(TenantHandler.DPID, this.getParentSwitch().getSwitchId());
         dbObject.put(TenantHandler.PORT, this.portNumber);
         return dbObject;
@@ -258,14 +264,14 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
      * @param ovxPort
      *            the virtual port
      */
-    public void removeOVXPort(OVXPort ovxPort) {
+    public void removeOVXPort(final OVXPort ovxPort) {
         if (this.ovxPortMap.containsKey(ovxPort.getTenantId())) {
             this.ovxPortMap.remove(ovxPort.getTenantId());
         }
     }
 
     @Override
-    public boolean equals(Object that) {
+    public boolean equals(final Object that) {
         if (that == null) {
             return false;
         }
@@ -275,10 +281,10 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
         if (!(that instanceof PhysicalPort)) {
             return false;
         }
-        PhysicalPort port = (PhysicalPort) that;
+        final PhysicalPort port = (PhysicalPort) that;
         return this.portNumber == port.portNumber
                 && this.parentSwitch.getSwitchId() == port.getParentSwitch()
-                        .getSwitchId();
+                .getSwitchId();
     }
 
     /**
@@ -290,8 +296,8 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
      *            the tenant ID
      * @return list of virtual ports
      */
-    public List<Map<Integer, OVXPort>> getOVXPorts(Integer tenant) {
-        List<Map<Integer, OVXPort>> ports = new ArrayList<Map<Integer, OVXPort>>();
+    public List<Map<Integer, OVXPort>> getOVXPorts(final Integer tenant) {
+        final List<Map<Integer, OVXPort>> ports = new ArrayList<Map<Integer, OVXPort>>();
         if (tenant == null) {
             ports.addAll(this.ovxPortMap.values());
         } else {
@@ -307,38 +313,39 @@ public class PhysicalPort extends Port<PhysicalSwitch, PhysicalLink> implements
      * @param portstat
      *            the PortStatus for this port
      */
-    public boolean applyPortStatus(OVXPortStatus portstat) {
+    public boolean applyPortStatus(final OVXPortStatus portstat) {
         switch (OFPortReason.fromReasonCode(portstat.getReason())) {
-        case OFPPR_MODIFY:
-            /* link/port (en/dis)abled */
-            OFPhysicalPort psport = portstat.getDesc();
-            this.portNumber = psport.getPortNumber();
-            this.hardwareAddress = psport.getHardwareAddress();
-            this.name = psport.getName();
-            this.config = psport.getConfig();
-            this.state = psport.getState();
-            this.currentFeatures = psport.getCurrentFeatures();
-            this.advertisedFeatures = psport.getAdvertisedFeatures();
-            this.supportedFeatures = psport.getSupportedFeatures();
-            this.peerFeatures = psport.getPeerFeatures();
-            /* disable if link or port is down */
-            if (((this.state & OFPortState.OFPPS_LINK_DOWN.getValue()) > 0)
-                    || ((this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) > 0)) {
-                this.tearDown();
-            } else if (((this.state & OFPortState.OFPPS_LINK_DOWN.getValue()) == 0)
-                    || ((this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) == 0)) {
-                this.boot();
-            }
-            return true;
-        default:
-            log.error("Unknown PortReason");
-            return false;
+            case OFPPR_MODIFY:
+                /* link/port (en/dis)abled */
+                final OFPhysicalPort psport = portstat.getDesc();
+                this.portNumber = psport.getPortNumber();
+                this.hardwareAddress = psport.getHardwareAddress();
+                this.name = psport.getName();
+                this.config = psport.getConfig();
+                this.state = psport.getState();
+                this.currentFeatures = psport.getCurrentFeatures();
+                this.advertisedFeatures = psport.getAdvertisedFeatures();
+                this.supportedFeatures = psport.getSupportedFeatures();
+                this.peerFeatures = psport.getPeerFeatures();
+                /* disable if link or port is down */
+                if ((this.state & OFPortState.OFPPS_LINK_DOWN.getValue()) > 0
+                        || (this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) > 0) {
+                    this.tearDown();
+                } else if ((this.state & OFPortState.OFPPS_LINK_DOWN.getValue()) == 0
+                        || (this.config & OFPortConfig.OFPPC_PORT_DOWN.getValue()) == 0) {
+                    this.boot();
+                }
+                return true;
+            default:
+                this.log.error("Unknown PortReason");
+                return false;
         }
     }
 
     /**
      * unmaps this port from the global mapping and its parent switch.
      */
+    @Override
     public void unregister() {
         this.pstate.unregister(this);
     }

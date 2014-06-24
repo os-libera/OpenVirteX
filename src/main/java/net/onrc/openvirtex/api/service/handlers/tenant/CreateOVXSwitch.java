@@ -44,18 +44,19 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
  */
 public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
 
-    private Logger log = LogManager.getLogger(CreateOVXSwitch.class.getName());
+    private final Logger log = LogManager.getLogger(CreateOVXSwitch.class
+			.getName());
 
     @Override
     public JSONRPC2Response process(final Map<String, Object> params) {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final List<Number> dpids = HandlerUtils.<List<Number>>fetchField(
+            final List<Number> dpids = HandlerUtils.<List<Number>> fetchField(
                     TenantHandler.DPIDS, params, true, null);
-            final Long dp = HandlerUtils.<Number>fetchField(
+            final Long dp = HandlerUtils.<Number> fetchField(
                     TenantHandler.VDPID, params, false, 0).longValue();
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
@@ -85,7 +86,7 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
                 this.log.info(
                         "Created virtual switch {} in virtual network {}",
                         ovxSwitch.getSwitchName(), virtualNetwork.getTenantId());
-                Map<String, Object> reply = new HashMap<String, Object>(
+                final Map<String, Object> reply = new HashMap<String, Object>(
                         ovxSwitch.getDBObject());
                 reply.put(TenantHandler.TENANT, ovxSwitch.getTenantId());
                 resp = new JSONRPC2Response(reply, 0);
@@ -94,28 +95,26 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to create virtual switch : "
-                            + e.getMessage()), 0);
+                    + ": Unable to create virtual switch : "
+                    + e.getMessage()), 0);
         } catch (final InvalidDPIDException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid DPID : " + e.getMessage()), 0);
+                    + ": Invalid DPID : " + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         } catch (final IndexOutOfBoundException e) {
-            resp = new JSONRPC2Response(
-                    new JSONRPC2Error(
-                            JSONRPC2Error.INVALID_PARAMS.getCode(),
-                            this.cmdName()
-                                    + ": Impossible to create the virtual switch, "
-                                    + "too many switches in this virtual network : "
-                                    + e.getMessage()), 0);
+            resp = new JSONRPC2Response(new JSONRPC2Error(
+                    JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
+                    + ": Impossible to create the virtual switch, "
+                    + "too many switches in this virtual network : "
+                    + e.getMessage()), 0);
         }
         return resp;
 

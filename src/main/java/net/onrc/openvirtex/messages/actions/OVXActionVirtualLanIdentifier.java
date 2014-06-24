@@ -25,12 +25,12 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
 
 public class OVXActionVirtualLanIdentifier extends OFActionVirtualLanIdentifier
-        implements VirtualizableAction {
+implements VirtualizableAction {
 
     @Override
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
-            throws ActionVirtualizationDenied {
+                    throws ActionVirtualizationDenied {
         approvedActions.add(this);
     }
 

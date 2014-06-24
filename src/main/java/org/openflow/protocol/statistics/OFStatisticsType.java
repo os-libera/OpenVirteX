@@ -40,82 +40,82 @@ import org.openflow.protocol.OFType;
 public enum OFStatisticsType {
     DESC(0, OFDescriptionStatistics.class, OFDescriptionStatistics.class,
             new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFDescriptionStatistics();
-                }
-            }, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFDescriptionStatistics();
-                }
-            }), FLOW(1, OFFlowStatisticsRequest.class,
+        @Override
+        public OFStatistics instantiate() {
+            return new OFDescriptionStatistics();
+        }
+    }, new Instantiable<OFStatistics>() {
+        @Override
+        public OFStatistics instantiate() {
+            return new OFDescriptionStatistics();
+        }
+    }), FLOW(1, OFFlowStatisticsRequest.class,
             OFFlowStatisticsReply.class, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFFlowStatisticsRequest();
-                }
-            }, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFFlowStatisticsReply();
-                }
-            }), AGGREGATE(2, OFAggregateStatisticsRequest.class,
+        @Override
+        public OFStatistics instantiate() {
+            return new OFFlowStatisticsRequest();
+        }
+    }, new Instantiable<OFStatistics>() {
+        @Override
+        public OFStatistics instantiate() {
+            return new OFFlowStatisticsReply();
+        }
+    }), AGGREGATE(2, OFAggregateStatisticsRequest.class,
             OFAggregateStatisticsReply.class, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFAggregateStatisticsRequest();
-                }
-            }, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFAggregateStatisticsReply();
-                }
-            }), TABLE(3, OFTableStatistics.class, OFTableStatistics.class,
+        @Override
+        public OFStatistics instantiate() {
+            return new OFAggregateStatisticsRequest();
+        }
+    }, new Instantiable<OFStatistics>() {
+        @Override
+        public OFStatistics instantiate() {
+            return new OFAggregateStatisticsReply();
+        }
+    }), TABLE(3, OFTableStatistics.class, OFTableStatistics.class,
             new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFTableStatistics();
-                }
-            }, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFTableStatistics();
-                }
-            }), PORT(4, OFPortStatisticsRequest.class,
+        @Override
+        public OFStatistics instantiate() {
+            return new OFTableStatistics();
+        }
+    }, new Instantiable<OFStatistics>() {
+        @Override
+        public OFStatistics instantiate() {
+            return new OFTableStatistics();
+        }
+    }), PORT(4, OFPortStatisticsRequest.class,
             OFPortStatisticsReply.class, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFPortStatisticsRequest();
-                }
-            }, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFPortStatisticsReply();
-                }
-            }), QUEUE(5, OFQueueStatisticsRequest.class,
+        @Override
+        public OFStatistics instantiate() {
+            return new OFPortStatisticsRequest();
+        }
+    }, new Instantiable<OFStatistics>() {
+        @Override
+        public OFStatistics instantiate() {
+            return new OFPortStatisticsReply();
+        }
+    }), QUEUE(5, OFQueueStatisticsRequest.class,
             OFQueueStatisticsReply.class, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFQueueStatisticsRequest();
-                }
-            }, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFQueueStatisticsReply();
-                }
-            }), VENDOR(0xffff, OFVendorStatistics.class,
+        @Override
+        public OFStatistics instantiate() {
+            return new OFQueueStatisticsRequest();
+        }
+    }, new Instantiable<OFStatistics>() {
+        @Override
+        public OFStatistics instantiate() {
+            return new OFQueueStatisticsReply();
+        }
+    }), VENDOR(0xffff, OFVendorStatistics.class,
             OFVendorStatistics.class, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFVendorStatistics();
-                }
-            }, new Instantiable<OFStatistics>() {
-                @Override
-                public OFStatistics instantiate() {
-                    return new OFVendorStatistics();
-                }
-            });
+        @Override
+        public OFStatistics instantiate() {
+            return new OFVendorStatistics();
+        }
+    }, new Instantiable<OFStatistics>() {
+        @Override
+        public OFStatistics instantiate() {
+            return new OFVendorStatistics();
+        }
+    });
 
     static OFStatisticsType[] requestMapping;
     static OFStatisticsType[] replyMapping;

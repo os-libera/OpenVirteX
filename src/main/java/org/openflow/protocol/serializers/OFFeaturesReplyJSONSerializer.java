@@ -42,7 +42,7 @@ import org.openflow.protocol.OFFeaturesReply;
 import org.openflow.util.HexString;
 
 public class OFFeaturesReplyJSONSerializer extends
-        JsonSerializer<OFFeaturesReply> {
+JsonSerializer<OFFeaturesReply> {
 
     /**
      * Performs the serialization of a OFFeaturesReply object
@@ -50,7 +50,7 @@ public class OFFeaturesReplyJSONSerializer extends
     @Override
     public void serialize(final OFFeaturesReply reply,
             final JsonGenerator jGen, final SerializerProvider serializer)
-            throws IOException, JsonProcessingException {
+                    throws IOException, JsonProcessingException {
         jGen.writeStartObject();
         jGen.writeNumberField("actions", reply.getActions());
         jGen.writeNumberField("buffers", reply.getBuffers());

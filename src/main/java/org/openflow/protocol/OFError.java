@@ -308,7 +308,7 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -324,7 +324,7 @@ public class OFError extends OFMessage implements OFMessageFactoryAware {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

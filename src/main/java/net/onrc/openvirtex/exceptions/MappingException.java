@@ -29,16 +29,16 @@ public class MappingException extends Exception {
         super();
     }
 
-    MappingException(String cause) {
+    MappingException(final String cause) {
         super(cause);
     }
 
-    public MappingException(Object key, Class value) {
+    public MappingException(final Object key, final Class value) {
         super(value.getName() + " not found for key: \n\t"
                 + key.getClass().getName() + ":\n\t[" + key.toString() + "]");
     }
 
-    MappingException(Throwable cause) {
+    MappingException(final Throwable cause) {
         super(cause);
     }
 

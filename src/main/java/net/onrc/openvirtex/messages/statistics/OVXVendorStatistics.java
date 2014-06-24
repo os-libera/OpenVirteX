@@ -23,7 +23,7 @@ import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 import org.openflow.protocol.statistics.OFVendorStatistics;
 
 public class OVXVendorStatistics extends OFVendorStatistics implements
-        VirtualizableStatistic, DevirtualizableStatistic {
+VirtualizableStatistic, DevirtualizableStatistic {
 
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,

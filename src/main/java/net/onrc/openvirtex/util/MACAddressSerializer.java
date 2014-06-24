@@ -25,8 +25,8 @@ import com.google.gson.JsonSerializer;
 public class MACAddressSerializer implements JsonSerializer<MACAddress> {
 
     @Override
-    public JsonElement serialize(MACAddress mac, Type t,
-            JsonSerializationContext c) {
+    public JsonElement serialize(final MACAddress mac, final Type t,
+            final JsonSerializationContext c) {
         final JsonPrimitive res = new JsonPrimitive(mac.toString());
         return res;
     }

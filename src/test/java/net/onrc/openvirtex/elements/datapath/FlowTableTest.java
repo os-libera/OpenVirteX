@@ -35,7 +35,7 @@ public class FlowTableTest extends TestCase {
     OpenVirteXController ctl = null;
 
     public OVXFlowMod getFlowMod() {
-        OVXFlowMod fm = new OVXFlowMod();
+        final OVXFlowMod fm = new OVXFlowMod();
         fm.setMatch(new OFMatch()).setActions(new ArrayList<OFAction>());
         return fm;
     }
@@ -98,11 +98,11 @@ public class FlowTableTest extends TestCase {
         /* 2 FMs that deliberately don't match */
         final OVXFlowMod fm1 = this.getFlowMod();
         fm1.setCommand(OFFlowMod.OFPFC_ADD).setMatch(
-                (new OFMatch()).setInputPort((short) 1).setWildcards(
+                new OFMatch().setInputPort((short) 1).setWildcards(
                         OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT));
         final OVXFlowMod fm2 = this.getFlowMod();
         fm2.setCommand(OFFlowMod.OFPFC_ADD).setMatch(
-                (new OFMatch()).setInputPort((short) 2).setWildcards(
+                new OFMatch().setInputPort((short) 2).setWildcards(
                         OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT));
 
         final long c1 = (long) vsw.getTenantId() << 32 | 1;
@@ -120,7 +120,7 @@ public class FlowTableTest extends TestCase {
 
         // should re-use first cookie that was freed up
         oft.deleteFlowMod(c1);
-        long c = oft.getCookie();
+        final long c = oft.getCookie();
         Assert.assertEquals(c, c1);
     }
 
@@ -128,12 +128,12 @@ public class FlowTableTest extends TestCase {
     public void testFlowEntryCompare() {
         final OFMatch baseM = new OFMatch();
         baseM.setDataLayerDestination(
-                new byte[] {0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
-                        (byte) 0xef})
-                .setInputPort((short) 23)
-                .setNetworkDestination(5692)
-                .setWildcards(
-                        OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_DST
+                new byte[] { 0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
+                        (byte) 0xef })
+                        .setInputPort((short) 23)
+                        .setNetworkDestination(5692)
+                        .setWildcards(
+                                OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_DST
                                 & ~OFMatch.OFPFW_IN_PORT
                                 & ~OFMatch.OFPFW_NW_DST_ALL);
         final OVXFlowMod baseFM = this.getFlowMod();
@@ -147,10 +147,10 @@ public class FlowTableTest extends TestCase {
         /* a superset match should make base_m its subset */
         final OFMatch superM = new OFMatch();
         superM.setInputPort((short) 23)
-                .setNetworkDestination(5692)
-                .setWildcards(
-                        OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT
-                                & ~OFMatch.OFPFW_NW_DST_ALL);
+        .setNetworkDestination(5692)
+        .setWildcards(
+                OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT
+                & ~OFMatch.OFPFW_NW_DST_ALL);
         Assert.assertEquals(baseFE.compare(superM, true), OVXFlowEntry.SUBSET);
         /* not strict - consider subset match to also be equal */
         Assert.assertEquals(baseFE.compare(superM, false), OVXFlowEntry.EQUAL);
@@ -158,18 +158,18 @@ public class FlowTableTest extends TestCase {
         /* a subset match should make base_m its superset */
         final OFMatch subM = new OFMatch();
         subM.setDataLayerDestination(
-                new byte[] {0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
-                        (byte) 0xef})
-                .setDataLayerSource(
-                        new byte[] {0x11, 0x22, 0x33, (byte) 0xaa,
-                                (byte) 0xcc, (byte) 0xee})
-                .setInputPort((short) 23)
-                .setNetworkDestination(5692)
-                .setWildcards(
-                        OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_DST
-                                & ~OFMatch.OFPFW_DL_SRC
-                                & ~OFMatch.OFPFW_IN_PORT
-                                & ~OFMatch.OFPFW_NW_DST_ALL);
+                new byte[] { 0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
+                        (byte) 0xef })
+                        .setDataLayerSource(
+                                new byte[] { 0x11, 0x22, 0x33, (byte) 0xaa,
+                                        (byte) 0xcc, (byte) 0xee })
+                                        .setInputPort((short) 23)
+                                        .setNetworkDestination(5692)
+                                        .setWildcards(
+                                                OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_DST
+                                                & ~OFMatch.OFPFW_DL_SRC
+                                                & ~OFMatch.OFPFW_IN_PORT
+                                                & ~OFMatch.OFPFW_NW_DST_ALL);
         Assert.assertEquals(baseFE.compare(subM, true), OVXFlowEntry.SUPERSET);
 
         /* a incomparable OFMatch should return base_m to be disjoint */
@@ -183,23 +183,23 @@ public class FlowTableTest extends TestCase {
     public void testHandleFlowMod() {
         final OVXSwitch vsw = new OVXSingleSwitch(1, 1);
         final PhysicalSwitch psw = new PhysicalSwitch(0);
-        ArrayList<PhysicalSwitch> l = new ArrayList<PhysicalSwitch>();
+        final ArrayList<PhysicalSwitch> l = new ArrayList<PhysicalSwitch>();
         l.add(psw);
         OVXMap.getInstance().addSwitches(l, vsw);
         final OVXFlowTable oft = new OVXFlowTable(vsw);
         final OFMatch baseM = new OFMatch();
         baseM.setDataLayerDestination(
-                new byte[] {0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
-                        (byte) 0xef})
-                .setInputPort((short) 23)
-                .setNetworkDestination(5692)
-                .setWildcards(
-                        OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_DST
+                new byte[] { 0x11, 0x22, 0x33, (byte) 0xab, (byte) 0xcd,
+                        (byte) 0xef })
+                        .setInputPort((short) 23)
+                        .setNetworkDestination(5692)
+                        .setWildcards(
+                                OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_DST
                                 & ~OFMatch.OFPFW_IN_PORT
                                 & ~OFMatch.OFPFW_NW_DST_ALL);
         final OVXFlowMod fm = this.getFlowMod();
         fm.setBufferId(1).setMatch(baseM).setPriority((short) 20)
-                .setCommand(OFFlowMod.OFPFC_MODIFY);
+        .setCommand(OFFlowMod.OFPFC_MODIFY);
 
         /* add done via modify call - should work */
         Assert.assertTrue(oft.handleFlowMods(fm));
@@ -207,12 +207,12 @@ public class FlowTableTest extends TestCase {
         /* try strict add with superset match - should fail */
         final OFMatch superM = new OFMatch();
         superM.setInputPort((short) 23)
-                .setNetworkDestination(5692)
-                .setWildcards(
-                        OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT
-                                & ~OFMatch.OFPFW_NW_DST_ALL);
+        .setNetworkDestination(5692)
+        .setWildcards(
+                OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT
+                & ~OFMatch.OFPFW_NW_DST_ALL);
         fm.setCommand(OFFlowMod.OFPFC_ADD)
-                .setFlags(OFFlowMod.OFPFF_CHECK_OVERLAP).setMatch(superM);
+        .setFlags(OFFlowMod.OFPFF_CHECK_OVERLAP).setMatch(superM);
         Assert.assertFalse(oft.handleFlowMods(fm));
 
         /* try add with overlap check off should succeed. */
@@ -234,7 +234,7 @@ public class FlowTableTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ctl = new OpenVirteXController(new CmdLineSettings());
+        this.ctl = new OpenVirteXController(new CmdLineSettings());
     }
 
     @Override

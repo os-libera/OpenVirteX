@@ -139,11 +139,11 @@ public class OVXLinkUtils {
                         | linkId.longValue() << (48 - vNets) / 2
                         | flowId.longValue());
         final Long src = mac.toLong() >> 24 & 0xFFFFFF;
-        final Long dst = mac.toLong() & 0xFFFFFF;
-        this.srcMac = MACAddress.valueOf((long) 0xa42305 << 24 | src);
-        this.dstMac = MACAddress.valueOf((long) 0xa42305 << 24 | dst);
-        // TODO: encapsulate the values in the vlan too
-        this.vlan = 0;
+                final Long dst = mac.toLong() & 0xFFFFFF;
+                this.srcMac = MACAddress.valueOf((long) 0xa42305 << 24 | src);
+                this.dstMac = MACAddress.valueOf((long) 0xa42305 << 24 | dst);
+                // TODO: encapsulate the values in the vlan too
+                this.vlan = 0;
     }
 
     /**
@@ -233,7 +233,7 @@ public class OVXLinkUtils {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
@@ -296,13 +296,13 @@ public class OVXLinkUtils {
                         .toBytes()));
                 actions.add(new OFActionDataLayerDestination(macList.get(1)
                         .toBytes()));
-            } catch (NetworkMappingException e) {
+            } catch (final NetworkMappingException e) {
                 OVXLinkUtils.log.error("Unable to restore actions: " + e);
             }
         } else {
             if (linkField == OVXLinkField.VLAN) {
                 OVXLinkUtils.log
-                        .warn("Unable to restore actions, VLANs not supported");
+                .warn("Unable to restore actions, VLANs not supported");
                 // actions.add(new
                 // OFActionVirtualLanIdentifier(getOriginalVlan()));
             }

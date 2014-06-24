@@ -180,7 +180,7 @@ public class OFAction implements Cloneable {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#clone()
      */
     @Override

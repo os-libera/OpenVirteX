@@ -15,10 +15,10 @@
  ******************************************************************************/
 package net.onrc.openvirtex.core;
 
-import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import net.onrc.openvirtex.core.cmd.CmdLineSettings;
 
 public class OpenVirteXControllerTest extends TestCase {
 

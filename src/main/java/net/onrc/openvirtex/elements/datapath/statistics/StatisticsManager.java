@@ -40,14 +40,14 @@ import org.openflow.protocol.statistics.OFStatisticsType;
 public class StatisticsManager implements TimerTask, OVXSendMsg {
 
     private HashedWheelTimer timer = null;
-    private PhysicalSwitch sw;
+    private final PhysicalSwitch sw;
 
     Logger log = LogManager.getLogger(StatisticsManager.class.getName());
 
     private Integer refreshInterval = 30;
     private boolean stopTimer = false;
 
-    public StatisticsManager(PhysicalSwitch sw) {
+    public StatisticsManager(final PhysicalSwitch sw) {
         /*
          * Get the timer from the PhysicalNetwork class.
          */
@@ -58,44 +58,44 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
     }
 
     @Override
-    public void run(Timeout timeout) throws Exception {
-        log.debug("Collecting stats for {}", this.sw.getSwitchName());
-        sendPortStatistics();
-        sendFlowStatistics(0, (short) 0);
+    public void run(final Timeout timeout) throws Exception {
+        this.log.debug("Collecting stats for {}", this.sw.getSwitchName());
+        this.sendPortStatistics();
+        this.sendFlowStatistics(0, (short) 0);
 
         if (!this.stopTimer) {
-            log.debug("Scheduling stats collection in {} seconds for {}",
+            this.log.debug("Scheduling stats collection in {} seconds for {}",
                     this.refreshInterval, this.sw.getSwitchName());
-            timeout.getTimer().newTimeout(this, refreshInterval,
+            timeout.getTimer().newTimeout(this, this.refreshInterval,
                     TimeUnit.SECONDS);
         }
     }
 
-    private void sendFlowStatistics(int tid, short port) {
-        OVXStatisticsRequest req = new OVXStatisticsRequest();
+    private void sendFlowStatistics(final int tid, final short port) {
+        final OVXStatisticsRequest req = new OVXStatisticsRequest();
         // TODO: stuff like below should be wrapped into an XIDUtil class
-        int xid = (tid << 16) | port;
+        final int xid = tid << 16 | port;
         req.setXid(xid);
         req.setStatisticType(OFStatisticsType.FLOW);
-        OVXFlowStatisticsRequest freq = new OVXFlowStatisticsRequest();
-        OVXMatch match = new OVXMatch();
+        final OVXFlowStatisticsRequest freq = new OVXFlowStatisticsRequest();
+        final OVXMatch match = new OVXMatch();
         match.setWildcards(Wildcards.FULL);
         freq.setMatch(match);
         freq.setOutPort(OFPort.OFPP_NONE.getValue());
         freq.setTableId((byte) 0xFF);
         req.setStatistics(Collections.singletonList(freq));
         req.setLengthU(req.getLengthU() + freq.getLength());
-        sendMsg(req, this);
+        this.sendMsg(req, this);
     }
 
     private void sendPortStatistics() {
-        OVXStatisticsRequest req = new OVXStatisticsRequest();
+        final OVXStatisticsRequest req = new OVXStatisticsRequest();
         req.setStatisticType(OFStatisticsType.PORT);
-        OVXPortStatisticsRequest preq = new OVXPortStatisticsRequest();
+        final OVXPortStatisticsRequest preq = new OVXPortStatisticsRequest();
         preq.setPortNumber(OFPort.OFPP_NONE.getValue());
         req.setStatistics(Collections.singletonList(preq));
         req.setLengthU(req.getLengthU() + preq.getLength());
-        sendMsg(req, this);
+        this.sendMsg(req, this);
     }
 
     public void start() {
@@ -103,29 +103,29 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
         /*
          * Initially start polling quickly. Then drop down to configured value
          */
-        log.info("Starting Stats collection thread for {}",
+        this.log.info("Starting Stats collection thread for {}",
                 this.sw.getSwitchName());
-        timer.newTimeout(this, 1, TimeUnit.SECONDS);
+        this.timer.newTimeout(this, 1, TimeUnit.SECONDS);
     }
 
     public void stop() {
-        log.info("Stopping Stats collection thread for {}",
+        this.log.info("Stopping Stats collection thread for {}",
                 this.sw.getSwitchName());
         this.stopTimer = true;
     }
 
     @Override
-    public void sendMsg(OFMessage msg, OVXSendMsg from) {
-        sw.sendMsg(msg, from);
+    public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+        this.sw.sendMsg(msg, from);
     }
 
     @Override
     public String getName() {
-        return "Statistics Manager (" + sw.getName() + ")";
+        return "Statistics Manager (" + this.sw.getName() + ")";
     }
 
-    public void cleanUpTenant(Integer tenantId, short port) {
-        sendFlowStatistics(tenantId, port);
+    public void cleanUpTenant(final Integer tenantId, final short port) {
+        this.sendFlowStatistics(tenantId, port);
     }
 
 }

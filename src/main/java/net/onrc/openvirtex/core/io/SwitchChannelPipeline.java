@@ -54,7 +54,7 @@ public class SwitchChannelPipeline extends OpenflowChannelPipeline {
         pipeline.addLast("handshaketimeout", new HandshakeTimeoutHandler(
                 handler, this.timer, 15));
 
-        pipeline.addLast("pipelineExecutor", eh);
+        pipeline.addLast("pipelineExecutor", this.eh);
         pipeline.addLast("handler", handler);
         return pipeline;
     }

@@ -59,7 +59,7 @@ import org.openflow.protocol.vendor.OFVendorId;
  * @modified alshabib - return this to class
  */
 public class BasicFactory implements OFMessageFactory, OFActionFactory,
-        OFStatisticsFactory, OFVendorDataFactory {
+OFStatisticsFactory, OFVendorDataFactory {
     protected static BasicFactory instance = null;
 
     private final OFVendorActionRegistry vendorActionRegistry;

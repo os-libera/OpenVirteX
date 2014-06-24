@@ -29,7 +29,7 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionNetworkLayerSource;
 
 public class OVXActionNetworkLayerSource extends OFActionNetworkLayerSource
-        implements VirtualizableAction {
+implements VirtualizableAction {
 
     private final Logger log = LogManager
             .getLogger(OVXActionNetworkLayerSource.class.getName());
@@ -37,11 +37,11 @@ public class OVXActionNetworkLayerSource extends OFActionNetworkLayerSource
     @Override
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
-            throws ActionVirtualizationDenied {
+                    throws ActionVirtualizationDenied {
         this.networkAddress = IPMapper.getPhysicalIp(sw.getTenantId(),
-                this.networkAddress);
-        log.debug("Allocating Physical IP {}", new PhysicalIPAddress(
-                networkAddress));
+                this.networkAddress, PhysicalIPAddress.IP_FOR_SOURCE);
+        this.log.debug("Allocating Physical IP {}", new PhysicalIPAddress(
+                this.networkAddress));
         approvedActions.add(this);
     }
 

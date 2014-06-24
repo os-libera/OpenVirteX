@@ -255,56 +255,56 @@ public class OFMessage {
         sb.append("      ");
 
         switch (msg.getType()) {
-        case PACKET_IN:
-            final OFPacketIn pktIn = (OFPacketIn) msg;
+            case PACKET_IN:
+                final OFPacketIn pktIn = (OFPacketIn) msg;
 
-            sb.append("\ntotal length: ");
-            sb.append(pktIn.getTotalLength());
-            sb.append("\nin_port: ");
-            sb.append(pktIn.getInPort());
-            sb.append("\ndata_length: ");
-            sb.append(pktIn.getTotalLength() - OFPacketIn.MINIMUM_LENGTH);
-            sb.append("\nbuffer: ");
-            sb.append(pktIn.getBufferId());
+                sb.append("\ntotal length: ");
+                sb.append(pktIn.getTotalLength());
+                sb.append("\nin_port: ");
+                sb.append(pktIn.getInPort());
+                sb.append("\ndata_length: ");
+                sb.append(pktIn.getTotalLength() - OFPacketIn.MINIMUM_LENGTH);
+                sb.append("\nbuffer: ");
+                sb.append(pktIn.getBufferId());
 
-            break;
+                break;
 
-        case PACKET_OUT:
-            final OFPacketOut pktOut = (OFPacketOut) msg;
+            case PACKET_OUT:
+                final OFPacketOut pktOut = (OFPacketOut) msg;
 
-            sb.append("\nin_port: ");
-            sb.append(pktOut.getInPort());
-            sb.append("\nactions_len: ");
-            sb.append(pktOut.getActionsLength());
-            if (pktOut.getActions() != null) {
-                sb.append("\nactions: ");
-                sb.append(pktOut.getActions().toString());
-            }
-            break;
+                sb.append("\nin_port: ");
+                sb.append(pktOut.getInPort());
+                sb.append("\nactions_len: ");
+                sb.append(pktOut.getActionsLength());
+                if (pktOut.getActions() != null) {
+                    sb.append("\nactions: ");
+                    sb.append(pktOut.getActions().toString());
+                }
+                break;
 
-        case FLOW_MOD:
-            final OFFlowMod fm = (OFFlowMod) msg;
+            case FLOW_MOD:
+                final OFFlowMod fm = (OFFlowMod) msg;
 
-            sb.append("\nADD: cookie: ");
-            sb.append(fm.getCookie());
-            sb.append(" idle: ");
-            sb.append(fm.getIdleTimeout());
-            sb.append(" hard: ");
-            sb.append(fm.getHardTimeout());
-            sb.append(" pri: ");
-            sb.append(fm.getPriority());
-            sb.append(" buf: ");
-            sb.append(fm.getBufferId());
-            sb.append(" flg: ");
-            sb.append(fm.getFlags());
-            if (fm.getActions() != null) {
-                sb.append("\nactions: ");
-                sb.append(fm.getActions().toString());
-            }
-            break;
+                sb.append("\nADD: cookie: ");
+                sb.append(fm.getCookie());
+                sb.append(" idle: ");
+                sb.append(fm.getIdleTimeout());
+                sb.append(" hard: ");
+                sb.append(fm.getHardTimeout());
+                sb.append(" pri: ");
+                sb.append(fm.getPriority());
+                sb.append(" buf: ");
+                sb.append(fm.getBufferId());
+                sb.append(" flg: ");
+                sb.append(fm.getFlags());
+                if (fm.getActions() != null) {
+                    sb.append("\nactions: ");
+                    sb.append(fm.getActions().toString());
+                }
+                break;
 
-        default:
-            sb.append("[Unknown Packet]");
+            default:
+                sb.append("[Unknown Packet]");
         }
 
         sb.append("\n\n");

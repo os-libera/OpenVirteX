@@ -15,15 +15,15 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
-import org.openflow.protocol.OFMessage;
-
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.messages.statistics.OVXDescriptionStatistics;
 
+import org.openflow.protocol.OFMessage;
+
 public class TestSwitch extends PhysicalSwitch {
 
-    public TestSwitch(long dpid) {
+    public TestSwitch(final long dpid) {
         super(dpid);
         this.setDescriptionStats(new OVXDescriptionStatistics());
     }

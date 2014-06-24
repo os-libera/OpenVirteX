@@ -16,13 +16,12 @@
 package net.onrc.openvirtex.messages.statistics;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-
 import net.onrc.openvirtex.messages.OVXStatisticsReply;
 
 import org.openflow.protocol.statistics.OFAggregateStatisticsReply;
 
 public class OVXAggregateStatisticsReply extends OFAggregateStatisticsReply
-        implements VirtualizableStatistic {
+implements VirtualizableStatistic {
 
     @Override
     public void virtualizeStatistic(final PhysicalSwitch sw,

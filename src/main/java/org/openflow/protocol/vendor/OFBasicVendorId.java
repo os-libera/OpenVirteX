@@ -145,23 +145,23 @@ public class OFBasicVendorId extends OFVendorId {
         long dataTypeValue = 0;
         if (length == 0 || length >= this.dataTypeSize) {
             switch (this.dataTypeSize) {
-            case 1:
-                dataTypeValue = data.readByte();
-                break;
-            case 2:
-                dataTypeValue = data.readShort();
-                break;
-            case 4:
-                dataTypeValue = data.readInt();
-                break;
-            case 8:
-                dataTypeValue = data.readLong();
-                break;
-            default:
-                // This would be indicative of a coding error where the
-                // dataTypeSize was specified incorrectly. This should have been
-                // caught in the constructor for OFVendorId.
-                assert false;
+                case 1:
+                    dataTypeValue = data.readByte();
+                    break;
+                case 2:
+                    dataTypeValue = data.readShort();
+                    break;
+                case 4:
+                    dataTypeValue = data.readInt();
+                    break;
+                case 8:
+                    dataTypeValue = data.readLong();
+                    break;
+                default:
+                    // This would be indicative of a coding error where the
+                    // dataTypeSize was specified incorrectly. This should have been
+                    // caught in the constructor for OFVendorId.
+                    assert false;
             }
 
             vendorDataType = this.dataTypeMap.get(dataTypeValue);
@@ -172,11 +172,11 @@ public class OFBasicVendorId extends OFVendorId {
         if (vendorDataType == null) {
             vendorDataType = new OFBasicVendorDataType(dataTypeValue,
                     new Instantiable<OFVendorData>() {
-                        @Override
-                        public OFVendorData instantiate() {
-                            return new OFByteArrayVendorData();
-                        }
-                    });
+                @Override
+                public OFVendorData instantiate() {
+                    return new OFByteArrayVendorData();
+                }
+            });
         }
 
         return vendorDataType;

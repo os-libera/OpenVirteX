@@ -53,77 +53,77 @@ public enum OFActionType {
         }
     }), SET_VLAN_ID(1, OFActionVirtualLanIdentifier.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionVirtualLanIdentifier();
-                }
-            }), SET_VLAN_PCP(2, OFActionVirtualLanPriorityCodePoint.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionVirtualLanIdentifier();
+        }
+    }), SET_VLAN_PCP(2, OFActionVirtualLanPriorityCodePoint.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionVirtualLanPriorityCodePoint();
-                }
-            }), STRIP_VLAN(3, OFActionStripVirtualLan.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionVirtualLanPriorityCodePoint();
+        }
+    }), STRIP_VLAN(3, OFActionStripVirtualLan.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionStripVirtualLan();
-                }
-            }), SET_DL_SRC(4, OFActionDataLayerSource.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionStripVirtualLan();
+        }
+    }), SET_DL_SRC(4, OFActionDataLayerSource.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionDataLayerSource();
-                }
-            }), SET_DL_DST(5, OFActionDataLayerDestination.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionDataLayerSource();
+        }
+    }), SET_DL_DST(5, OFActionDataLayerDestination.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionDataLayerDestination();
-                }
-            }), SET_NW_SRC(6, OFActionNetworkLayerSource.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionDataLayerDestination();
+        }
+    }), SET_NW_SRC(6, OFActionNetworkLayerSource.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionNetworkLayerSource();
-                }
-            }), SET_NW_DST(7, OFActionNetworkLayerDestination.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionNetworkLayerSource();
+        }
+    }), SET_NW_DST(7, OFActionNetworkLayerDestination.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionNetworkLayerDestination();
-                }
-            }), SET_NW_TOS(8, OFActionNetworkTypeOfService.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionNetworkLayerDestination();
+        }
+    }), SET_NW_TOS(8, OFActionNetworkTypeOfService.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionNetworkTypeOfService();
-                }
-            }), SET_TP_SRC(9, OFActionTransportLayerSource.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionNetworkTypeOfService();
+        }
+    }), SET_TP_SRC(9, OFActionTransportLayerSource.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionTransportLayerSource();
-                }
-            }), SET_TP_DST(10, OFActionTransportLayerDestination.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionTransportLayerSource();
+        }
+    }), SET_TP_DST(10, OFActionTransportLayerDestination.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionTransportLayerDestination();
-                }
-            }), OPAQUE_ENQUEUE(11, OFActionEnqueue.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionTransportLayerDestination();
+        }
+    }), OPAQUE_ENQUEUE(11, OFActionEnqueue.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionEnqueue();
-                }
-            }), VENDOR(0xffff, OFActionVendor.class,
+        @Override
+        public OFAction instantiate() {
+            return new OFActionEnqueue();
+        }
+    }), VENDOR(0xffff, OFActionVendor.class,
             new Instantiable<OFAction>() {
-                @Override
-                public OFAction instantiate() {
-                    return new OFActionVendorGeneric();
-                }
-            });
+        @Override
+        public OFAction instantiate() {
+            return new OFActionVendorGeneric();
+        }
+    });
 
     protected static OFActionType[] mapping;
 

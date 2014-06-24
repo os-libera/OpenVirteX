@@ -158,21 +158,21 @@ public class LLDP extends BasePacket {
                 break;
             }
             switch (tlv.getType()) {
-            case 0x0:
-                // can throw this one away, its just an end delimiter
-                break;
-            case 0x1:
-                this.chassisId = tlv;
-                break;
-            case 0x2:
-                this.portId = tlv;
-                break;
-            case 0x3:
-                this.ttl = tlv;
-                break;
-            default:
-                this.optionalTLVList.add(tlv);
-                break;
+                case 0x0:
+                    // can throw this one away, its just an end delimiter
+                    break;
+                case 0x1:
+                    this.chassisId = tlv;
+                    break;
+                case 0x2:
+                    this.portId = tlv;
+                    break;
+                case 0x3:
+                    this.ttl = tlv;
+                    break;
+                default:
+                    this.optionalTLVList.add(tlv);
+                    break;
             }
         } while (tlv.getType() != 0 && bb.hasRemaining());
         return this;
@@ -180,7 +180,7 @@ public class LLDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -198,7 +198,7 @@ public class LLDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

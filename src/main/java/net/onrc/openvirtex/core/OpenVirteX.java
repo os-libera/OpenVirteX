@@ -26,11 +26,12 @@ import org.kohsuke.args4j.CmdLineParser;
 public final class OpenVirteX {
 
     public static final String VERSION = "OpenVirteX-0.0.1";
-    private static Logger log = LogManager.getLogger(OpenVirteX.class.getName());
+    private static Logger log = LogManager
+            .getLogger(OpenVirteX.class.getName());
 
     /**
-     * Overrides default constructor to no-op private constructor.
-     * Required by checkstyle.
+     * Overrides default constructor to no-op private constructor. Required by
+     * checkstyle.
      */
     private OpenVirteX() {
     }
@@ -38,7 +39,8 @@ public final class OpenVirteX {
     /**
      * Main method to start the OVX controller. Parses command line arguments.
      *
-     * @param args string of command line parameters
+     * @param args
+     *            string of command line parameters
      */
     public static void main(final String[] args) throws OpenVirteXException {
         final CmdLineSettings settings = new CmdLineSettings();

@@ -37,15 +37,15 @@ public enum DHCPPacketType {
     DHCPDISCOVER(1), DHCPOFFER(2), DHCPREQUEST(3), DHCPDECLINE(4), DHCPACK(5), DHCPNAK(
             6), DHCPRELEASE(7),
 
-    // From RFC2132
-    DHCPINFORM(8),
+            // From RFC2132
+            DHCPINFORM(8),
 
-    // From RFC3203
-    DHCPFORCERENEW(9),
+            // From RFC3203
+            DHCPFORCERENEW(9),
 
-    // From RFC4388
-    DHCPLEASEQUERY(10), DHCPLEASEUNASSIGNED(11), DHCPLEASEUNKNOWN(12), DHCPLEASEACTIVE(
-            13);
+            // From RFC4388
+            DHCPLEASEQUERY(10), DHCPLEASEUNASSIGNED(11), DHCPLEASEUNKNOWN(12), DHCPLEASEACTIVE(
+                    13);
 
     protected int value;
 
@@ -60,34 +60,34 @@ public enum DHCPPacketType {
     @Override
     public String toString() {
         switch (this.value) {
-        case 1:
-            return "DHCPDISCOVER";
-        case 2:
-            return "DHCPOFFER";
-        case 3:
-            return "DHCPREQUEST";
-        case 4:
-            return "DHCPDECLINE";
-        case 5:
-            return "DHCPACK";
-        case 6:
-            return "DHCPNAK";
-        case 7:
-            return "DHCPRELEASE";
-        case 8:
-            return "DHCPINFORM";
-        case 9:
-            return "DHCPFORCERENEW";
-        case 10:
-            return "DHCPLEASEQUERY";
-        case 11:
-            return "DHCPLEASEUNASSIGNED";
-        case 12:
-            return "DHCPLEASEUNKNOWN";
-        case 13:
-            return "DHCPLEASEACTIVE";
-        default:
-            break;
+            case 1:
+                return "DHCPDISCOVER";
+            case 2:
+                return "DHCPOFFER";
+            case 3:
+                return "DHCPREQUEST";
+            case 4:
+                return "DHCPDECLINE";
+            case 5:
+                return "DHCPACK";
+            case 6:
+                return "DHCPNAK";
+            case 7:
+                return "DHCPRELEASE";
+            case 8:
+                return "DHCPINFORM";
+            case 9:
+                return "DHCPFORCERENEW";
+            case 10:
+                return "DHCPLEASEQUERY";
+            case 11:
+                return "DHCPLEASEUNASSIGNED";
+            case 12:
+                return "DHCPLEASEUNKNOWN";
+            case 13:
+                return "DHCPLEASEACTIVE";
+            default:
+                break;
         }
 
         return null;
@@ -95,34 +95,34 @@ public enum DHCPPacketType {
 
     public static DHCPPacketType getType(final int value) {
         switch (value) {
-        case 1:
-            return DHCPDISCOVER;
-        case 2:
-            return DHCPOFFER;
-        case 3:
-            return DHCPREQUEST;
-        case 4:
-            return DHCPDECLINE;
-        case 5:
-            return DHCPACK;
-        case 6:
-            return DHCPNAK;
-        case 7:
-            return DHCPRELEASE;
-        case 8:
-            return DHCPINFORM;
-        case 9:
-            return DHCPFORCERENEW;
-        case 10:
-            return DHCPLEASEQUERY;
-        case 11:
-            return DHCPLEASEUNASSIGNED;
-        case 12:
-            return DHCPLEASEUNKNOWN;
-        case 13:
-            return DHCPLEASEACTIVE;
-        default:
-            break;
+            case 1:
+                return DHCPDISCOVER;
+            case 2:
+                return DHCPOFFER;
+            case 3:
+                return DHCPREQUEST;
+            case 4:
+                return DHCPDECLINE;
+            case 5:
+                return DHCPACK;
+            case 6:
+                return DHCPNAK;
+            case 7:
+                return DHCPRELEASE;
+            case 8:
+                return DHCPINFORM;
+            case 9:
+                return DHCPFORCERENEW;
+            case 10:
+                return DHCPLEASEQUERY;
+            case 11:
+                return DHCPLEASEUNASSIGNED;
+            case 12:
+                return DHCPLEASEUNKNOWN;
+            case 13:
+                return DHCPLEASEACTIVE;
+            default:
+                break;
         }
 
         return null;

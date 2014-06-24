@@ -100,7 +100,8 @@ public class Ethernet extends BasePacket {
     /**
      * Sets the destination MAC address.
      *
-     * @param destinationMACAddress the destination MAC to set
+     * @param destinationMACAddress
+     *            the destination MAC to set
      * @return the Ethernet frame
      */
     public Ethernet setDestinationMACAddress(final byte[] destinationMACAddress) {
@@ -111,7 +112,8 @@ public class Ethernet extends BasePacket {
     /**
      * Sets the destination MAC address.
      *
-     * @param destinationMACAddress the destination MAC to set
+     * @param destinationMACAddress
+     *            the destination MAC to set
      * @return the Ethernet frame
      */
     public Ethernet setDestinationMACAddress(final String destinationMACAddress) {
@@ -140,7 +142,8 @@ public class Ethernet extends BasePacket {
     /**
      * Sets the source MAC address.
      *
-     * @param sourceMACAddress the source MAC to set
+     * @param sourceMACAddress
+     *            the source MAC to set
      * @return the Ethernet frame
      */
     public Ethernet setSourceMACAddress(final byte[] sourceMACAddress) {
@@ -151,7 +154,8 @@ public class Ethernet extends BasePacket {
     /**
      * Sets the source MAC address.
      *
-     * @param sourceMACAddress the source MAC to set
+     * @param sourceMACAddress
+     *            the source MAC to set
      * @return the Ethernet frame
      */
     public Ethernet setSourceMACAddress(final String sourceMACAddress) {
@@ -171,7 +175,8 @@ public class Ethernet extends BasePacket {
     /**
      * Sets the priority code.
      *
-     * @param priorityCode the priorityCode to set
+     * @param priorityCode
+     *            the priorityCode to set
      * @return the Ethernet frame
      */
     public Ethernet setPriorityCode(final byte priorityCode) {
@@ -191,7 +196,8 @@ public class Ethernet extends BasePacket {
     /**
      * Sets the VLAN ID.
      *
-     * @param vlanID the vlanID to set
+     * @param vlanID
+     *            the vlanID to set
      * @return the Ethernet frame
      */
     public Ethernet setVlanID(final short vlanID) {
@@ -211,7 +217,8 @@ public class Ethernet extends BasePacket {
     /**
      * Sets the Ethernet type.
      *
-     * @param etherType the etherType to set
+     * @param etherType
+     *            the etherType to set
      * @return the Ethernet frame
      */
     public Ethernet setEtherType(final short etherType) {
@@ -391,7 +398,7 @@ public class Ethernet extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -409,7 +416,7 @@ public class Ethernet extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -447,7 +454,7 @@ public class Ethernet extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString(java.lang.Object)
      */
     @Override

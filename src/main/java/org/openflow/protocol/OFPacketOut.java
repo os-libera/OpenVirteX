@@ -207,7 +207,7 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
         this.actions = this.actionFactory.parseActions(data,
                 this.getActionsLengthU());
         this.packetData = new byte[this.getLengthU()
-                - OFPacketOut.MINIMUM_LENGTH - this.getActionsLengthU()];
+                                   - OFPacketOut.MINIMUM_LENGTH - this.getActionsLengthU()];
         data.readBytes(this.packetData);
         this.validate();
     }
@@ -284,7 +284,7 @@ public class OFPacketOut extends OFMessage implements OFActionFactoryAware {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override

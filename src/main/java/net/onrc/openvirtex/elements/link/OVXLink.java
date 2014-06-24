@@ -42,8 +42,6 @@ import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
-import net.onrc.openvirtex.messages.OVXPacketOut;
-import net.onrc.openvirtex.messages.actions.OVXActionOutput;
 import net.onrc.openvirtex.packet.Ethernet;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
@@ -51,6 +49,7 @@ import net.onrc.openvirtex.routing.RoutingAlgorithms.RoutingType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.OFPhysicalPort.OFPortState;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
@@ -71,22 +70,24 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      */
     enum LinkState {
         INIT {
-            protected void initialize(OVXLink link) {
+            @Override
+            protected void initialize(final OVXLink link) {
                 link.log.debug("Initializing link {}", link);
                 link.srcPort.setOutLink(link);
                 link.dstPort.setInLink(link);
 
                 try {
                     link.map.getVirtualNetwork(link.tenantId).addLink(link);
-                } catch (NetworkMappingException e) {
+                } catch (final NetworkMappingException e) {
                     link.log.warn(
                             "No OVXNetwork associated with this link [{}-{}]",
                             link.srcPort.toAP(), link.dstPort.toAP());
                 }
             }
 
+            @Override
             protected void register(final OVXLink link,
-                    final List<PhysicalLink> physicalLinks, byte priority) {
+                    final List<PhysicalLink> physicalLinks, final byte priority) {
                 link.log.debug("registering link {}", link);
                 link.state = LinkState.INACTIVE;
 
@@ -100,21 +101,24 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
             }
         },
         INACTIVE {
-            protected boolean boot(OVXLink link) {
+            @Override
+            protected boolean boot(final OVXLink link) {
                 link.log.debug("enabling link {}", link);
                 link.state = LinkState.ACTIVE;
-                int linkup = ~OFPortState.OFPPS_LINK_DOWN.getValue();
+                final int linkup = ~OFPortState.OFPPS_LINK_DOWN.getValue();
                 link.srcPort.setState(link.srcPort.getState() & linkup);
                 link.dstPort.setState(link.dstPort.getState() & linkup);
                 return true;
             }
 
-            protected void unregister(OVXLink link) {
+            @Override
+            protected void unregister(final OVXLink link) {
                 link.log.debug("unregistering link {}", link);
                 link.state = LinkState.STOPPED;
 
                 try {
-                    setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+                    LinkState.setEndStates(link,
+							OFPortState.OFPPS_LINK_DOWN.getValue());
                     link.srcPort.setEdge(true);
                     link.srcPort.setOutLink(null);
                     link.dstPort.setEdge(true);
@@ -122,27 +126,29 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                     link.map.removeVirtualLink(link);
                     link.map.getVirtualNetwork(link.tenantId).removeLink(link);
                     DBManager.getInstance().remove(link);
-                } catch (NetworkMappingException e) {
+                } catch (final NetworkMappingException e) {
                     link.log.warn(
                             "[unregister()]: could not remove this link from map \n{}",
                             e.getMessage());
                 }
             }
 
-            public boolean tryRevert(OVXLink vlink, PhysicalLink plink) {
+            @Override
+            public boolean tryRevert(final OVXLink vlink,
+					final PhysicalLink plink) {
                 if (vlink.unusableLinks.isEmpty()) {
                     return false;
                 }
                 synchronized (vlink.unusableLinks) {
-                    Iterator<Byte> it = vlink.unusableLinks.descendingKeySet()
-                            .iterator();
+                    final Iterator<Byte> it = vlink.unusableLinks
+							.descendingKeySet().iterator();
                     while (it.hasNext()) {
-                        Byte curPriority = it.next();
+                        final Byte curPriority = it.next();
                         if (vlink.unusableLinks.get(curPriority)
                                 .contains(plink)) {
                             vlink.log
-                                    .debug("Reactivate all inactive paths for virtual link {} in virtual network {} ",
-                                            vlink.linkId, vlink.tenantId);
+                            .debug("Reactivate all inactive paths for virtual link {} in virtual network {} ",
+                                    vlink.linkId, vlink.tenantId);
 
                             if (U8.f(vlink.getPriority()) >= U8.f(curPriority)) {
                                 vlink.backupLinks.put(curPriority,
@@ -150,7 +156,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                             } else {
 
                                 try {
-                                    List<PhysicalLink> backupLinks = new ArrayList<>(
+                                    final List<PhysicalLink> backupLinks = new ArrayList<>(
                                             vlink.map.getPhysicalLinks(vlink));
                                     Collections.copy(backupLinks,
                                             vlink.map.getPhysicalLinks(vlink));
@@ -158,10 +164,10 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                                             backupLinks);
                                     vlink.switchPath(vlink.unusableLinks
                                             .get(curPriority), curPriority);
-                                } catch (LinkMappingException e) {
+                                } catch (final LinkMappingException e) {
                                     vlink.log
-                                            .warn("No physical Links mapped to SwitchRoute? : {}",
-                                                    e);
+                                    .warn("No physical Links mapped to SwitchRoute? : {}",
+                                            e);
                                     return false;
                                 }
                             }
@@ -174,20 +180,26 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                 return true;
             }
 
-            public void generateFMs(OVXLink link, OVXFlowMod fm, Integer flowId) {
+            @Override
+            public void generateFMs(final OVXLink link, final OVXFlowMod fm,
+					final Integer flowId) {
                 link.generateFlowMods(fm, flowId);
             }
         },
         ACTIVE {
-            protected boolean teardown(OVXLink link) {
+            @Override
+            protected boolean teardown(final OVXLink link) {
                 link.log.debug("disabling link {}", link);
                 link.state = LinkState.INACTIVE;
 
-                setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+                LinkState.setEndStates(link,
+						OFPortState.OFPPS_LINK_DOWN.getValue());
                 return true;
             }
 
-            public boolean tryRecovery(OVXLink vlink, PhysicalLink plink) {
+            @Override
+            public boolean tryRecovery(final OVXLink vlink,
+					final PhysicalLink plink) {
                 vlink.log.debug(
                         "Try recovery for virtual link {} [id={}, tID={}]",
                         vlink, vlink.linkId, vlink.tenantId);
@@ -196,28 +208,31 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                  * tryRevert().
                  */
                 try {
-                    List<PhysicalLink> unusableLinks = new ArrayList<>(
+                    final List<PhysicalLink> unusableLinks = new ArrayList<>(
                             vlink.map.getPhysicalLinks(vlink));
                     Collections.copy(unusableLinks,
                             vlink.map.getPhysicalLinks(vlink));
                     vlink.unusableLinks.put(vlink.getPriority(), unusableLinks);
-                } catch (LinkMappingException e) {
+                } catch (final LinkMappingException e) {
                     vlink.log.warn("No physical Links mapped to OVXLink? : {}",
                             e);
                     return false;
                 }
                 if (vlink.backupLinks.size() > 0) {
-                    byte priority = vlink.backupLinks.lastKey();
-                    List<PhysicalLink> phyLinks = vlink.backupLinks
+                    final byte priority = vlink.backupLinks.lastKey();
+                    final List<PhysicalLink> phyLinks = vlink.backupLinks
                             .get(priority);
                     vlink.switchPath(phyLinks, priority);
                     vlink.backupLinks.remove(priority);
                     return true;
-                } else
+                } else {
                     return false;
+                }
             }
 
-            public void generateFMs(OVXLink link, OVXFlowMod fm, Integer flowId) {
+            @Override
+            public void generateFMs(final OVXLink link, final OVXFlowMod fm,
+					final Integer flowId) {
                 link.generateFlowMods(fm, flowId);
             }
         },
@@ -248,7 +263,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          *            the priority of this OVXLink
          */
         protected void register(final OVXLink link,
-                final List<PhysicalLink> physicalLinks, byte priority) {
+                final List<PhysicalLink> physicalLinks, final byte priority) {
             link.log.debug("Cannot register link {} while status={}", link,
                     link.state);
         }
@@ -261,7 +276,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          *            the OVXLink
          * @return true if link is successfully enabled.
          */
-        protected boolean boot(OVXLink link) {
+        protected boolean boot(final OVXLink link) {
             link.log.debug("Cannot boot link {} while status={}", link,
                     link.state);
             return false;
@@ -275,7 +290,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          *            the OVXLink
          * @return true if link is successfully disabled.
          */
-        protected boolean teardown(OVXLink link) {
+        protected boolean teardown(final OVXLink link) {
             link.log.debug("Cannot teardown link {} while status={}", link,
                     link.state);
             return false;
@@ -287,7 +302,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          * @param link
          *            the OVXLink
          */
-        protected void unregister(OVXLink link) {
+        protected void unregister(final OVXLink link) {
             link.log.debug("Cannot unregister link {} while status={}", link,
                     link.state);
         }
@@ -300,7 +315,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          * @param nstate
          *            the OFPortState value to set to
          */
-        private static void setEndStates(OVXLink link, int nstate) {
+        private static void setEndStates(final OVXLink link, final int nstate) {
             link.srcPort.setState(link.srcPort.getState() | nstate);
             link.dstPort.setState(link.dstPort.getState() | nstate);
         }
@@ -316,7 +331,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          *            the PhysicalLink that has failed
          * @return true if recovery succeeds.
          */
-        public boolean tryRecovery(OVXLink ovxLink, PhysicalLink plink) {
+        public boolean tryRecovery(final OVXLink ovxLink,
+				final PhysicalLink plink) {
             return false;
         }
 
@@ -331,7 +347,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          *            the PhysicalLink that has come back up
          * @return true if switching back succeeds.
          */
-        public boolean tryRevert(OVXLink ovxLink, PhysicalLink plink) {
+        public boolean tryRevert(final OVXLink ovxLink, final PhysicalLink plink) {
             return false;
         }
 
@@ -346,11 +362,12 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          * @param flowId
          *            unique ID of the flow
          */
-        public void generateFMs(OVXLink ovxLink, OVXFlowMod fm, Integer flowId) {
+        public void generateFMs(final OVXLink ovxLink, final OVXFlowMod fm,
+				final Integer flowId) {
         }
     }
 
-    private Logger log = LogManager.getLogger(OVXLink.class.getName());
+    private final Logger log = LogManager.getLogger(OVXLink.class.getName());
 
     /** The link id. */
     @SerializedName("linkId")
@@ -385,8 +402,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      *             if one of the ports is invalid
      */
     public OVXLink(final Integer linkId, final Integer tenantId,
-            final OVXPort srcPort, final OVXPort dstPort, RoutingAlgorithms alg)
-            throws PortMappingException {
+            final OVXPort srcPort, final OVXPort dstPort,
+			final RoutingAlgorithms alg) throws PortMappingException {
         super(srcPort, dstPort);
         this.state = LinkState.INIT;
         this.linkId = linkId;
@@ -435,7 +452,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      * @return the priority value
      */
     public byte getPriority() {
-        return priority;
+        return this.priority;
     }
 
     /**
@@ -444,7 +461,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      * @param priority
      *            the priority value
      */
-    public void setPriority(byte priority) {
+    public void setPriority(final byte priority) {
         this.priority = priority;
     }
 
@@ -483,32 +500,33 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      * @param priority
      *            the priority value
      */
-    public void register(final List<PhysicalLink> physicalLinks, byte priority) {
+    public void register(final List<PhysicalLink> physicalLinks,
+			final byte priority) {
         this.state.register(this, physicalLinks, priority);
     }
 
     private void backupLink(final List<PhysicalLink> physicalLinks,
-            byte priority) {
+            final byte priority) {
         if (U8.f(this.getPriority()) >= U8.f(priority)) {
             this.backupLinks.put(priority, physicalLinks);
-            log.debug(
+            this.log.debug(
                     "Add virtual link {} backup path (priority {}) between ports {}-{} in virtual network {}. Path: {}",
                     this.getLinkId(), U8.f(priority), this.srcPort.toAP(),
                     this.dstPort.toAP(), this.getTenantId(), physicalLinks);
         } else {
             try {
                 this.backupLinks.put(this.getPriority(),
-                        map.getPhysicalLinks(this));
-                log.debug(
+                        this.map.getPhysicalLinks(this));
+                this.log.debug(
                         "Replace virtual link {} with a new primary path (priority {}) between ports {}-{} in virtual network {}. Path: {}",
                         this.getLinkId(), U8.f(priority), this.srcPort.toAP(),
                         this.dstPort.toAP(), this.getTenantId(), physicalLinks);
-                log.debug(
+                this.log.debug(
                         "Switch all existing flow-mods crossing the virtual link {} between ports ({}-{}) to new path",
                         this.getLinkId(), this.getSrcPort().toAP(), this
-                                .getDstPort().toAP());
-            } catch (LinkMappingException e) {
-                log.debug(
+                        .getDstPort().toAP());
+            } catch (final LinkMappingException e) {
+                this.log.debug(
                         "Create virtual link {} primary path (priority {}) between ports {}-{} in virtual network {}. Path: {}",
                         this.getLinkId(), U8.f(priority), this.srcPort.toAP(),
                         this.dstPort.toAP(), this.getTenantId(), physicalLinks);
@@ -526,6 +544,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
     /**
      * Disables this OVXLink temporarily.
      */
+    @Override
     public boolean tearDown() {
         return this.state.teardown(this);
     }
@@ -538,37 +557,39 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      * @param priority
      *            the priority value
      */
-    private void switchPath(List<PhysicalLink> physicalLinks, byte priority) {
+    private void switchPath(final List<PhysicalLink> physicalLinks,
+			final byte priority) {
         this.setPriority(priority);
 
-        Collection<OVXFlowMod> flows = this.getSrcSwitch().getFlowTable()
+        final Collection<OVXFlowMod> flows = this.getSrcSwitch().getFlowTable()
                 .getFlowTable();
-        for (OVXFlowMod fe : flows) {
-            for (OFAction act : fe.getActions()) {
+        for (final OVXFlowMod fe : flows) {
+            for (final OFAction act : fe.getActions()) {
                 if (act.getType() == OFActionType.OUTPUT) {
                     if (((OFActionOutput) act).getPort() == this.getSrcPort()
                             .getPortNumber()) {
                         try {
-                            Integer flowId = this.map
+                            final Integer flowId = this.map
                                     .getVirtualNetwork(this.tenantId)
                                     .getFlowManager()
                                     .storeFlowValues(
                                             fe.getMatch().getDataLayerSource(),
                                             fe.getMatch()
-                                                    .getDataLayerDestination());
+                                            .getDataLayerDestination());
 
-                            OVXFlowMod fm = fe.clone();
+                            final OVXFlowMod fm = fe.clone();
                             fm.setCookie(((OVXFlowTable) this.getSrcPort()
                                     .getParentSwitch().getFlowTable())
                                     .getCookie(fe, true));
                             this.generateLinkFMs(fm, flowId);
-                        } catch (IndexOutOfBoundException e) {
-                            log.error(
+                        } catch (final IndexOutOfBoundException e) {
+                            this.log.error(
                                     "Too many hosts to generate the flow pairs in this virtual network {}. "
                                             + "Dropping flow-mod {} ",
-                                    this.getTenantId(), fe);
-                        } catch (NetworkMappingException e) {
-                            log.warn("{}: skipping processing of OFAction", e);
+                                            this.getTenantId(), fe);
+                        } catch (final NetworkMappingException e) {
+                            this.log.warn(
+									"{}: skipping processing of OFAction", e);
                             return;
                         }
                     }
@@ -579,7 +600,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
 
     @Override
     public Map<String, Object> getDBIndex() {
-        Map<String, Object> index = new HashMap<String, Object>();
+        final Map<String, Object> index = new HashMap<String, Object>();
         index.put(TenantHandler.TENANT, this.tenantId);
         return index;
     }
@@ -596,7 +617,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = super.getDBObject();
+        final Map<String, Object> dbObject = super.getDBObject();
         dbObject.put(TenantHandler.LINK, this.linkId);
         dbObject.put(TenantHandler.PRIORITY, this.priority);
         dbObject.put(TenantHandler.ALGORITHM, this.alg.getRoutingType()
@@ -604,16 +625,16 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
         dbObject.put(TenantHandler.BACKUPS, this.alg.getBackups());
         try {
             // Build path list
-            List<PhysicalLink> links = map.getPhysicalLinks(this);
-            List<Map<String, Object>> path = new ArrayList<Map<String, Object>>();
-            for (PhysicalLink link : links) {
+            final List<PhysicalLink> links = this.map.getPhysicalLinks(this);
+            final List<Map<String, Object>> path = new ArrayList<Map<String, Object>>();
+            for (final PhysicalLink link : links) {
                 // Physical link id's are meaningless when restarting OVX
-                Map<String, Object> obj = link.getDBObject();
+                final Map<String, Object> obj = link.getDBObject();
                 obj.remove(TenantHandler.LINK);
                 path.add(obj);
             }
             dbObject.put(TenantHandler.PATH, path);
-        } catch (LinkMappingException e) {
+        } catch (final LinkMappingException e) {
             dbObject.put(TenantHandler.PATH, null);
         }
         return dbObject;
@@ -650,7 +671,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
         final OVXLinkUtils lUtils = new OVXLinkUtils(this.tenantId,
                 this.linkId, flowId);
         lUtils.rewriteMatch(fm.getMatch());
-        long cookie = tenantId;
+        final long cookie = this.tenantId;
         fm.setCookie(cookie << 32);
 
         if (fm.getMatch().getDataLayerType() == Ethernet.TYPE_IPV4) {
@@ -663,19 +684,19 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          */
         PhysicalPort inPort = null;
         PhysicalPort outPort = null;
-        fm.setBufferId(OVXPacketOut.BUFFER_ID_NONE);
+        fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
         fm.setCommand(OFFlowMod.OFPFC_MODIFY);
-        List<PhysicalLink> plinks = new LinkedList<PhysicalLink>();
+        final List<PhysicalLink> plinks = new LinkedList<PhysicalLink>();
         try {
             for (final PhysicalLink phyLink : OVXMap.getInstance()
                     .getPhysicalLinks(this)) {
-                PhysicalLink nlink = new PhysicalLink(phyLink.getDstPort(),
-                        phyLink.getSrcPort());
+                final PhysicalLink nlink = new PhysicalLink(
+						phyLink.getDstPort(), phyLink.getSrcPort());
                 plinks.add(nlink);
                 nlink.boot();
             }
-        } catch (LinkMappingException e) {
-            log.warn("No physical Links mapped to OVXLink? : {}", e);
+        } catch (final LinkMappingException e) {
+            this.log.warn("No physical Links mapped to OVXLink? : {}", e);
             return;
         }
 
@@ -685,13 +706,14 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
             if (outPort != null) {
                 inPort = phyLink.getSrcPort();
                 fm.getMatch().setInputPort(inPort.getPortNumber());
-                fm.setLengthU(OVXFlowMod.MINIMUM_LENGTH
-                        + OVXActionOutput.MINIMUM_LENGTH);
+                fm.setLengthU(OFFlowMod.MINIMUM_LENGTH
+                        + OFActionOutput.MINIMUM_LENGTH);
                 fm.setActions(Arrays.asList((OFAction) new OFActionOutput(
                         outPort.getPortNumber(), (short) 0xffff)));
                 phyLink.getSrcPort().getParentSwitch()
-                        .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
-                log.debug("Sending virtual link intermediate fm to sw {}: {}",
+                .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
+                this.log.debug(
+						"Sending virtual link intermediate fm to sw {}: {}",
                         phyLink.getSrcPort().getParentSwitch().getSwitchName(),
                         fm);
             }
@@ -702,7 +724,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
         try {
             Thread.sleep(5);
         } catch (final InterruptedException e) {
-            log.warn("Timeout interrupted; might be a problem if you are running POX.");
+            this.log.warn("Timeout interrupted; might be a problem if you are running POX.");
         }
     }
 
@@ -714,7 +736,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      *            the failed PhysicalLink
      * @return true if successful, false otherwise
      */
-    public boolean tryRecovery(Component plink) {
+    @Override
+    public boolean tryRecovery(final Component plink) {
         return this.state.tryRecovery(this, (PhysicalLink) plink);
     }
 
@@ -725,7 +748,8 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      *            the restored physical link
      * @return true if successful, false otherwise.
      */
-    public boolean tryRevert(Component plink) {
+    @Override
+    public boolean tryRevert(final Component plink) {
         return this.state.tryRevert(this, (PhysicalLink) plink);
     }
 

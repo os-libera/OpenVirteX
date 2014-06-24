@@ -37,7 +37,7 @@ public class GetSubnet extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tid = HandlerUtils.<Number>fetchField(
+            final Number tid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.TENANT, params, true, null);
             final OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
                     tid.intValue());

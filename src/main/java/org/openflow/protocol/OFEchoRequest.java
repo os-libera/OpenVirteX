@@ -88,7 +88,7 @@ public class OFEchoRequest extends OFMessage {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -101,7 +101,7 @@ public class OFEchoRequest extends OFMessage {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

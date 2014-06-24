@@ -17,13 +17,13 @@ package net.onrc.openvirtex.routing;
 
 import java.util.LinkedList;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ManualRoute implements Routable {
 
@@ -56,9 +56,10 @@ public class ManualRoute implements Routable {
     }
 
     @Override
-    public void setLinkPath(OVXLink ovxLink) {
-        log.warn("The manual routing should never call the method [setLinkPath(OVXLink)]. "
-                + "To define a manual path for the virtual link, use the API call [SetLinkPath].");
+    public void setLinkPath(final OVXLink ovxLink) {
+        ManualRoute.log
+				.warn("The manual routing should never call the method [setLinkPath(OVXLink)]. "
+						+ "To define a manual path for the virtual link, use the API call [SetLinkPath].");
 
     }
 

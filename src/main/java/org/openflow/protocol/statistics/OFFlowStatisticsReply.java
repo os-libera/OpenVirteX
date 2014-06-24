@@ -48,7 +48,7 @@ import org.openflow.util.U16;
  * @author David Erickson (daviderickson@cs.stanford.edu)
  */
 public class OFFlowStatisticsReply implements OFStatistics,
-        OFActionFactoryAware {
+OFActionFactoryAware {
     public static int MINIMUM_LENGTH = 88;
 
     protected OFActionFactory actionFactory;

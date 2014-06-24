@@ -34,11 +34,11 @@ public class LinkPair<T> {
         this.egressLink = null;
     }
 
-    public void setInLink(T link) {
+    public void setInLink(final T link) {
         this.ingressLink = link;
     }
 
-    public void setOutLink(T link) {
+    public void setOutLink(final T link) {
         this.egressLink = link;
     }
 
@@ -76,7 +76,7 @@ public class LinkPair<T> {
      * @return false if both ingress and egress links are null
      */
     public boolean exists() {
-        return ((this.ingressLink != null) && (this.egressLink != null));
+        return this.ingressLink != null && this.egressLink != null;
     }
 
     @Override

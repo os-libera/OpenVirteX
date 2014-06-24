@@ -72,40 +72,38 @@ public class CmdLineSettings {
     public static final Integer DEFAULT_HASHWHEEL_SIZE = 512;
 
     @Option(name = "-p", aliases = "--of-port", metaVar = "INT", usage = "OpenVirteX OpenFlow listen port")
-    private Integer ofPort = CmdLineSettings.DEFAULT_OF_PORT;
+    private final Integer ofPort = CmdLineSettings.DEFAULT_OF_PORT;
 
     @Option(name = "--of-host", metaVar = "String", usage = "OpenVirteX host")
-    private String ofHost = CmdLineSettings.DEFAULT_OF_HOST;
+    private final String ofHost = CmdLineSettings.DEFAULT_OF_HOST;
 
     @Option(name = "-n", aliases = "--num-virtual", metaVar = "INT", usage = "The number of virtual networks")
-    private Integer numVirtual = CmdLineSettings.DEFAULT_NUMBER_VIRT_NETS;
+    private final Integer numVirtual = CmdLineSettings.DEFAULT_NUMBER_VIRT_NETS;
 
     @Option(name = "-dh", aliases = "--db-host", metaVar = "String", usage = "Database host")
-    private String dbHost = CmdLineSettings.DEFAULT_DB_HOST;
+    private final String dbHost = CmdLineSettings.DEFAULT_DB_HOST;
 
     @Option(name = "-dp", aliases = "--db-port", metaVar = "INT", usage = "Database port")
-    private Integer dbPort = CmdLineSettings.DEFAULT_DB_PORT;
+    private final Integer dbPort = CmdLineSettings.DEFAULT_DB_PORT;
 
     @Option(name = "--db-clear", usage = "Clear database")
-    private Boolean dbClear = CmdLineSettings.DEFAULT_DB_CLEAR;
+    private final Boolean dbClear = CmdLineSettings.DEFAULT_DB_CLEAR;
 
     @Option(name = "--stats-refresh", usage = "Sets what interval to poll statistics with")
-    private Integer statsRefresh = CmdLineSettings.DEFAULT_STATS_REFRESH;
+    private final Integer statsRefresh = CmdLineSettings.DEFAULT_STATS_REFRESH;
 
     @Option(name = "-ct", aliases = "--client-threads", metaVar = "INT", usage = "Number of threads handles controller connections")
-    private Integer clientThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
+    private final Integer clientThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
 
     @Option(name = "-st", aliases = "--server-threads", metaVar = "INT", usage = "Number of threads handles switch connections")
-    private Integer serverThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
+    private final Integer serverThreads = CmdLineSettings.DEFAULT_CLIENT_THREADS;
 
     @Option(name = "-ub", aliases = "--use-bddp", usage = "Use BDDP for network discovery; only use if you know what you are doing.")
-    private Boolean useBDDP = CmdLineSettings.DEFAULT_USE_BDDP;
+    private final Boolean useBDDP = CmdLineSettings.DEFAULT_USE_BDDP;
 
     @Option(name = "-t", aliases = "--timeout-num", usage = "Specify the number of timeouts supported in OVX; "
             + "use only if you have a huge physical network")
-    private Integer hashSize = CmdLineSettings.DEFAULT_HASHWHEEL_SIZE;
-
-
+    private final Integer hashSize = CmdLineSettings.DEFAULT_HASHWHEEL_SIZE;
 
     /**
      * Gets the host OVX is running on.
@@ -198,7 +196,7 @@ public class CmdLineSettings {
     public Boolean getUseBDDP() {
         return this.useBDDP;
     }
-    
+
     /**
      * Returns the hash wheel size
      *

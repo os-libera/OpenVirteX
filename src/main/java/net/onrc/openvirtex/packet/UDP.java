@@ -188,7 +188,7 @@ public class UDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -204,7 +204,7 @@ public class UDP extends BasePacket {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

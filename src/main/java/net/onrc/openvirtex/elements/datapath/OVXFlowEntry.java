@@ -37,7 +37,8 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
     public static final int EQUAL = 0; // exactly same
     public static final int SUPERSET = 1; // more general
     public static final int SUBSET = 2; // more specific
-    public static final int INTERSECT = 3; // mix of wildcards and matching fields
+    public static final int INTERSECT = 3; // mix of wildcards and matching
+    // fields
     public static final int DISJOINT = 4; // non-matching non-wildcarded fields
 
     // The FlowMod this Entry represents
@@ -48,7 +49,7 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
     public OVXFlowEntry() {
     }
 
-    public OVXFlowEntry(OVXFlowMod fm, long cookie) {
+    public OVXFlowEntry(final OVXFlowMod fm, final long cookie) {
         this.flowmod = fm.clone();
         this.newcookie = cookie;
     }
@@ -75,146 +76,146 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
      *            whether FlowMod from which the match came was strict or not.
      * @return Union enum representing the relationship
      */
-    public int compare(OFMatch omatch, boolean strict) {
+    public int compare(final OFMatch omatch, final boolean strict) {
         // to allow pass by reference...in order: equal, superset, subset
-        int[] intersect = new int[] {0, 0, 0};
+        final int[] intersect = new int[] { 0, 0, 0 };
 
-        OFMatch tmatch = this.flowmod.getMatch();
-        int twcard = tmatch.getWildcards();
-        int owcard = this.convertToWcards(omatch);
+        final OFMatch tmatch = this.flowmod.getMatch();
+        final int twcard = tmatch.getWildcards();
+        final int owcard = this.convertToWcards(omatch);
 
         /* inport */
         if ((twcard & OFMatch.OFPFW_IN_PORT) == (owcard & OFMatch.OFPFW_IN_PORT)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_IN_PORT, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_IN_PORT, intersect,
                     tmatch.getInputPort(), omatch.getInputPort())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_IN_PORT, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_IN_PORT, intersect);
         }
 
         /* L2 */
         if ((twcard & OFMatch.OFPFW_DL_DST) == (owcard & OFMatch.OFPFW_DL_DST)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_DL_DST, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_DL_DST, intersect,
                     tmatch.getDataLayerDestination(),
                     omatch.getDataLayerDestination())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_DL_DST, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_DL_DST, intersect);
         }
         if ((twcard & OFMatch.OFPFW_DL_SRC) == (owcard & OFMatch.OFPFW_DL_SRC)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_DL_SRC, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_DL_SRC, intersect,
                     tmatch.getDataLayerSource(), omatch.getDataLayerSource())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_DL_SRC, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_DL_SRC, intersect);
         }
         if ((twcard & OFMatch.OFPFW_DL_TYPE) == (owcard & OFMatch.OFPFW_DL_TYPE)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_DL_TYPE, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_DL_TYPE, intersect,
                     tmatch.getDataLayerType(), omatch.getDataLayerType())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_DL_TYPE, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_DL_TYPE, intersect);
         }
         if ((twcard & OFMatch.OFPFW_DL_VLAN) == (owcard & OFMatch.OFPFW_DL_VLAN)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_DL_VLAN, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_DL_VLAN, intersect,
                     tmatch.getDataLayerVirtualLan(),
                     omatch.getDataLayerVirtualLan())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_DL_VLAN, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_DL_VLAN, intersect);
         }
         if ((twcard & OFMatch.OFPFW_DL_VLAN_PCP) == (owcard & OFMatch.OFPFW_DL_VLAN_PCP)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_DL_VLAN_PCP, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_DL_VLAN_PCP, intersect,
                     tmatch.getDataLayerVirtualLanPriorityCodePoint(),
                     omatch.getDataLayerVirtualLanPriorityCodePoint())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_DL_VLAN_PCP, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_DL_VLAN_PCP,
+					intersect);
         }
 
         /* L3 */
         if ((twcard & OFMatch.OFPFW_NW_PROTO) == (owcard & OFMatch.OFPFW_NW_PROTO)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_NW_PROTO, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_NW_PROTO, intersect,
                     tmatch.getNetworkProtocol(), omatch.getNetworkProtocol())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_NW_PROTO, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_NW_PROTO, intersect);
         }
         if ((twcard & OFMatch.OFPFW_NW_TOS) == (owcard & OFMatch.OFPFW_NW_TOS)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_NW_TOS, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_NW_TOS, intersect,
                     tmatch.getNetworkTypeOfService(),
                     omatch.getNetworkTypeOfService())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_NW_TOS, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_NW_TOS, intersect);
         }
         if ((twcard & OFMatch.OFPFW_NW_DST_ALL) == (owcard & OFMatch.OFPFW_NW_DST_ALL)) {
-            if (findDisjoint(twcard,
-                    (OFMatch.OFPFW_NW_DST_ALL | OFMatch.OFPFW_NW_DST_MASK),
-                    intersect, tmatch.getNetworkDestination(),
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_NW_DST_ALL
+					| OFMatch.OFPFW_NW_DST_MASK, intersect,
+					tmatch.getNetworkDestination(),
                     omatch.getNetworkDestination())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_NW_DST_ALL
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_NW_DST_ALL
                     | OFMatch.OFPFW_NW_DST_MASK, intersect);
         }
         if ((twcard & OFMatch.OFPFW_NW_SRC_ALL) == (owcard & OFMatch.OFPFW_NW_SRC_ALL)) {
-            if (findDisjoint(twcard,
-                    (OFMatch.OFPFW_NW_SRC_ALL | OFMatch.OFPFW_NW_SRC_MASK),
-                    intersect, tmatch.getNetworkSource(),
-                    omatch.getNetworkSource())) {
-                return DISJOINT;
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_NW_SRC_ALL
+					| OFMatch.OFPFW_NW_SRC_MASK, intersect,
+					tmatch.getNetworkSource(), omatch.getNetworkSource())) {
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_NW_SRC_ALL
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_NW_SRC_ALL
                     | OFMatch.OFPFW_NW_SRC_MASK, intersect);
         }
 
         /* L4 */
         if ((twcard & OFMatch.OFPFW_TP_SRC) == (owcard & OFMatch.OFPFW_TP_SRC)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_TP_SRC, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_TP_SRC, intersect,
                     tmatch.getTransportSource(), omatch.getTransportSource())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_TP_SRC, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_TP_SRC, intersect);
         }
         if ((twcard & OFMatch.OFPFW_TP_DST) == (owcard & OFMatch.OFPFW_TP_DST)) {
-            if (findDisjoint(twcard, OFMatch.OFPFW_TP_DST, intersect,
+            if (this.findDisjoint(twcard, OFMatch.OFPFW_TP_DST, intersect,
                     tmatch.getTransportDestination(),
                     omatch.getTransportDestination())) {
-                return DISJOINT;
+                return OVXFlowEntry.DISJOINT;
             }
         } else { /* check if super or subset */
-            findRelation(twcard, owcard, OFMatch.OFPFW_TP_DST, intersect);
+            this.findRelation(twcard, owcard, OFMatch.OFPFW_TP_DST, intersect);
         }
 
-        int equal = intersect[EQUAL];
-        int superset = intersect[SUPERSET];
-        int subset = intersect[SUBSET];
+        int equal = intersect[OVXFlowEntry.EQUAL];
+        final int superset = intersect[OVXFlowEntry.SUPERSET];
+        final int subset = intersect[OVXFlowEntry.SUBSET];
 
         if (!strict) {
             equal |= subset;
         }
         if (equal == OFMatch.OFPFW_ALL) {
-            return EQUAL;
+            return OVXFlowEntry.EQUAL;
         }
         if (superset == OFMatch.OFPFW_ALL) {
-            return SUPERSET;
+            return OVXFlowEntry.SUPERSET;
         }
         if (subset == OFMatch.OFPFW_ALL) {
-            return SUBSET;
+            return OVXFlowEntry.SUBSET;
         }
-        return INTERSECT;
+        return OVXFlowEntry.INTERSECT;
     }
 
     /**
@@ -227,7 +228,7 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
      *            The wildcard field of the FlowMod.
      * @return the modified wildcard value (a copy).
      */
-    private int convertToWcards(OFMatch omatch) {
+    private int convertToWcards(final OFMatch omatch) {
         int owcard = omatch.getWildcards();
         if (omatch.getNetworkDestination() == 0) {
             owcard |= OFMatch.OFPFW_NW_DST_ALL | OFMatch.OFPFW_NW_DST_MASK;
@@ -259,10 +260,10 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
      * @param val2
      * @return true if disjoint FlowEntries
      */
-    private boolean findDisjoint(int wcard, int field, int[] intersect,
-            Number val1, Number val2) {
-        if (((wcard & field) == field) || (val1.equals(val2))) {
-            updateIntersect(intersect, field);
+    private boolean findDisjoint(final int wcard, final int field,
+			final int[] intersect, final Number val1, final Number val2) {
+        if ((wcard & field) == field || val1.equals(val2)) {
+            this.updateIntersect(intersect, field);
             return false;
         }
         return true;
@@ -278,10 +279,10 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
      * @param val2
      * @return
      */
-    private boolean findDisjoint(int wcard, int field, int[] intersect,
-            byte[] val1, byte[] val2) {
+    private boolean findDisjoint(final int wcard, final int field,
+			final int[] intersect, final byte[] val1, final byte[] val2) {
         if ((wcard & field) == field) {
-            updateIntersect(intersect, field);
+            this.updateIntersect(intersect, field);
             return false;
         }
         for (int i = 0; i < MACAddress.MAC_ADDRESS_LENGTH; i++) {
@@ -289,14 +290,14 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
                 return true;
             }
         }
-        updateIntersect(intersect, field);
+        this.updateIntersect(intersect, field);
         return false;
     }
 
-    private void updateIntersect(int[] intersect, int field) {
-        intersect[EQUAL] |= field;
-        intersect[SUPERSET] |= field;
-        intersect[SUBSET] |= field;
+    private void updateIntersect(final int[] intersect, final int field) {
+        intersect[OVXFlowEntry.EQUAL] |= field;
+        intersect[OVXFlowEntry.SUPERSET] |= field;
+        intersect[OVXFlowEntry.SUBSET] |= field;
     }
 
     /**
@@ -313,11 +314,12 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
      * @param intersect
      *            intersection sets
      */
-    private void findRelation(int wcard1, int wcard2, int field, int[] intersect) {
+    private void findRelation(final int wcard1, final int wcard2,
+			final int field, final int[] intersect) {
         if ((wcard1 & field) > (wcard2 & field)) {
-            intersect[SUPERSET] |= field;
+            intersect[OVXFlowEntry.SUPERSET] |= field;
         } else {
-            intersect[SUBSET] |= field;
+            intersect[OVXFlowEntry.SUBSET] |= field;
         }
     }
 
@@ -339,7 +341,7 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
         return this.flowmod;
     }
 
-    public OVXFlowEntry setFlowMod(OVXFlowMod fm) {
+    public OVXFlowEntry setFlowMod(final OVXFlowMod fm) {
         this.flowmod = fm;
         return this;
     }
@@ -354,9 +356,10 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
     /**
      * Sets the new cookie for this entry.
      *
-     * @param cookie the cookie
+     * @param cookie
+     *            the cookie
      */
-    public OVXFlowEntry setNewCookie(Long cookie) {
+    public OVXFlowEntry setNewCookie(final Long cookie) {
         this.newcookie = cookie;
         return this;
     }
@@ -376,7 +379,7 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -384,13 +387,14 @@ public class OVXFlowEntry implements Comparable<OVXFlowEntry> {
         final int prime = 31;
         int result = 1;
         result = prime * this.flowmod.hashCode();
-        result = prime * result + (int) (newcookie ^ (newcookie >>> 32));
+        result = prime * result
+				+ (int) (this.newcookie ^ this.newcookie >>> 32);
         return result;
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

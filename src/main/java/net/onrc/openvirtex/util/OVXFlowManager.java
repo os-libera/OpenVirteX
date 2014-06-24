@@ -37,9 +37,10 @@ public class OVXFlowManager {
     private final HashBiMap<Integer, BigInteger> flowValues;
     private final BitSetIndex flowCounter;
     private final Integer tenantId;
-    private Collection<Host> hostList;
+    private final Collection<Host> hostList;
 
-    public OVXFlowManager(Integer tenantId, Collection<Host> hostList) {
+    public OVXFlowManager(final Integer tenantId,
+			final Collection<Host> hostList) {
         this.flowValues = HashBiMap.create();
         this.flowCounter = new BitSetIndex(IndexType.FLOW_COUNTER);
         this.tenantId = tenantId;
@@ -54,10 +55,11 @@ public class OVXFlowManager {
         Integer flowId = this.flowValues.inverse().get(dualMac);
         if (flowId == null) {
             flowId = this.flowCounter.getNewIndex();
-            log.debug(
-                    "virtual net = {}: save flowId = {} that is associated to {} {}",
-                    this.tenantId, flowId, MACAddress.valueOf(srcMac)
-                            .toString(), MACAddress.valueOf(dstMac).toString());
+            OVXFlowManager.log
+					.debug("virtual net = {}: save flowId = {} that is associated to {} {}",
+							this.tenantId, flowId, MACAddress.valueOf(srcMac)
+									.toString(), MACAddress.valueOf(dstMac)
+									.toString());
             this.flowValues.put(flowId, dualMac);
         }
         return flowId;
@@ -82,10 +84,11 @@ public class OVXFlowManager {
                 dstMac));
         final Integer flowId = this.flowValues.inverse().get(dualMac);
         if (flowId != null && flowId != 0) {
-            log.debug(
-                    "virtual net = {}: retrieving flowId {} that is associated to {} {}",
-                    this.tenantId, flowId, MACAddress.valueOf(srcMac)
-                            .toString(), MACAddress.valueOf(dstMac).toString());
+            OVXFlowManager.log
+					.debug("virtual net = {}: retrieving flowId {} that is associated to {} {}",
+							this.tenantId, flowId, MACAddress.valueOf(srcMac)
+									.toString(), MACAddress.valueOf(dstMac)
+									.toString());
             return flowId;
         }
         throw new DroppedMessageException(

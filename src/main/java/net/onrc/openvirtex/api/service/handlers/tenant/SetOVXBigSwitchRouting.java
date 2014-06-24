@@ -47,13 +47,13 @@ public class SetOVXBigSwitchRouting extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     TenantHandler.VDPID, params, true, null);
-            final String alg = HandlerUtils.<String>fetchField(
+            final String alg = HandlerUtils.<String> fetchField(
                     TenantHandler.ALGORITHM, params, true, null);
-            final Number backupNumber = HandlerUtils.<Number>fetchField(
+            final Number backupNumber = HandlerUtils.<Number> fetchField(
                     TenantHandler.BACKUPS, params, true, null);
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
@@ -74,11 +74,11 @@ public class SetOVXBigSwitchRouting extends ApiHandler<Map<String, Object>> {
                 this.log.info(
                         "Set routing algorithm {} for big-switch {} in virtual network {}",
                         algorithm.getRoutingType().getValue(), virtualNetwork
-                                .getSwitch(dpid.longValue()).getSwitchName(),
+                        .getSwitch(dpid.longValue()).getSwitchName(),
                         virtualNetwork.getTenantId());
-                OVXBigSwitch ovxSwitch = (OVXBigSwitch) virtualNetwork
+                final OVXBigSwitch ovxSwitch = (OVXBigSwitch) virtualNetwork
                         .getSwitch(dpid.longValue());
-                Map<String, Object> reply = new HashMap<String, Object>(
+                final Map<String, Object> reply = new HashMap<String, Object>(
                         ovxSwitch.getDBObject());
                 reply.put(TenantHandler.TENANT, ovxSwitch.getTenantId());
                 resp = new JSONRPC2Response(reply, 0);
@@ -87,24 +87,24 @@ public class SetOVXBigSwitchRouting extends ApiHandler<Map<String, Object>> {
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to set routing mode for big-switch : "
-                            + e.getMessage()), 0);
+                    + ": Unable to set routing mode for big-switch : "
+                    + e.getMessage()), 0);
         } catch (final InvalidDPIDException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid DPID : " + e.getMessage()), 0);
+                    + ": Invalid DPID : " + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final RoutingAlgorithmException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid algorithm : " + e.getMessage()), 0);
+                    + ": Invalid algorithm : " + e.getMessage()), 0);
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         }
         return resp;
     }

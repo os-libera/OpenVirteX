@@ -21,7 +21,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import org.openflow.protocol.OFQueueGetConfigReply;
 
 public class OVXQueueGetConfigReply extends OFQueueGetConfigReply implements
-        Virtualizable {
+Virtualizable {
 
     @Override
     public void virtualize(final PhysicalSwitch sw) {

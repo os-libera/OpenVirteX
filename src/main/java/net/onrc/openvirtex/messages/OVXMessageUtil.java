@@ -32,27 +32,29 @@ import org.openflow.protocol.OFError.OFPortModFailedCode;
 import org.openflow.protocol.OFMessage;
 
 /**
- * Utility class for OVX messages. Implements methods
- * for creating error messages and transaction ID
- * mappings.
+ * Utility class for OVX messages. Implements methods for creating error
+ * messages and transaction ID mappings.
  */
 public final class OVXMessageUtil {
 
-    private static Logger log = LogManager.getLogger(OVXMessageUtil.class.getName());
+    private static Logger log = LogManager.getLogger(OVXMessageUtil.class
+            .getName());
 
     /**
-     * Overrides default constructor to no-op private constructor.
-     * Required by checkstyle.
+     * Overrides default constructor to no-op private constructor. Required by
+     * checkstyle.
      */
     private OVXMessageUtil() {
     }
 
     /**
-     * Makes an OpenFlow error message for a bad action and
-     * given OpenFlow message.
+     * Makes an OpenFlow error message for a bad action and given OpenFlow
+     * message.
      *
-     * @param code the bad action code
-     * @param msg the OpenFlow message
+     * @param code
+     *            the bad action code
+     * @param msg
+     *            the OpenFlow message
      * @return the OpenFlow error message
      */
     public static OFMessage makeError(final OFBadActionCode code,
@@ -66,11 +68,13 @@ public final class OVXMessageUtil {
     }
 
     /**
-     * Makes an OpenFlow error message for a failed flow mod and
-     * given OpenFlow message.
+     * Makes an OpenFlow error message for a failed flow mod and given OpenFlow
+     * message.
      *
-     * @param code the failed flow mod code
-     * @param msg the OpenFlow message
+     * @param code
+     *            the failed flow mod code
+     * @param msg
+     *            the OpenFlow message
      * @return the OpenFlow error message
      */
     public static OFMessage makeErrorMsg(final OFFlowModFailedCode code,
@@ -84,11 +88,13 @@ public final class OVXMessageUtil {
     }
 
     /**
-     * Makes an OpenFlow error message for a failed port mod and
-     * given OpenFlow message.
+     * Makes an OpenFlow error message for a failed port mod and given OpenFlow
+     * message.
      *
-     * @param code the failed port mod code
-     * @param msg the OpenFlow message
+     * @param code
+     *            the failed port mod code
+     * @param msg
+     *            the OpenFlow message
      * @return the OpenFlow error message
      */
     public static OFMessage makeErrorMsg(final OFPortModFailedCode code,
@@ -102,11 +108,13 @@ public final class OVXMessageUtil {
     }
 
     /**
-     * Makes an OpenFlow error message for a bad request and
-     * given OpenFlow message.
+     * Makes an OpenFlow error message for a bad request and given OpenFlow
+     * message.
      *
-     * @param code the bad request code
-     * @param msg the OpenFlow message
+     * @param code
+     *            the bad request code
+     * @param msg
+     *            the OpenFlow message
      * @return the OpenFlow error message
      */
     public static OFMessage makeErrorMsg(final OFBadRequestCode code,
@@ -123,8 +131,10 @@ public final class OVXMessageUtil {
      * Xid translation based on port for "accurate" translation with a specific
      * PhysicalSwitch.
      *
-     * @param msg the OpenFlow message
-     * @param inPort the virtual input port instance
+     * @param msg
+     *            the OpenFlow message
+     * @param inPort
+     *            the virtual input port instance
      * @return the virtual switch
      */
     public static OVXSwitch translateXid(final OFMessage msg,
@@ -139,8 +149,10 @@ public final class OVXMessageUtil {
      * Xid translation based on OVXSwitch, for cases where port cannot be
      * determined.
      *
-     * @param msg the OpenFlow message
-     * @param vsw the virtual switch instance
+     * @param msg
+     *            the OpenFlow message
+     * @param vsw
+     *            the virtual switch instance
      * @return new Xid for msg
      */
     public static Integer translateXid(final OFMessage msg, final OVXSwitch vsw) {
@@ -154,8 +166,10 @@ public final class OVXMessageUtil {
      * Translates the Xid of a PhysicalSwitch-bound message and sends it there.
      * For when port is known.
      *
-     * @param msg the OpenFlow message
-     * @param inPort the virtual input port instance
+     * @param msg
+     *            the OpenFlow message
+     * @param inPort
+     *            the virtual input port instance
      */
     public static void translateXidAndSend(final OFMessage msg,
             final OVXPort inPort) {
@@ -167,8 +181,10 @@ public final class OVXMessageUtil {
      * Translates the Xid of a PhysicalSwitch-bound message and sends it there.
      * For when port is not known.
      *
-     * @param msg the OpenFlow message
-     * @param vsw the virtual switch instance
+     * @param msg
+     *            the OpenFlow message
+     * @param vsw
+     *            the virtual switch instance
      */
     public static void translateXidAndSend(final OFMessage msg,
             final OVXSwitch vsw) {
@@ -185,8 +201,10 @@ public final class OVXMessageUtil {
                     psw.sendMsg(msg, vsw);
                     msg.setXid(newXid);
                 }
-            } catch (SwitchMappingException e) {
-                log.error("Switch {} is not mapped to any physical switches.", vsw);
+            } catch (final SwitchMappingException e) {
+                OVXMessageUtil.log.error(
+						"Switch {} is not mapped to any physical switches.",
+                        vsw);
             }
         } else {
             vsw.sendSouth(msg, null);
@@ -196,8 +214,10 @@ public final class OVXMessageUtil {
     /**
      * Undoes the XID translation and returns the original virtual switch.
      *
-     * @param msg the OpenFlow message
-     * @param psw the physical switch
+     * @param msg
+     *            the OpenFlow message
+     * @param psw
+     *            the physical switch
      * @return the virtual switch
      */
     public static OVXSwitch untranslateXid(final OFMessage msg,
@@ -214,14 +234,17 @@ public final class OVXMessageUtil {
      * Undoes the Xid translation and tries to send the resulting message to the
      * origin OVXSwitch.
      *
-     * @param msg the OpenFlow message
-     * @param psw the physical switch
+     * @param msg
+     *            the OpenFlow message
+     * @param psw
+     *            the physical switch
      */
     public static void untranslateXidAndSend(final OFMessage msg,
             final PhysicalSwitch psw) {
         final OVXSwitch vsw = OVXMessageUtil.untranslateXid(msg, psw);
         if (vsw == null) {
-            log.error("Cound not untranslate XID for switch {}", psw);
+            OVXMessageUtil.log.error("Cound not untranslate XID for switch {}",
+					psw);
             return;
         }
         vsw.sendMsg(msg, psw);

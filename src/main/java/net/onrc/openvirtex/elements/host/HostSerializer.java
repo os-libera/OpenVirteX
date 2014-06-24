@@ -25,7 +25,8 @@ import com.google.gson.JsonSerializer;
 public class HostSerializer implements JsonSerializer<Host> {
 
     @Override
-    public JsonElement serialize(Host host, Type t, JsonSerializationContext c) {
+    public JsonElement serialize(final Host host, final Type t,
+			final JsonSerializationContext c) {
         final JsonObject result = new JsonObject();
         result.addProperty("hostId", host.getHostId());
         result.addProperty("ipAddress", host.getIp().toSimpleString());

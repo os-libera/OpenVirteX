@@ -18,9 +18,9 @@
  */
 package net.onrc.openvirtex.elements.address;
 
-import org.openflow.util.U8;
-
 import net.onrc.openvirtex.packet.IPv4;
+
+import org.openflow.util.U8;
 
 public abstract class IPAddress {
     protected int ip;
@@ -56,23 +56,23 @@ public abstract class IPAddress {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ip;
+        result = prime * result + this.ip;
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
-        IPAddress other = (IPAddress) obj;
-        if (ip != other.ip) {
+        final IPAddress other = (IPAddress) obj;
+        if (this.ip != other.ip) {
             return false;
         }
         return true;

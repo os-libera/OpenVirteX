@@ -134,10 +134,10 @@ public class ReconnectHandler extends SimpleChannelHandler {
                         ReconnectTimeoutTask.this.cg.add(e.getChannel());
                     } else {
                         ReconnectHandler.this.log
-                                .error("Failed to connect to controller {} for switch {}",
-                                        remoteAddr,
-                                        ReconnectTimeoutTask.this.sw
-                                                .getSwitchName());
+                        .error("Failed to connect to controller {} for switch {}",
+                                remoteAddr,
+                                ReconnectTimeoutTask.this.sw
+                                .getSwitchName());
                     }
 
                 }

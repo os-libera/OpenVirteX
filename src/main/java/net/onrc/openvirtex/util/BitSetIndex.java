@@ -17,20 +17,21 @@ package net.onrc.openvirtex.util;
 
 import java.util.BitSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openflow.protocol.OFPort;
-import org.openflow.util.U16;
-
 import net.onrc.openvirtex.core.OpenVirteXController;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFPort;
+import org.openflow.util.U16;
+
 public class BitSetIndex {
-    private static Logger log = LogManager.getLogger(BitSetIndex.class.getName());
-    private BitSet set;
-    private IndexType type;
+    private static Logger log = LogManager.getLogger(BitSetIndex.class
+            .getName());
+    private final BitSet set;
+    private final IndexType type;
 
     public enum IndexType {
         /*
@@ -40,24 +41,24 @@ public class BitSetIndex {
          */
         TENANT_ID((int) Math.pow(2, OpenVirteXController.getInstance()
                 .getNumberVirtualNets())), SWITCH_ID((int) Math.pow(2, 32)), LINK_ID(
-                getLinkMaxValue()), ROUTE_ID((int) Math.pow(2, 24)), PORT_ID(
-                U16.f(OFPort.OFPP_MAX.getValue())), FLOW_ID((int) Math.pow(2,
-                24)), HOST_ID((int) Math.pow(2, 32)), FLOW_COUNTER(
-                getLinkMaxValue()), IP_ID((int) Math
-                .pow(2, (32 - OpenVirteXController.getInstance()
-                        .getNumberVirtualNets()))), DEFAULT(1000);
+                        IndexType.getLinkMaxValue()), ROUTE_ID((int) Math.pow(2, 24)), PORT_ID(
+                                U16.f(OFPort.OFPP_MAX.getValue())), FLOW_ID((int) Math.pow(2,
+                                        24)), HOST_ID((int) Math.pow(2, 32)), FLOW_COUNTER(IndexType
+				.getLinkMaxValue()), IP_ID((int) Math
+                                                        .pow(2, 32 - OpenVirteXController.getInstance()
+                                                                .getNumberVirtualNets() / 2)), DEFAULT(1000);
 
         protected Integer value;
 
         private static Integer getLinkMaxValue() {
             if (OpenVirteXController.getInstance().getOvxLinkField().getValue() == OVXLinkField.MAC_ADDRESS
                     .getValue()) {
-                return (int) Math.pow(2, ((48 - OpenVirteXController
-                        .getInstance().getNumberVirtualNets()) / 2));
+                return (int) Math.pow(2, (48 - OpenVirteXController
+                        .getInstance().getNumberVirtualNets()) / 2);
             } else if (OpenVirteXController.getInstance().getOvxLinkField()
                     .getValue() == OVXLinkField.VLAN.getValue()) {
-                return (int) Math.pow(2, ((12 - OpenVirteXController
-                        .getInstance().getNumberVirtualNets()) / 2));
+                return (int) Math.pow(2, (12 - OpenVirteXController
+                        .getInstance().getNumberVirtualNets()) / 2);
             } else {
                 return 1000;
             }
@@ -85,7 +86,7 @@ public class BitSetIndex {
         }
     }
 
-    public BitSetIndex(IndexType type) {
+    public BitSetIndex(final IndexType type) {
         this.set = new BitSet();
         this.type = type;
         // Set the first bit to true, in order to start each index from 1
@@ -93,20 +94,21 @@ public class BitSetIndex {
     }
 
     public synchronized Integer getNewIndex() throws IndexOutOfBoundException {
-        Integer index = this.set.nextClearBit(0);
+        final Integer index = this.set.nextClearBit(0);
         try {
             this.getNewIndex(index);
-        } catch (DuplicateIndexException e) {
-            log.error("Could not reserve new index {}: {}", index, e);
+        } catch (final DuplicateIndexException e) {
+            BitSetIndex.log.error("Could not reserve new index {}: {}", index,
+					e);
             // Will never happen as we obtained the next index through
             // nextClearBit()
         }
         return index;
     }
 
-    public synchronized Integer getNewIndex(Integer index)
+    public synchronized Integer getNewIndex(final Integer index)
             throws IndexOutOfBoundException, DuplicateIndexException {
-        if (index < type.getValue()) {
+        if (index < this.type.getValue()) {
             if (!this.set.get(index)) {
                 this.set.flip(index);
                 return index;
@@ -116,11 +118,11 @@ public class BitSetIndex {
             }
         } else {
             throw new IndexOutOfBoundException("No id available in range [0,"
-                    + type.getValue().toString() + "]");
+                    + this.type.getValue().toString() + "]");
         }
     }
 
-    public synchronized boolean releaseIndex(Integer index) {
+    public synchronized boolean releaseIndex(final Integer index) {
         if (this.set.get(index)) {
             this.set.flip(index);
             return true;

@@ -21,9 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.onrc.openvirtex.elements.Component;
 import net.onrc.openvirtex.elements.Mappable;
 import net.onrc.openvirtex.elements.OVXMap;
@@ -35,6 +32,9 @@ import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
 import net.onrc.openvirtex.routing.SwitchRoute;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * A class that coordinates the states between PhysicalPorts/Links and
@@ -55,16 +55,16 @@ public class OVXStateManager {
      * @param stop
      *            if true, unregister OVXPorts.
      */
-    public void deactivateOVXPorts(PhysicalPort ppt, boolean stop) {
+    public void deactivateOVXPorts(final PhysicalPort ppt, final boolean stop) {
         /*
          * Check for OVXPorts mapped to this phyport. Expect
          * OVXLinks/SwitchRoutes to be torn down, since dead endpoint =
          * non-recoverable VLink.
          */
-        List<Map<Integer, OVXPort>> vports = ppt.getOVXPorts(null);
+        final List<Map<Integer, OVXPort>> vports = ppt.getOVXPorts(null);
 
-        for (Map<Integer, OVXPort> el : vports) {
-            for (OVXPort vp : el.values()) {
+        for (final Map<Integer, OVXPort> el : vports) {
+            for (final OVXPort vp : el.values()) {
                 vp.tearDown();
                 if (stop) {
                     vp.unregister();
@@ -80,17 +80,18 @@ public class OVXStateManager {
      * @param ppt
      *            The PhysicalPort that has boot()ed
      */
-    public void activateOVXPorts(PhysicalPort ppt) {
+    public void activateOVXPorts(final PhysicalPort ppt) {
         /* return all ports mapped to ppt */
-        for (Map<Integer, OVXPort> el : ppt.getOVXPorts(null)) {
-            for (OVXPort vp : el.values()) {
+        for (final Map<Integer, OVXPort> el : ppt.getOVXPorts(null)) {
+            for (final OVXPort vp : el.values()) {
                 /*
                  * OVXPort was down before PhyPort was. Don't bring up w/
                  * PhyPort
                  */
                 if (vp.isAdminDown()) {
-                    log.info("OVXPort is admininstratively down,"
-                            + " must be enabled manually");
+                    OVXStateManager.log
+							.info("OVXPort is admininstratively down,"
+									+ " must be enabled manually");
                     continue;
                 }
                 vp.boot();
@@ -109,42 +110,44 @@ public class OVXStateManager {
      *            if true, unregister OVXLinks/SwitchRoutes.
      * @throws LinkMappingException
      */
-    public void deactivateVLinks(PhysicalLink plink, boolean stop) {
-        for (Integer tid : map.listVirtualNetworks().keySet()) {
+    public void deactivateVLinks(final PhysicalLink plink, final boolean stop) {
+        for (final Integer tid : OVXStateManager.map.listVirtualNetworks()
+				.keySet()) {
             try {
                 /* handle OVXLinks */
-                if (map.hasOVXLinks(plink, tid)) {
-                    Collection<OVXLink> vlinks = new ArrayList<OVXLink>(
-                            map.getVirtualLinks(plink, tid));
-                    for (OVXLink vlink : vlinks) {
-                        handleVLinkDown(vlink, plink, stop);
+                if (OVXStateManager.map.hasOVXLinks(plink, tid)) {
+                    final Collection<OVXLink> vlinks = new ArrayList<OVXLink>(
+                            OVXStateManager.map.getVirtualLinks(plink, tid));
+                    for (final OVXLink vlink : vlinks) {
+                        this.handleVLinkDown(vlink, plink, stop);
                     }
                 }
-            } catch (LinkMappingException e) {
-                log.warn(
-                        "No OVXLink associated with PhysicalLink {}-{} for tenant {}",
-                        tid);
+            } catch (final LinkMappingException e) {
+                OVXStateManager.log
+						.warn("No OVXLink associated with PhysicalLink {}-{} for tenant {}",
+								tid);
             }
             /* handle SwitchRoutes */
             try {
-                if (map.hasSwitchRoutes(plink, tid)) {
-                    Collection<SwitchRoute> routes = new HashSet<SwitchRoute>(
-                            map.getSwitchRoutes(plink, tid));
-                    for (SwitchRoute route : routes) {
-                        handleVLinkDown(route, plink, stop);
+                if (OVXStateManager.map.hasSwitchRoutes(plink, tid)) {
+                    final Collection<SwitchRoute> routes = new HashSet<SwitchRoute>(
+                            OVXStateManager.map.getSwitchRoutes(plink, tid));
+                    for (final SwitchRoute route : routes) {
+                        this.handleVLinkDown(route, plink, stop);
                     }
                 }
-            } catch (LinkMappingException e) {
-                log.warn(
-                        "No SwitchRoute associated with PhysicalLink {} for tenant {}",
-                        tid);
+            } catch (final LinkMappingException e) {
+                OVXStateManager.log
+						.warn("No SwitchRoute associated with PhysicalLink {} for tenant {}",
+								tid);
             }
         }
     }
 
     @SuppressWarnings("rawtypes")
-    private void handleVLinkDown(Link vlink, Component plink, boolean stop) {
-        boolean save = ((Resilient) vlink).tryRecovery(plink);
+    private void handleVLinkDown(final Link vlink, final Component plink,
+			final boolean stop) {
+        final boolean save = ((Resilient) vlink).tryRecovery(plink);
         if (!save) {
             /* let OVXPort teardown tear down OVXLink. don't do for SwitchRoute */
             if (vlink instanceof OVXLink) {
@@ -169,48 +172,50 @@ public class OVXStateManager {
      *
      * @param plink
      */
-    public void activateVLinks(PhysicalLink plink) {
-        for (Integer tid : map.listVirtualNetworks().keySet()) {
+    public void activateVLinks(final PhysicalLink plink) {
+        for (final Integer tid : OVXStateManager.map.listVirtualNetworks()
+				.keySet()) {
             /* handle OVXLinks */
             try {
-                if (map.hasOVXLinks(plink, tid)) {
-                    Collection<OVXLink> vlinks = new ArrayList<OVXLink>(
-                            map.getVirtualLinks(plink, tid));
-                    for (OVXLink vlink : vlinks) {
-                        handleVLinkUp(vlink, plink);
+                if (OVXStateManager.map.hasOVXLinks(plink, tid)) {
+                    final Collection<OVXLink> vlinks = new ArrayList<OVXLink>(
+                            OVXStateManager.map.getVirtualLinks(plink, tid));
+                    for (final OVXLink vlink : vlinks) {
+                        this.handleVLinkUp(vlink, plink);
                     }
                 }
-            } catch (LinkMappingException e) {
-                log.warn(
-                        "No OVXLink associated with PhysicalLink {} for tenant {}",
-                        plink, tid);
+            } catch (final LinkMappingException e) {
+                OVXStateManager.log
+						.warn("No OVXLink associated with PhysicalLink {} for tenant {}",
+								plink, tid);
             }
             /* handle SwitchRoutes */
             try {
-                if (map.hasSwitchRoutes(plink, tid)) {
-                    Collection<SwitchRoute> routes = new HashSet<SwitchRoute>(
-                            map.getSwitchRoutes(plink, tid));
-                    for (SwitchRoute route : routes) {
-                        handleVLinkUp(route, plink);
+                if (OVXStateManager.map.hasSwitchRoutes(plink, tid)) {
+                    final Collection<SwitchRoute> routes = new HashSet<SwitchRoute>(
+                            OVXStateManager.map.getSwitchRoutes(plink, tid));
+                    for (final SwitchRoute route : routes) {
+                        this.handleVLinkUp(route, plink);
                     }
                 }
-            } catch (LinkMappingException e) {
-                log.warn(
-                        "No SwitchRoute associated with PhysicalLink {} for tenant {}",
-                        plink, tid);
+            } catch (final LinkMappingException e) {
+                OVXStateManager.log
+						.warn("No SwitchRoute associated with PhysicalLink {} for tenant {}",
+								plink, tid);
             }
         }
     }
 
     @SuppressWarnings("rawtypes")
-    private void handleVLinkUp(Link vlink, PhysicalLink plink) {
-        boolean recover = ((Resilient) vlink).tryRevert(plink);
+    private void handleVLinkUp(final Link vlink, final PhysicalLink plink) {
+        final boolean recover = ((Resilient) vlink).tryRevert(plink);
         if (!recover) {
             if (vlink instanceof SwitchRoute) {
                 vlink.boot();
             } else if (vlink.getSrcPort().isAdminDown()
                     || vlink.getDstPort().isAdminDown()) {
-                log.info("OVXLink is admininstratively down, must be enabled manually");
+                OVXStateManager.log
+						.info("OVXLink is admininstratively down, must be enabled manually");
                 return;
             } else {
                 /* Bringing ports up brings OVXLink up */

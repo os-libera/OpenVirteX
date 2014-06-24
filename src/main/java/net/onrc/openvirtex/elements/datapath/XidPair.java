@@ -16,10 +16,10 @@
 package net.onrc.openvirtex.elements.datapath;
 
 /**
- * Stores a switch and a transaction ID.
- * Based on XidPair by capveg.
+ * Stores a switch and a transaction ID. Based on XidPair by capveg.
  *
- * @param <T> generic switch type
+ * @param <T>
+ *            generic switch type
  */
 public class XidPair<T> {
 
@@ -29,8 +29,10 @@ public class XidPair<T> {
     /**
      * Creates an instance for a given XID and switch.
      *
-     * @param x the XID
-     * @param sw the switch
+     * @param x
+     *            the XID
+     * @param sw
+     *            the switch
      */
     public XidPair(final int x, final T sw) {
         this.xid = x;
@@ -40,7 +42,8 @@ public class XidPair<T> {
     /**
      * Sets the transaction ID.
      *
-     * @param x the XID
+     * @param x
+     *            the XID
      */
     public void setXid(final int x) {
         this.xid = x;
@@ -58,7 +61,8 @@ public class XidPair<T> {
     /**
      * Sets the switch.
      *
-     * @param sw the switch
+     * @param sw
+     *            the switch
      */
     public void setSwitch(final T sw) {
         this.sw = sw;

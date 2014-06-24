@@ -168,7 +168,7 @@ public class OFPacketIn extends OFMessage {
         this.reason = OFPacketInReason.values()[U8.f(data.readByte())];
         data.readByte(); // pad
         this.packetData = new byte[this.getLengthU()
-                - OFPacketIn.MINIMUM_LENGTH];
+                                   - OFPacketIn.MINIMUM_LENGTH];
         data.readBytes(this.packetData);
     }
 

@@ -22,7 +22,7 @@ public class UnknownRoleException extends Exception {
      */
     private static final long serialVersionUID = 1L;
 
-    public UnknownRoleException(String msg) {
+    public UnknownRoleException(final String msg) {
         super(msg);
     }
 

@@ -28,12 +28,12 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionDataLayerSource;
 
 public class OVXActionDataLayerSource extends OFActionDataLayerSource implements
-        VirtualizableAction {
+VirtualizableAction {
 
     @Override
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
-            throws ActionVirtualizationDenied {
+                    throws ActionVirtualizationDenied {
         final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
         try {
             final Integer tid = sw.getMap().getMAC(mac);
@@ -43,7 +43,7 @@ public class OVXActionDataLayerSource extends OFActionDataLayerSource implements
                         OFBadActionCode.OFPBAC_EPERM);
             }
             approvedActions.add(this);
-        } catch (AddressMappingException e) {
+        } catch (final AddressMappingException e) {
             throw new ActionVirtualizationDenied("Target mac " + mac
                     + " is not in virtual network " + sw.getTenantId(),
                     OFBadActionCode.OFPBAC_EPERM);

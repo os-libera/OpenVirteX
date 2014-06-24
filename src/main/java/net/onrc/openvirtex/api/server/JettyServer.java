@@ -105,9 +105,9 @@ public class JettyServer implements Runnable {
         final SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setKeyStorePath(sslKeyStore);
         sslContextFactory
-                .setKeyStorePassword("OBF:1lbw1wg41sox1kfx1vub1w8t1idn1zer1zej1igj1w8x1vuz1kch1sot1wfu1lfm");
+        .setKeyStorePassword("OBF:1lbw1wg41sox1kfx1vub1w8t1idn1zer1zej1igj1w8x1vuz1kch1sot1wfu1lfm");
         sslContextFactory
-                .setKeyManagerPassword("OBF:1ym71u2g1uh61l8h1l4t1ugk1u2u1ym7");
+        .setKeyManagerPassword("OBF:1ym71u2g1uh61l8h1l4t1ugk1u2u1ym7");
 
         // HTTPS Configuration
         final HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
@@ -121,21 +121,21 @@ public class JettyServer implements Runnable {
         https.setIdleTimeout(500000);
 
         // Set the connectors
-        this.server.setConnectors(new Connector[] {http, https});
+        this.server.setConnectors(new Connector[] { http, https });
 
         final Constraint userConstraint = new Constraint();
         userConstraint.setName(Constraint.__BASIC_AUTH);
-        userConstraint.setRoles(new String[] {"user"});
+        userConstraint.setRoles(new String[] { "user" });
         userConstraint.setAuthenticate(true);
 
         final Constraint adminConstraint = new Constraint();
         adminConstraint.setName(Constraint.__BASIC_AUTH);
-        adminConstraint.setRoles(new String[] {"admin"});
+        adminConstraint.setRoles(new String[] { "admin" });
         adminConstraint.setAuthenticate(true);
 
         final Constraint uiConstraint = new Constraint();
         uiConstraint.setName(Constraint.__BASIC_AUTH);
-        uiConstraint.setRoles(new String[] {"ui"});
+        uiConstraint.setRoles(new String[] { "ui" });
         uiConstraint.setAuthenticate(true);
 
         final ConstraintMapping usermapping = new ConstraintMapping();
@@ -152,8 +152,8 @@ public class JettyServer implements Runnable {
 
         final ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
         sh.setRealmName(JettyServer.REALM);
-        sh.setConstraintMappings(new ConstraintMapping[] {usermapping,
-                adminmapping, uimapping});
+        sh.setConstraintMappings(new ConstraintMapping[] { usermapping,
+                adminmapping, uimapping });
         sh.setAuthenticator(new BasicAuthenticator());
         sh.setHandler(this.service);
         final LoginService loginSrv = new OVXLoginService();

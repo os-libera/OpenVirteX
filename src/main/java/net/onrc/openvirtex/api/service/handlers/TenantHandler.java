@@ -20,16 +20,16 @@ import java.util.HashMap;
 import net.onrc.openvirtex.api.service.handlers.tenant.AddController;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
-import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitch;
-import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXBigSwitchRouting;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXLinkPath;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXNetwork;
@@ -146,7 +146,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
     public static final String IS_BOOTED = "isBooted";
 
     @SuppressWarnings({ "serial", "rawtypes" })
-    private HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
+    private final HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
         {
             this.put("addControllers", new AddController());
 
@@ -175,7 +175,6 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
         }
     };
 
-
     @Override
     public String[] handledRequests() {
         return this.handlers.keySet().toArray(new String[] {});
@@ -193,19 +192,19 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
                     && m.getType() != req.getParamsType()) {
                 return new JSONRPC2Response(new JSONRPC2Error(
                         JSONRPC2Error.INVALID_PARAMS.getCode(), req.getMethod()
-                                + " requires: " + m.getType() + "; got: "
-                                + req.getParamsType()), req.getID());
+                        + " requires: " + m.getType() + "; got: "
+                        + req.getParamsType()), req.getID());
             }
 
             switch (m.getType()) {
-            case NO_PARAMS:
-                return m.process(null);
-            case ARRAY:
-                return m.process(req.getPositionalParams());
-            case OBJECT:
-                return m.process(req.getNamedParams());
-            default:
-                break;
+                case NO_PARAMS:
+                    return m.process(null);
+                case ARRAY:
+                    return m.process(req.getPositionalParams());
+                case OBJECT:
+                    return m.process(req.getNamedParams());
+                default:
+                    break;
             }
         }
 

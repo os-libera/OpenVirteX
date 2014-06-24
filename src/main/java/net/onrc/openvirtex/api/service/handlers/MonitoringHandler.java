@@ -41,7 +41,7 @@ import com.thetransactioncompany.jsonrpc2.server.RequestHandler;
  * handler when processing a request.
  */
 public class MonitoringHandler extends AbstractHandler implements
-        RequestHandler {
+RequestHandler {
 
     /**
      * Virtual network ID.
@@ -61,7 +61,7 @@ public class MonitoringHandler extends AbstractHandler implements
     public static final String VDPID = "vdpid";
 
     @SuppressWarnings({ "serial", "rawtypes" })
-    private HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
+    private final HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
         {
             this.put("getPhysicalTopology", new GetPhysicalTopology());
             this.put("listVirtualNetworks", new ListVirtualNetworks());
@@ -94,19 +94,19 @@ public class MonitoringHandler extends AbstractHandler implements
                     && m.getType() != req.getParamsType()) {
                 return new JSONRPC2Response(new JSONRPC2Error(
                         JSONRPC2Error.INVALID_PARAMS.getCode(), req.getMethod()
-                                + " requires: " + m.getType() + "; got: "
-                                + req.getParamsType()), req.getID());
+                        + " requires: " + m.getType() + "; got: "
+                        + req.getParamsType()), req.getID());
             }
 
             switch (m.getType()) {
-            case NO_PARAMS:
-                return m.process(null);
-            case ARRAY:
-                return m.process(req.getPositionalParams());
-            case OBJECT:
-                return m.process(req.getNamedParams());
-            default:
-                break;
+                case NO_PARAMS:
+                    return m.process(null);
+                case ARRAY:
+                    return m.process(req.getPositionalParams());
+                case OBJECT:
+                    return m.process(req.getNamedParams());
+                default:
+                    break;
             }
         }
 

@@ -23,11 +23,12 @@ import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 
 import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFStatisticsMessageBase;
 import org.openflow.protocol.statistics.OFStatisticsType;
 import org.openflow.protocol.statistics.OFTableStatistics;
 
 public class OVXTableStatistics extends OFTableStatistics implements
-        VirtualizableStatistic, DevirtualizableStatistic {
+VirtualizableStatistic, DevirtualizableStatistic {
 
     /*
      * TODO Ideally, this would get information about the real flowtables and
@@ -48,11 +49,12 @@ public class OVXTableStatistics extends OFTableStatistics implements
                 & ~OFMatch.OFPFW_NW_DST_ALL;
         this.name = "OVX vFlowTable (incomplete)";
         this.maximumEntries = 100000;
-        OVXStatisticsReply reply = new OVXStatisticsReply();
+        final OVXStatisticsReply reply = new OVXStatisticsReply();
         reply.setXid(msg.getXid());
         reply.setStatisticType(OFStatisticsType.TABLE);
         reply.setStatistics(Collections.singletonList(this));
-        reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + this.getLength());
+        reply.setLengthU(OFStatisticsMessageBase.MINIMUM_LENGTH
+                + this.getLength());
         sw.sendMsg(reply, sw);
     }
 

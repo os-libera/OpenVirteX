@@ -27,7 +27,7 @@ import org.openflow.protocol.OFStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatistics;
 
 public class OVXStatisticsRequest extends OFStatisticsRequest implements
-        Devirtualizable {
+Devirtualizable {
 
     private final Logger log = LogManager.getLogger(OVXStatisticsRequest.class
             .getName());
@@ -35,25 +35,25 @@ public class OVXStatisticsRequest extends OFStatisticsRequest implements
     @Override
     public void devirtualize(final OVXSwitch sw) {
         switch (this.statisticType) {
-        // Desc, vendor, table stats have no body. fuckers.
-        case DESC:
-            new OVXDescriptionStatistics().devirtualizeStatistic(sw, this);
-            break;
-        case TABLE:
-            new OVXTableStatistics().devirtualizeStatistic(sw, this);
-            break;
-        case VENDOR:
-            new OVXVendorStatistics().devirtualizeStatistic(sw, this);
-            break;
-        default:
-            try {
-                final OFStatistics stat = this.getStatistics().get(0);
-                ((DevirtualizableStatistic) stat).devirtualizeStatistic(sw,
-                        this);
-            } catch (final ClassCastException e) {
-                this.log.error("Statistic received is not devirtualizable {}",
-                        this);
-            }
+            // Desc, vendor, table stats have no body. fuckers.
+            case DESC:
+                new OVXDescriptionStatistics().devirtualizeStatistic(sw, this);
+                break;
+            case TABLE:
+                new OVXTableStatistics().devirtualizeStatistic(sw, this);
+                break;
+            case VENDOR:
+                new OVXVendorStatistics().devirtualizeStatistic(sw, this);
+                break;
+            default:
+                try {
+                    final OFStatistics stat = this.getStatistics().get(0);
+                    ((DevirtualizableStatistic) stat).devirtualizeStatistic(sw,
+                            this);
+                } catch (final ClassCastException e) {
+                    this.log.error("Statistic received is not devirtualizable {}",
+                            this);
+                }
 
         }
 

@@ -23,11 +23,10 @@ import net.onrc.openvirtex.messages.OVXStatisticsReply;
 import org.openflow.protocol.statistics.OFQueueStatisticsReply;
 
 /**
- * Implementation of virtualization for queue statistics reply message.
- * TODO
+ * Implementation of virtualization for queue statistics reply message. TODO
  */
 public class OVXQueueStatisticsReply extends OFQueueStatisticsReply implements
-        VirtualizableStatistic {
+VirtualizableStatistic {
 
     @Override
     public void virtualizeStatistic(final PhysicalSwitch sw,

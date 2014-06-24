@@ -18,7 +18,6 @@ package net.onrc.openvirtex.elements.datapath.role;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.onrc.openvirtex.exceptions.UnknownRoleException;
@@ -40,36 +39,37 @@ public class RoleManager {
     public static enum Role {
         EQUAL(OFRoleVendorData.NX_ROLE_OTHER), MASTER(
                 OFRoleVendorData.NX_ROLE_MASTER), SLAVE(
-                OFRoleVendorData.NX_ROLE_SLAVE);
+                        OFRoleVendorData.NX_ROLE_SLAVE);
 
         private final int nxRole;
 
-        private Role(int nxRole) {
+        private Role(final int nxRole) {
             this.nxRole = nxRole;
         }
 
         private static Map<Integer, Role> nxRoleToEnum = new HashMap<Integer, Role>();
         static {
-            for (Role r : Role.values()) {
-                nxRoleToEnum.put(r.toNxRole(), r);
+            for (final Role r : Role.values()) {
+                Role.nxRoleToEnum.put(r.toNxRole(), r);
             }
         }
 
         public int toNxRole() {
-            return nxRole;
+            return this.nxRole;
         }
 
         // Return the enum representing the given nxRole or null if no
         // such role exists
-        public static Role fromNxRole(int nxRole) {
-            return nxRoleToEnum.get(nxRole);
+        public static Role fromNxRole(final int nxRole) {
+            return Role.nxRoleToEnum.get(nxRole);
         }
 
     };
 
     public RoleManager() {
         this.state = new HashMap<Channel, Role>();
-        this.currentState = new AtomicReference<HashMap<Channel, Role>>(state);
+        this.currentState = new AtomicReference<HashMap<Channel, Role>>(
+				this.state);
     }
 
     private HashMap<Channel, Role> getState() {
@@ -80,96 +80,96 @@ public class RoleManager {
         this.currentState.set(this.state);
     }
 
-    public synchronized void addController(Channel chan) {
+    public synchronized void addController(final Channel chan) {
         if (chan == null) {
             return;
         }
-        this.state = getState();
+        this.state = this.getState();
         this.state.put(chan, Role.EQUAL);
-        setState();
+        this.setState();
     }
 
-    public synchronized void setRole(Channel channel, Role role)
+    public synchronized void setRole(final Channel channel, final Role role)
             throws IllegalArgumentException, UnknownRoleException {
         if (!this.currentState.get().containsKey(channel)) {
             throw new IllegalArgumentException("Unknown controller "
                     + channel.getRemoteAddress());
         }
-        this.state = getState();
-        log.info("Setting controller {} to role {}",
+        this.state = this.getState();
+        RoleManager.log.info("Setting controller {} to role {}",
                 channel.getRemoteAddress(), role);
         switch (role) {
-        case MASTER:
-            if (channel == currentMaster) {
+            case MASTER:
+                if (channel == this.currentMaster) {
+                    this.state.put(channel, Role.MASTER);
+                    break;
+                }
+                this.state.put(this.currentMaster, Role.SLAVE);
                 this.state.put(channel, Role.MASTER);
+                this.currentMaster = channel;
                 break;
-            }
-            this.state.put(currentMaster, Role.SLAVE);
-            this.state.put(channel, Role.MASTER);
-            this.currentMaster = channel;
-            break;
-        case SLAVE:
-            if (channel == currentMaster) {
+            case SLAVE:
+                if (channel == this.currentMaster) {
+                    this.state.put(channel, Role.SLAVE);
+                    this.currentMaster = null;
+                    break;
+                }
                 this.state.put(channel, Role.SLAVE);
-                currentMaster = null;
                 break;
-            }
-            this.state.put(channel, Role.SLAVE);
-            break;
-        case EQUAL:
-            if (channel == currentMaster) {
+            case EQUAL:
+                if (channel == this.currentMaster) {
+                    this.state.put(channel, Role.EQUAL);
+                    this.currentMaster = null;
+                    break;
+                }
                 this.state.put(channel, Role.EQUAL);
-                this.currentMaster = null;
                 break;
-            }
-            this.state.put(channel, Role.EQUAL);
-            break;
-        default:
-            throw new UnknownRoleException("Unkown role : " + role);
+            default:
+                throw new UnknownRoleException("Unkown role : " + role);
 
         }
-        setState();
+        this.setState();
 
     }
 
-    public boolean canSend(Channel channel, OFMessage m) {
-        Role r = this.currentState.get().get(channel);
+    public boolean canSend(final Channel channel, final OFMessage m) {
+        final Role r = this.currentState.get().get(channel);
         if (r == Role.MASTER || r == Role.EQUAL) {
             return true;
         }
         switch (m.getType()) {
-        case GET_CONFIG_REQUEST:
-        case QUEUE_GET_CONFIG_REQUEST:
-        case PORT_STATUS:
-        case STATS_REQUEST:
-            return true;
-        default:
-            return false;
+            case GET_CONFIG_REQUEST:
+            case QUEUE_GET_CONFIG_REQUEST:
+            case PORT_STATUS:
+            case STATS_REQUEST:
+                return true;
+            default:
+                return false;
         }
     }
 
-    public boolean canReceive(Channel channel, OFMessage m) {
-        Role r = this.currentState.get().get(channel);
+    public boolean canReceive(final Channel channel, final OFMessage m) {
+        final Role r = this.currentState.get().get(channel);
         if (r == Role.MASTER || r == Role.EQUAL) {
             return true;
         }
         switch (m.getType()) {
-        case GET_CONFIG_REPLY:
-        case QUEUE_GET_CONFIG_REPLY:
-        case PORT_STATUS:
-        case STATS_REPLY:
-            return true;
-        default:
-            return false;
+            case GET_CONFIG_REPLY:
+            case QUEUE_GET_CONFIG_REPLY:
+            case PORT_STATUS:
+            case STATS_REPLY:
+                return true;
+            default:
+                return false;
         }
     }
 
-    public Role getRole(Channel channel) {
+    public Role getRole(final Channel channel) {
         return this.currentState.get().get(channel);
     }
 
-    private void checkAndSend(Channel c, OFMessage m) {
-        if (canReceive(c, m)) {
+    private void checkAndSend(final Channel c, final OFMessage m) {
+        if (this.canReceive(c, m)) {
             if (c != null && c.isOpen()) {
                 c.write(Collections.singletonList(m));
             }
@@ -177,36 +177,36 @@ public class RoleManager {
 
     }
 
-    public void sendMsg(OFMessage msg, Channel c) {
+    public void sendMsg(final OFMessage msg, final Channel c) {
         if (c != null) {
-            checkAndSend(c, msg);
+            this.checkAndSend(c, msg);
         } else {
             final Map<Channel, Role> readOnly = Collections
                     .unmodifiableMap(this.currentState.get());
-            for (Channel chan : readOnly.keySet()) {
+            for (final Channel chan : readOnly.keySet()) {
                 if (chan == null) {
                     continue;
                 }
-                checkAndSend(chan, msg);
+                this.checkAndSend(chan, msg);
             }
         }
     }
 
-    public synchronized void removeChannel(Channel channel) {
-        this.state = getState();
+    public synchronized void removeChannel(final Channel channel) {
+        this.state = this.getState();
         this.state.remove(channel);
-        setState();
+        this.setState();
     }
 
     public synchronized void shutDown() {
-        this.state = getState();
-        for (Channel c : state.keySet()) {
+        this.state = this.getState();
+        for (final Channel c : this.state.keySet()) {
             if (c != null && c.isConnected()) {
                 c.close();
             }
         }
-        state.clear();
-        setState();
+        this.state.clear();
+        this.setState();
     }
 
     @Override

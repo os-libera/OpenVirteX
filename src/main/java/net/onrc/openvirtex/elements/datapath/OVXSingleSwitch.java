@@ -50,24 +50,25 @@ public class OVXSingleSwitch extends OVXSwitch {
     @Override
     // TODO: this is probably not optimal
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
-        PhysicalSwitch psw = getPhySwitch(inPort);
+        final PhysicalSwitch psw = this.getPhySwitch(inPort);
         psw.sendMsg(msg, this);
     }
 
     @Override
     public int translate(final OFMessage ofm, final OVXPort inPort) {
         // get new xid from only PhysicalSwitch tied to this switch
-        PhysicalSwitch psw = getPhySwitch(inPort);
+        final PhysicalSwitch psw = this.getPhySwitch(inPort);
         return psw.translate(ofm, this);
     }
 
-    private PhysicalSwitch getPhySwitch(OVXPort inPort) {
+    private PhysicalSwitch getPhySwitch(final OVXPort inPort) {
         PhysicalSwitch psw = null;
         if (inPort == null) {
             try {
                 psw = this.map.getPhysicalSwitches(this).get(0);
-            } catch (SwitchMappingException e) {
-                log.warn("Cannot recover physical switch : {}", e);
+            } catch (final SwitchMappingException e) {
+                OVXSingleSwitch.log.warn("Cannot recover physical switch : {}",
+						e);
             }
         } else {
             return inPort.getPhysicalPort().getParentSwitch();
@@ -80,7 +81,8 @@ public class OVXSingleSwitch extends OVXSwitch {
         return super.bootDP();
     }
 
-    protected void unregSwitch(boolean synch) {
+    @Override
+    protected void unregSwitch(final boolean synch) {
         super.unregisterDP(synch);
     }
 }

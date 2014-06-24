@@ -49,28 +49,28 @@ public class AddController extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     TenantHandler.VDPID, params, true, null);
             final ArrayList<String> ctrlUrls = HandlerUtils
-                    .<ArrayList<String>>fetchField(TenantHandler.CTRLURLS,
+                    .<ArrayList<String>> fetchField(TenantHandler.CTRLURLS,
                             params, true, null);
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
             HandlerUtils
-                    .isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
+            .isValidOVXSwitch(tenantId.intValue(), dpid.longValue());
 
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());
-            for (String ctrl : ctrlUrls) {
-                String[] ctrlParts = ctrl.split(":");
+            for (final String ctrl : ctrlUrls) {
+                final String[] ctrlParts = ctrl.split(":");
                 HandlerUtils.isControllerAvailable(ctrlParts[1],
                         Integer.parseInt(ctrlParts[2]), tenantId.intValue());
             }
 
-            OVXSwitch sw = virtualNetwork.getSwitch(dpid.longValue());
+            final OVXSwitch sw = virtualNetwork.getSwitch(dpid.longValue());
             virtualNetwork.addControllers(ctrlUrls);
             OpenVirteXController.getInstance().addControllers(sw,
                     new HashSet<String>(ctrlUrls));
@@ -88,16 +88,16 @@ public class AddController extends ApiHandler<Map<String, Object>> {
         } catch (final InvalidDPIDException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid DPID : " + e.getMessage()), 0);
+                    + ": Invalid DPID : " + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
-        } catch (ControllerUnavailableException e) {
+                    + ": " + e.getMessage()), 0);
+        } catch (final ControllerUnavailableException e) {
             resp = new JSONRPC2Response(
                     new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
                             this.cmdName() + ": Controller already in use : "

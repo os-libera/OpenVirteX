@@ -43,7 +43,7 @@ public class GetVirtualHosts extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
         Number tid = null;
         try {
-            tid = HandlerUtils.<Number>fetchField(MonitoringHandler.TENANT,
+            tid = HandlerUtils.<Number> fetchField(MonitoringHandler.TENANT,
                     params, true, null);
             final OVXNetwork vnet = OVXMap.getInstance().getVirtualNetwork(
                     tid.intValue());
@@ -62,10 +62,10 @@ public class GetVirtualHosts extends ApiHandler<Map<String, Object>> {
                     new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
                             this.cmdName() + ": Unable to fetch host list : "
                                     + e.getMessage()), 0);
-        } catch (NetworkMappingException e) {
+        } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenantId : " + tid), 0);
+                    + ": Invalid tenantId : " + tid), 0);
         }
         return resp;
     }

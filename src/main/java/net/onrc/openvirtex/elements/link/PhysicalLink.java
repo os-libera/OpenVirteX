@@ -36,7 +36,7 @@ import com.google.gson.annotations.SerializedName;
  *
  */
 public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
-        Persistable, Comparable<PhysicalLink>, Component {
+Persistable, Comparable<PhysicalLink>, Component {
 
     /**
      * The FSM describing PhysicalLink state. A Link's state is dependent on the
@@ -54,20 +54,22 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
      */
     enum LinkState {
         INIT {
-            protected void register(PhysicalLink link) {
-                log.debug("registering link {}-{}", link.srcPort.toAP(),
-                        link.dstPort.toAP());
+            @Override
+            protected void register(final PhysicalLink link) {
+                PhysicalLink.log.debug("registering link {}-{}",
+						link.srcPort.toAP(), link.dstPort.toAP());
                 link.srcPort.setOutLink(link);
                 link.dstPort.setInLink(link);
                 link.state = LinkState.INACTIVE;
             }
         },
         INACTIVE {
-            protected boolean boot(PhysicalLink link) {
-                log.info("enabling link {}-{}", link.srcPort.toAP(),
-                        link.dstPort.toAP());
+            @Override
+            protected boolean boot(final PhysicalLink link) {
+                PhysicalLink.log.info("enabling link {}-{}",
+						link.srcPort.toAP(), link.dstPort.toAP());
                 /* set state to link_up */
-                int linkup = ~OFPortState.OFPPS_LINK_DOWN.getValue();
+                final int linkup = ~OFPortState.OFPPS_LINK_DOWN.getValue();
                 link.srcPort.setState(link.srcPort.getState() & linkup);
                 link.srcPort.setEdge(false);
                 link.dstPort.setState(link.dstPort.getState() & linkup);
@@ -76,26 +78,30 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
                 return true;
             }
 
-            protected void unregister(PhysicalLink link) {
+            @Override
+            protected void unregister(final PhysicalLink link) {
                 /* remove oneself from end-points' LinkPairs and OVXMap. */
-                log.debug("unregistering link {}-{}", link.srcPort.toAP(),
-                        link.dstPort.toAP());
+                PhysicalLink.log.debug("unregistering link {}-{}",
+						link.srcPort.toAP(), link.dstPort.toAP());
                 link.state = LinkState.STOPPED;
 
-                setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+                LinkState.setEndStates(link,
+						OFPortState.OFPPS_LINK_DOWN.getValue());
                 link.srcPort.setOutLink(null);
                 link.dstPort.setInLink(null);
                 link.getSrcSwitch().getMap().removePhysicalLink(link);
             }
         },
         ACTIVE {
-            protected boolean teardown(PhysicalLink link) {
-                log.info("disabling link {}-{}", link.srcPort.toAP(),
-                        link.dstPort.toAP());
+            @Override
+            protected boolean teardown(final PhysicalLink link) {
+                PhysicalLink.log.info("disabling link {}-{}",
+						link.srcPort.toAP(), link.dstPort.toAP());
                 link.state = LinkState.INACTIVE;
 
                 /* set state to link_down for end-points */
-                setEndStates(link, OFPortState.OFPPS_LINK_DOWN.getValue());
+                LinkState.setEndStates(link,
+						OFPortState.OFPPS_LINK_DOWN.getValue());
                 link.srcPort.setEdge(true);
                 link.dstPort.setEdge(true);
                 return true;
@@ -109,8 +115,9 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
          * @param link
          *            the PhysicalLink to initialize
          */
-        protected void register(PhysicalLink link) {
-            log.debug("Cannot register link while status={}", link.state);
+        protected void register(final PhysicalLink link) {
+            PhysicalLink.log.debug("Cannot register link while status={}",
+					link.state);
         }
 
         /**
@@ -119,8 +126,9 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
          * @param link
          *            the PhysicalLink to enable
          */
-        protected boolean boot(PhysicalLink link) {
-            log.debug("Cannot boot link while status={}", link.state);
+        protected boolean boot(final PhysicalLink link) {
+            PhysicalLink.log.debug("Cannot boot link while status={}",
+					link.state);
             return false;
         }
 
@@ -130,8 +138,9 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
          * @param link
          *            the PhysicalLink to disable
          */
-        protected boolean teardown(PhysicalLink link) {
-            log.debug("Cannot teardown link while status={}", link.state);
+        protected boolean teardown(final PhysicalLink link) {
+            PhysicalLink.log.debug("Cannot teardown link while status={}",
+					link.state);
             return false;
         }
 
@@ -141,8 +150,9 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
          * @param link
          *            the PhysicalLink to unregister
          */
-        protected void unregister(PhysicalLink link) {
-            log.debug("Cannot unregister link while status={}", link.state);
+        protected void unregister(final PhysicalLink link) {
+            PhysicalLink.log.debug("Cannot unregister link while status={}",
+					link.state);
         }
 
         /**
@@ -152,7 +162,8 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
          *            the PhysicalLink making a state change
          * @param nstate
          */
-        private static void setEndStates(PhysicalLink link, int nstate) {
+        private static void setEndStates(final PhysicalLink link,
+				final int nstate) {
             link.srcPort.setState(link.srcPort.getState() | nstate);
             link.dstPort.setState(link.dstPort.getState() | nstate);
         }
@@ -184,7 +195,7 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
     }
 
     public Integer getLinkId() {
-        return linkId;
+        return this.linkId;
     }
 
     @Override
@@ -194,20 +205,20 @@ public class PhysicalLink extends Link<PhysicalPort, PhysicalSwitch> implements
 
     @Override
     public Map<String, Object> getDBObject() {
-        Map<String, Object> dbObject = super.getDBObject();
+        final Map<String, Object> dbObject = super.getDBObject();
         dbObject.put(TenantHandler.LINK, this.linkId);
         return dbObject;
     }
 
-    public void setLinkId(Integer id) {
+    public void setLinkId(final Integer id) {
         this.linkId = id;
     }
 
     @Override
-    public int compareTo(PhysicalLink o) {
-        Long sum1 = this.getSrcSwitch().getSwitchId()
+    public int compareTo(final PhysicalLink o) {
+        final Long sum1 = this.getSrcSwitch().getSwitchId()
                 + this.getSrcPort().getPortNumber();
-        Long sum2 = o.getSrcSwitch().getSwitchId()
+        final Long sum2 = o.getSrcSwitch().getSwitchId()
                 + o.getSrcPort().getPortNumber();
         if (sum1 == sum2) {
             return (int) (this.getSrcSwitch().getSwitchId() - o.getSrcSwitch()

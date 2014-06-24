@@ -51,15 +51,14 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number linkId = HandlerUtils.<Number>fetchField(
+            final Number linkId = HandlerUtils.<Number> fetchField(
                     TenantHandler.LINK, params, true, null);
-            final String pathString = HandlerUtils.<String>fetchField(
+            final String pathString = HandlerUtils.<String> fetchField(
                     TenantHandler.PATH, params, true, null);
-            final Number priority = HandlerUtils.<Number>fetchField(
+            final Number priority = HandlerUtils.<Number> fetchField(
                     TenantHandler.PRIORITY, params, true, null);
-
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
             final List<PhysicalLink> physicalLinks = HandlerUtils
@@ -80,7 +79,7 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
                                 JSONRPC2Error.INTERNAL_ERROR.getCode(),
                                 this.cmdName()), 0);
             } else {
-                Map<String, Object> reply = new HashMap<String, Object>(
+                final Map<String, Object> reply = new HashMap<String, Object>(
                         virtualLink.getDBObject());
                 reply.put(TenantHandler.TENANT, virtualLink.getTenantId());
                 resp = new JSONRPC2Response(reply, 0);
@@ -88,27 +87,27 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to create virtual link : "
-                            + e.getMessage()), 0);
+                    + ": Unable to create virtual link : "
+                    + e.getMessage()), 0);
         } catch (final VirtualLinkException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid virtual link : " + e.getMessage()), 0);
+                    + ": Invalid virtual link : " + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final IndexOutOfBoundException e) {
             resp = new JSONRPC2Response(
                     new JSONRPC2Error(
                             JSONRPC2Error.INVALID_PARAMS.getCode(),
                             this.cmdName()
-                                    + ": Unable to create the virtual link, too many links in this virtual network : "
-                                    + e.getMessage()), 0);
+                            + ": Unable to create the virtual link, too many links in this virtual network : "
+                            + e.getMessage()), 0);
         } catch (final InvalidPortException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid port : " + e.getMessage()), 0);
+                    + ": Invalid port : " + e.getMessage()), 0);
         } catch (final InvalidDPIDException e) {
             resp = new JSONRPC2Response(
                     new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
@@ -117,11 +116,11 @@ public class SetOVXLinkPath extends ApiHandler<Map<String, Object>> {
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         } catch (final InvalidPriorityException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         }
         return resp;
     }

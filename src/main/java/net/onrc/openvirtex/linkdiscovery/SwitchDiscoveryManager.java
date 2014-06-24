@@ -60,7 +60,7 @@ import org.openflow.protocol.action.OFActionType;
  * for flow_removed messages
  */
 public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
-        TimerTask {
+TimerTask {
 
     private final PhysicalSwitch sw;
     // send 1 probe every probeRate milliseconds
@@ -74,21 +74,25 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     private Iterator<Short> slowIterator;
     private final OVXMessageFactory ovxMessageFactory = OVXMessageFactory
             .getInstance();
-    private Logger log = LogManager.getLogger(SwitchDiscoveryManager.class.getName());
-    private OVXLLDP lldpPacket;
-    private Ethernet ethPacket;
+    private final Logger log = LogManager
+			.getLogger(SwitchDiscoveryManager.class.getName());
+    private final OVXLLDP lldpPacket;
+    private final Ethernet ethPacket;
     private Ethernet bddpEth;
     private final boolean useBDDP;
 
     /**
      * Instantiates discovery manager for the given physical switch. Creates a
-     * generic LLDP packet that will be customized for the port it is sent out on.
-     * Starts the the timer for the discovery process.
+     * generic LLDP packet that will be customized for the port it is sent out
+     * on. Starts the the timer for the discovery process.
      *
-     * @param sw the physical switch
-     * @param useBDDP flag to also use BDDP for discovery
+     * @param sw
+     *            the physical switch
+     * @param useBDDP
+     *            flag to also use BDDP for discovery
      */
-    public SwitchDiscoveryManager(final PhysicalSwitch sw, Boolean... useBDDP) {
+    public SwitchDiscoveryManager(final PhysicalSwitch sw,
+			final Boolean... useBDDP) {
         this.sw = sw;
         this.probeRate = 1000;
         this.slowPorts = Collections.synchronizedSet(new HashSet<Short>());
@@ -108,7 +112,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
             this.bddpEth.setEtherType(Ethernet.TYPE_BSN);
             this.bddpEth.setDestinationMACAddress(OVXLLDP.BDDP_MULTICAST);
             this.bddpEth.setPad(true);
-            log.info("Using BDDP to discover network");
+            this.log.info("Using BDDP to discover network");
         }
         PhysicalNetwork.getTimer().newTimeout(this, this.probeRate,
                 TimeUnit.MILLISECONDS);
@@ -118,10 +122,11 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     }
 
     /**
-     * Add physical port port to discovery process.
-     * Send out initial LLDP and label it as slow port.
+     * Add physical port port to discovery process. Send out initial LLDP and
+     * label it as slow port.
      *
-     * @param port the port
+     * @param port
+     *            the port
      */
     public void addPort(final PhysicalPort port) {
         // Ignore ports that are not on this switch, or already booted. */
@@ -133,12 +138,12 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
                 try {
                     pkt = this.createLLDPPacketOut(port);
                     this.sendMsg(pkt, this);
-                    if (useBDDP) {
-                        OFPacketOut bpkt = this.createBDDPPacketOut(port);
+                    if (this.useBDDP) {
+                        final OFPacketOut bpkt = this.createBDDPPacketOut(port);
                         this.sendMsg(bpkt, this);
                     }
-                } catch (PortMappingException e) {
-                    log.warn(e.getMessage());
+                } catch (final PortMappingException e) {
+                    this.log.warn(e.getMessage());
                     return;
                 }
                 this.slowPorts.add(port.getPortNumber());
@@ -150,13 +155,14 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     /**
      * Removes physical port from discovery process.
      *
-     * @param port the port
+     * @param port
+     *            the port
      */
     public void removePort(final PhysicalPort port) {
         // Ignore ports that are not on this switch
         if (port.getParentSwitch().equals(this.sw)) {
             port.tearDown();
-            short portnum = port.getPortNumber();
+            final short portnum = port.getPortNumber();
             synchronized (this) {
                 if (this.slowPorts.contains(portnum)) {
                     this.slowPorts.remove(portnum);
@@ -176,11 +182,12 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     }
 
     /**
-     * Method called by remote port to acknowledge receipt of LLDP sent by
-     * this port. If slow port, updates label to fast. If fast port, decrements
+     * Method called by remote port to acknowledge receipt of LLDP sent by this
+     * port. If slow port, updates label to fast. If fast port, decrements
      * number of unacknowledged probes.
      *
-     * @param port the port
+     * @param port
+     *            the port
      */
     public void ackProbe(final PhysicalPort port) {
         if (port.getParentSwitch().equals(this.sw)) {
@@ -209,7 +216,8 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     /**
      * Creates packet_out LLDP for specified output port.
      *
-     * @param port the port
+     * @param port
+     *            the port
      * @return Packet_out message with LLDP data
      * @throws PortMappingException
      */
@@ -236,14 +244,15 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
         packetOut.setActionsLength(alen);
         packetOut.setPacketData(lldp);
         packetOut
-                .setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
+        .setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + lldp.length));
         return packetOut;
     }
 
     /**
      * Creates packet_out BDDP for specified output port.
      *
-     * @param port the port
+     * @param port
+     *            the port
      * @return Packet_out message with LLDP data
      * @throws PortMappingException
      */
@@ -270,7 +279,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
         packetOut.setActionsLength(alen);
         packetOut.setPacketData(bddp);
         packetOut
-                .setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + bddp.length));
+        .setLength((short) (OFPacketOut.MINIMUM_LENGTH + alen + bddp.length));
         return packetOut;
     }
 
@@ -282,7 +291,8 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     /**
      * Count the number of actions in a list of actions.
      *
-     * @param actionsList list of actions
+     * @param actionsList
+     *            list of actions
      * @return the number of actions
      */
     private static short countActionsLen(final List<OFAction> actionsList) {
@@ -302,6 +312,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
      * Handles an incoming LLDP packet. Creates link in topology and sends ACK
      * to port where LLDP originated.
      */
+    @Override
     @SuppressWarnings("rawtypes")
     public void handleLLDP(final OFMessage msg, final Switch sw) {
         final OVXPacketIn pi = (OVXPacketIn) msg;
@@ -323,11 +334,11 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
     }
 
     /**
-     * Execute this method every t milliseconds. Loops over all ports
-     * labeled as fast and sends out an LLDP. Send out an LLDP on a single slow
-     * port.
+     * Execute this method every t milliseconds. Loops over all ports labeled as
+     * fast and sends out an LLDP. Send out an LLDP on a single slow port.
      *
-     * @param t timeout
+     * @param t
+     *            timeout
      * @throws Exception
      */
     @Override
@@ -342,16 +353,18 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
                 if (probeCount < SwitchDiscoveryManager.MAX_PROBE_COUNT) {
                     this.log.debug("sending fast probe to port");
                     try {
-                        OFPacketOut pkt = this.createLLDPPacketOut(this.sw
-                                .getPort(portNumber));
+                        final OFPacketOut pkt = this
+								.createLLDPPacketOut(this.sw
+										.getPort(portNumber));
                         this.sendMsg(pkt, this);
-                        if (useBDDP) {
-                            OFPacketOut bpkt = this.createBDDPPacketOut(this.sw
-                                    .getPort(portNumber));
+                        if (this.useBDDP) {
+                            final OFPacketOut bpkt = this
+									.createBDDPPacketOut(this.sw
+											.getPort(portNumber));
                             this.sendMsg(bpkt, this);
                         }
-                    } catch (PortMappingException e) {
-                        log.warn(e.getMessage());
+                    } catch (final PortMappingException e) {
+                        this.log.warn(e.getMessage());
                     }
                 } else {
                     // Update fast and slow ports
@@ -377,16 +390,18 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
                     final short portNumber = this.slowIterator.next();
                     this.log.debug("sending slow probe to port {}", portNumber);
                     try {
-                        OFPacketOut pkt = this.createLLDPPacketOut(this.sw
-                                .getPort(portNumber));
+                        final OFPacketOut pkt = this
+								.createLLDPPacketOut(this.sw
+										.getPort(portNumber));
                         this.sendMsg(pkt, this);
-                        if (useBDDP) {
-                            OFPacketOut bpkt = this.createBDDPPacketOut(this.sw
-                                    .getPort(portNumber));
+                        if (this.useBDDP) {
+                            final OFPacketOut bpkt = this
+									.createBDDPPacketOut(this.sw
+											.getPort(portNumber));
                             this.sendMsg(bpkt, this);
                         }
-                    } catch (PortMappingException e) {
-                        log.warn(e.getMessage());
+                    } catch (final PortMappingException e) {
+                        this.log.warn(e.getMessage());
                     }
                 }
             }

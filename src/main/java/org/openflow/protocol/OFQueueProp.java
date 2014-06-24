@@ -56,12 +56,12 @@ public class OFQueueProp {
 
         public static OFQueuePropType fromShort(final short x) {
             switch (x) {
-            case 0:
-                return OFPQT_NONE;
-            case 1:
-                return OFPQT_MIN_RATE;
-            case 2:
-                return OFPQT_MAX_RATE;
+                case 0:
+                    return OFPQT_NONE;
+                case 1:
+                    return OFPQT_MIN_RATE;
+                case 2:
+                    return OFPQT_MAX_RATE;
             }
             return null;
         }
@@ -91,15 +91,15 @@ public class OFQueueProp {
         this.type = type;
 
         switch (type) {
-        case OFPQT_NONE:
-            this.length = U16.t(this.NONE_MINIMUM_LENGTH);
-            break;
-        case OFPQT_MIN_RATE:
-            this.length = U16.t(this.RATE_MINIMUM_LENGTH);
-            break;
-        case OFPQT_MAX_RATE:
-            this.length = U16.t(this.RATE_MINIMUM_LENGTH);
-            break;
+            case OFPQT_NONE:
+                this.length = U16.t(this.NONE_MINIMUM_LENGTH);
+                break;
+            case OFPQT_MIN_RATE:
+                this.length = U16.t(this.RATE_MINIMUM_LENGTH);
+                break;
+            case OFPQT_MAX_RATE:
+                this.length = U16.t(this.RATE_MINIMUM_LENGTH);
+                break;
         }
     }
 

@@ -24,8 +24,8 @@ import junit.framework.TestSuite;
 public final class BaseMapTests {
 
     /**
-     * Overrides default constructor to no-op private constructor.
-     * Required by checkstyle.
+     * Overrides default constructor to no-op private constructor. Required by
+     * checkstyle.
      */
     private BaseMapTests() {
     }

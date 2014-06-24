@@ -83,16 +83,20 @@ public interface Mappable {
     /**
      * Creates the maping between the MAC address and tenant ID.
      *
-     * @param mac the MAC address
-     * @param tenantId the tenant ID.
+     * @param mac
+     *            the MAC address
+     * @param tenantId
+     *            the tenant ID.
      */
     public void addMAC(MACAddress mac, Integer tenantId);
 
     /**
      * Adds a mapping between a SwitchRoute and the PhysicalLinks making it up.
      *
-     * @param route the switch route
-     * @param physicalLinks the physical path
+     * @param route
+     *            the switch route
+     * @param physicalLinks
+     *            the physical path
      */
     public void addRoute(final SwitchRoute route,
             final List<PhysicalLink> physicalLinks);
@@ -175,7 +179,8 @@ public interface Mappable {
     /**
      * Gets the virtual network instance associated with the given tenant ID.
      *
-     * @param tenantId the tenant ID
+     * @param tenantId
+     *            the tenant ID
      * @return the virual network
      */
     public OVXNetwork getVirtualNetwork(Integer tenantId)
@@ -184,7 +189,8 @@ public interface Mappable {
     /**
      * Gets the tenant ID associated with the given MAC address.
      *
-     * @param mac the MAC address
+     * @param mac
+     *            the MAC address
      * @return tenant ID associated with MAC address
      */
     public Integer getMAC(MACAddress mac) throws AddressMappingException;
@@ -233,26 +239,31 @@ public interface Mappable {
     /**
      * Removes the MAC address from the map.
      *
-     * @param mac the MAC address
-     * @param tenantId the tenant ID
+     * @param mac
+     *            the MAC address
+     * @param tenantId
+     *            the tenant ID
      */
     public void removeMAC(MACAddress mac);
 
     /**
      * Gets the current path as a list of physical links for the given route.
      *
-     * @param route the switch route
+     * @param route
+     *            the switch route
      * @return the path
      */
     public List<PhysicalLink> getRoute(SwitchRoute route)
             throws LinkMappingException;
 
     /**
-     * Gets the switch routes that use the given physical link in
-     * the specified virtual network.
+     * Gets the switch routes that use the given physical link in the specified
+     * virtual network.
      *
-     * @param physicalLink the physical link
-     * @param tenantId the tenant ID
+     * @param physicalLink
+     *            the physical link
+     * @param tenantId
+     *            the tenant ID
      * @return The routes associated with the supplied PhysicalLink
      */
     public Set<SwitchRoute> getSwitchRoutes(PhysicalLink physicalLink,
@@ -261,7 +272,8 @@ public interface Mappable {
     /**
      * Removes a SwitchRoute from the map.
      *
-     * @param route the switch route
+     * @param route
+     *            the switch route
      */
     public void removeRoute(SwitchRoute route);
 
@@ -269,14 +281,16 @@ public interface Mappable {
      * Removes a PhysicalLink from a Mappable, including mappings to OVXLinks
      * and SwitchRoutes.
      *
-     * @param physicalLink the physical link
+     * @param physicalLink
+     *            the physical link
      */
     public void removePhysicalLink(PhysicalLink physicalLink);
 
     /**
      * Removes a PhysicalSwitch from Mappable mappings.
      *
-     * @param physicalSwitch the physical switch
+     * @param physicalSwitch
+     *            the physical switch
      */
     public void removePhysicalSwitch(PhysicalSwitch physicalSwitch);
 
@@ -303,7 +317,8 @@ public interface Mappable {
     /**
      * Checks if the MAC address exists in the map.
      *
-     * @param mac the MAC address
+     * @param mac
+     *            the MAC address
      * @return true if the MAC address exists in this map
      */
     public boolean hasMAC(MACAddress mac);

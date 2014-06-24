@@ -15,7 +15,6 @@
  ******************************************************************************/
 package net.onrc.openvirtex.api.service.handlers;
 
-
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import com.thetransactioncompany.jsonrpc2.server.MessageContext;

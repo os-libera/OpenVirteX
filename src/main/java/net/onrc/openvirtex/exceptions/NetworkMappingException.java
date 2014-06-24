@@ -27,19 +27,19 @@ public class NetworkMappingException extends MappingException {
         super();
     }
 
-    public NetworkMappingException(String cause) {
+    public NetworkMappingException(final String cause) {
         super(cause);
     }
 
-    public NetworkMappingException(Integer key) {
+    public NetworkMappingException(final Integer key) {
         super("Virtual network not found for tenant with ID " + key);
     }
 
-    public NetworkMappingException(Object key, Class value) {
+    public NetworkMappingException(final Object key, final Class value) {
         super(key, value);
     }
 
-    public NetworkMappingException(Throwable cause) {
+    public NetworkMappingException(final Throwable cause) {
         super(cause);
     }
 

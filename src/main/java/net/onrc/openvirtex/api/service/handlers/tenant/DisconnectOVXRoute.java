@@ -45,11 +45,11 @@ public class DisconnectOVXRoute extends ApiHandler<Map<String, Object>> {
         JSONRPC2Response resp = null;
 
         try {
-            final Number tenantId = HandlerUtils.<Number>fetchField(
+            final Number tenantId = HandlerUtils.<Number> fetchField(
                     TenantHandler.TENANT, params, true, null);
-            final Number dpid = HandlerUtils.<Number>fetchField(
+            final Number dpid = HandlerUtils.<Number> fetchField(
                     TenantHandler.VDPID, params, true, null);
-            final Number routeId = HandlerUtils.<Number>fetchField(
+            final Number routeId = HandlerUtils.<Number> fetchField(
                     TenantHandler.ROUTE, params, true, null);
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
@@ -64,7 +64,7 @@ public class DisconnectOVXRoute extends ApiHandler<Map<String, Object>> {
             final OVXSwitch sw = virtualNetwork.getSwitch(dpid.longValue());
 
             virtualNetwork
-                    .disconnectRoute(dpid.longValue(), routeId.intValue());
+            .disconnectRoute(dpid.longValue(), routeId.intValue());
 
             this.log.info(
                     "Removed virtual switch route {} belonging to big-switch {} in virtual network {}",
@@ -74,24 +74,24 @@ public class DisconnectOVXRoute extends ApiHandler<Map<String, Object>> {
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to remove the big switch route : "
-                            + e.getMessage()), 0);
+                    + ": Unable to remove the big switch route : "
+                    + e.getMessage()), 0);
         } catch (final InvalidDPIDException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid DPID : " + e.getMessage()), 0);
+                    + ": Invalid DPID : " + e.getMessage()), 0);
         } catch (final InvalidTenantIdException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid tenant id : " + e.getMessage()), 0);
+                    + ": Invalid tenant id : " + e.getMessage()), 0);
         } catch (final InvalidRouteException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Invalid route id : " + e.getMessage()), 0);
+                    + ": Invalid route id : " + e.getMessage()), 0);
         } catch (final NetworkMappingException e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": " + e.getMessage()), 0);
+                    + ": " + e.getMessage()), 0);
         }
 
         return resp;

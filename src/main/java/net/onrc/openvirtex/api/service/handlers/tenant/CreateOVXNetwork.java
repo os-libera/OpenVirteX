@@ -47,15 +47,15 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
         try {
 
             final ArrayList<String> ctrlUrls = HandlerUtils
-                    .<ArrayList<String>>fetchField(TenantHandler.CTRLURLS,
+                    .<ArrayList<String>> fetchField(TenantHandler.CTRLURLS,
                             params, true, null);
-            final String netAddress = HandlerUtils.<String>fetchField(
+            final String netAddress = HandlerUtils.<String> fetchField(
                     TenantHandler.NETADD, params, true, null);
-            final Number netMask = HandlerUtils.<Number>fetchField(
+            final Number netMask = HandlerUtils.<Number> fetchField(
                     TenantHandler.NETMASK, params, true, null);
 
-            for (String ctrl : ctrlUrls) {
-                String[] ctrlParts = ctrl.split(":");
+            for (final String ctrl : ctrlUrls) {
+                final String[] ctrlParts = ctrl.split(":");
 
                 HandlerUtils.isControllerAvailable(ctrlParts[1],
                         Integer.parseInt(ctrlParts[2]), -1);
@@ -67,15 +67,15 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
             this.log.info("Created virtual network {}",
                     virtualNetwork.getTenantId());
 
-            Map<String, Object> reply = new HashMap<String, Object>(
+            final Map<String, Object> reply = new HashMap<String, Object>(
                     virtualNetwork.getDBObject());
             resp = new JSONRPC2Response(reply, 0);
 
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to create virtual network : "
-                            + e.getMessage()), 0);
+                    + ": Unable to create virtual network : "
+                    + e.getMessage()), 0);
         } catch (final ControllerUnavailableException e) {
             resp = new JSONRPC2Response(
                     new JSONRPC2Error(JSONRPC2Error.INVALID_PARAMS.getCode(),
@@ -86,8 +86,8 @@ public class CreateOVXNetwork extends ApiHandler<Map<String, Object>> {
                     new JSONRPC2Error(
                             JSONRPC2Error.INVALID_PARAMS.getCode(),
                             this.cmdName()
-                                    + ": Impossible to create the virtual network, too many networks : "
-                                    + e.getMessage()), 0);
+                            + ": Impossible to create the virtual network, too many networks : "
+                            + e.getMessage()), 0);
         }
         return resp;
     }

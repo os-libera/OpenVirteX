@@ -63,6 +63,6 @@ public class RoutingAlgorithms {
     }
 
     public byte getBackups() {
-        return backups;
+        return this.backups;
     }
 }

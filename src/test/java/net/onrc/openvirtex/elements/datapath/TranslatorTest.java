@@ -64,7 +64,7 @@ public class TranslatorTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ctl = new OpenVirteXController(new CmdLineSettings());
+        this.ctl = new OpenVirteXController(new CmdLineSettings());
         this.translator = new XidTranslator<OVXSwitch>();
     }
 

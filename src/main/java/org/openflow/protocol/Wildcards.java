@@ -96,9 +96,9 @@ public class Wildcards {
         TP_DST(OFMatch.OFPFW_TP_DST), /* TCP/UDP destination port. */
         DL_VLAN_PCP(OFMatch.OFPFW_DL_VLAN_PCP), /* VLAN priority. */
         NW_SRC(-1) { /*
-                      * virtual NW_SRC flag => translates to the strange 6 bits
-                      * in the header
-                      */
+         * virtual NW_SRC flag => translates to the strange 6 bits
+         * in the header
+         */
             @Override
             boolean isBolean() {
                 return false;
@@ -138,9 +138,9 @@ public class Wildcards {
 
         },
         NW_DST(-1) { /*
-                      * virtual NW_SRC flag => translates to the strange 6 bits
-                      * in the header
-                      */
+         * virtual NW_SRC flag => translates to the strange 6 bits
+         * in the header
+         */
             @Override
             boolean isBolean() {
                 return false;
@@ -261,14 +261,14 @@ public class Wildcards {
     public static Wildcards of(final int paramFlags) {
         final int flags = Wildcards.sanitizeInt(paramFlags);
         switch (flags) {
-        case 0x0000:
-            return Wildcards.EXACT;
-        case OFMatch.OFPFW_ALL_SANITIZED:
-            return Wildcards.FULL;
-        case INT_INPORT_L2_MATCH:
-            return Wildcards.INPORT_L2_MATCH;
-        default:
-            return new Wildcards(flags);
+            case 0x0000:
+                return Wildcards.EXACT;
+            case OFMatch.OFPFW_ALL_SANITIZED:
+                return Wildcards.FULL;
+            case INT_INPORT_L2_MATCH:
+                return Wildcards.INPORT_L2_MATCH;
+            default:
+                return new Wildcards(flags);
         }
     }
 

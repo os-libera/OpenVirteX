@@ -32,38 +32,40 @@ import net.onrc.openvirtex.messages.OVXStatisticsRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFStatisticsMessageBase;
 import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.statistics.OFFlowStatisticsReply;
 import org.openflow.protocol.statistics.OFFlowStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatisticsType;
 import org.openflow.util.U16;
 
 public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
-        DevirtualizableStatistic {
+DevirtualizableStatistic {
 
     Logger log = LogManager.getLogger(OVXFlowStatisticsRequest.class.getName());
 
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,
             final OVXStatisticsRequest msg) {
-        List<OVXFlowStatisticsReply> replies = new LinkedList<OVXFlowStatisticsReply>();
-        HashSet<Long> uniqueCookies = new HashSet<Long>();
-        int tid = sw.getTenantId();
+        final List<OVXFlowStatisticsReply> replies = new LinkedList<OVXFlowStatisticsReply>();
+        final HashSet<Long> uniqueCookies = new HashSet<Long>();
+        final int tid = sw.getTenantId();
         int length = 0;
-                                                           //the -1 is for beacon...
+        // the -1 is for beacon...
         if ((this.match.getWildcardObj().isFull() || this.match.getWildcards() == -1)
                 && this.outPort == OFPort.OFPP_NONE.getValue()) {
-            for (PhysicalSwitch psw : getPhysicalSwitches(sw)) {
-                List<OVXFlowStatisticsReply> reps = psw.getFlowStats(tid);
+            for (final PhysicalSwitch psw : this.getPhysicalSwitches(sw)) {
+                final List<OVXFlowStatisticsReply> reps = psw.getFlowStats(tid);
                 if (reps != null) {
-                    for (OVXFlowStatisticsReply stat : reps) {
+                    for (final OVXFlowStatisticsReply stat : reps) {
 
                         if (!uniqueCookies.contains(stat.getCookie())) {
                             OVXFlowMod origFM;
                             try {
                                 origFM = sw.getFlowMod(stat.getCookie());
                                 uniqueCookies.add(stat.getCookie());
-                            } catch (MappingException e) {
-                                log.warn(
+                            } catch (final MappingException e) {
+                                this.log.warn(
                                         "FlowMod not found in FlowTable for cookie={}",
                                         stat.getCookie());
                                 continue;
@@ -73,8 +75,8 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
                             stat.setActions(origFM.getActions());
                             replies.add(stat);
                             stat.setLength(U16
-                                    .t(OVXFlowStatisticsReply.MINIMUM_LENGTH));
-                            for (OFAction act : stat.getActions()) {
+                                    .t(OFFlowStatisticsReply.MINIMUM_LENGTH));
+                            for (final OFAction act : stat.getActions()) {
                                 stat.setLength(U16.t(stat.getLength()
                                         + act.getLength()));
                             }
@@ -84,30 +86,31 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
                 }
             }
 
-            OVXStatisticsReply reply = new OVXStatisticsReply();
+            final OVXStatisticsReply reply = new OVXStatisticsReply();
             reply.setXid(msg.getXid());
             reply.setStatisticType(OFStatisticsType.FLOW);
             reply.setStatistics(replies);
 
-            reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + length);
+            reply.setLengthU(OFStatisticsMessageBase.MINIMUM_LENGTH + length);
 
             sw.sendMsg(reply, sw);
 
         }
     }
 
-    private List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch sw) {
+    private List<PhysicalSwitch> getPhysicalSwitches(final OVXSwitch sw) {
         if (sw instanceof OVXSingleSwitch) {
             try {
                 return sw.getMap().getPhysicalSwitches(sw);
-            } catch (SwitchMappingException e) {
-                log.debug("OVXSwitch {} does not map to any physical switches",
+            } catch (final SwitchMappingException e) {
+                this.log.debug(
+						"OVXSwitch {} does not map to any physical switches",
                         sw.getSwitchName());
                 return new LinkedList<>();
             }
         }
-        LinkedList<PhysicalSwitch> sws = new LinkedList<PhysicalSwitch>();
-        for (OVXPort p : sw.getPorts().values()) {
+        final LinkedList<PhysicalSwitch> sws = new LinkedList<PhysicalSwitch>();
+        for (final OVXPort p : sw.getPorts().values()) {
             if (!sws.contains(p.getPhysicalPort().getParentSwitch())) {
                 sws.add(p.getPhysicalPort().getParentSwitch());
             }

@@ -20,10 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
-
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
@@ -36,49 +32,54 @@ import net.onrc.openvirtex.exceptions.MissingRequiredField;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
+
 public class GetVirtualSwitchMapping extends ApiHandler<Map<String, Object>> {
 
     JSONRPC2Response resp = null;
 
     @Override
-    public JSONRPC2Response process(Map<String, Object> params) {
+    public JSONRPC2Response process(final Map<String, Object> params) {
         try {
-            Map<String, Object> res = new HashMap<String, Object>();
-            Number tid = HandlerUtils.<Number>fetchField(
+            final Map<String, Object> res = new HashMap<String, Object>();
+            final Number tid = HandlerUtils.<Number> fetchField(
                     MonitoringHandler.TENANT, params, true, null);
-            OVXMap map = OVXMap.getInstance();
-            LinkedList<String> list = new LinkedList<String>();
-            HashMap<String, Object> subRes = new HashMap<String, Object>();
-            for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue())
+            final OVXMap map = OVXMap.getInstance();
+            final LinkedList<String> list = new LinkedList<String>();
+            final HashMap<String, Object> subRes = new HashMap<String, Object>();
+            for (final OVXSwitch vsw : map.getVirtualNetwork(tid.intValue())
                     .getSwitches()) {
                 subRes.clear();
                 list.clear();
                 if (vsw instanceof OVXBigSwitch) {
-                    List<Integer> l = new LinkedList<Integer>();
-                    for (PhysicalLink li : ((OVXBigSwitch) vsw).getAllLinks()) {
+                    final List<Integer> l = new LinkedList<Integer>();
+                    for (final PhysicalLink li : ((OVXBigSwitch) vsw)
+							.getAllLinks()) {
                         l.add(li.getLinkId());
                     }
                     subRes.put("links", l);
                 } else {
                     subRes.put("links", new LinkedList<>());
                 }
-                for (PhysicalSwitch psw : map.getPhysicalSwitches(vsw)) {
+                for (final PhysicalSwitch psw : map.getPhysicalSwitches(vsw)) {
                     list.add(psw.getSwitchName());
                 }
                 subRes.put("switches", list.clone());
                 res.put(vsw.getSwitchName(), subRes.clone());
             }
-            resp = new JSONRPC2Response(res, 0);
+            this.resp = new JSONRPC2Response(res, 0);
 
         } catch (ClassCastException | MissingRequiredField
                 | NullPointerException | NetworkMappingException
                 | SwitchMappingException e) {
-            resp = new JSONRPC2Response(new JSONRPC2Error(
+            this.resp = new JSONRPC2Response(new JSONRPC2Error(
                     JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
-                            + ": Unable to fetch virtual topology : "
-                            + e.getMessage()), 0);
+                    + ": Unable to fetch virtual topology : "
+                    + e.getMessage()), 0);
         }
-        return resp;
+        return this.resp;
     }
 
     @Override

@@ -30,19 +30,19 @@ public class AddressMappingException extends MappingException {
         super();
     }
 
-    public AddressMappingException(String cause) {
+    public AddressMappingException(final String cause) {
         super(cause);
     }
 
-    public AddressMappingException(Integer key, Class value) {
+    public AddressMappingException(final Integer key, final Class value) {
         super(value.getName() + " not found for tenant with ID " + key);
     }
 
-    public AddressMappingException(IPAddress key, Class value) {
+    public AddressMappingException(final IPAddress key, final Class value) {
         super(value.getName() + " not found for " + key);
     }
 
-    public AddressMappingException(Throwable cause) {
+    public AddressMappingException(final Throwable cause) {
         super(cause);
     }
 

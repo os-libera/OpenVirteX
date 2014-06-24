@@ -18,6 +18,7 @@ package net.onrc.openvirtex.protocol;
 import java.util.HashMap;
 
 import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 
@@ -226,11 +227,12 @@ public class OVXMatch extends OFMatch {
      * @param tenantId
      * @return OFAction or null
      */
-    public OFAction getNetworkSrcAction(int tenantId) {
+    public OFAction getNetworkSrcAction(final int tenantId) {
         OVXActionNetworkLayerSource srcAct = null;
         if (!this.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
             srcAct = new OVXActionNetworkLayerSource();
-            srcAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkSource));
+            srcAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId,
+                    this.networkSource, PhysicalIPAddress.IP_FOR_SOURCE));
         }
         return srcAct;
     }
@@ -241,11 +243,13 @@ public class OVXMatch extends OFMatch {
      * @param tenantId
      * @return OFAction or null
      */
-    public OFAction getNetworkDstAction(int tenantId) {
+    public OFAction getNetworkDstAction(final int tenantId) {
         OVXActionNetworkLayerDestination dstAct = null;
         if (!this.getWildcardObj().isWildcarded(Flag.NW_DST)) {
             dstAct = new OVXActionNetworkLayerDestination();
-            dstAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId, this.networkDestination));
+            dstAct.setNetworkAddress(IPMapper.getPhysicalIp(tenantId,
+                    this.networkDestination,
+                    PhysicalIPAddress.IP_FOR_DESTINATION));
         }
         return dstAct;
     }

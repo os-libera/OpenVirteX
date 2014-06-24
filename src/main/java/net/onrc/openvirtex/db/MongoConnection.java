@@ -31,15 +31,15 @@ public class MongoConnection implements DBConnection {
             .getName());
 
     @Override
-    public void connect(String host, Integer port) {
+    public void connect(final String host, final Integer port) {
         MongoConnection.log.info("Connecting to MongoDB at {}:{}", host, port);
         try {
             this.mongo = new MongoClient(host, port);
-            this.mongo.getConnector().getDBPortPool(mongo.getAddress()).get()
-                    .ensureOpen();
-        } catch (UnknownHostException e) {
+            this.mongo.getConnector().getDBPortPool(this.mongo.getAddress())
+					.get().ensureOpen();
+        } catch (final UnknownHostException e) {
             MongoConnection.log.error("Invalid MongoDB host");
-        } catch (Exception e) {
+        } catch (final Exception e) {
             MongoConnection.log.error("Error connecting to database");
         }
     }
@@ -50,7 +50,7 @@ public class MongoConnection implements DBConnection {
     }
 
     public DB getDB() {
-        return mongo.getDB(MongoConnection.DB_NAME);
+        return this.mongo.getDB(MongoConnection.DB_NAME);
     }
 
 }

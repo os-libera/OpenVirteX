@@ -20,10 +20,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import net.onrc.openvirtex.api.service.handlers.MonitoringHandler;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException;
@@ -33,7 +33,8 @@ import com.thetransactioncompany.jsonrpc2.server.Dispatcher;
 
 public class MonitoringService extends AbstractService {
 
-    private static Logger log = LogManager.getLogger(MonitoringService.class.getName());
+    private static Logger log = LogManager.getLogger(MonitoringService.class
+            .getName());
 
     Dispatcher dispatcher = new Dispatcher();
 

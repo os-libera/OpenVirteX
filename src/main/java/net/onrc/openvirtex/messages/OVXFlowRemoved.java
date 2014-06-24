@@ -30,33 +30,33 @@ public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
 
     @Override
     public void virtualize(final PhysicalSwitch sw) {
-        int tid = (int) (this.cookie >> 32);
+        final int tid = (int) (this.cookie >> 32);
 
         /* a PhysSwitch can be a OVXLink */
-        if (!(sw.getMap().hasVirtualSwitch(sw, tid))) {
+        if (!sw.getMap().hasVirtualSwitch(sw, tid)) {
             return;
         }
         try {
-            OVXSwitch vsw = sw.getMap().getVirtualSwitch(sw, tid);
+            final OVXSwitch vsw = sw.getMap().getVirtualSwitch(sw, tid);
             /*
              * If we are a Big Switch we might receive multiple same-cookie FR's
              * from multiple PhysicalSwitches. Only handle if the FR's newly
              * seen
              */
             if (vsw.getFlowTable().hasFlowMod(this.cookie)) {
-                OVXFlowMod fm = vsw.getFlowMod(this.cookie);
+                final OVXFlowMod fm = vsw.getFlowMod(this.cookie);
                 /*
                  * send north ONLY if tenant controller wanted a FlowRemoved for
                  * the FlowMod
                  */
                 vsw.deleteFlowMod(this.cookie);
                 if (fm.hasFlag(OFFlowMod.OFPFF_SEND_FLOW_REM)) {
-                    writeFields(fm);
+                    this.writeFields(fm);
                     vsw.sendMsg(this, sw);
                 }
             }
-        } catch (MappingException e) {
-            log.warn("Exception fetching FlowMod from FlowTable: {}", e);
+        } catch (final MappingException e) {
+            this.log.warn("Exception fetching FlowMod from FlowTable: {}", e);
         }
     }
 
@@ -68,7 +68,7 @@ public class OVXFlowRemoved extends OFFlowRemoved implements Virtualizable {
      *            the original FlowMod associated with this FlowRemoved
      * @return the physical cookie
      */
-    private void writeFields(OVXFlowMod fm) {
+    private void writeFields(final OVXFlowMod fm) {
         this.cookie = fm.getCookie();
         this.match = fm.getMatch();
         this.priority = fm.getPriority();

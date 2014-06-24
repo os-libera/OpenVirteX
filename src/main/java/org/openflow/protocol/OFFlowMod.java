@@ -48,21 +48,21 @@ import org.openflow.util.U16;
  *
  */
 public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
-        Cloneable {
+Cloneable {
     public static int MINIMUM_LENGTH = 72;
 
     public static final short OFPFC_ADD = 0; /* New flow. */
     public static final short OFPFC_MODIFY = 1; /* Modify all matching flows. */
     public static final short OFPFC_MODIFY_STRICT = 2; /*
-                                                        * Modify entry strictly
-                                                        * matching wildcards
-                                                        */
+     * Modify entry strictly
+     * matching wildcards
+     */
     public static final short OFPFC_DELETE = 3; /* Delete all matching flows. */
     public static final short OFPFC_DELETE_STRICT = 4; /*
-                                                        * Strictly match
-                                                        * wildcards and
-                                                        * priority.
-                                                        */
+     * Strictly match
+     * wildcards and
+     * priority.
+     */
 
     // Open Flow Flow Mod Flags. Use "or" operation to set multiple flags
     public static final short OFPFF_SEND_FLOW_REM = 0x1; // 1 << 0
@@ -410,7 +410,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#clone()
      */
     @Override
@@ -428,7 +428,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.lang.Object#toString()
      */
     @Override

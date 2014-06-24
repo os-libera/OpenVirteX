@@ -168,49 +168,49 @@ public class ControllerChannelHandler extends OFChannelHandler {
                     final OFMessage m) throws IOException {
 
                 switch (m.getType()) {
-                case HELLO:
-                    this.processOFHello(h, (OFHello) m);
-                    break;
-                case ECHO_REPLY:
-                    break;
-                case ECHO_REQUEST:
-                    this.processOFEchoRequest(h, (OFEchoRequest) m);
-                    break;
+                    case HELLO:
+                        this.processOFHello(h, (OFHello) m);
+                        break;
+                    case ECHO_REPLY:
+                        break;
+                    case ECHO_REQUEST:
+                        this.processOFEchoRequest(h, (OFEchoRequest) m);
+                        break;
 
-                case FEATURES_REQUEST:
-                    this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
-                    break;
-                case BARRIER_REQUEST:
-                    // TODO: actually implement barrier contract
-                    final OFBarrierReply breply = new OFBarrierReply();
-                    breply.setXid(m.getXid());
-                    h.channel.write(Collections.singletonList(breply));
-                    break;
-                case SET_CONFIG:
-                case ERROR:
-                case PACKET_OUT:
-                case PORT_MOD:
-                case QUEUE_GET_CONFIG_REQUEST:
-                case STATS_REQUEST:
-                case FLOW_MOD:
-                case GET_CONFIG_REQUEST:
-                    h.sw.handleIO(m, h.channel);
-                    break;
-                case VENDOR:
-                    processOFVendor(h, (OFVendor) m);
-                    break;
-                case FEATURES_REPLY:
-                case FLOW_REMOVED:
-                case PACKET_IN:
-                case PORT_STATUS:
-                case BARRIER_REPLY:
-                case GET_CONFIG_REPLY:
-                case STATS_REPLY:
-                case QUEUE_GET_CONFIG_REPLY:
-                    this.illegalMessageReceived(h, m);
-                    break;
-                default:
-                    break;
+                    case FEATURES_REQUEST:
+                        this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
+                        break;
+                    case BARRIER_REQUEST:
+                        // TODO: actually implement barrier contract
+                        final OFBarrierReply breply = new OFBarrierReply();
+                        breply.setXid(m.getXid());
+                        h.channel.write(Collections.singletonList(breply));
+                        break;
+                    case SET_CONFIG:
+                    case ERROR:
+                    case PACKET_OUT:
+                    case PORT_MOD:
+                    case QUEUE_GET_CONFIG_REQUEST:
+                    case STATS_REQUEST:
+                    case FLOW_MOD:
+                    case GET_CONFIG_REQUEST:
+                        h.sw.handleIO(m, h.channel);
+                        break;
+                    case VENDOR:
+                        this.processOFVendor(h, (OFVendor) m);
+                        break;
+                    case FEATURES_REPLY:
+                    case FLOW_REMOVED:
+                    case PACKET_IN:
+                    case PORT_STATUS:
+                    case BARRIER_REPLY:
+                    case GET_CONFIG_REPLY:
+                    case STATS_REPLY:
+                    case QUEUE_GET_CONFIG_REPLY:
+                        this.illegalMessageReceived(h, m);
+                        break;
+                    default:
+                        break;
                 }
             }
 
@@ -247,7 +247,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
             return String.format(
                     "Controller: [%s], State: [%s], received: [%s]"
                             + ", details: %s", h.getSwitchInfoString(),
-                    this.toString(), m.getType().toString(), details);
+                            this.toString(), m.getType().toString(), details);
         }
 
         /**
@@ -276,8 +276,10 @@ public class ControllerChannelHandler extends OFChannelHandler {
          * We have an OFMessage we didn't expect given the current state and we
          * want to ignore the message.
          *
-         * @param h the channel handler the received the message
-         * @param m the message
+         * @param h
+         *            the channel handler the received the message
+         * @param m
+         *            the message
          */
         protected void unhandledMessageReceived(
                 final ControllerChannelHandler h, final OFMessage m) {
@@ -286,14 +288,14 @@ public class ControllerChannelHandler extends OFChannelHandler {
                 h.log.warn(
                         "Received unhandled VENDOR message, sending unsupported error: {}",
                         m);
-                OFMessage e = OVXMessageUtil.makeErrorMsg(
+                final OFMessage e = OVXMessageUtil.makeErrorMsg(
                         OFBadRequestCode.OFPBRC_BAD_VENDOR, m);
                 h.channel.write(Collections.singletonList(e));
             } else {
                 h.log.warn(
                         "Received unhandled message, sending bad type error: {}",
                         m);
-                OFMessage e = OVXMessageUtil.makeErrorMsg(
+                final OFMessage e = OVXMessageUtil.makeErrorMsg(
                         OFBadRequestCode.OFPBRC_BAD_TYPE, m);
                 h.channel.write(Collections.singletonList(e));
             }
@@ -323,64 +325,64 @@ public class ControllerChannelHandler extends OFChannelHandler {
         void processOFMessage(final ControllerChannelHandler h,
                 final OFMessage m) throws IOException {
             switch (m.getType()) {
-            case HELLO:
-                this.processOFHello(h, (OFHello) m);
-                break;
-            case ECHO_REPLY:
-                this.processOFEchoReply(h, (OFEchoReply) m);
-                break;
-            case ECHO_REQUEST:
-                this.processOFEchoRequest(h, (OFEchoRequest) m);
-                break;
-            case ERROR:
-                this.processOFError(h, (OFError) m);
-                break;
-            case VENDOR:
-                this.processOFVendor(h, (OFVendor) m);
-                break;
-            // The following messages are sent to switches. The controller
-            // should never receive them
-            case SET_CONFIG:
-                this.processOFSetConfig(h, (OFSetConfig) m);
-                break;
-            case PACKET_OUT:
-                this.processOFPacketOut(h, (OFPacketOut) m);
-                break;
-            case PORT_MOD:
-                this.processOFPortMod(h, (OFPortMod) m);
-                break;
-            case QUEUE_GET_CONFIG_REQUEST:
-                this.processOFQueueGetConfigRequest(h,
-                        (OFQueueGetConfigRequest) m);
-                break;
-            case BARRIER_REQUEST:
-                this.processOFBarrierRequest(h, (OFBarrierRequest) m);
-                break;
-            case STATS_REQUEST:
-                this.processOFStatsRequest(h, (OFStatisticsRequest) m);
-                break;
-            case FEATURES_REQUEST:
-                this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
-                break;
-            case FLOW_MOD:
-                this.processOFFlowMod(h, (OFFlowMod) m);
-                break;
-            case GET_CONFIG_REQUEST:
-                this.processOFGetConfigRequest(h, (OFGetConfigRequest) m);
-                break;
+                case HELLO:
+                    this.processOFHello(h, (OFHello) m);
+                    break;
+                case ECHO_REPLY:
+                    this.processOFEchoReply(h, (OFEchoReply) m);
+                    break;
+                case ECHO_REQUEST:
+                    this.processOFEchoRequest(h, (OFEchoRequest) m);
+                    break;
+                case ERROR:
+                    this.processOFError(h, (OFError) m);
+                    break;
+                case VENDOR:
+                    this.processOFVendor(h, (OFVendor) m);
+                    break;
+                    // The following messages are sent to switches. The controller
+                    // should never receive them
+                case SET_CONFIG:
+                    this.processOFSetConfig(h, (OFSetConfig) m);
+                    break;
+                case PACKET_OUT:
+                    this.processOFPacketOut(h, (OFPacketOut) m);
+                    break;
+                case PORT_MOD:
+                    this.processOFPortMod(h, (OFPortMod) m);
+                    break;
+                case QUEUE_GET_CONFIG_REQUEST:
+                    this.processOFQueueGetConfigRequest(h,
+                            (OFQueueGetConfigRequest) m);
+                    break;
+                case BARRIER_REQUEST:
+                    this.processOFBarrierRequest(h, (OFBarrierRequest) m);
+                    break;
+                case STATS_REQUEST:
+                    this.processOFStatsRequest(h, (OFStatisticsRequest) m);
+                    break;
+                case FEATURES_REQUEST:
+                    this.processOFFeaturesRequest(h, (OFFeaturesRequest) m);
+                    break;
+                case FLOW_MOD:
+                    this.processOFFlowMod(h, (OFFlowMod) m);
+                    break;
+                case GET_CONFIG_REQUEST:
+                    this.processOFGetConfigRequest(h, (OFGetConfigRequest) m);
+                    break;
 
-            case FEATURES_REPLY:
-            case FLOW_REMOVED:
-            case PACKET_IN:
-            case PORT_STATUS:
-            case BARRIER_REPLY:
-            case GET_CONFIG_REPLY:
-            case STATS_REPLY:
-            case QUEUE_GET_CONFIG_REPLY:
-                this.illegalMessageReceived(h, m);
-                break;
-            default:
-                break;
+                case FEATURES_REPLY:
+                case FLOW_REMOVED:
+                case PACKET_IN:
+                case PORT_STATUS:
+                case BARRIER_REPLY:
+                case GET_CONFIG_REPLY:
+                case STATS_REPLY:
+                case QUEUE_GET_CONFIG_REPLY:
+                    this.illegalMessageReceived(h, m);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -396,7 +398,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
          * There are some exceptions though, since some messages really
          * are handled the same way in every state (e.g., ECHO_REQUST) or
          * that are only valid in a single state (e.g., HELLO, GET_CONFIG_REPLY
-             -----------------------------------------------------------------*/
+		     -----------------------------------------------------------------*/
 
         void processOFHello(final ControllerChannelHandler h, final OFHello m)
                 throws IOException {
@@ -421,7 +423,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
 
         void processOFFeaturesRequest(final ControllerChannelHandler h,
                 final OFFeaturesRequest m) {
-            OFFeaturesReply fr = h.sw.getFeaturesReply();
+            final OFFeaturesReply fr = h.sw.getFeaturesReply();
             fr.setXid(m.getXid());
             h.channel.write(Collections.singletonList(fr));
         }
@@ -533,7 +535,7 @@ public class ControllerChannelHandler extends OFChannelHandler {
         /*
          * Pass all messages to the handlers, except LLDP which goes to the
          * virtual network handler.
-         *
+         * 
          * This should be implemented with a token bucket in order to rate limit
          * the connections a little.
          */
@@ -545,26 +547,26 @@ public class ControllerChannelHandler extends OFChannelHandler {
 
                 try {
                     switch (ofm.getType()) {
-                    case PACKET_OUT:
-                        /*
-                         * Is this packet a packet out? If yes is it an lldp?
-                         * then send it to the OVXNetwork.
-                         */
-                        final byte[] data = ((OFPacketOut) ofm).getPacketData();
-                        if (data.length >= 14) {
-                            final int tenantId = ((OVXSwitch) this.sw)
-                                    .getTenantId();
-                            if (OVXLLDP.isLLDP(data)) {
-                                OVXMap.getInstance()
-                                        .getVirtualNetwork(tenantId)
-                                        .handleLLDP(ofm, this.sw);
-                                break;
+                        case PACKET_OUT:
+                            /*
+                             * Is this packet a packet out? If yes is it an lldp?
+                             * then send it to the OVXNetwork.
+                             */
+                            final byte[] data = ((OFPacketOut) ofm).getPacketData();
+                            if (data.length >= 14) {
+                                final int tenantId = ((OVXSwitch) this.sw)
+                                        .getTenantId();
+                                if (OVXLLDP.isLLDP(data)) {
+                                    OVXMap.getInstance()
+                                    .getVirtualNetwork(tenantId)
+                                    .handleLLDP(ofm, this.sw);
+                                    break;
+                                }
                             }
-                        }
-                    default:
-                        // Process all non-packet-ins
-                        this.state.processOFMessage(this, ofm);
-                        break;
+                        default:
+                            // Process all non-packet-ins
+                            this.state.processOFMessage(this, ofm);
+                            break;
                     }
 
                 } catch (final Exception ex) {

@@ -74,7 +74,7 @@ public class OFMatchBeanInfo extends SimpleBeanInfo {
             try {
                 descs.add(new PropertyDescriptor(name, this.name2getter(
                         OFMatch.class, name), this.name2setter(OFMatch.class,
-                        name, type)));
+                                name, type)));
             } catch (final IntrospectionException e) {
                 throw new RuntimeException(e);
             }
