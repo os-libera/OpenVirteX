@@ -52,7 +52,7 @@ public class AbstractAPICalls extends TestCase {
     }
 
     public JSONRPC2Response createSwitch(final Integer tenantId,
-            final List<Integer> dpids) {
+            final List<Long> dpids) {
         OVXMap.getInstance();
         final CreateOVXSwitch cs = new CreateOVXSwitch();
 

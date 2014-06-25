@@ -16,9 +16,9 @@
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import junit.framework.Assert;
 import junit.framework.TestSuite;
@@ -79,7 +79,7 @@ public class PassingAPITest extends AbstractAPICalls {
 
         super.createNetwork();
         final JSONRPC2Response resp = super.createSwitch(1,
-                Collections.singletonList(1));
+                Collections.singletonList((long)1));
 
         Assert.assertNull("CreateOVXSwitch should not return null",
                 resp.getError());
@@ -109,9 +109,9 @@ public class PassingAPITest extends AbstractAPICalls {
         PhysicalNetwork.getInstance().createLink(p1, p2);
         PhysicalNetwork.getInstance().createLink(p2, p1);
         super.createNetwork();
-        final List<Integer> l = new LinkedList<>();
-        l.add(1);
-        l.add(2);
+        final List<Long> l = new ArrayList<Long>();
+        l.add((long)1);
+        l.add((long)2);
         final JSONRPC2Response resp = super.createSwitch(1, l);
 
         Assert.assertNull("CreateOVXSwitch should not return null",
@@ -140,7 +140,7 @@ public class PassingAPITest extends AbstractAPICalls {
         sw.addPort(port);
 
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
+        super.createSwitch(1, Collections.singletonList((long)1));
 
         final JSONRPC2Response resp = super.createPort(1, (long) 1, (short) 1);
 
@@ -154,6 +154,62 @@ public class PassingAPITest extends AbstractAPICalls {
 
         Assert.assertEquals((short) 1, result.get(TenantHandler.VPORT));
     }
+    
+    /**
+     * Tests whether a set internal routing call succeeds.
+     * It should fail because it passes a Single Switch.
+     */
+    public void testSetInternalRoutingSingleSwitch() {
+    	//set up for creating a Single Switch
+    	final PhysicalSwitch sw = new PhysicalSwitch(1);
+        PhysicalNetwork.getInstance().addSwitch(sw);
+        super.createNetwork();
+        //creates the Single Switch
+        super.createSwitch(1, Collections.singletonList((long)1));
+    	
+        final JSONRPC2Response resp = super.setInternalRouting(1, (long)46200400562356225L, "spf", (byte) 1);
+        
+        Assert.assertNotNull("setInternalRouting should return a null", resp.getError());
+        
+    }
+    
+    /**
+     * Tests whether a set internal routing call succeeds.
+     * It should succeed because it passes a Big Switch.
+     */
+    @SuppressWarnings("unchecked")
+    public void testSetInternalRoutingBigSwitch() {
+        //set up for creating a Big Switch
+    	final PhysicalSwitch sw1 = new PhysicalSwitch(1);
+        final PhysicalSwitch sw2 = new PhysicalSwitch(2);
+        PhysicalNetwork.getInstance().addSwitch(sw1);
+        PhysicalNetwork.getInstance().addSwitch(sw2);
+        final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
+                                                 false);
+        final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw2,
+                                                 false);
+        PhysicalNetwork.getInstance().createLink(p1, p2);
+        PhysicalNetwork.getInstance().createLink(p2, p1);
+        super.createNetwork();
+        final List<Long> l = new ArrayList<Long>();
+        l.add((long)1);
+        l.add((long)2);
+        //creates the Big Switch
+        super.createSwitch(1,l);
+        
+        final JSONRPC2Response resp = super.setInternalRouting(1, (long)46200400562356225L, "spf", (byte) 1);
+        
+        Assert.assertNull("setInternalRouting should not return null",
+                          resp.getError());
+        
+        Assert.assertTrue("setInternalRouting has incorrect return type",
+                          resp.getResult() instanceof Map<?, ?>);
+        
+        Map<String, Object> result = (Map<String, Object>) resp.getResult();
+        
+        Assert.assertTrue(l.equals(result.get(TenantHandler.DPIDS)));
+    }
+
 
     /**
      * Tests whether a connect host call succeeds.
@@ -169,7 +225,7 @@ public class PassingAPITest extends AbstractAPICalls {
         sw1.addPort(port);
 
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
+        super.createSwitch(1, Collections.singletonList((long)1));
         super.createPort(1, (long) 1, (short) 1);
         JSONRPC2Response resp = super.connectHost(1, (long) 46200400562356225L,
                 (short) 1, "00:00:00:00:00:01");
@@ -216,8 +272,8 @@ public class PassingAPITest extends AbstractAPICalls {
         PhysicalNetwork.getInstance().createLink(p1, p2);
         PhysicalNetwork.getInstance().createLink(p2, p1);
 
-        super.createSwitch(1, Collections.singletonList(1));
-        super.createSwitch(1, Collections.singletonList(2));
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
         super.createPort(1, (long) 1, (short) 1);
         super.createPort(1, (long) 2, (short) 1);
 
@@ -290,9 +346,9 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        final List<Integer> l = new LinkedList<>();
-        l.add(1);
-        l.add(2);
+        final List<Long> l = new ArrayList<Long>();
+        l.add((long)1);
+        l.add((long)2);
         super.createSwitch(1, l);
         super.createPort(1, (long) 1, (short) 2);
         super.createPort(1, (long) 2, (short) 2);
@@ -349,8 +405,8 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
-        super.createSwitch(1, Collections.singletonList(2));
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
         super.createPort(1, (long) 1, (short) 1);
         super.createPort(1, (long) 2, (short) 1);
         super.createPort(1, (long) 1, (short) 2);
@@ -401,8 +457,8 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
-        super.createSwitch(1, Collections.singletonList(2));
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
         super.createPort(1, (long) 1, (short) 1);
         super.createPort(1, (long) 2, (short) 1);
         super.createPort(1, (long) 1, (short) 2);
@@ -453,8 +509,8 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
-        super.createSwitch(1, Collections.singletonList(2));
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
         super.createPort(1, (long) 1, (short) 1);
         super.createPort(1, (long) 2, (short) 1);
         super.createPort(1, (long) 1, (short) 2);
@@ -506,8 +562,8 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
-        super.createSwitch(1, Collections.singletonList(2));
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
         super.createPort(1, (long) 1, (short) 1);
         super.createPort(1, (long) 2, (short) 1);
         super.createPort(1, (long) 1, (short) 2);
@@ -559,8 +615,8 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
-        super.createSwitch(1, Collections.singletonList(2));
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
         super.createPort(1, (long) 1, (short) 1);
         super.createPort(1, (long) 2, (short) 1);
         super.createPort(1, (long) 1, (short) 2);
@@ -582,7 +638,7 @@ public class PassingAPITest extends AbstractAPICalls {
     }
 
     /**
-     * Tests whether a disconnect host call succeeds.
+     * Tests whether a disconnect route call succeeds.
      */
     public void testDisconnectRoutePass() {
         // set the physical network (linear 2 sws with 1 host x sw)
@@ -615,9 +671,9 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        final List<Integer> l = new LinkedList<>();
-        l.add(1);
-        l.add(2);
+        final List<Long> l = new ArrayList<Long>();
+        l.add((long)1);
+        l.add((long)2);
         super.createSwitch(1, l);
         super.createPort(1, (long) 1, (short) 2);
         super.createPort(1, (long) 2, (short) 2);
@@ -636,9 +692,71 @@ public class PassingAPITest extends AbstractAPICalls {
 
         Assert.assertNull(resp.getResult());
     }
+    
+    /**
+     * Tests whether a start network call succeeds.
+     */
+    public void testStartNetPass() {
+    	// set the physical network (linear 2 sws with 1 host x sw)
+        final TestSwitch sw1 = new TestSwitch(1);
+        final TestSwitch sw2 = new TestSwitch(2);
+        PhysicalNetwork.getInstance().addSwitch(sw1);
+        PhysicalNetwork.getInstance().addSwitch(sw2);
+        final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
+                false);
+        p1.setHardwareAddress(new byte[] {0x01, 0x02, 0x03, 0x04, 0x05, 0x06});
+        p1.setPortNumber((short) 1);
+        sw1.addPort(p1);
+        final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1,
+                true);
+        p2.setHardwareAddress(new byte[] {0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c});
+        p2.setPortNumber((short) 2);
+        sw1.addPort(p2);
+        final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2,
+                false);
+        p3.setHardwareAddress(new byte[] {0x11, 0x12, 0x13, 0x14, 0x15, 0x16});
+        p3.setPortNumber((short) 1);
+        sw2.addPort(p3);
+        final PhysicalPort p4 = new PhysicalPort(new OFPhysicalPort(), sw2,
+                true);
+        p4.setHardwareAddress(new byte[] {0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c});
+        p4.setPortNumber((short) 2);
+        sw2.addPort(p4);
+        PhysicalNetwork.getInstance().createLink(p1, p3);
+        PhysicalNetwork.getInstance().createLink(p3, p1);
+
+        // set the virtual network (copy of the phy network)
+        super.createNetwork();
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
+        super.createPort(1, (long) 1, (short) 1);
+        super.createPort(1, (long) 2, (short) 1);
+        super.createPort(1, (long) 1, (short) 2);
+        super.createPort(1, (long) 2, (short) 2);
+        super.connectHost(1, (long) 46200400562356225L, (short) 2,
+                "00:00:00:00:00:01");
+        super.connectHost(1, (long) 46200400562356226L, (short) 2,
+                "00:00:00:00:00:02");
+        super.connectLink(1, (long) 46200400562356225L, (short) 1,
+                (long) 46200400562356226L, (short) 1, "manual", (byte) 0);
+        super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
+        final JSONRPC2Response resp = super.startNetwork(1);
+
+        Assert.assertNull("Start network should not return null",
+                resp.getError());
+
+        Assert.assertTrue("Start network has incorrect return type",
+                resp.getResult() instanceof Map<?, ?>);
+
+        Map<String, Object> result = (Map<String, Object>) resp.getResult();
+
+        Assert.assertEquals(1, result.get(TenantHandler.TENANT));
+
+        Assert.assertEquals(true, result.get(TenantHandler.IS_BOOTED));
+    }
 
     /**
-     * Tests whether a disconnect host call succeeds.
+     * Tests whether a stop network call succeeds.
      */
     @SuppressWarnings("unchecked")
     public void testStopNetPass() {
@@ -672,8 +790,8 @@ public class PassingAPITest extends AbstractAPICalls {
 
         // set the virtual network (copy of the phy network)
         super.createNetwork();
-        super.createSwitch(1, Collections.singletonList(1));
-        super.createSwitch(1, Collections.singletonList(2));
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
         super.createPort(1, (long) 1, (short) 1);
         super.createPort(1, (long) 2, (short) 1);
         super.createPort(1, (long) 1, (short) 2);
@@ -706,5 +824,4 @@ public class PassingAPITest extends AbstractAPICalls {
         PhysicalNetwork.reset();
         OVXNetwork.reset();
     }
-
 }
