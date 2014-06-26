@@ -35,18 +35,21 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.SwitchRoute;
 import net.onrc.openvirtex.util.MACAddress;
+import net.onrc.openvirtex.elements.address.IPMapper;;
 
 /**
  * Tests for the virtual to physical and reverse mapping
@@ -79,16 +82,21 @@ public class MapAddTest extends TestCase {
     public void testAddIP() {
         for (int i = 0; i < MapAddTest.MAXIPS; i++) {
             for (int j = 0; j < MapAddTest.MAXTIDS; j++) {
-                this.map.addIP(new PhysicalIPAddress(i), new OVXIPAddress(j, i));
+                PhysicalIPAddress pip= new PhysicalIPAddress(i);
+                pip.setTenantId(Integer.valueOf(Integer.valueOf(j)));
+                this.map.addIP(pip, new OVXIPAddress(j, i));
             }
         }
         try {
             for (int i = 0; i < MapAddTest.MAXIPS; i++) {
                 for (int j = 0; j < MapAddTest.MAXTIDS; j++) {
+                    OVXIPAddress vip = new OVXIPAddress(j, i);
+                    PhysicalIPAddress pip= new PhysicalIPAddress(i);
+                    pip.setTenantId(Integer.valueOf(Integer.valueOf(j)));
                     Assert.assertEquals(
-                            this.map.getVirtualIP(new PhysicalIPAddress(i)),
-                            new OVXIPAddress(j, i));
-
+                            this.map.getVirtualIP(pip),vip);
+                    Assert.assertEquals(
+                            this.map.getPhysicalIP(vip, j),pip);
                 }
             }
         } catch (AddressMappingException e) {
@@ -138,7 +146,7 @@ public class MapAddTest extends TestCase {
             for (int i = 0; i < MapAddTest.MAXPSW; i++) {
                 Assert.assertEquals(
                         (int) this.map.getMAC(MACAddress.valueOf(i)), i
-                                % MapAddTest.MAXTIDS);
+                        % MapAddTest.MAXTIDS);
             }
         } catch (AddressMappingException e) {
             e.printStackTrace();

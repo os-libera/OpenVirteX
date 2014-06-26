@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
@@ -127,14 +128,14 @@ public class OVXPacketOut extends OFPacketOut implements Devirtualizable {
         if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
             final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
             srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(),
-                    this.match.getNetworkSource()));
+                    this.match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE));
             this.approvedActions.add(0, srcAct);
         }
 
         if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
             final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
             dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(),
-                    this.match.getNetworkDestination()));
+                    this.match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION));
             this.approvedActions.add(0, dstAct);
         }
     }
