@@ -40,12 +40,12 @@ public class BitSetIndex {
          */
         TENANT_ID((int) Math.pow(2, OpenVirteXController.getInstance()
                 .getNumberVirtualNets())), SWITCH_ID((int) Math.pow(2, 32)), LINK_ID(
-                getLinkMaxValue()), ROUTE_ID((int) Math.pow(2, 24)), PORT_ID(
-                U16.f(OFPort.OFPP_MAX.getValue())), FLOW_ID((int) Math.pow(2,
-                24)), HOST_ID((int) Math.pow(2, 32)), FLOW_COUNTER(
-                getLinkMaxValue()), IP_ID((int) Math
-                .pow(2, (32 - OpenVirteXController.getInstance()
-                        .getNumberVirtualNets()))), DEFAULT(1000);
+                        getLinkMaxValue()), ROUTE_ID((int) Math.pow(2, 24)), PORT_ID(
+                                U16.f(OFPort.OFPP_MAX.getValue())), FLOW_ID((int) Math.pow(2,
+                                        24)), HOST_ID((int) Math.pow(2, 32)), FLOW_COUNTER(
+                                                getLinkMaxValue()), IP_ID((int) Math
+                                                        .pow(2, (32 - OpenVirteXController.getInstance()
+                                                                .getNumberVirtualNets()/2))), DEFAULT(1000);
 
         protected Integer value;
 

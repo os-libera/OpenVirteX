@@ -15,21 +15,26 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.address;
 
-import net.onrc.openvirtex.core.OpenVirteXController;
 
 public class PhysicalIPAddress extends IPAddress {
+    final public static String IP_FOR_SOURCE = "source";
+    final public static String IP_FOR_DESTINATION = "destination";
+
+    private int tid;
 
     public PhysicalIPAddress(final Integer ip) {
-        this.ip = ip;
+    this.ip = ip;
     }
 
     public PhysicalIPAddress(final String ipAddress) {
-        super(ipAddress);
+    super(ipAddress);
+    }
+    public void setTenantId(Integer tid){
+    this.tid = tid;
     }
 
     public Integer getTenantId() {
-        return ip >> (32 - OpenVirteXController.getInstance()
-                .getNumberVirtualNets());
+    return this.tid;
     }
 
 }
