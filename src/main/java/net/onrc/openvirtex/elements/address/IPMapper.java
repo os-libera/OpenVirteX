@@ -29,6 +29,7 @@ import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.OpenVirteXException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
 
@@ -46,17 +47,20 @@ public final class IPMapper {
     private IPMapper() {
     }
 
-    public static Integer getPhysicalIp(Integer tenantId, Integer virtualIP) {
+    public static Integer getPhysicalIp(Integer tenantId, Integer virtualIP, int ipfor) {
         final Mappable map = OVXMap.getInstance();
         final OVXIPAddress vip = new OVXIPAddress(tenantId, virtualIP);
+        PhysicalIPAddress pip = null;
         try {
-            PhysicalIPAddress pip;
             if (map.hasPhysicalIP(vip, tenantId)) {
                 pip = map.getPhysicalIP(vip, tenantId);
             } else {
                 pip = new PhysicalIPAddress(map.getVirtualNetwork(tenantId)
-                        .nextIP());
+                        .nextIP(ipfor));
+                pip.setTenantId(tenantId);
                 log.debug("Adding IP mapping {} -> {} for tenant {}", vip, pip,
+                        tenantId);
+                log.info("Adding IP mapping {} -> {} for tenant {}", vip, pip,
                         tenantId);
                 map.addIP(pip, vip);
             }
@@ -69,14 +73,17 @@ public final class IPMapper {
             log.error(e);
         } catch (AddressMappingException e) {
             log.error("Inconsistency in Physical-Virtual mapping : {}", e);
+        } catch (OpenVirteXException e) {
+            log.error("getPhysicalIP caller is not correctly specifying, if "
+                    + "Physical IP is required for Source or Destination: ", e);
         }
         return 0;
     }
 
     public static void rewriteMatch(final Integer tenantId, final OFMatch match) {
-        match.setNetworkSource(getPhysicalIp(tenantId, match.getNetworkSource()));
+        match.setNetworkSource(getPhysicalIp(tenantId, match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE));
         match.setNetworkDestination(getPhysicalIp(tenantId,
-                match.getNetworkDestination()));
+                match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION));
     }
 
     public static List<OFAction> prependRewriteActions(final Integer tenantId,
@@ -85,13 +92,13 @@ public final class IPMapper {
         if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
             final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
             srcAct.setNetworkAddress(getPhysicalIp(tenantId,
-                    match.getNetworkSource()));
+                    match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE));
             actions.add(srcAct);
         }
         if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
             final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
             dstAct.setNetworkAddress(getPhysicalIp(tenantId,
-                    match.getNetworkDestination()));
+                    match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION));
             actions.add(dstAct);
         }
         return actions;
