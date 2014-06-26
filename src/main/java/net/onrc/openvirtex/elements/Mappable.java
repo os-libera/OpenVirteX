@@ -113,7 +113,7 @@ public interface Mappable {
      * @param ip
      * @return Virtual IP address associated with physical IP
      */
-    public OVXIPAddress getVirtualIP(PhysicalIPAddress ip)
+    public OVXIPAddress getVirtualIP(PhysicalIPAddress ip, Integer tenantId)
             throws AddressMappingException;
 
     /**
@@ -298,7 +298,7 @@ public interface Mappable {
      *            The physical IP address
      * @return true if a mapping exists
      */
-    public boolean hasVirtualIP(PhysicalIPAddress ip);
+    public boolean hasVirtualIP(PhysicalIPAddress ip, Integer tenantId);
 
     /**
      * Checks if the MAC address exists in the map.
