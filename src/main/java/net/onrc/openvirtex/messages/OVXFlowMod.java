@@ -20,7 +20,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import net.onrc.openvirtex.core.OpenVirteXController;
+import net.onrc.openvirtex.elements.Mappable;
+import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.address.IPMapper;
+import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.FlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXFlowTable;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -29,7 +33,9 @@ import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.exceptions.OpenVirteXException;
 import net.onrc.openvirtex.exceptions.UnknownActionException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerSource;
@@ -136,6 +142,41 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
             if (inPort.isEdge()) {
                 this.prependRewriteActions();
             } else {
+              //max number of bits required to represent TenantId
+                int tenantIdBits=OpenVirteXController.getInstance().
+                        getNumberVirtualNets();
+                final Mappable map = OVXMap.getInstance();
+                /*
+                 * If source or destination is wildcard and input port is not 
+                 * edge then to maintain the isolation rewriting wildcard source
+                 * or destination to appropriate subnet e.g. for TenantId 1 and
+                 * TenantIdBits is 8 if destination is wildcard (x.x.x.x)
+                 * rewrite it to (16.x.x.x/4). Same with if source is wildcard.
+                 */
+                if(this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)){
+                    try {
+                        this.match.setNetworkSource(map.getVirtualNetwork(
+                                this.sw.getTenantId()).getNetworkAddress(
+                                        PhysicalIPAddress.IP_FOR_SOURCE));
+                        this.match.setWildcards(32-(tenantIdBits / 2)<<
+                                this.match.OFPFW_NW_SRC_SHIFT );
+                    } catch (IndexOutOfBoundException | OpenVirteXException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+                if(this.match.getWildcardObj().isWildcarded(Flag.NW_DST)){
+                    try {
+                        this.match.setNetworkDestination(map.getVirtualNetwork(
+                                this.sw.getTenantId()).getNetworkAddress(
+                                        PhysicalIPAddress.IP_FOR_DESTINATION));
+                        this.match.setWildcards(32-(tenantIdBits / 2)<<
+                                this.match.OFPFW_NW_DST_SHIFT);
+                    } catch (IndexOutOfBoundException | OpenVirteXException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
                 IPMapper.rewriteMatch(sw.getTenantId(), this.match);
                 // TODO: Verify why we have two send points... and if this is
                 // the right place for the match rewriting
@@ -192,14 +233,14 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
         if (!this.match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
             final OVXActionNetworkLayerSource srcAct = new OVXActionNetworkLayerSource();
             srcAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(),
-                    this.match.getNetworkSource()));
+                    this.match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE));
             this.approvedActions.add(0, srcAct);
         }
 
         if (!this.match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
             final OVXActionNetworkLayerDestination dstAct = new OVXActionNetworkLayerDestination();
             dstAct.setNetworkAddress(IPMapper.getPhysicalIp(sw.getTenantId(),
-                    this.match.getNetworkDestination()));
+                    this.match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION));
             this.approvedActions.add(0, dstAct);
         }
     }
