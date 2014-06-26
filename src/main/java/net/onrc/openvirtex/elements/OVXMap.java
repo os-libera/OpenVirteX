@@ -66,7 +66,7 @@ public final class OVXMap implements Mappable {
     private ConcurrentHashMap<SwitchRoute, ArrayList<PhysicalLink>> routetoPhyLinkMap;
     private ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, Set<SwitchRoute>>> phyLinktoRouteMap;
     private ConcurrentHashMap<Integer, OVXNetwork> networkMap;
-    private RadixTree<OVXIPAddress> physicalIPMap;
+    private RadixTree<ConcurrentHashMap<Integer, OVXIPAddress>> physicalIPMap;
     private RadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>> virtualIPMap;
     private RadixTree<Integer> macMap;
 
@@ -81,7 +81,7 @@ public final class OVXMap implements Mappable {
         this.routetoPhyLinkMap = new ConcurrentHashMap<SwitchRoute, ArrayList<PhysicalLink>>();
         this.phyLinktoRouteMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, Set<SwitchRoute>>>();
         this.networkMap = new ConcurrentHashMap<Integer, OVXNetwork>();
-        this.physicalIPMap = new ConcurrentRadixTree<OVXIPAddress>(
+        this.physicalIPMap = new ConcurrentRadixTree<ConcurrentHashMap<Integer, OVXIPAddress>>(
                 new DefaultCharArrayNodeFactory());
         this.virtualIPMap = new ConcurrentRadixTree<ConcurrentHashMap<Integer, PhysicalIPAddress>>(
                 new DefaultCharArrayNodeFactory());
@@ -105,7 +105,7 @@ public final class OVXMap implements Mappable {
      */
     public static void reset() {
         OVXMap.log
-                .debug("OVXMap has been reset explicitly. Hope you know what you are doing!");
+        .debug("OVXMap has been reset explicitly. Hope you know what you are doing!");
         OVXMap.mapInstance.set(null);
     }
 
@@ -210,7 +210,14 @@ public final class OVXMap implements Mappable {
      */
     private void addPhysicalIP(final PhysicalIPAddress physicalIP,
             final OVXIPAddress virtualIP) {
-        this.physicalIPMap.put(physicalIP.toString(), virtualIP);
+        ConcurrentHashMap<Integer, OVXIPAddress> vipMap =  this.physicalIPMap.
+                getValueForExactKey(physicalIP.toString());
+        if(vipMap == null){
+            vipMap = new ConcurrentHashMap<Integer, OVXIPAddress>();
+
+        }
+        vipMap.put(virtualIP.getTenantId(), virtualIP);
+        this.physicalIPMap.put(physicalIP.toString(), vipMap);
     }
 
     /**
@@ -225,13 +232,15 @@ public final class OVXMap implements Mappable {
      */
     private void addVirtualIP(final OVXIPAddress virtualIP,
             final PhysicalIPAddress physicalIP) {
-        ConcurrentHashMap<Integer, PhysicalIPAddress> ipMap = this.virtualIPMap
+        ConcurrentHashMap<Integer, PhysicalIPAddress> pipMap = this.virtualIPMap
                 .getValueForExactKey(virtualIP.toString());
-        if (ipMap == null) {
-            ipMap = new ConcurrentHashMap<Integer, PhysicalIPAddress>();
-            this.virtualIPMap.put(virtualIP.toString(), ipMap);
+        if (pipMap == null) {
+            pipMap = new ConcurrentHashMap<Integer, PhysicalIPAddress>();
+
+
         }
-        ipMap.put(virtualIP.getTenantId(), physicalIP);
+        pipMap.put(physicalIP.getTenantId(), physicalIP);
+        this.virtualIPMap.put(virtualIP.toString(), pipMap);
     }
 
     /**
@@ -412,7 +421,7 @@ public final class OVXMap implements Mappable {
     public OVXIPAddress getVirtualIP(final PhysicalIPAddress ip)
             throws AddressMappingException {
         OVXIPAddress vip = this.physicalIPMap
-                .getValueForExactKey(ip.toString());
+                .getValueForExactKey(ip.toString()).get(ip.getTenantId());
         if (vip == null) {
             throw new AddressMappingException(ip, OVXIPAddress.class);
         }
@@ -607,8 +616,8 @@ public final class OVXMap implements Mappable {
      */
     private <T> void removePhysicalLink(
             Map<Integer, ? extends Collection<T>> submap,
-            ConcurrentHashMap<T, ? extends Collection<PhysicalLink>> map,
-            PhysicalLink phylink) {
+                    ConcurrentHashMap<T, ? extends Collection<PhysicalLink>> map,
+                            PhysicalLink phylink) {
         if (submap == null) {
             return;
         }
@@ -774,7 +783,7 @@ public final class OVXMap implements Mappable {
         if (ip == null) {
             return false;
         }
-        return this.physicalIPMap.getValueForExactKey(ip.toString()) != null;
+        return this.physicalIPMap.getValueForExactKey(ip.toString()).get(ip.getTenantId()).toString() != null;
     }
 
     /**

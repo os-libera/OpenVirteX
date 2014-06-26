@@ -79,7 +79,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
                 this.log.warn(
                         "PacketIn {} does not belong to any virtual network; "
                                 + "dropping and installing a temporary drop rule",
-                        this);
+                                this);
                 this.installDropRule(sw, match);
                 return;
             }
@@ -155,11 +155,11 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
                                 .getFlowManager()
                                 .getFlowValues(lUtils.getFlowId());
                         eth.setSourceMACAddress(macList.get(0).toBytes())
-                                .setDestinationMACAddress(
-                                        macList.get(1).toBytes());
+                        .setDestinationMACAddress(
+                                macList.get(1).toBytes());
                         match.setDataLayerSource(eth.getSourceMACAddress())
-                                .setDataLayerDestination(
-                                        eth.getDestinationMACAddress());
+                        .setDataLayerDestination(
+                                eth.getDestinationMACAddress());
                     } catch (NetworkMappingException e) {
                         log.warn(e);
                     }
@@ -220,7 +220,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
             this.log.warn(
                     "PacketIn {} does not belong to any virtual network; "
                             + "dropping and installing a temporary drop rule",
-                    this);
+                            this);
             this.installDropRule(sw, match);
             return;
         }
@@ -234,7 +234,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
         if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
             try {
                 map.getVirtualNetwork(tenantId).getHost(ovxPort)
-                        .setIPAddress(match.getNetworkSource());
+                .setIPAddress(match.getNetworkSource());
             } catch (NetworkMappingException e) {
                 log.warn("Failed to lookup virtual network {}", this.tenantId);
                 return;
@@ -250,11 +250,11 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
         if (match.getDataLayerType() == Ethernet.TYPE_IPV4
                 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
             if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-                IPMapper.getPhysicalIp(this.tenantId, match.getNetworkSource());
+                IPMapper.getPhysicalIp(this.tenantId, match.getNetworkSource(), PhysicalIPAddress.IP_FOR_SOURCE);
             }
             if (!match.getWildcardObj().isWildcarded(Flag.NW_DST)) {
                 IPMapper.getPhysicalIp(this.tenantId,
-                        match.getNetworkDestination());
+                        match.getNetworkDestination(), PhysicalIPAddress.IP_FOR_DESTINATION);
             }
         }
     }
@@ -287,7 +287,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
             log.error(
                     "Virtual port associated to physical port {} in physical switch {} for "
                             + "virtual network {} is not defined",
-                    this.getInPort(), sw.getName(), this.tenantId);
+                            this.getInPort(), sw.getName(), this.tenantId);
         } else if (!this.ovxPort.isActive()) {
             log.error("virt port associated to physical port {} in physical switch {} not active.");
         }
