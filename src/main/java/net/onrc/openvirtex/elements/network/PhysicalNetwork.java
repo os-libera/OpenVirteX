@@ -47,8 +47,8 @@ import org.openflow.protocol.OFPort;
  * TODO: should probably subscribe to PORT UP/DOWN events here
  *
  */
-public final class PhysicalNetwork extends
-        Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
+public final class PhysicalNetwork extends 
+Network<PhysicalSwitch, PhysicalPort, PhysicalLink> {
 
     /**
      * The states of the PhysicalNetwork. Note, methods like boot() and
@@ -97,7 +97,7 @@ public final class PhysicalNetwork extends
                         .getParentSwitch().getSwitchId());
                 if ((sdm != null)
                         && (port.getPortNumber() != OFPort.OFPP_LOCAL
-                                .getValue())) {
+                        .getValue())) {
                     // Do not run discovery on local OpenFlow port
                     sdm.addPort(port);
                 }
