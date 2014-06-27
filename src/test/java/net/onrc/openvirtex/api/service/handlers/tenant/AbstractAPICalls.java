@@ -26,6 +26,8 @@ import net.onrc.openvirtex.elements.OVXMap;
 
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
+import java.lang.Long;
+
 public class AbstractAPICalls extends TestCase {
 
     public JSONRPC2Response createNetwork() {
@@ -86,7 +88,7 @@ public class AbstractAPICalls extends TestCase {
     }
 
     public JSONRPC2Response setInternalRouting(final Integer tenantId,
-            final Long dpid, final String protocol, final byte backups) {
+            final Long dpid, final String algorithm, final byte backups) {
 
         final SetOVXBigSwitchRouting sr = new SetOVXBigSwitchRouting();
 
@@ -95,7 +97,7 @@ public class AbstractAPICalls extends TestCase {
             {
                 this.put(TenantHandler.TENANT, tenantId);
                 this.put(TenantHandler.VDPID, dpid);
-                this.put(TenantHandler.ALGORITHM, protocol);
+                this.put(TenantHandler.ALGORITHM, algorithm);
                 this.put(TenantHandler.BACKUPS, backups);
             }
         };
