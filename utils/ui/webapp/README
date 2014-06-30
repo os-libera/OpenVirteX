@@ -1,0 +1,40 @@
+Dependencies:
+.python
+.graphviz
+.pygraphviz  
+.flask
+   
+Installation:
+1. Pull the OVX-GUI source from https://github.com/OPENNETWORKINGLAB/OVX-GUI
+2. Fetch/Install graphviz binary from http://www.graphviz.org
+3. Download > Stable and development Mac OS Install packages > Current stable release for Mountain Lion
+4. Fetch/install pygraphviz from http://pygraphviz.github.io  (In theory ok from macports as py-pygraphviz)
+5. Install flask : 
+     $ sudo easy_install flask
+
+Running the GUI:
+1. Start proxy: from OVX-GUI root directory:
+    $ python webapp/proxy.py 
+2. Point your browser to 
+        http://localhost:5000/static/index.html  
+     Or for light backgrounds
+        http://localhost:5000/static/index.html?s=light
+
+Installation:
+1. Download and install the OVX-GUI on your machine.
+2. Download the latest OpenVirtex VM.
+3. Set up a host-only interface on VirtualBox and enable it on the OpenVirtex VM and run dhclient on the interface that is host-only (You will get an Ip similar to 192.168.56.101).
+4. install python-flask and curl on the VM.
+5. In the GUI source, edit proxy.py to point to your VM's IP address. Assuming your host machine vboxnet interface to be ip 192.168.56.1, proxy.py URL settings would look like,
+                 url = 'http://192.168.56.1:8080/status'
+                 link_url = 'http://192.168.56.1:5000/%s/%s/%s
+                 stopPing_url = 'http://192.168.56.1:5000/stopPing/%s'
+                 startPing_url = 'http://192.168.56.1:5000/hostPing/%s/%s'
+
+Note: You can also install and run  OVX on your host machine and point mininet (in VM) to OVX by specifying the vboxnet interface (in host machine) ip in the mininet scrip, when adding controller. Assuming vboxnet interface ip to be 192.168.56.1, addcontroller statement in mininet script would look like,
+                 net.addController('c', ip='192.168.56.1')
+
+Also when adding controllers to virtual network (through OpenVirtex) you need to correctly specify the remote ip address if controller is running on VM, which in current scenario is the case as floodlight will be running on VM. Assume that controller is running on port 10000 and your VM host-only interface ip is 192.168.56.101, the  controller address would look like 
+         
+                 tcp:192.168.56.101:10000 
+ 

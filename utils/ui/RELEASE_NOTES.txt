@@ -1,0 +1,97 @@
+** Dec 5 2013
+Link cache now based entirely on src/dst DPID. Changes in linkId will not require flushing of link cache
+	add/remove/change switch DPIDs will require reset of link cache
+fixed error handling for update of physical model (would throw exception with respond, now retries)
+proxy.js is now multi-threaded which should improve update speed
+fixed update diff bug and now log changes to both phys and virt networks to js console on each refresh
+Workaround for flowtable scroll position reset on update of "last updated" string (had to be absolutely positioned)
+Restore currently selected switch in flowtable when syncing flowtable selection
+Flowtable view updates if flowtable for the displayed switch changes. Also logs changes to js console
+
+** Dec 3 2013
+Handle changes in virtual network list (turned out to be simple)
+Always show selected flow for physical network even if the flow is not used by current virtual network
+Host and Switch mouseover tooltips in both virtual and physical view
+Implement link up/down interactions (double click link) and physical link caching
+
+** Dec 2 2013
+Better flowtable highlighting: both selected switch and flowtable contents are green
+After startping/stopping immediately update the display to draw pending actions (still waits on SVG layout API)
+Format actions in flowtable (instead of raw JSON)
+Add selection state for flowtable rows and highlight selected flows in physical and virtual topology views
+Added readable mouseover tooltips (the default Chrome popups are too small.)
+
+** Nov 27 2013
+Drag from host to host to start ping
+Stop ping button for whole network
+Pending display state (flashing orange) for flowpaths that are starting or stopping
+
+
+** Nov 26 2013
+Finishec CSS refator
+?skin=light gets a dark on light skin suitable for conference room projector
+	without parameter defaults to light on dark (suitable for LCD panels)
+UI is now served through
+	http://localhost:5000/static/index.html
+OR for light-on-dark skin:
+	http://localhost:5000/static/index.html?s=light
+To start server:
+	$ cd <path-to-ovx-gui>/webapp
+	$ python proxy.py
+Add IP labels for hosts
+
+
+** Nov 25 2013
+Refactored CSS and graphviz layout parameters (switch, host size) for easier skinning
+Moved graphviz size parameters (host and switch size) to client/js/graphvizLayoutParameters.js
+Virtual networks selectors are now laid out across the top of the virtual topology display
+
+** Nov 22 2013
+Made the switch and host size larger in the virtual view to help distinguish virtual/physical and make the views less "spindly"
+Auto refresh working except for:
+	flow table displays stale data
+
+** Nov 21 2013
+Various improvements and code refactoring
+
+** Nov 20 2013
+Overlay "core" switches on US map using lat/lng from data/layout.js
+Set initial position for subgraph switches to the final position of the root (core) of the subgraph. Then let neato do the rest
+Pin virtual hosts to their corresponding position in the physical topology view
+Set initial position for virtual switches to the centroid of the corresponding physical switches in the physical topo view
+Merged from links branch
+
+** Nov 13 2013
+Use hot spots for switch magnifier cursor so mag is centered on switch
+Don't dim internal links from big switches and highlight them on mouseover a virtual switch
+Don't dim physical switches which are referenced from physical links which are referenced from the virtual link map
+	and highlight these on mouseover of a virtual link
+
+** Nov 12 2013
+Click to show switch in flowtable inspector
+
+** Nov 8 2013
+Show both virtual and physical hosts in topology
+Highlight physical host and uplink when mousing over virtual host and uplink
+Show virtual and physical flows in topology view
+Highlight the physical flows which match flows in the current virtual network
+
+** Oct 28 2013
+Use new virtual link map format (physical links for both directions)
+Show hosts in virtual topology
+
+** Oct 15 2013
+Created larger mouseoever area for edges
+Better css for edges so that they don't overlap nodes. Standardize stroke width.
+
+** Oct 15 2013
+Hook up to virtualSwitchMapping and virtualLinkMapping APIs
+Implement mouseover event handling to highlight the mapping virtual/physical mappings for links and switches
+
+
+** Oct 4 2013
+First commit
+Cloned parts of the ONOS app to create consistent look for the shell
+Created basic proxy and layout service based on GraphViz/pygraphviz
+UI gets and displays the physical topology on load, gets and displays virtual topologies when the virtual topology selector changes
+Lots of cleanup needed (removing the unused bits of the ONOS code)

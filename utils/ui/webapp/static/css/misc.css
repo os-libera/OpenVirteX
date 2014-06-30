@@ -1,0 +1,79 @@
+/* these don't handle events */
+#map, .flowpath  {
+	pointer-events: none;
+}
+
+#physicalTopologyMap{
+	display: none;
+}
+
+/* prevents accidental mouse drag selection of DOM elements */
+body {
+	-webkit-user-select: none;
+}
+
+
+/* paths are lines rather tha areas */
+path {
+	fill: none;
+}
+
+
+/* extra wide to make mouseover of links easier */
+.link path.mousearea
+ {
+	stroke: transparent;
+	stroke-width: 15px;
+}
+
+.host text, .host rect, #linkVector {
+	pointer-events: none;
+}
+
+/* overlays the logo layer */
+#contents {
+	visibility: hidden;
+}
+
+.linking .link, .linking .switch {
+	cursor: not-allowed;
+}
+
+.linking .host {
+	cursor: crosshair;
+}
+
+#physical .real.link {
+	cursor: s-resize;
+}
+
+#physical .real.link.inactive {
+	cursor: n-resize;
+}
+
+.tooltip {
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.highlight .tooltip {
+	visibility: visible;
+}
+
+
+/* pending link/flow animation */
+@-webkit-keyframes pending {
+	from {
+		opacity: 0.75;
+	}
+	to {
+		opacity: 0.25;
+	}
+}
+.pending {
+	-webkit-animation-name: pending;
+	-webkit-animation-duration: .5s;
+	-webkit-animation-direction: alternate;
+	-webkit-animation-timing-function: ease-in-out;
+	-webkit-animation-iteration-count: 70;
+}
