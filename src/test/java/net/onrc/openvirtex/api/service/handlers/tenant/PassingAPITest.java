@@ -965,6 +965,67 @@ public class PassingAPITest extends AbstractAPICalls {
 			Assert.assertNull("Virtual network not found for tenant with ID", e.getMessage());
 		}
     }
+    
+    /**
+     * Tests whether a start switch call succeeds
+     */
+    public void testStartPortPass() {
+    	// set the physical network (linear 2 sws with 1 host x sw)
+        final TestSwitch sw1 = new TestSwitch(1);
+        final TestSwitch sw2 = new TestSwitch(2);
+        PhysicalNetwork.getInstance().addSwitch(sw1);
+        PhysicalNetwork.getInstance().addSwitch(sw2);
+        final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
+                false);
+        p1.setHardwareAddress(new byte[] {0x01, 0x02, 0x03, 0x04, 0x05, 0x06});
+        p1.setPortNumber((short) 1);
+        sw1.addPort(p1);
+        
+        final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2,
+                false);
+        p3.setHardwareAddress(new byte[] {0x11, 0x12, 0x13, 0x14, 0x15, 0x16});
+        p3.setPortNumber((short) 1);
+        sw2.addPort(p3);
+
+        // set the virtual network (copy of the phy network)
+        super.createNetwork();
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
+        super.createPort(1, (long) 1, (short) 1);
+        super.createPort(1, (long) 2, (short) 1);
+        super.connectLink(1, (long) 46200400562356225L, (short) 1,
+                (long) 46200400562356226L, (short) 1, "manual", (byte) 0);
+        super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
+        
+        //final JSONRPC2Response resp1 = super.startSwitch(1, (long) 46200400562356225L);
+
+        final JSONRPC2Response resp = super.startPort(1, (long) 46200400562356225L, (short) 1);
+        
+        Assert.assertNull("Start port should not return null",
+                resp.getError());
+        Assert.assertTrue("Start port has incorrect return type",
+                resp.getResult() instanceof Map<?, ?>);
+
+        Map<String, Object> result = (Map<String, Object>) resp.getResult();
+
+        Assert.assertEquals(1, result.get(TenantHandler.TENANT));
+        Assert.assertEquals(46200400562356225L, result.get(TenantHandler.VDPID));
+        Assert.assertEquals((long) 1, result.get(TenantHandler.DPID));
+        Assert.assertEquals((short) 1, result.get(TenantHandler.PORT));
+        Assert.assertEquals((short) 1, result.get(TenantHandler.VPORT));
+        
+        final OVXMap map = OVXMap.getInstance();
+        OVXNetwork virtualNetwork;
+		try {
+			virtualNetwork = map.getVirtualNetwork(1);
+			OVXPort port1_1 = virtualNetwork.getSwitch((long) 46200400562356225L).getPort((short)1);
+			Assert.assertTrue(port1_1.isActive());
+			OVXPort port2_1 = virtualNetwork.getSwitch((long) 46200400562356226L).getPort((short)1);
+			Assert.assertTrue(port2_1.isActive());
+		} catch (NetworkMappingException e) {
+			Assert.assertNull("Virtual network not found for tenant with ID", e.getMessage());
+		}
+    }
 
     /**
      * Tests whether a stop network call succeeds.
@@ -1123,6 +1184,93 @@ public class PassingAPITest extends AbstractAPICalls {
      		Assert.assertTrue(port2_2.isActive());
         }
 		catch (NetworkMappingException e) {
+			Assert.assertNull("Virtual network not found for tenant with ID", e.getMessage());
+		}
+    }
+    
+    /**
+     * Tests whether a start switch call succeeds
+     */
+    public void testStopPortPass() {
+    	// set the physical network (linear 2 sws with 1 host x sw)
+        final TestSwitch sw1 = new TestSwitch(1);
+        final TestSwitch sw2 = new TestSwitch(2);
+        PhysicalNetwork.getInstance().addSwitch(sw1);
+        PhysicalNetwork.getInstance().addSwitch(sw2);
+        final PhysicalPort p1 = new PhysicalPort(new OFPhysicalPort(), sw1,
+                false);
+        p1.setHardwareAddress(new byte[] {0x01, 0x02, 0x03, 0x04, 0x05, 0x06});
+        p1.setPortNumber((short) 1);
+        sw1.addPort(p1);
+        final PhysicalPort p2 = new PhysicalPort(new OFPhysicalPort(), sw1,
+                true);
+        p2.setHardwareAddress(new byte[] {0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c});
+        p2.setPortNumber((short) 2);
+        sw1.addPort(p2);
+        final PhysicalPort p3 = new PhysicalPort(new OFPhysicalPort(), sw2,
+                false);
+        p3.setHardwareAddress(new byte[] {0x11, 0x12, 0x13, 0x14, 0x15, 0x16});
+        p3.setPortNumber((short) 1);
+        sw2.addPort(p3);
+
+        // set the virtual network (copy of the phy network)
+        super.createNetwork();
+        super.createSwitch(1, Collections.singletonList((long)1));
+        super.createSwitch(1, Collections.singletonList((long)2));
+        super.createPort(1, (long) 1, (short) 1);
+        super.createPort(1, (long) 1, (short) 2);
+        super.createPort(1, (long) 2, (short) 1);
+        super.connectHost(1, (long) 46200400562356225L, (short) 2,
+                "00:00:00:00:00:01");
+        super.connectLink(1, (long) 46200400562356225L, (short) 1,
+                (long) 46200400562356226L, (short) 1, "manual", (byte) 0);
+        super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
+        
+        super.startSwitch(1, (long) 46200400562356225L);
+        super.startSwitch(1, (long) 46200400562356226L);
+
+        final JSONRPC2Response resp1 = super.stopPort(1, (long) 46200400562356225L, (short) 1);
+        
+        Assert.assertNull("Start port should not return null",
+                resp1.getError());
+        Assert.assertTrue("Start port has incorrect return type",
+                resp1.getResult() instanceof Map<?, ?>);
+
+        Map<String, Object> result1 = (Map<String, Object>) resp1.getResult();
+
+        Assert.assertEquals(1, result1.get(TenantHandler.TENANT));
+        Assert.assertEquals(46200400562356225L, result1.get(TenantHandler.VDPID));
+        Assert.assertEquals((long) 1, result1.get(TenantHandler.DPID));
+        Assert.assertEquals((short) 1, result1.get(TenantHandler.PORT));
+        Assert.assertEquals((short) 1, result1.get(TenantHandler.VPORT));
+        
+        final JSONRPC2Response resp2 = super.stopPort(1, (long) 46200400562356225L, (short) 2);
+        
+        Assert.assertNull("Start port should not return null",
+                resp2.getError());
+        Assert.assertTrue("Start port has incorrect return type",
+                resp2.getResult() instanceof Map<?, ?>);
+
+        Map<String, Object> result2 = (Map<String, Object>) resp2.getResult();
+
+        Assert.assertEquals(1, result2.get(TenantHandler.TENANT));
+        Assert.assertEquals(46200400562356225L, result2.get(TenantHandler.VDPID));
+        Assert.assertEquals((long) 1, result2.get(TenantHandler.DPID));
+        Assert.assertEquals((short) 2, result2.get(TenantHandler.PORT));
+        Assert.assertEquals((short) 2, result2.get(TenantHandler.VPORT));
+        
+        final OVXMap map = OVXMap.getInstance();
+        OVXNetwork virtualNetwork;
+		try {
+			virtualNetwork = map.getVirtualNetwork(1);
+			Assert.assertTrue(virtualNetwork.getSwitch((long) 46200400562356225L).isActive());
+			OVXPort port1_1 = virtualNetwork.getSwitch((long) 46200400562356225L).getPort((short)1);
+			Assert.assertFalse(port1_1.isActive());
+			OVXPort port1_2 = virtualNetwork.getSwitch((long) 46200400562356225L).getPort((short)2);
+			Assert.assertFalse(port1_2.isActive());
+			OVXPort port2_1 = virtualNetwork.getSwitch((long) 46200400562356226L).getPort((short)1);
+			Assert.assertFalse(port1_2.isActive());
+		} catch (NetworkMappingException e) {
 			Assert.assertNull("Virtual network not found for tenant with ID", e.getMessage());
 		}
     }
