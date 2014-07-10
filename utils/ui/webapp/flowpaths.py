@@ -1,5 +1,6 @@
 import proxy
 import json, urllib2, sys, copy
+import re
 
 def buildRequest(data, url, cmd):
     j = { "id" : "ovxctl",  "method" : cmd , "jsonrpc" : "2.0" }
@@ -82,13 +83,14 @@ def computeFlowPaths(switches, slinks, tid = 0):
 def findPath(sw, inflow, slinks, tid, flowtables):
     path = []
     (neoflow, outport) = processFlow(inflow)
-    while ('%s-%s' % (sw, outport)) in slinks:
+    while ('%s-%s' % (sw, str(outport))) in slinks:
         nextHop = slinks['%s-%s' % (sw, outport)]
-        path.append(nextHop['dpid'])
-        neoflow['match']['in_port'] = int(nextHop['port'])
-        inflow = findFlow(flowtables[nextHop['dpid']], neoflow)
+        nextDP = getRegValue(nextHop, 'v?dpid$')
+        path.append(nextDP)
+        neoflow['match']['in_port'] = getRegValue(nextHop, 'v?port$')
+        inflow = findFlow(flowtables[nextDP], neoflow)
         (neoflow, outport) = processFlow(inflow)
-        sw = nextHop['dpid']
+        sw = nextDP 
     return path
 
 def findFlow(table, flow):
@@ -107,12 +109,13 @@ def processFlow(flow):
             if act['type'].lower() in flow['match']:
                 flow['match'][act['type'].lower()] = act[act['type'].lower()]
         else:
-            port = act['port']
+            port = str(act['port'])
     return (flow, port)
+
 
 def convertTopology(links):
     if links is not []:
-        return { "-".join([link['src']['dpid'], link['src']['port'] ]) : link['dst'] for link in links }
+        return { "-".join([getRegValue(link['src'], 'v?dpid$'), str(getRegValue(link['src'], 'v?port$'))]) : link['dst'] for link in links }
     return None
 
 def lowerDict(d):
@@ -147,3 +150,16 @@ def getPhysicalFlows():
 
     return physicalFlowpaths
 
+def getRegValue(dict, regex):
+    return list(redict(dict)[regex]).pop()
+
+# dict with regex support - http://flo.nigsch.com/?p=82
+class redict(dict):
+    def __init__(self, d):
+        dict.__init__(self, d)
+
+    def __getitem__(self, regex):
+        r = re.compile(regex)
+        mkeys = filter(r.match, self.keys())
+        for i in mkeys:
+            yield dict.__getitem__(self, i)

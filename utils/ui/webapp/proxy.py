@@ -9,8 +9,8 @@ app = Flask(__name__)
 
 url = 'http://192.168.56.102:8080/status'
 link_url = 'http://192.168.56.102:5000/%s/%s/%s'
-stopPing_url = 'http://192.168.56.102:5000/stopPing/%s'
-startPing_url = 'http://192.168.56.102:5000/hostPing/%s/%s'
+stopPing_url = 'http://192.168.66.3:5000/stopPing/%s'
+startPing_url = 'http://192.168.66.3:5000/hostPing/%s/%s'
 #url = 'http://ovx.onlab.us:8080/status'
 #link_url = 'http://ovx.onlab.us:5000/%s/%s/%s'
 #stopPing_url = 'http://ovx.onlab.us:5000/stopPing/%s'
@@ -161,7 +161,7 @@ def layoutTopology():
 
             for link in topo['links']:
                 id = str(link['linkId'])
-                G.add_edge(link['src']['dpid'], link['dst']['dpid'], id=prefix+'_link-'+id)
+                G.add_edge(flowpaths.getRegValue(link['src'], 'v?dpid$'), flowpaths.getRegValue(link['dst'], 'v?dpid$'), id=prefix+'_link-'+id)
 
             for host in topo['hosts']:
                 id = host['mac'].replace(':', '_')
@@ -169,7 +169,7 @@ def layoutTopology():
                     G.add_node(host['mac'], shape='square', width=hostWidth, color='white', id=prefix+'_host'+id, pos=host['pos'])
                 else:
                     G.add_node(host['mac'], shape='square', width=hostWidth, color='white', id=prefix+'_host'+id)
-                G.add_edge(host['mac'], host['dpid'], id=prefix+'_host_link'+id)
+                G.add_edge(host['mac'], flowpaths.getRegValue(host, 'v?dpid$'), id=prefix+'_host_link'+id)
 
             # print G
 
