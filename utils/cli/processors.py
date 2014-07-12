@@ -59,12 +59,12 @@ class BigSwitch(IProcess):
             .format("", "Usage: add bigswitch <dp1> [extra dpids] [vdpid]")
         
     def complete(self, text, line = None):
-        if ("dpid" in line.split()):
+        if ("00:00:00:00:00:00:0dpid" in line.split()):
             return
         devices = self.ovx.listDevices()[:]
         
         if len(line.split()) > 3:
-            devices.append("dpid")
+            devices.append("00:00:00:00:00:00:0dpid")
         if text is None:
             completions = devices
         else:
@@ -83,11 +83,11 @@ class BigSwitch(IProcess):
         terms = line.split()
         sws = []
         for sw in terms[1:]:
-            if sw == "dpid":
+            if sw == "00:00:00:00:00:00:0dpid":
                 break
             sws.append(to_long_dpid(sw))
         
-        if "dpid" in terms:
+        if "00:00:00:00:00:00:0dpid" in terms:
             vdpid = to_long_dpid(terms[-1])
         else:
              vdpid = None
