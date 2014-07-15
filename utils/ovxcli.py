@@ -493,14 +493,17 @@ class VirtualNetwork(OVXCmd):
     
             
     def complete_switch(self, text, line, begidx, endidx):
-        devices = self.showers['devices'].show(None)
         
-        if (text is None):
-            completions = devices
+        devices = self.showers['devices'].show(None)
+        if (len(line.split()) > 1):
+            completions = ["<cr>", "dpid"]
         else:
-            completions = [ poss 
-                     for poss in devices
-                     if poss.startswith(text) ]
+            if (text is None):
+                completions = devices
+            else:
+                completions = [ poss
+                         for poss in devices
+                         if poss.startswith(text) ]
         return completions
             
     def do_switch(self, args):
