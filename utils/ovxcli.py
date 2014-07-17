@@ -26,7 +26,6 @@ from cli.processors import *
 from cli.connection import *
 
 
-
 VERSION = "0.1"
 SUPPORTED_OVX = "prealpha 0.0.2"
 
@@ -44,6 +43,8 @@ class OVXCmd(Cmd):
         """
         Exit this context.
         """
+        #As exception is not letting postloop() to run, so munually calling postloop()
+        self.postloop()
         raise SubinterpreterExit()
     
     def do_quit (self, arglist):
@@ -58,7 +59,45 @@ class OVXCmd(Cmd):
         """
         print
         self.do_exit(arglist)
+    
+    def preloop(self):
+        """
+        Initialization before prompting user for commands.
+        Before entering in two new Context needs
+        Two main things to keep history according to context:
+        1- Clear the history.
+        2- Load previous history of this context (if any) from file.
+        note: Each context stores its now history in precmd()
+        """
+        Cmd.preloop(self)
+        try:
+            self.file= open(self.file_name,'r+',0)
+        #1
+            readline.clear_history()
+        #2
+            for line in self.file.readlines():
+                readline.add_history(line)
+        except IOError:
+            print 'There is no file named', self.file_name
+
+    def postloop(self):
+        """
+        Before leaving the context need to close the opened file
+        """
+        #1
+        Cmd.postloop(self)   ## sets up command completion
+        self.file.close()
         
+    def precmd(self, line):
+        """
+        Store every command into the file.
+        """
+        try:
+            if(line.strip() != ""):
+                self.file.write(line.strip()+"\n")
+            return line
+        except IOError:
+            print "Can't Write to file: ", self.file_name
 
         
 class OVXLinkCmd(OVXCmd):
@@ -74,6 +113,8 @@ class OVXLinkCmd(OVXCmd):
                                                        self.link['src']['port'], \
                                                        self.link['dst']['dpid'], \
                                                        self.link['dst']['port'])
+        self.file_name= ".history_"+ self.__class__.__name__+".txt"
+        self.file= open(self.file_name,'a+',0)
     
     
     def do_drop(self, args):
@@ -95,6 +136,8 @@ class OVXHostCmd(OVXCmd):
         self.type = "host"
         self.name =  int(self.host['hostId'])
         OVXHostCmd.prompt = "ovxctl(vn-%s-host-%s)$ " % (self.tid, self.name)
+        self.file_name= ".history_"+ self.__class__.__name__+".txt"
+        self.file= open(self.file_name,'a+',0)
     
     
     def do_drop(self, args):
@@ -118,6 +161,8 @@ class OVXPortCmd(OVXCmd):
         self.name = self.port
         self.type = "port"
         OVXPortCmd.prompt = "ovxctl(vn-%s-%s-%s)$ " % (self.tid, self.sw, self.port)
+        self.file_name= ".history_"+ self.__class__.__name__+".txt"
+        self.file= open(self.file_name,'a+',0)
     
     def do_enable(self, args):
         """
@@ -156,6 +201,8 @@ class OVXSwitchCmd(OVXCmd):
         OVXSwitchCmd.prompt = "ovxctl(vn-%s-%s)$ " % (self.tid, self.sw)
         self.__set_showers()
         self.__set_adders()
+        self.file_name= ".history_"+ self.__class__.__name__+".txt"
+        self.file= open(self.file_name,'a+',0)
         
     def __set_showers(self):
         self.showers = {"mapping" : VirtualSwitchMapping(self.ovx, self.tid), \
@@ -185,6 +232,14 @@ class OVXSwitchCmd(OVXCmd):
                     print "Removed virtual %s %s." % (cmd.type, cmd.name)
                 else:
                     print "Exiting virtual %s %s context." % (cmd.type, cmd.name)
+                     #Clearing previous histroy and loading own history
+                    readline.clear_history()
+                    try:
+                        self.file= open(self.file_name,'r+',0)
+                        for line in self.file.readlines():
+                            readline.add_history(line)
+                    except IOError:
+                        print "Can't read from the file: ",self.file_name
                 break
             except exceptions.KeyboardInterrupt, e:
                 print
@@ -337,7 +392,10 @@ class VirtualNetwork(OVXCmd):
         self.__set_switch_types()
         self.__set_showers()
         self.__set_adders()
-        
+        self.file_name= ".history_"+ self.__class__.__name__+".txt"
+        self.file= open(self.file_name,'a+',0)
+
+
     def __set_switch_types(self):
         self.switch_types = {"singleswitch" : SingleSwitch(self.ovx), \
                              "bigswitch" : BigSwitch(self.ovx) }
@@ -348,7 +406,7 @@ class VirtualNetwork(OVXCmd):
                          "devices" : VirtualDevices(self.ovx, self.tid), \
                          "status" : vnets, \
                          "ctrls" : vnets}
-        
+
     def __set_adders(self):
         self.adders = { "link" : VirtualLinkAdd(self.ovx, self.tid) }
         
@@ -361,6 +419,15 @@ class VirtualNetwork(OVXCmd):
                     print "Removed virtual %s %s." % (sw.type, sw.name)
                 else:
                     print "Exiting virtual %s %s context." % (sw.type, sw.name)
+                    #Clearing previous histroy and loading own history
+                    readline.clear_history()
+                    try:
+                        self.file= open(self.file_name,'r+',0)
+                        for line in self.file.readlines():
+                            readline.add_history(line)
+                    except IOError:
+                        print "Can't read from the file: ",self.file_name
+
                 break
             except exceptions.KeyboardInterrupt, e:
                 print
@@ -565,7 +632,6 @@ class VirtualNetwork(OVXCmd):
       
 class OVXCtl(OVXCmd):
     prompt = "ovxctl(offline)$ "
-    
     def __init__(self, host, user, port, passwd, isSSL):
         Cmd.__init__(self, completekey='tab')
         self.user = user
@@ -575,8 +641,10 @@ class OVXCtl(OVXCmd):
         self.__connect(host, user, port, passwd, isSSL)
         for vn in self.__ac.listVirtualNetworks():
             self.vns[vn['tenantId']] = vn
-        
         self.__set_showers()
+        self.file_name= ".history_"+ self.__class__.__name__+".txt"
+        self.file= open(self.file_name,'a+',0)
+
     
     def __wait_for_subint(self, vn):
         while True: 
@@ -588,6 +656,15 @@ class OVXCtl(OVXCmd):
                     del self.vns[vn.tid]
                 else:
                     print "Exiting virtual network %s context." % (vn.tid)
+                    #Clearing history of previous context and loading Own History
+                    readline.clear_history()
+                    try:
+                        self.file= open(self.file_name,'r+',0)
+                        for line in self.file.readlines():
+                            readline.add_history(line)
+                    except IOError:
+                        print "Can't read from the file: ",self.file_name
+
                 break
             except exceptions.KeyboardInterrupt, e:
                 print
@@ -610,12 +687,16 @@ class OVXCtl(OVXCmd):
         while True:
             try:
                 Cmd.cmdloop(self)
+            
             except exceptions.SystemExit, e:
+                
                 sys.exit()
             except exceptions.KeyboardInterrupt, e:
+                
                 print
                 continue
             except:
+                
                 (self.__exc_t, self.__exc_v, self.__exc_tb) = sys.exc_info()
                 print self.__exc_t, sys.exc_info()
                 continue
@@ -678,7 +759,7 @@ class OVXCtl(OVXCmd):
             vn_info = self.__ac.createNetwork([])
             vn = VirtualNetwork(vn_info, self.__ac)
         else:
-            vn_info = self.__ac.createNetwork(argslist.split(','))
+            vn_info = self.__ac.createNetwork(arglist.split(','))
             vn = VirtualNetwork(vn_info, self.__ac)
            
         self.vns[vn.tid] = vn_info
