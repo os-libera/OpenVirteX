@@ -46,27 +46,54 @@ public class GetVirtualSwitchMapping extends ApiHandler<Map<String, Object>> {
             Map<String, Object> res = new HashMap<String, Object>();
             Number tid = HandlerUtils.<Number>fetchField(
                     MonitoringHandler.TENANT, params, true, null);
+            Long dpid = HandlerUtils.<Long>fetchField(
+            		MonitoringHandler.VDPID, params, false, null);
             OVXMap map = OVXMap.getInstance();
             LinkedList<String> list = new LinkedList<String>();
             HashMap<String, Object> subRes = new HashMap<String, Object>();
-            for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue())
-                    .getSwitches()) {
-                subRes.clear();
-                list.clear();
-                if (vsw instanceof OVXBigSwitch) {
-                    List<Integer> l = new LinkedList<Integer>();
-                    for (PhysicalLink li : ((OVXBigSwitch) vsw).getAllLinks()) {
-                        l.add(li.getLinkId());
-                    }
-                    subRes.put("links", l);
-                } else {
-                    subRes.put("links", new LinkedList<>());
-                }
-                for (PhysicalSwitch psw : map.getPhysicalSwitches(vsw)) {
-                    list.add(psw.getSwitchName());
-                }
-                subRes.put("switches", list.clone());
-                res.put(vsw.getSwitchName(), subRes.clone());
+            if (dpid == null) {
+            	for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue())
+            			.getSwitches()) {
+            		subRes.clear();
+            		list.clear();
+            		if (vsw instanceof OVXBigSwitch) {
+            			List<Integer> l = new LinkedList<Integer>();
+            			for (PhysicalLink li : ((OVXBigSwitch) vsw).getAllLinks()) {
+            				l.add(li.getLinkId());
+            			}
+            			subRes.put(MonitoringHandler.LINKS, l);
+            		} else {
+            			subRes.put(MonitoringHandler.LINKS, new LinkedList<>());
+            		}
+            		for (PhysicalSwitch psw : map.getPhysicalSwitches(vsw)) {
+            			list.add(psw.getSwitchName());
+            		}
+            		subRes.put(MonitoringHandler.SWITCHES, list.clone());
+            		res.put(vsw.getSwitchName(), subRes.clone());
+            	}
+            }
+            else {
+            	for (OVXSwitch vsw : map.getVirtualNetwork(tid.intValue())
+            			.getSwitches()) {
+            		if (dpid.equals(vsw.getSwitchId())) {
+            			subRes.clear();
+            			list.clear();
+            			if (vsw instanceof OVXBigSwitch) {
+            				List<Integer> l = new LinkedList<Integer>();
+            				for (PhysicalLink li : ((OVXBigSwitch) vsw).getAllLinks()) {
+            					l.add(li.getLinkId());
+            				}
+            				subRes.put(MonitoringHandler.LINKS, l);
+            			} else {
+            				subRes.put(MonitoringHandler.LINKS, new LinkedList<>());
+            			}
+            			for (PhysicalSwitch psw : map.getPhysicalSwitches(vsw)) {
+            				list.add(psw.getSwitchName());
+            			}
+            			subRes.put(MonitoringHandler.SWITCHES, list.clone());
+            			res.put(vsw.getSwitchName(), subRes.clone());
+            		}
+            	}
             }
             resp = new JSONRPC2Response(res, 0);
 

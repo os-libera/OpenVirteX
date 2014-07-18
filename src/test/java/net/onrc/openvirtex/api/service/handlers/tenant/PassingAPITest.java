@@ -38,7 +38,6 @@ import org.openflow.protocol.OFPhysicalPort;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 import java.lang.Long;
@@ -604,7 +603,7 @@ public class PassingAPITest extends AbstractAPICalls {
         super.connectHost(1, (long) 46200400562356226L, (short) 2,
                 "00:00:00:00:00:02");
         super.connectLink(1, (long) 46200400562356225L, (short) 1,
-                (long) 46200400562356226L, (short) 1, "manual", (byte) 0);
+               (long) 46200400562356226L, (short) 1, "manual", (byte) 0);
         super.setLinkPath(1, 1, "1/1-2/1", (byte) 100);
 
         final JSONRPC2Response resp = super.disconnectLink(1, 1);
@@ -1269,7 +1268,7 @@ public class PassingAPITest extends AbstractAPICalls {
 			OVXPort port1_2 = virtualNetwork.getSwitch((long) 46200400562356225L).getPort((short)2);
 			Assert.assertFalse(port1_2.isActive());
 			OVXPort port2_1 = virtualNetwork.getSwitch((long) 46200400562356226L).getPort((short)1);
-			Assert.assertFalse(port1_2.isActive());
+			Assert.assertFalse(port2_1.isActive());
 		} catch (NetworkMappingException e) {
 			Assert.assertNull("Virtual network not found for tenant with ID", e.getMessage());
 		}

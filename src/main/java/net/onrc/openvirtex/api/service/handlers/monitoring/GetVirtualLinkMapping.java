@@ -44,22 +44,43 @@ public class GetVirtualLinkMapping extends ApiHandler<Map<String, Object>> {
             Map<Integer, List<List<Integer>>> res = new HashMap<Integer, List<List<Integer>>>();
             Number tid = HandlerUtils.<Number>fetchField(
                     MonitoringHandler.TENANT, params, true, null);
+            Integer linkID = HandlerUtils.<Integer>fetchField(
+            		MonitoringHandler.LINK, params, false, null);
             OVXMap map = OVXMap.getInstance();
             List<Integer> path = null;
-            for (OVXLink vlink : map.getVirtualNetwork(tid.intValue())
-                    .getLinkSet()) {
-                path = new LinkedList<Integer>();
-                for (PhysicalLink link : map.getPhysicalLinks(vlink)) {
-                    path.add(link.getLinkId());
-                }
-                List<List<Integer>> list = res.get(vlink.getLinkId());
-                if (list == null) {
-                    list = new LinkedList<List<Integer>>();
-                    res.put(vlink.getLinkId(), list);
-                }
-                list.add(path);
+            if (linkID == null) {
+            	for (OVXLink vlink : map.getVirtualNetwork(tid.intValue())
+            			.getLinkSet()) {
+            		path = new LinkedList<Integer>();
+            		for (PhysicalLink link : map.getPhysicalLinks(vlink)) {
+            			path.add(link.getLinkId());
+            		}
+            		List<List<Integer>> list = res.get(vlink.getLinkId());
+            		if (list == null) {
+            			list = new LinkedList<List<Integer>>();
+            			res.put(vlink.getLinkId(), list);
+            		}
+            		list.add(path);
+            	}
             }
-            resp = new JSONRPC2Response(res, 0);
+            else {
+            	for (OVXLink vlink : map.getVirtualNetwork(tid.intValue()).getLinkSet()) {
+            		if (linkID == vlink.getLinkId()) {
+            			path = new LinkedList<Integer>();
+            			for (PhysicalLink link : map.getPhysicalLinks(vlink)) {
+            				path.add(link.getLinkId());
+            			}
+            			List<List<Integer>> list = res.get(vlink.getLinkId());
+            			if (list == null) {
+            				list = new LinkedList<List<Integer>>();
+            				res.put(vlink.getLinkId(), list);
+            			}
+            			list.add(path);
+            		}
+            	}
+            }
+        
+        resp = new JSONRPC2Response(res, 0);
 
         } catch (ClassCastException | MissingRequiredField
                 | NetworkMappingException | LinkMappingException e) {

@@ -59,6 +59,18 @@ public class MonitoringHandler extends AbstractHandler implements
      * Virtual datapath ID.
      */
     public static final String VDPID = "vdpid";
+    /**
+     * Keyword for the link ID.
+     */
+    public static final String LINK = "linkId";
+    /**
+     * Keyword for links
+     */
+    public static final String LINKS = "links";
+    /**
+     * Keyword for switches
+     */
+    public static final String SWITCHES = "switches";
 
     @SuppressWarnings({ "serial", "rawtypes" })
     private HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
