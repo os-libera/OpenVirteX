@@ -79,16 +79,13 @@ public class PhysicalSwitchTest extends TestCase {
         final OVXIPAddress ip = new OVXIPAddress("10.0.0.0", tid);
         psw.register();
         final OVXSwitch vsw = new OVXSingleSwitch(vswId, tid);
-        try {
-            final OVXNetwork net = new OVXNetwork(tid, ctlList, ip, (short) 24);
-            net.register();
-            this.map.addSwitches(Collections.singletonList(psw), vsw);
-            vsw.map.addNetwork(net);
-            vsw.register();
-        } catch (final IndexOutOfBoundException e) {
-            // Test fails
-            Assert.fail("Exception: IndexOutOfBound");
-        }
+
+        final OVXNetwork net = new OVXNetwork(tid, ctlList, ip, (short) 24);
+        net.register();
+        this.map.addSwitches(Collections.singletonList(psw), vsw);
+        vsw.map.addNetwork(net);
+        vsw.register();
+
         // Test: before unregister
         Assert.assertTrue(psw.map.hasVirtualSwitch(psw, tid));
         psw.cleanUpTenant(tid, (short) 0);
@@ -152,15 +149,15 @@ public class PhysicalSwitchTest extends TestCase {
         pp.setOVXPort(vp);
         vp2.boot();
         pp2.setOVXPort(vp2);
-        try {
-            final OVXNetwork net = new OVXNetwork(tid, ctlList, ip, (short) 24);
-            net.register();
-            vsw.map.addNetwork(net);
-            vsw2.map.addNetwork(net);
-        } catch (final IndexOutOfBoundException e) {
+
+        final OVXNetwork net = new OVXNetwork(tid, ctlList, ip, (short) 24);
+        net.register();
+        vsw.map.addNetwork(net);
+        vsw2.map.addNetwork(net);
+
             // Test fails
             Assert.fail("Exception: IndexOutOfBound");
-        }
+
         Assert.assertEquals(
                 psw.portMap.get(pp.getPortNumber())
                 .getOVXPort(tid, plink.getLinkId()).getPortNumber(),

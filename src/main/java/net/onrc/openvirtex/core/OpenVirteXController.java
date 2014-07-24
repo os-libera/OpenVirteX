@@ -27,7 +27,9 @@ import net.onrc.openvirtex.core.io.ClientChannelPipeline;
 import net.onrc.openvirtex.core.io.SwitchChannelPipeline;
 import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
+import net.onrc.openvirtex.elements.network.Dom0;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.network.PhysicalNetwork;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
@@ -90,6 +92,8 @@ public class OpenVirteXController implements Runnable {
 
     private final Integer hashSize;
 
+    private final Dom0 dom0;
+
     public OpenVirteXController(CmdLineSettings settings) {
         this.ofHost = settings.getOFHost();
         this.ofPort = settings.getOFPort();
@@ -113,6 +117,7 @@ public class OpenVirteXController implements Runnable {
         this.pfact = new SwitchChannelPipeline(this, this.serverThreads);
         OpenVirteXController.tenantIdCounter = new BitSetIndex(
                 IndexType.TENANT_ID);
+        this.dom0 = new Dom0();
     }
 
     @Override
@@ -121,6 +126,12 @@ public class OpenVirteXController implements Runnable {
         initVendorMessages();
         PhysicalNetwork.getInstance().register();
         PhysicalNetwork.getInstance().boot();
+        
+        /*
+         * Registering and starting dom0
+         */
+        this.dom0.register();
+        this.dom0.boot();
 
         this.startDatabase();
         this.startServer();
@@ -192,6 +203,10 @@ public class OpenVirteXController implements Runnable {
 
         final Set<String> ctrls = ovxNetwork.getControllerUrls();
         addControllers(sw, ctrls);
+    }
+
+    public void addPhysicalSwitchToDom0(PhysicalSwitch psw) {
+        this.dom0.addSwitch(psw);
     }
 
     private void setServerBootStrapParams(final ServerBootstrap bootstrap) {

@@ -581,7 +581,7 @@ public final class HandlerUtils {
         }
         if (physicalLinks.size() == 0) {
             throw new VirtualLinkException(
-                    "Need to specify a path of at least one hop lenght");
+                    "Need to specify a path of at least one hop length");
         }
         return physicalLinks;
     }

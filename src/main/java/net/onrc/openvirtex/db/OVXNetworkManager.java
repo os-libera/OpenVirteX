@@ -279,15 +279,9 @@ public class OVXNetworkManager {
         final Short netMask = ((Integer) this.vnet.get(TenantHandler.NETMASK))
                 .shortValue();
         OVXNetwork virtualNetwork;
-        try {
-            virtualNetwork = new OVXNetwork(this.tenantId, ctrlUrls, addr,
+        virtualNetwork = new OVXNetwork(this.tenantId, ctrlUrls, addr,
                     netMask);
-        } catch (IndexOutOfBoundException e) {
-            OVXNetworkManager.log.error(
-                    "Error recreating virtual network {} from database",
-                    this.tenantId);
-            return;
-        }
+        
         virtualNetwork.register();
 
         // Create OVX switches

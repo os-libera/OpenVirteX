@@ -257,8 +257,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     private static Logger log = LogManager
             .getLogger(OVXNetwork.class.getName());
 
-    private final Integer tenantId;
-    private final HashSet<String> controllerUrls;
+    protected final Integer tenantId;
+    protected final HashSet<String> controllerUrls;
     private final IPAddress network;
     private final short mask;
     private HashMap<IPAddress, MACAddress> gwsMap;
@@ -286,7 +286,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
      */
     public OVXNetwork(final int tenantId,
             final ArrayList<String> controllerUrls, final IPAddress network,
-            final short mask) throws IndexOutOfBoundException {
+            final short mask) {
         super();
         this.tenantId = tenantId;
         this.controllerUrls = new HashSet<String>();

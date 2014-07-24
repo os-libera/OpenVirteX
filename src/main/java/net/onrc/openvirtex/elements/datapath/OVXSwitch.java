@@ -274,7 +274,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
     /* The capabilities. */
     protected OVXSwitchCapabilities capabilities;
 
-    /* The backoff counter for this switch when unconnected */
+    /* The backoff counter for this sw)itch when unconnected */
     private AtomicInteger backOffCounter = null;
 
     /* The buffer map */
@@ -297,7 +297,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
      * also responsible for permitting or denying certain operations based on
      * the current role of a controller.
      */
-    private final RoleManager roleMan;
+    protected RoleManager roleMan;
 
     /** The component state of this OVXSwitch */
     protected SwitchState state;
@@ -558,7 +558,8 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable,
                 switches.add(sw.getSwitchId());
             }
         } catch (SwitchMappingException e) {
-            return null;
+            log.warn("Switch {} in virtual network {} is not mapped "
+                    + "to any physical switch", this.getSwitchName(), this.tenantId);
         }
         dbObject.put(TenantHandler.DPIDS, switches);
         return dbObject;

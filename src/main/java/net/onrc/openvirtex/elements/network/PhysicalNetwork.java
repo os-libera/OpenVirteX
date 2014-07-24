@@ -268,6 +268,7 @@ public final class PhysicalNetwork extends
         super.addSwitch(sw);
         this.discoveryManager.put(sw.getSwitchId(), new SwitchDiscoveryManager(
                 sw, OpenVirteXController.getInstance().getUseBDDP()));
+        OpenVirteXController.getInstance().addPhysicalSwitchToDom0(sw);
         DBManager.getInstance().addSwitch(sw.getSwitchId());
     }
 
