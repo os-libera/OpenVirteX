@@ -49,6 +49,11 @@ public final class IPMapper {
     public static Integer getPhysicalIp(Integer tenantId, Integer virtualIP) {
         final Mappable map = OVXMap.getInstance();
         final OVXIPAddress vip = new OVXIPAddress(tenantId, virtualIP);
+
+        // 0 is initial value and means "not set". see OFMatch.
+        if (virtualIP == 0) {
+            return 0;
+        }
         try {
             PhysicalIPAddress pip;
             if (map.hasPhysicalIP(vip, tenantId)) {

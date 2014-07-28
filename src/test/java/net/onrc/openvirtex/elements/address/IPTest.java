@@ -18,6 +18,8 @@ package net.onrc.openvirtex.elements.address;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import net.onrc.openvirtex.elements.Mappable;
+import net.onrc.openvirtex.elements.OVXMap;
 
 /**
  * Tests for IP addresses.
@@ -29,6 +31,8 @@ public class IPTest extends TestCase {
     public IPTest(final String name) {
         super(name);
     }
+
+    private Mappable map = null;
 
     /**
      * @return the suite of tests being tested
@@ -51,9 +55,27 @@ public class IPTest extends TestCase {
                 ip.toString());
     }
 
+    public void testgetPhysicalIp() {
+        final OVXIPAddress virtualip = new OVXIPAddress(IPTest.DEFAULT, 0);
+        this.map.addIP(new PhysicalIPAddress("1.0.0.1"), virtualip);
+
+        final Integer physicalip = IPMapper.getPhysicalIp(0, virtualip.getIp());
+
+        Assert.assertEquals(
+                (Integer) new PhysicalIPAddress("1.0.0.1").getIp(),
+                physicalip);
+    }
+
+    public void testgetPhysicalIpVIP0ShouldReturn0() {
+        final Integer physicalip = IPMapper.getPhysicalIp(0, 0);
+
+        Assert.assertEquals((Integer) 0, physicalip);
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        this.map = OVXMap.getInstance();
     }
 
     @Override
