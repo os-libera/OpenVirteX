@@ -9,42 +9,55 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 import junit.framework.TestCase;
 
 public class MonitoringAPICalls extends TestCase{
-	
-	public JSONRPC2Response getVirtualLinkMapping(final Integer tenantId) {
-		return this.getVirtualLinkMapping(tenantId, null);
-	}
-	
-	public JSONRPC2Response getVirtualLinkMapping(final Integer tenantId,
-			final Integer linkId) {
-		final GetVirtualLinkMapping gvlm = new GetVirtualLinkMapping();
-		
-		@SuppressWarnings("serial")
-		final HashMap<String, Object> request = new HashMap<String, Object>() {
-			{
-				this.put(MonitoringHandler.TENANT, tenantId);
-				this.put(MonitoringHandler.LINK, linkId);
-			}
-		};
-		
-		return gvlm.process(request);
-	}
-	
-	public JSONRPC2Response getVirtualSwitchMapping(final Integer tenantId) {
-		return this.getVirtualSwitchMapping(tenantId, null);
-	}
-	
-	public JSONRPC2Response getVirtualSwitchMapping(final Integer tenantId,
-			final Long dpid) {
-		final GetVirtualSwitchMapping gvsm = new GetVirtualSwitchMapping();
-		
-		@SuppressWarnings("serial")
-		final HashMap<String, Object> request = new HashMap<String, Object>() {
-			{
-				this.put(MonitoringHandler.TENANT, tenantId);
-				this.put(MonitoringHandler.VDPID, dpid);
-			}
-		};
-		
-		return gvsm.process(request);
-	}
+    
+    public JSONRPC2Response getPhysicalHosts() {
+        final GetPhysicalHosts gph = new GetPhysicalHosts();
+        
+        final HashMap<String, Object> request = new HashMap<String, Object> ();
+        
+        return gph.process(request);
+    }
+    
+    public JSONRPC2Response getVirtualLinkMapping(final Integer tenantId) {
+        return this.getVirtualLinkMapping(tenantId, null);
+    }
+    
+    public JSONRPC2Response getVirtualLinkMapping(final Integer tenantId,
+            final Integer linkId) {
+        final GetVirtualLinkMapping gvlm = new GetVirtualLinkMapping();
+        
+        @SuppressWarnings("serial")
+        final HashMap<String, Object> request = new HashMap<String, Object>() {
+            {
+                this.put(MonitoringHandler.TENANT, tenantId);
+                this.put(MonitoringHandler.LINK, linkId);
+            }
+        };
+        
+        return gvlm.process(request);
+    }
+    
+    public JSONRPC2Response getVirtualSwitchMapping(final Integer tenantId) {
+        return this.getVirtualSwitchMapping(tenantId, null);
+    }
+    
+    public JSONRPC2Response getVirtualSwitchMapping(final Integer tenantId,
+            final Long dpid) {
+        final GetVirtualSwitchMapping gvsm = new GetVirtualSwitchMapping();
+        
+        @SuppressWarnings("serial")
+        final HashMap<String, Object> request = new HashMap<String, Object>() {
+            {
+                this.put(MonitoringHandler.TENANT, tenantId);
+                this.put(MonitoringHandler.VDPID, dpid);
+            }
+        };
+        
+        return gvsm.process(request);
+    }
+    
+    public void testPassing() {
+        /* Make JUnit happy */
+        /* http://junit.sourceforge.net/doc/faq/faq.htm#running_11 */
+    }
 }
