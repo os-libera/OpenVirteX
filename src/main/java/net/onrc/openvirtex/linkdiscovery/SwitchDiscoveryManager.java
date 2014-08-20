@@ -127,8 +127,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
         // Ignore ports that are not on this switch, or already booted. */
         if (port.boot() && port.getParentSwitch().equals(this.sw)) {
             synchronized (this) {
-                this.log.debug("sending init probe to port {}",
-                        port.getPortNumber());
                 OFPacketOut pkt;
                 try {
                     pkt = this.createLLDPPacketOut(port);
@@ -318,7 +316,7 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
             PhysicalNetwork.getInstance().createLink(srcPort, dstPort);
             PhysicalNetwork.getInstance().ackProbe(srcPort);
         } else {
-            this.log.warn("Ignoring unknown LLDP");
+            this.log.debug("Ignoring unknown LLDP");
         }
     }
 
@@ -332,7 +330,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
      */
     @Override
     public void run(final Timeout t) {
-        this.log.debug("sending probes");
         synchronized (this) {
             final Iterator<Short> fastIterator = this.fastPorts.iterator();
             while (fastIterator.hasNext()) {
@@ -340,7 +337,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
                 final int probeCount = this.portProbeCount.get(portNumber)
                         .getAndIncrement();
                 if (probeCount < SwitchDiscoveryManager.MAX_PROBE_COUNT) {
-                    this.log.debug("sending fast probe to port");
                     try {
                         OFPacketOut pkt = this.createLLDPPacketOut(this.sw
                                 .getPort(portNumber));
@@ -375,7 +371,6 @@ public class SwitchDiscoveryManager implements LLDPEventHandler, OVXSendMsg,
                 }
                 if (this.slowIterator.hasNext()) {
                     final short portNumber = this.slowIterator.next();
-                    this.log.debug("sending slow probe to port {}", portNumber);
                     try {
                         OFPacketOut pkt = this.createLLDPPacketOut(this.sw
                                 .getPort(portNumber));

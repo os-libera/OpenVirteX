@@ -336,8 +336,6 @@ public final class PhysicalNetwork extends
                     new DPIDandPort(dstPort.getParentSwitch().getSwitchId(),
                             dstPort.getPortNumber()));
             DBManager.getInstance().addLink(dpp);
-        } else {
-            log.debug("Tried to create invalid link");
         }
     }
 
@@ -370,8 +368,6 @@ public final class PhysicalNetwork extends
             log.info("Removing physical link between {} and {}", link
                     .getSrcPort().toAP(), link.getDstPort().toAP());
             super.removeLink(link);
-        } else {
-            PhysicalNetwork.log.debug("Tried to remove invalid link");
         }
     }
 
