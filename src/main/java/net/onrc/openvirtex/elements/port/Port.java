@@ -58,6 +58,8 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
 
     /**
      * Instantiates a new port.
+     * 
+     * @param ofPort the OpenFlow physical port
      */
     protected Port(final OFPhysicalPort ofPort) {
         super();
@@ -75,7 +77,7 @@ public class Port<T1 extends Switch, T2 extends Link> extends OFPhysicalPort
                     (byte) 0xBE, (byte) 0xEF, (byte) 0xCA, (byte) 0xFE};
         }
         this.mac = new MACAddress(this.hardwareAddress);
-        this.isEdge = false;
+        this.isEdge = true;
         this.parentSwitch = null;
         this.portLink = null;
     }

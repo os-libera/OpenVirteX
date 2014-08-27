@@ -105,10 +105,15 @@ public class OVXPortStatus extends OFPortStatus implements Virtualizable {
         }
     }
 
+    /**
+     * Adds a new port to the physical switch if add message, quit otherwise.
+     * 
+     * @param sw the physical switch
+     * @param p the physical port
+     */
     private void handlePortAdd(PhysicalSwitch sw, PhysicalPort p) {
-        /* add a new port to PhySwitch if add message, quit otherwise */
         if (isReason(OFPortReason.OFPPR_ADD)) {
-            p = new PhysicalPort(this.desc, sw, false);
+            p = new PhysicalPort(this.desc, sw, true);
             if (!sw.addPort(p)) {
                 log.warn("Could not add new port {} to physical switch {}",
                         p.getPortNumber(), sw.getSwitchId());
