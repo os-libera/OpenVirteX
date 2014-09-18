@@ -93,7 +93,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                 // register the primary link in the map
                 link.map.removeVirtualLink(link);
                 link.map.addLinks(physicalLinks, link);
-                link.backupLink(physicalLinks, priority);
+                link.switchPath(physicalLinks, priority);
                 link.srcPort.setEdge(false);
                 link.dstPort.setEdge(false);
                 DBManager.getInstance().save(link);
@@ -130,48 +130,35 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
             }
 
             public boolean tryRevert(OVXLink vlink, PhysicalLink plink) {
-                if (vlink.unusableLinks.isEmpty()) {
-                    return false;
-                }
-                synchronized (vlink.unusableLinks) {
-                    Iterator<Byte> it = vlink.unusableLinks.descendingKeySet()
-                            .iterator();
-                    while (it.hasNext()) {
-                        Byte curPriority = it.next();
-                        if (vlink.unusableLinks.get(curPriority)
-                                .contains(plink)) {
-                            vlink.log
-                                    .debug("Reactivate all inactive paths for virtual link {} in virtual network {} ",
-                                            vlink.linkId, vlink.tenantId);
-
-                            if (U8.f(vlink.getPriority()) >= U8.f(curPriority)) {
-                                vlink.backupLinks.put(curPriority,
-                                        vlink.unusableLinks.get(curPriority));
-                            } else {
-
-                                try {
-                                    List<PhysicalLink> backupLinks = new ArrayList<>(
-                                            vlink.map.getPhysicalLinks(vlink));
-                                    Collections.copy(backupLinks,
-                                            vlink.map.getPhysicalLinks(vlink));
-                                    vlink.backupLinks.put(vlink.getPriority(),
-                                            backupLinks);
-                                    vlink.switchPath(vlink.unusableLinks
-                                            .get(curPriority), curPriority);
-                                } catch (LinkMappingException e) {
-                                    vlink.log
-                                            .warn("No physical Links mapped to SwitchRoute? : {}",
-                                                    e);
-                                    return false;
-                                }
+                try {
+                    if (vlink.unusableLinks.isEmpty()) {
+                        return false;
+                    }
+                    synchronized (vlink.unusableLinks) {
+                        Iterator<Byte> it = vlink.unusableLinks.descendingKeySet()
+                                .iterator();
+                        while (it.hasNext()) {
+                            Byte curPriority = it.next();
+                            if (vlink.unusableLinks.get(curPriority)
+                                    .contains(plink)) {
+                                vlink.log
+                                .debug("Reactivate all inactive paths for virtual link {} in virtual network {} ",
+                                        vlink.linkId, vlink.tenantId);
+                                vlink.map.removeVirtualLink(vlink);
+                                vlink.map.addLinks(vlink.unusableLinks.get(curPriority), vlink );
+                                vlink.switchPath(vlink.map.getPhysicalLinks(vlink), curPriority);
+                                vlink.boot();
+                                it.remove();
                             }
-                            it.remove();
                         }
                     }
+                    return true;
+                } catch (LinkMappingException e1) {
+                    vlink.log
+                    .warn("No physical Links mapped to SwitchRoute? : {}",
+                    e1);
+                    return false;
                 }
-                vlink.backupLinks.remove(vlink.priority);
-                vlink.boot();
-                return true;
             }
 
             public void generateFMs(OVXLink link, OVXFlowMod fm, Integer flowId) {
@@ -201,15 +188,23 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                     Collections.copy(unusableLinks,
                             vlink.map.getPhysicalLinks(vlink));
                     vlink.unusableLinks.put(vlink.getPriority(), unusableLinks);
+                    /* TODO Check if we need to setcurrent priority to lowest*/
+                    //vlink.priority = -1;
                 } catch (LinkMappingException e) {
                     vlink.log.warn("No physical Links mapped to OVXLink? : {}",
                             e);
                     return false;
                 }
                 if (vlink.backupLinks.size() > 0) {
+                    /*
+                     * remove the existing physicalPath from the map, 
+                     * add backup path to map and switch backup path to primary 
+                     */
                     byte priority = vlink.backupLinks.lastKey();
                     List<PhysicalLink> phyLinks = vlink.backupLinks
                             .get(priority);
+                    vlink.map.removeVirtualLink(vlink);
+                    vlink.map.addLinks(phyLinks, vlink);
                     vlink.switchPath(phyLinks, priority);
                     vlink.backupLinks.remove(priority);
                     return true;
@@ -217,11 +212,48 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                     return false;
             }
 
+            public void addUnstablePathToBackup(OVXLink link, PhysicalLink plink){
+                synchronized(link.unusableLinks){
+                    Iterator<Byte> it = link.unusableLinks.keySet().iterator();
+                    while(it.hasNext()){
+                        byte priority = it.next();
+                        if(link.unusableLinks.get(priority) !=null){
+                            if(link.unusableLinks.get(priority).contains(plink)){
+                                link.backupLinks.put( link.getPriority(), link.unusableLinks.get(priority));
+                                it.remove();
+                            }
+                        }
+                    }
+                }
+            }
+
+            public void addBackupPathToUnstablePath(OVXLink link, PhysicalLink plink){
+                synchronized(link.backupLinks){
+                    Iterator<Byte> it =  link.backupLinks.keySet().iterator();
+                    while (it.hasNext()){
+                        byte priority = it.next();
+                        if(link.backupLinks.get(priority) !=null){
+                            if(link.backupLinks.get(priority).contains(plink)){
+                                link.unusableLinks.put( link.getPriority(), link.backupLinks.get(priority));
+                                it.remove();
+                            }
+                        }
+                    }
+                }
+            }
+
             public void generateFMs(OVXLink link, OVXFlowMod fm, Integer flowId) {
                 link.generateFlowMods(fm, flowId);
             }
         },
-        STOPPED;
+        STOPPED{
+            public void addPathToLink(OVXLink link,
+                    List<PhysicalLink> physicalLinks, byte priority) {
+                link.log.debug("Cannot add link {} while status={}", link,
+                        link.state);
+            }
+
+        };
 
         /**
          * Registers this OVXLink with its endpoint OVXPorts. and the
@@ -347,6 +379,41 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
          *            unique ID of the flow
          */
         public void generateFMs(OVXLink ovxLink, OVXFlowMod fm, Integer flowId) {
+        }
+        /**
+         * Add path to vlink. If priority is less than existing path then
+         * add path as backup path else set current path to backup and new path 
+         * to primary.
+         * @param link 
+         *          OVXLink
+         * @param physicalLinks
+         *                  Physical path connecting src and dst port of vlink
+         * @param priority
+         *              priority of backup path
+         */
+        public void addPathToLink(OVXLink link,
+                List<PhysicalLink> physicalLinks, byte priority) {
+            link.backupLink(physicalLinks, priority);
+        }
+        /**
+         * Add unstable path to backup path if unstablePath gets back to normal
+         * while backup link is up and running.
+         * @param link 
+         *          OVXlink
+         * @param plink 
+         *          Physical link
+         */
+        public void addUnstablePathToBackup(OVXLink link, PhysicalLink plink){
+            }
+        /**
+         * Add backup path to unstable if plink goes down that correspond to one
+         * of the link in backup (as that backup path is no longer stable).
+         * @param link
+         *          OVXLink
+         * @param plink
+         *          PhysicalLink
+         */
+        public void addBackupPathToUnstablePath(OVXLink link, PhysicalLink plink){
         }
     }
 
@@ -486,9 +553,13 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
     public void register(final List<PhysicalLink> physicalLinks, byte priority) {
         this.state.register(this, physicalLinks, priority);
     }
-
+    public void addBackupPath(final OVXLink link,final List<PhysicalLink> physicalLinks,
+            byte priority){
+        link.state.addPathToLink(link, physicalLinks, priority);
+    }
     private void backupLink(final List<PhysicalLink> physicalLinks,
             byte priority) {
+
         if (U8.f(this.getPriority()) >= U8.f(priority)) {
             this.backupLinks.put(priority, physicalLinks);
             log.debug(
@@ -497,6 +568,11 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
                     this.dstPort.toAP(), this.getTenantId(), physicalLinks);
         } else {
             try {
+                if (map.getPhysicalLinks(this).equals(physicalLinks)){
+                    //TODO: should change priority to new one?
+                    log.debug("Ignoreing same path with different priority");
+                    return;
+                }
                 this.backupLinks.put(this.getPriority(),
                         map.getPhysicalLinks(this));
                 log.debug(
@@ -666,6 +742,7 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
         fm.setBufferId(OVXPacketOut.BUFFER_ID_NONE);
         fm.setCommand(OFFlowMod.OFPFC_MODIFY);
         List<PhysicalLink> plinks = new LinkedList<PhysicalLink>();
+
         try {
             for (final PhysicalLink phyLink : OVXMap.getInstance()
                     .getPhysicalLinks(this)) {
@@ -727,6 +804,12 @@ public class OVXLink extends Link<OVXPort, OVXSwitch> implements Resilient {
      */
     public boolean tryRevert(Component plink) {
         return this.state.tryRevert(this, (PhysicalLink) plink);
+    }
+    public void addUnstablePathToBackup(OVXLink link, PhysicalLink plink){
+        this.state.addUnstablePathToBackup(link, plink);
+        }
+    public void addBackupPathToUnstablePath(OVXLink link, PhysicalLink plink){
+        this.state.addBackupPathToUnstablePath(link, plink);
     }
 
     @Override

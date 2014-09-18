@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,9 +32,11 @@ import net.onrc.openvirtex.elements.Resilient;
 import net.onrc.openvirtex.elements.link.Link;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.LinkMappingException;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.routing.SwitchRoute;
 
 /**
@@ -120,10 +123,20 @@ public class OVXStateManager {
                         handleVLinkDown(vlink, plink, stop);
                     }
                 }
+                /* if down link belongs to backup path */
+                OVXNetwork net = map.getVirtualNetwork(tid);
+                for (OVXLink link : net.getLinks()) {
+                    link.addBackupPathToUnstablePath(link, plink);
+                }
             } catch (LinkMappingException e) {
                 log.warn(
                         "No OVXLink associated with PhysicalLink {}-{} for tenant {}",
                         tid);
+            } catch (NetworkMappingException e) {
+                log.warn(
+                        "No OVXNetwork associated with for tenant {}",
+                        tid);
+                e.printStackTrace();
             }
             /* handle SwitchRoutes */
             try {
@@ -180,10 +193,19 @@ public class OVXStateManager {
                         handleVLinkUp(vlink, plink);
                     }
                 }
+                else{
+                    OVXNetwork net = map.getVirtualNetwork(tid);
+                    for (OVXLink link : net.getLinks()) {
+                        handleVLinkUp(link,plink);
+                        }
+                }
             } catch (LinkMappingException e) {
                 log.warn(
                         "No OVXLink associated with PhysicalLink {} for tenant {}",
                         plink, tid);
+            } catch (NetworkMappingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             /* handle SwitchRoutes */
             try {
@@ -213,9 +235,18 @@ public class OVXStateManager {
                 log.info("OVXLink is admininstratively down, must be enabled manually");
                 return;
             } else {
-                /* Bringing ports up brings OVXLink up */
-                ((OVXPort) vlink.getSrcPort()).boot();
-                ((OVXPort) vlink.getDstPort()).boot();
+                /* Bringing ports up brings OVXLink up
+                 * If port is Active this means backup path is up and running
+                 * in this case move the primary path from unstable to backup 
+                 * path 
+                 */
+                if(((OVXPort) vlink.getSrcPort()).isActive()){
+                    ((OVXLink) vlink).addUnstablePathToBackup((OVXLink) vlink, plink);
+                }
+                else{
+                    ((OVXPort) vlink.getSrcPort()).boot();
+                    ((OVXPort) vlink.getDstPort()).boot();
+                }
             }
         }
     }

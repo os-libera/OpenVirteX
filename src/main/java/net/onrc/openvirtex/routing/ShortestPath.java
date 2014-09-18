@@ -531,7 +531,12 @@ public class ShortestPath implements Routable {
                             ovxLink.getDstPort().getPhysicalPort()));
                     ovxLink.initialize();
                     ovxLink.register(path, (byte) (U8.f(MAXPRIORITY) - i));
-                    ovxLink.boot();
+                    if(!ovxLink.boot()){
+                        /* Link is already active and primary path is up and
+                         * running so all link to backupPath
+                         */
+                        ovxLink.addBackupPath(ovxLink, path, (byte) (U8.f(MAXPRIORITY) - i));
+                    }
                 }
             }
         }
