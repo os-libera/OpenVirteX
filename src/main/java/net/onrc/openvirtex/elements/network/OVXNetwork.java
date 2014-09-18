@@ -698,7 +698,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
             reversePhysicalLinks.add(PhysicalNetwork.getInstance().getLink(
                     phyLink.getDstPort(), phyLink.getSrcPort()));
         }
-
+        boolean isPrimaryPath = true;
         List<OVXLink> links = this.getLinksById(linkId);
         /*
          * TODO: links is a list, so i need to check is the first link has to be
@@ -721,8 +721,22 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                     linkId);
         link.register(physicalLinks, priority);
         reverseLink.register(reversePhysicalLinks, priority);
-        link.boot();
-        reverseLink.boot();
+        isPrimaryPath=link.boot();
+        /**
+         * if boot() return true, this means there was no physical path added to 
+         * vlink as in that case vlink would be in ACTIVE state and boot() is 
+         * only allowed in inACTIVE state.
+         * if boot() return false, add new path to vlink (as primary or backup
+         * depending upon priority 
+         */
+        if (!isPrimaryPath)
+        {
+            link.addBackupPath(link,physicalLinks, priority);
+            link.addBackupPath(reverseLink,reversePhysicalLinks, priority);
+        }
+        else{
+            reverseLink.boot();
+        }
         return link;
     }
 
