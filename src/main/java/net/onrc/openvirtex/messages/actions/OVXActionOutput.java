@@ -48,13 +48,13 @@ import org.openflow.util.U16;
 
 // TODO: handle case where input port is null: ODL does this
 public class OVXActionOutput extends OFActionOutput implements
-        VirtualizableAction {
+VirtualizableAction {
     Logger log = LogManager.getLogger(OVXActionOutput.class.getName());
 
     @Override
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
-            throws ActionVirtualizationDenied, DroppedMessageException {
+                    throws ActionVirtualizationDenied, DroppedMessageException {
         final OVXPort inPort = sw.getPort(match.getInputPort());
 
         // TODO: handle TABLE output port here
@@ -98,7 +98,7 @@ public class OVXActionOutput extends OFActionOutput implements
                  */
                 if (sw instanceof OVXBigSwitch
                         && inPort.getPhysicalPort().getParentSwitch() != outPort
-                                .getPhysicalPort().getParentSwitch()) {
+                        .getPhysicalPort().getParentSwitch()) {
                     // Retrieve the route between the two OVXPorts
                     final OVXBigSwitch bigSwitch = (OVXBigSwitch) outPort
                             .getParentSwitch();
@@ -121,12 +121,20 @@ public class OVXActionOutput extends OFActionOutput implements
                                 && (!match.getWildcardObj().isWildcarded(
                                         Flag.DL_DST) || !match.getWildcardObj()
                                         .isWildcarded(Flag.DL_SRC))) {
-                            flowId = vnet.getFlowManager().getFlowId(
-                                    match.getDataLayerSource(),
-                                    match.getDataLayerDestination());
-                            OVXLinkUtils lUtils = new OVXLinkUtils(
-                                    sw.getTenantId(), link.getLinkId(), flowId);
-                            approvedActions.addAll(lUtils.unsetLinkFields());
+                            try {
+                                flowId = vnet.getFlowManager().getFlowId(
+                                        match.getDataLayerSource(),
+                                        match.getDataLayerDestination());
+                                OVXLinkUtils lUtils = new OVXLinkUtils(
+                                        sw.getTenantId(), link.getLinkId(), flowId);
+                                approvedActions.addAll(lUtils.unsetLinkFields(false, false));
+                            } catch (IndexOutOfBoundException e) {
+                                log.error(
+                                        "Too many host to generate the flow pairs in this virtual network {}. "
+                                                + "Dropping flow-mod {} ",
+                                                sw.getTenantId(), fm);
+                                throw new DroppedMessageException();
+                            }
                         } else {
                             this.log.error(
                                     "Cannot retrieve the virtual link between ports {} {}, dropping message",
@@ -163,10 +171,11 @@ public class OVXActionOutput extends OFActionOutput implements
                                     .prependUnRewriteActions(match));
                         } else {
                             /*
-                             * If inPort is edge and outPort is link: - retrieve
-                             * link - generate the link's FMs - add actions to
-                             * current FM to write packet fields related to the
-                             * link
+                             * If inPort is edge and outPort is link:
+                             * - retrieve link
+                             * - generate the link's FMs
+                             * - add actions to current FM to write packet fields
+                             * related to the link
                              */
                             final OVXLink link = outPort.getLink().getOutLink();
                             linkId = link.getLinkId();
@@ -177,12 +186,12 @@ public class OVXActionOutput extends OFActionOutput implements
                                 link.generateLinkFMs(fm.clone(), flowId);
                                 approvedActions.addAll(new OVXLinkUtils(sw
                                         .getTenantId(), linkId, flowId)
-                                        .setLinkFields());
+                                .setLinkFields());
                             } catch (IndexOutOfBoundException e) {
                                 log.error(
                                         "Too many host to generate the flow pairs in this virtual network {}. "
                                                 + "Dropping flow-mod {} ",
-                                        sw.getTenantId(), fm);
+                                                sw.getTenantId(), fm);
                                 throw new DroppedMessageException();
                             }
                         }
@@ -190,9 +199,10 @@ public class OVXActionOutput extends OFActionOutput implements
                         if (outPort.isEdge()) {
                             /*
                              * If inPort belongs to a link and outPort is edge:
-                             * - retrieve link - add actions to current FM to
-                             * restore original IPs - add actions to current FM
-                             * to restore packet fields related to the link
+                             * - retrieve link
+                             * - add actions to current FM to restore original IPs
+                             * - add actions to current FM to restore packet fields
+                             * related to the link
                              */
                             approvedActions.addAll(IPMapper
                                     .prependUnRewriteActions(match));
@@ -201,14 +211,32 @@ public class OVXActionOutput extends OFActionOutput implements
                                     .getNeighborPort(inPort);
                             final OVXLink link = dstPort.getLink().getOutLink();
                             if (link != null) {
-                                flowId = vnet.getFlowManager().getFlowId(
-                                        match.getDataLayerSource(),
-                                        match.getDataLayerDestination());
-                                OVXLinkUtils lUtils = new OVXLinkUtils(
-                                        sw.getTenantId(), link.getLinkId(),
-                                        flowId);
-                                approvedActions
-                                        .addAll(lUtils.unsetLinkFields());
+                                try {
+                                    flowId = vnet.getFlowManager().getFlowId(
+                                            match.getDataLayerSource(),
+                                            match.getDataLayerDestination());
+                                    OVXLinkUtils lUtils = new OVXLinkUtils(
+                                            sw.getTenantId(), link.getLinkId(),
+                                            flowId);
+                                    // Don't rewrite src or dst MAC if the action already exists
+                                    boolean skipSrcMac = false;
+                                    boolean skipDstMac = false;
+                                    for (final OFAction act : approvedActions) {
+                                        if (act instanceof OVXActionDataLayerSource) {
+                                            skipSrcMac = true;
+                                        }
+                                        if (act instanceof OVXActionDataLayerDestination) {
+                                            skipDstMac = true;
+                                        }
+                                    }
+                                    approvedActions.addAll(lUtils.unsetLinkFields(skipSrcMac, skipDstMac));
+                                } catch (IndexOutOfBoundException e) {
+                                    log.error(
+                                            "Too many host to generate the flow pairs in this virtual network {}. "
+                                                    + "Dropping flow-mod {} ",
+                                                    sw.getTenantId(), fm);
+                                    throw new DroppedMessageException();
+                                }
                             } else {
                                 // TODO: substitute all the return with
                                 // exceptions
@@ -227,12 +255,12 @@ public class OVXActionOutput extends OFActionOutput implements
                                 link.generateLinkFMs(fm.clone(), flowId);
                                 approvedActions.addAll(new OVXLinkUtils(sw
                                         .getTenantId(), linkId, flowId)
-                                        .setLinkFields());
+                                .setLinkFields());
                             } catch (IndexOutOfBoundException e) {
                                 log.error(
                                         "Too many host to generate the flow pairs in this virtual network {}. "
                                                 + "Dropping flow-mod {} ",
-                                        sw.getTenantId(), fm);
+                                                sw.getTenantId(), fm);
                                 throw new DroppedMessageException();
                             }
                         }
@@ -278,7 +306,7 @@ public class OVXActionOutput extends OFActionOutput implements
                             "Generate a packetIn from OVX Port {}/{}, physicalPort {}/{}",
                             dstPort.getParentSwitch().getSwitchName(),
                             dstPort.getPortNumber(), dstPort.getPhysicalPort()
-                                    .getParentSwitch().getSwitchName(),
+                            .getParentSwitch().getSwitchName(),
                             dstPort.getPhysicalPortNumber());
                 } else if (sw instanceof OVXBigSwitch) {
                     /**
@@ -324,7 +352,7 @@ public class OVXActionOutput extends OFActionOutput implements
 
     private LinkedList<OVXPort> fillPortList(final Short inPort,
             final Short outPort, final OVXSwitch sw)
-            throws DroppedMessageException {
+                    throws DroppedMessageException {
         final LinkedList<OVXPort> outPortList = new LinkedList<OVXPort>();
         if (U16.f(outPort) < U16.f(OFPort.OFPP_MAX.getValue())) {
             if (sw.getPort(outPort) != null && sw.getPort(outPort).isActive()) {

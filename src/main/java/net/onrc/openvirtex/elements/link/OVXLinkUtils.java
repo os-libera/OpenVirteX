@@ -276,9 +276,11 @@ public class OVXLinkUtils {
     /**
      * Gets a list of actions based on the original MAC addresses.
      *
+     * @param skipSrcMac Skip rewriting the source MAC address.
+     * @param skipDstMac Skip rewriting the destination MAC address.
      * @return list of actions
      */
-    public List<OFAction> unsetLinkFields() {
+    public List<OFAction> unsetLinkFields(final boolean skipSrcMac, final boolean skipDstMac) {
         final List<OFAction> actions = new LinkedList<OFAction>();
         final OVXLinkField linkField = OpenVirteXController.getInstance()
                 .getOvxLinkField();
@@ -286,10 +288,12 @@ public class OVXLinkUtils {
             LinkedList<MACAddress> macList;
             try {
                 macList = this.getOriginalMacAddresses();
-                actions.add(new OFActionDataLayerSource(macList.get(0)
-                        .toBytes()));
-                actions.add(new OFActionDataLayerDestination(macList.get(1)
-                        .toBytes()));
+                if (!skipSrcMac) {
+                    actions.add(new OFActionDataLayerSource(macList.get(0).toBytes()));
+                }
+                if (!skipDstMac) {
+                    actions.add(new OFActionDataLayerDestination(macList.get(1).toBytes()));
+                }
             } catch (NetworkMappingException e) {
                 OVXLinkUtils.log.error("Unable to restore actions: " + e);
             }
