@@ -58,6 +58,7 @@ public class StopOVXNetwork extends ApiHandler<Map<String, Object>> {
             this.log.info("Stop virtual network {}", tenantId);
             Map<String, Object> reply = new HashMap<String, Object>(
                     virtualNetwork.getDBObject());
+            reply.put(TenantHandler.IS_BOOTED, virtualNetwork.isBooted());
             resp = new JSONRPC2Response(reply, 0);
 
         } catch (final MissingRequiredField e) {
