@@ -722,7 +722,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         dbObject.put(TenantHandler.CTRLURLS, this.controllerUrls);
         dbObject.put(TenantHandler.NETADD, this.network.getIp());
         dbObject.put(TenantHandler.NETMASK, this.mask);
-        dbObject.put(TenantHandler.IS_BOOTED, this.isBooted);
         return dbObject;
     }
 
