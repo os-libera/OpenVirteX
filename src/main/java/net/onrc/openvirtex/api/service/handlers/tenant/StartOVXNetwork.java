@@ -57,6 +57,7 @@ public class StartOVXNetwork extends ApiHandler<Map<String, Object>> {
                     virtualNetwork.getTenantId());
             Map<String, Object> reply = new HashMap<String, Object>(
                     virtualNetwork.getDBObject());
+            reply.put(TenantHandler.IS_BOOTED, virtualNetwork.isBooted());
             resp = new JSONRPC2Response(reply, 0);
 
         } catch (final MissingRequiredField e) {
