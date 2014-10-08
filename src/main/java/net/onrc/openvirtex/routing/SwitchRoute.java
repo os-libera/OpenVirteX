@@ -441,8 +441,8 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements
     public String toString() {
         return "routeId: " + this.routeId + " dpid: " + this.getSwitchId()
                 + " inPort: " + this.srcPort == null ? "" : this.srcPort
-                .toString() + " outPort: " + this.dstPort == null ? ""
-                : this.dstPort.toString();
+                        .toString() + " outPort: " + this.dstPort == null ? ""
+                                : this.dstPort.toString();
     }
 
     /**
@@ -542,8 +542,8 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements
         log.info(
                 "Virtual network {}, switch {}, route {} between ports {}-{}: {} flow-mod switched to the new path",
                 this.getTenantId(), this.getSrcPort().getParentSwitch()
-                        .getSwitchName(), this.getRouteId(), this.getSrcPort()
-                        .getPortNumber(), this.getDstPort().getPortNumber(),
+                .getSwitchName(), this.getRouteId(), this.getSrcPort()
+                .getPortNumber(), this.getDstPort().getPortNumber(),
                 counter);
     }
 
@@ -590,7 +590,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements
                 SwitchRoute.log.error(
                         "Too many host to generate the flow pairs in this virtual network {}. "
                                 + "Dropping flow-mod {} ", this.getTenantId(),
-                        fm);
+                                fm);
             } catch (NetworkMappingException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -616,7 +616,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements
 
         final SwitchRoute route = ((OVXBigSwitch) this.getSrcPort()
                 .getParentSwitch()).getRoute(this.getSrcPort(),
-                this.getDstPort());
+                        this.getDstPort());
         LinkedList<PhysicalLink> reverseLinks = new LinkedList<>();
         try {
             for (final PhysicalLink phyLink : OVXMap.getInstance().getRoute(
@@ -663,7 +663,7 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements
                 }
                 fm.setLengthU(OFFlowMod.MINIMUM_LENGTH + actLenght);
                 phyLink.getSrcPort().getParentSwitch()
-                        .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
+                .sendMsg(fm, phyLink.getSrcPort().getParentSwitch());
                 SwitchRoute.log.debug(
                         "Sending big-switch route last fm to sw {}: {}",
                         phyLink.getSrcPort().getParentSwitch().getName(), fm);
@@ -723,12 +723,16 @@ public class SwitchRoute extends Link<OVXPort, PhysicalSwitch> implements
                                     + "Dropping packet...", this.getTenantId(),
                             fm);
                     return;
+                } catch (IndexOutOfBoundException e) {
+                    log.error(
+                            "Too many host to generate the flow pairs in this virtual network {}. "
+                                    + "Dropping flow-mod {} ", sw.getTenantId(), fm);
+                    return;
                 }
-                OVXLinkUtils lUtils = new OVXLinkUtils(this.getTenantId(),
-                        link.getLinkId(), flowId);
+                OVXLinkUtils lUtils = new OVXLinkUtils(this.getTenantId(), link.getLinkId(), flowId);
                 lUtils.rewriteMatch(fm.getMatch());
                 IPMapper.rewriteMatch(this.getTenantId(), fm.getMatch());
-                approvedActions.addAll(lUtils.unsetLinkFields());
+                approvedActions.addAll(lUtils.unsetLinkFields(false, false));
             } else {
                 SwitchRoute.log
                         .warn("Cannot retrieve the virtual link between ports {} {}. Dropping packet...",
