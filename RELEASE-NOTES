@@ -1,3 +1,13 @@
+OpenVirteX pre-alpha 0.0.3: Oct 13 2014
+
+    ** Bug
+        * [OVX-417] - Initialize ports as edges in all cases
+        * [intent] - Fixes for ONOS NFV demo
+        * [OVX-329] - Fix removal of vnet in db by not saving boot state
+
+    ** Improvement
+        * [OVX-416] - Less verbose debug logging
+
 OpenVirteX pre-alpha 0.0.2: May 16 2014
 
     ** Sub-task
@@ -13,7 +23,7 @@ OpenVirteX pre-alpha 0.0.2: May 16 2014
 
     ** Improvement
         * [OVX-225] - Rewrite OVXPort constructor
-        * [OVX-325] - Can't run OVX out of OpenVirtex/script foulder
+        * [OVX-325] - Can't run OVX out of OpenVirtex/script folder
 
     ** Task
         * [OVX-326] - Add missing Javadoc to code base
