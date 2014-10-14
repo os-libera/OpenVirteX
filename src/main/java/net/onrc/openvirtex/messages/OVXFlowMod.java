@@ -29,6 +29,7 @@ import net.onrc.openvirtex.elements.link.OVXLinkUtils;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import net.onrc.openvirtex.exceptions.UnknownActionException;
 import net.onrc.openvirtex.messages.actions.OVXActionNetworkLayerDestination;
@@ -92,7 +93,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
                 sw.sendMsg(OVXMessageUtil.makeError(e.getErrorCode(), this), sw);
                 return;
             } catch (final DroppedMessageException e) {
-                this.log.warn("Dropping flowmod {}", this);
+                this.log.warn("Dropping flowmod {} {}", this, e);
                 ft.deleteFlowMod(ovxCookie);
                 // TODO perhaps send error message to controller
                 return;
@@ -153,15 +154,23 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
                             .getVirtualNetwork(sw.getTenantId())
                             .getLink(dstPort, inPort);
                     if (inPort != null && link != null) {
-                        Integer flowId = sw
-                                .getMap()
-                                .getVirtualNetwork(sw.getTenantId())
-                                .getFlowManager()
-                                .getFlowId(this.match.getDataLayerSource(),
-                                        this.match.getDataLayerDestination());
-                        OVXLinkUtils lUtils = new OVXLinkUtils(
-                                sw.getTenantId(), link.getLinkId(), flowId);
-                        lUtils.rewriteMatch(this.getMatch());
+                        try {
+                            Integer flowId = sw
+                                    .getMap()
+                                    .getVirtualNetwork(sw.getTenantId())
+                                    .getFlowManager()
+                                    .getFlowId(this.match.getDataLayerSource(),
+                                            this.match.getDataLayerDestination());
+                            OVXLinkUtils lUtils = new OVXLinkUtils(
+                                    sw.getTenantId(), link.getLinkId(), flowId);
+                            lUtils.rewriteMatch(this.getMatch());
+                        } catch (IndexOutOfBoundException e) {
+                            log.error(
+                                    "Too many host to generate the flow pairs in this virtual network {}. "
+                                            + "Dropping flow-mod {} ",
+                                            sw.getTenantId(), this);
+                            throw new DroppedMessageException();
+                        } 
                     }
                 }
             }

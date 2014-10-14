@@ -46,7 +46,7 @@ public class OVXFlowManager {
         this.hostList = hostList;
     }
 
-    public Integer storeFlowValues(final byte[] srcMac, final byte[] dstMac)
+    public synchronized Integer storeFlowValues(final byte[] srcMac, final byte[] dstMac)
             throws IndexOutOfBoundException {
         // TODO: Optimize flow numbers
         final BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,
@@ -63,7 +63,7 @@ public class OVXFlowManager {
         return flowId;
     }
 
-    public LinkedList<MACAddress> getFlowValues(final Integer flowId) {
+    public synchronized LinkedList<MACAddress> getFlowValues(final Integer flowId) {
         final LinkedList<MACAddress> macList = new LinkedList<MACAddress>();
         final BigInteger dualMac = this.flowValues.get(flowId);
         if (dualMac != null) {
@@ -76,8 +76,8 @@ public class OVXFlowManager {
         return macList;
     }
 
-    public Integer getFlowId(final byte[] srcMac, final byte[] dstMac)
-            throws DroppedMessageException {
+    public synchronized Integer getFlowId(final byte[] srcMac, final byte[] dstMac)
+            throws DroppedMessageException, IndexOutOfBoundException {
         final BigInteger dualMac = new BigInteger(ArrayUtils.addAll(srcMac,
                 dstMac));
         final Integer flowId = this.flowValues.inverse().get(dualMac);
@@ -87,14 +87,12 @@ public class OVXFlowManager {
                     this.tenantId, flowId, MACAddress.valueOf(srcMac)
                             .toString(), MACAddress.valueOf(dstMac).toString());
             return flowId;
+        } else {
+            // Create new flow ID
+            // TODO: this is probably incorrect if the match is not identical 
+            // at both ends of the virtual link
+            return this.storeFlowValues(srcMac, dstMac);
         }
-        throw new DroppedMessageException(
-                "virtual net =  "
-                        + this.tenantId
-                        + ": unable to retrive the flowId associated to these mac addresses: "
-                        + MACAddress.valueOf(srcMac).toString() + "-"
-                        + MACAddress.valueOf(dstMac).toString()
-                        + ". Dropping message!");
     }
 
     /**
