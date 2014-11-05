@@ -412,8 +412,9 @@ class OVXEmbedderHandler(BaseHTTPRequestHandler):
         # create virtual switch with all physical dpids
         dpids = [hexToLong(dpid) for dpid in phyTopo['switches']]
         switchId = client.createSwitch(tenantId, dpids)
-        # set routing algorithm and number of backups
-        client.setInternalRouting(tenantId, switchId, routing['algorithm'], routing['backup_num'])
+        # set routing algorithm and number of backups, only for true bigswitches
+        if (len(dpids) > 1):
+            client.setInternalRouting(tenantId, switchId, routing['algorithm'], routing['backup_num'])
         # create virtual ports and connect hosts
         for host in hosts:
             (vdpid, vport) = client.createPort(tenantId, hexToLong(host['dpid']), host['port'])
