@@ -56,6 +56,7 @@ public final class PhysicalNetwork extends
      */
     enum NetworkState {
         INIT {
+            @Override
             protected boolean register() {
                 log.info("Booting...");
                 instance.state = NetworkState.INACTIVE;
@@ -63,12 +64,14 @@ public final class PhysicalNetwork extends
             }
         },
         INACTIVE {
+            @Override
             protected boolean boot() {
                 log.info("Enabling...");
                 instance.state = NetworkState.ACTIVE;
                 return true;
             }
 
+            @Override
             protected void unregister() {
                 log.info("Shutting down...");
                 instance.state = NetworkState.STOPPED;
@@ -76,22 +79,26 @@ public final class PhysicalNetwork extends
             }
         },
         ACTIVE {
+            @Override
             protected boolean teardown() {
                 log.info("Disabling...");
                 instance.state = NetworkState.INACTIVE;
                 return true;
             }
 
+            @Override
             protected void addSwitch(PhysicalSwitch sw) {
                 log.info("adding new Switch [DPID={}]", sw.getSwitchName());
                 instance.addDP(sw);
             }
 
+            @Override
             protected boolean removeSwitch(PhysicalSwitch sw) {
                 log.info("removing Switch [DPID={}]", sw.getSwitchName());
                 return instance.removeDP(sw);
             }
 
+            @Override
             protected void addPort(PhysicalPort port) {
                 SwitchDiscoveryManager sdm = instance.discoveryManager.get(port
                         .getParentSwitch().getSwitchId());
@@ -103,6 +110,7 @@ public final class PhysicalNetwork extends
                 }
             }
 
+            @Override
             protected void removePort(PhysicalPort port) {
                 disablePort(port);
                 /* remove link from this network's mappings */
@@ -112,11 +120,13 @@ public final class PhysicalNetwork extends
                 }
             }
 
+            @Override
             protected void removeLink(final PhysicalPort src,
                     final PhysicalPort dst) {
                 instance.removeEdge(src, dst);
             }
 
+            @Override
             @SuppressWarnings("rawtypes")
             protected void handleLLDP(OFMessage msg, Switch sw) {
                 // Pass msg to appropriate SwitchDiscoveryManager
@@ -127,6 +137,7 @@ public final class PhysicalNetwork extends
                 }
             }
 
+            @Override
             protected void disablePort(PhysicalPort port) {
                 SwitchDiscoveryManager sdm;
                 sdm = instance.discoveryManager.get(port.getParentSwitch()
@@ -229,7 +240,7 @@ public final class PhysicalNetwork extends
              * 100ms tickduration is absolutely fine for I/O timeouts.
              * If not, ask yourself "why?"
              */
-            PhysicalNetwork.timer = new HashedWheelTimer(100, TimeUnit.MILLISECONDS, 
+            PhysicalNetwork.timer = new HashedWheelTimer(100, TimeUnit.MILLISECONDS,
                     OpenVirteXController.getInstance().getHashSize());
         }
         return PhysicalNetwork.timer;
@@ -261,7 +272,7 @@ public final class PhysicalNetwork extends
 
     /**
      * Helper method to addSwitch, invoked when state is ACTIVE.
-     * 
+     *
      * @param sw
      */
     private void addDP(final PhysicalSwitch sw) {
@@ -276,6 +287,7 @@ public final class PhysicalNetwork extends
      *
      * @param sw the switch
      */
+    @Override
     public boolean removeSwitch(final PhysicalSwitch sw) {
         return this.state.removeSwitch(sw);
     }
@@ -318,7 +330,7 @@ public final class PhysicalNetwork extends
      * are added to the NW. this preserves symmetry wherein links are deleted
      * ONLY if ports are deleted. Otherwise links should only deactivate, not be
      * ripped out of the topology.
-     * 
+     *
      * @param srcPort source port
      * @param dstPort destination port
      */
@@ -367,7 +379,6 @@ public final class PhysicalNetwork extends
             super.removeLink(link); /* sets ports to edge */
             log.info("Removing physical link between {} and {}", link
                     .getSrcPort().toAP(), link.getDstPort().toAP());
-            super.removeLink(link);
         }
     }
 
@@ -441,7 +452,7 @@ public final class PhysicalNetwork extends
 
     /**
      * Deactivates a PhysicalLink by removing it from topology discovery.
-     * 
+     *
      * @param link
      */
     public void disablePort(final PhysicalPort port) {
