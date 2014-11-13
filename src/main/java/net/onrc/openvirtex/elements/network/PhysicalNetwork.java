@@ -107,6 +107,7 @@ public final class PhysicalNetwork extends
      *
      * @param sw the switch
      */
+    @Override
     public boolean removeSwitch(final PhysicalSwitch sw) {
         DBManager.getInstance().delSwitch(sw.getSwitchId());
         SwitchDiscoveryManager sdm = this.discoveryManager
@@ -150,7 +151,10 @@ public final class PhysicalNetwork extends
         /* remove from topology discovery */
         if (sdm != null) {
             log.info("removing port {}", port.getPortNumber());
-            sdm.removePort(port);
+            // Do not run discovery on local OpenFlow port
+            if (port.getPortNumber() != OFPort.OFPP_LOCAL.getValue()) {
+                sdm.removePort(port);
+            }
         }
         /* remove from this network's mappings */
         PhysicalPort dst = this.neighborPortMap.get(port);
@@ -205,7 +209,6 @@ public final class PhysicalNetwork extends
                     .getSrcSwitch().getSwitchName(), link.getSrcPort()
                     .getPortNumber(), link.getDstSwitch().getSwitchName(), link
                     .getDstPort().getPortNumber());
-            super.removeLink(link);
         }
     }
 

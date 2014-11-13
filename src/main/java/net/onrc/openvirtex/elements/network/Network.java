@@ -18,7 +18,9 @@ package net.onrc.openvirtex.elements.network;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
@@ -130,10 +132,31 @@ public abstract class Network<T1 extends Switch, T2 extends Port, T3 extends Lin
      * @param sw the switch
      * @return true if successful, false otherwise
      */
+    @SuppressWarnings("unchecked")
     protected boolean removeSwitch(final T1 sw) {
         if (this.switchSet.remove(sw)) {
             this.neighborMap.remove(sw);
             this.dpidMap.remove(((Switch) sw).getSwitchId());
+            // Remove links that start/end at the given switch
+            // TODO: can be optimized
+            Iterator linkIter = this.linkSet.iterator();
+            while (linkIter.hasNext()) {
+                T3 link = (T3) linkIter.next();
+                if (link.getSrcSwitch() == sw || link.getDstSwitch() == sw) {
+                    linkIter.remove();
+                }
+            }
+            // Remove neighbour ports on the given switch
+            // TODO: can be optimized
+            Iterator neighbourIter = this.neighborPortMap.entrySet().iterator();
+            while (neighbourIter.hasNext()) {
+                Entry<T2, T2> neighbours = (Entry<T2, T2>) neighbourIter.next();
+                if (neighbours.getKey().getParentSwitch() == sw ||
+                        neighbours.getValue().getParentSwitch() == sw) {
+                    neighbourIter.remove();
+                }
+            }
+
             return true;
         }
         return false;

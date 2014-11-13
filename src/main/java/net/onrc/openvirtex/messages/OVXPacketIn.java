@@ -24,9 +24,11 @@ import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
-import net.onrc.openvirtex.elements.link.OVXLinkUtils;
+import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.OVXLinkField;
+import net.onrc.openvirtex.elements.link.OVXLinkUtils;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.AddressMappingException;
@@ -233,13 +235,16 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 
     private void learnHostIP(OFMatch match, Mappable map) {
         if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
-
             try {
-                map.getVirtualNetwork(tenantId).getHost(ovxPort)
-                        .setIPAddress(match.getNetworkSource());
+                OVXNetwork vnet = map.getVirtualNetwork(tenantId);
+                Host host = vnet.getHost(ovxPort);
+                if (host != null) {
+                    host.setIPAddress(match.getNetworkSource());
+                } else {
+                    log.warn("Host not found on virtual port {}", ovxPort);
+                }
             } catch (NetworkMappingException e) {
                 log.warn("Failed to lookup virtual network {}", this.tenantId);
-                return;
             } catch (NullPointerException npe) {
                 log.warn("No host attached at {} port {}", this.ovxPort
                         .getParentSwitch().getSwitchName(), this.ovxPort
