@@ -303,7 +303,7 @@ public class OVXBigSwitch extends OVXSwitch {
             return null;
         return ingressMap.get(egress);
     }
-    
+
     /**
      * Adds a route between two edge ports of the big switch.
      *
@@ -335,8 +335,8 @@ public class OVXBigSwitch extends OVXSwitch {
          */
         SwitchRoute rtEntry = this.getSwitchRoute(ingress, egress);
         SwitchRoute revRtEntry = this.getSwitchRoute(egress, ingress);
-        
-        if (rtEntry == null && revRtEntry == null) { 
+
+        if (rtEntry == null && revRtEntry == null) {
             rtEntry = new SwitchRoute(this, ingress, egress, routeId, priority);
             revRtEntry = new SwitchRoute(this, egress, ingress, routeId, priority);
             this.map.addRoute(rtEntry, path);

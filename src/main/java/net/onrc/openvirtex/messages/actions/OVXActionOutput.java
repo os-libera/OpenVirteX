@@ -22,16 +22,16 @@ import java.util.Map;
 import net.onrc.openvirtex.elements.address.IPMapper;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
-import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.OVXLinkUtils;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.ActionVirtualizationDenied;
 import net.onrc.openvirtex.exceptions.DroppedMessageException;
+import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.MappingException;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
-import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.messages.OVXFlowMod;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
@@ -279,13 +279,15 @@ VirtualizableAction {
             }
         } else if (match.isPacketOut()) {
             /*
-             * PacketOut management. Iterate through the output port list. Three
-             * possible scenarios: - outPort belongs to a link: send a packetIn
-             * coming from the virtual link end point to the controller -
-             * outPort is an edge port: two different sub-cases: - inPort &
-             * outPort belongs to the same physical switch, e.g. rewrite outPort
-             * - inPort & outPort belongs to different switches (bigSwitch):
-             * send a packetOut to the physical port @ the end of the BS route
+             * PacketOut management. Iterate through the output port list.
+             *
+             * Three possible scenarios:
+             * (1) outPort belongs to a link: send a packetIn coming from the
+             * virtual link end point to the controller
+             * (2) outPort is an edge port: two different sub-cases:
+             * (2a) inPort & outPort belong to the same physical switch: rewrite outPort
+             * (2b) inPort & outPort belong to different switches (bigSwitch):
+             * send a packetOut to the physical port @ the end of the BS route.
              */
 
             // TODO check how to delete the packetOut and if it's required
@@ -314,8 +316,11 @@ VirtualizableAction {
                      * physical outPort
                      */
                     // Only generate pkt_out if a route is configured between in
-                    // and output port
+                    // and output port.
+                    // If parent switches are identical, no route will be configured
+                    // although we do want to output the pkt_out.
                     if ((inPort == null)
+                            || (inPort.getParentSwitch() == outPort.getParentSwitch())
                             || (((OVXBigSwitch) sw).getRoute(inPort, outPort) != null)) {
                         final PhysicalPort dstPort = outPort.getPhysicalPort();
                         dstPort.getParentSwitch().sendMsg(
@@ -331,7 +336,6 @@ VirtualizableAction {
                     /**
                      * Else (e.g. the outPort is an edgePort in a single switch)
                      * modify the packet and send to the physical switch.
-                     *
                      */
                     throwException = false;
                     approvedActions.addAll(IPMapper
