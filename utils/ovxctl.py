@@ -344,7 +344,7 @@ def do_startSwitch(gopts, opts, args):
         print "Switch (switch_id %s) has been booted in virtual network (tenant_id %s)" % (args[1], args[0])
 
 def pa_startPort(args, cmd):
-    usage = "%s <tenant_id> <virtual_dpid>" % USAGE.format(cmd)
+    usage = "%s <tenant_id> <virtual_dpid> <virtual_port>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)    
@@ -358,7 +358,7 @@ def do_startPort(gopts, opts, args):
     tenantId = reply.get('tenantId')
     switchId = reply.get('vdpid')
     portId = reply.get('vport')
-    if tenantId and switchId and hostId:
+    if tenantId and switchId and portId:
         print "Port (port_id %s) has been started in virtual switch (tenant_id %s, switch_id %s)" % (portId, tenantId, switchId)
 
 def pa_stopNetwork(args, cmd):
@@ -392,7 +392,7 @@ def do_stopSwitch(gopts, opts, args):
         print "Switch (switch_id %s) has been shutdown in virtual network (tenant_id %s)" % (args[1], args[0])
 
 def pa_stopPort(args, cmd):
-    usage = "%s <tenant_id> <virtual_dpid>" % USAGE.format(cmd)
+    usage = "%s <tenant_id> <virtual_dpid> <virtual_port>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)    
