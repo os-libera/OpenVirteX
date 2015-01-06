@@ -81,7 +81,7 @@ public class OVXNetworkManager {
         this.offlinePorts = new HashSet<DPIDandPort>();
         this.onlinePorts = new HashSet<DPIDandPort>();
         this.bootState = false;
-	this.virtualNetwork = this.createNetwork();
+        this.virtualNetwork = this.createNetwork();
     }
 
     public Integer getTenantId() {
@@ -105,8 +105,8 @@ public class OVXNetworkManager {
     }
 
     /**
-     * Create the OVX network based on persistent storage.  
-     * 
+     * Create the OVX network based on persistent storage.
+     *
      * @return OVXNetwork
      */
     @SuppressWarnings("unchecked")
@@ -114,11 +114,10 @@ public class OVXNetworkManager {
     	// Create OVX network
     	final ArrayList<String> ctrlUrls = (ArrayList<String>) this.vnet
                 .get(TenantHandler.CTRLURLS);
-    	final Integer network = (Integer) this.vnet.get(TenantHandler.NETADD);
-        final IPAddress addr = new OVXIPAddress(network, -1);
+        final IPAddress addr = new OVXIPAddress(this.tenantId, (Integer) this.vnet.get(TenantHandler.NETADD));
         final Short netMask = ((Integer) this.vnet.get(TenantHandler.NETMASK))
                 .shortValue();
-        
+
         try {
             virtualNetwork = new OVXNetwork(this.tenantId, ctrlUrls, addr,
                     netMask);
