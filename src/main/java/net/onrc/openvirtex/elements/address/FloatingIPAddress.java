@@ -2,20 +2,21 @@ package net.onrc.openvirtex.elements.address;
 
 import java.net.InetAddress;
 
+import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 
 public class FloatingIPAddress extends OVXIPAddress {
 
     boolean bidirectional = false;
-    PhysicalPort physicalPort;
+    OVXPort ovxPort;
 
-    public FloatingIPAddress(int tenantId, InetAddress ip, PhysicalPort physicalPort, boolean bidirectional) {
-        super(ip.getHostAddress(), tenantId);
+    public FloatingIPAddress(InetAddress ip, OVXPort ovxPort, boolean bidirectional) {
+        super(ip.getHostAddress(), ovxPort.getTenantId());
         this.bidirectional = bidirectional;
-        this.physicalPort = physicalPort;
+        this.ovxPort = ovxPort;
     }
 
-    public PhysicalPort getPhysicalPort() {
-        return physicalPort;
+    public OVXPort getOvxPort() {
+        return ovxPort;
     }
 }
