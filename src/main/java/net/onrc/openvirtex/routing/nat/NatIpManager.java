@@ -55,14 +55,13 @@ public class NatIpManager {
     public synchronized FloatingIPAddress allocateFloatingIP(OVXPort ovxPort, OVXIPAddress virtualIP, boolean bidirectional) throws FloatingIPException{
         if (virtualIP == null) return null;
         FloatingIPAddress floatingIP = virtualFloatingIPMap.getValueForExactKey(virtualIP.toString());
-        PhysicalPort externalPort = ovxPort.getPhysicalPort();
 
         if (floatingIP != null) {
             log.debug("VirtualIP {} in Tenant {} already has a FloatingIP {}", virtualIP.toSimpleString(), virtualIP.getTenantId(), floatingIP.toSimpleString());
             return floatingIP;
         } else {
-            InetAddress publicIP = getNextPublicIP(externalPort);
-            floatingIP = new FloatingIPAddress(virtualIP.getTenantId(), publicIP, externalPort, bidirectional);
+            InetAddress publicIP = getNextPublicIP(ovxPort.getPhysicalPort());
+            floatingIP = new FloatingIPAddress(publicIP, ovxPort, bidirectional);
             allocatedFloatingIPMap.put(floatingIP.toString(), virtualIP);
             virtualFloatingIPMap.put(virtualIP.toString(), floatingIP);
             log.debug("VirtualIP {} in Tenant {} is assigned a new FloatingIP {}", virtualIP.toSimpleString(), virtualIP.getTenantId(), floatingIP.toSimpleString());
@@ -76,7 +75,7 @@ public class NatIpManager {
         if (virtualIP != null) {
             result = allocatedFloatingIPMap.remove(floatingIPAddress.toString());
             result &= virtualFloatingIPMap.remove(virtualIP.toString());
-            this.addPublicIP(floatingIPAddress.toSimpleString(), floatingIPAddress.getPhysicalPort());
+            this.addPublicIP(floatingIPAddress.toSimpleString(), floatingIPAddress.getOvxPort().getPhysicalPort());
         }
         return result;
     }
