@@ -18,6 +18,7 @@ package net.onrc.openvirtex.api.service.handlers;
 import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.tenant.AddController;
+import net.onrc.openvirtex.api.service.handlers.tenant.AddFloatingIP;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
@@ -26,6 +27,7 @@ import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXRoute;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.EnableNAT;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitch;
@@ -158,6 +160,9 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             this.put("connectLink", new ConnectOVXLink());
             this.put("setLinkPath", new SetOVXLinkPath());
             this.put("connectRoute", new ConnectOVXRoute());
+
+            this.put("addFloatingIP", new AddFloatingIP());
+            this.put("enableNAT", new EnableNAT());
 
             this.put("removeNetwork", new RemoveOVXNetwork());
             this.put("removeSwitch", new RemoveOVXSwitch());

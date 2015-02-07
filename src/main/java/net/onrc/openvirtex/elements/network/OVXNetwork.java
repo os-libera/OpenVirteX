@@ -31,18 +31,22 @@ import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
+import net.onrc.openvirtex.elements.address.FloatingIPAddress;
 import net.onrc.openvirtex.elements.address.IPAddress;
+import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.host.Host;
+import net.onrc.openvirtex.elements.host.NATGateway;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
+import net.onrc.openvirtex.exceptions.FloatingIPException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
@@ -50,6 +54,7 @@ import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
 import net.onrc.openvirtex.routing.SwitchRoute;
+import net.onrc.openvirtex.routing.nat.NatIpManager;
 import net.onrc.openvirtex.util.BitSetIndex;
 import net.onrc.openvirtex.util.BitSetIndex.IndexType;
 import net.onrc.openvirtex.util.MACAddress;
@@ -344,6 +349,24 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         RoutingAlgorithms algorithm = new RoutingAlgorithms(alg, numBackups);
         ((OVXBigSwitch) this.getSwitch(dpid)).setAlg(algorithm);
         return algorithm;
+    }
+
+    public NATGateway enableNAT(final long ovxDpid, final short ovxPort, final String virtualIPString, boolean bidirectional, final MACAddress mac) throws FloatingIPException, IndexOutOfBoundException{
+        // For now use the random MAC to get things going.
+        int hostId = this.hostCounter.getNewIndex();
+        OVXPort port = this.getSwitch(ovxDpid).getPort(ovxPort);
+        port.boot();
+        OVXMap.getInstance().addMAC(mac, this.tenantId);
+        final NATGateway gateway = new NATGateway(mac, port, hostId);
+        this.hostMap.put(port, gateway);
+        gateway.register();
+
+        OVXIPAddress virtualIPAddress = new OVXIPAddress(virtualIPString, this.getTenantId().intValue());
+        FloatingIPAddress floatingIPAddress = NatIpManager.getInstance().allocateFloatingIP(port, virtualIPAddress, bidirectional);
+
+        gateway.setFloatingIPAddress(floatingIPAddress);
+        gateway.setVirtualIPAddress(virtualIPAddress);
+        return gateway;
     }
 
     /**

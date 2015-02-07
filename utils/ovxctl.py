@@ -89,6 +89,26 @@ def do_createNetwork(gopts, opts, args):
     if network_id:
         print "Virtual network has been created (network_id %s)." % str(network_id)
 
+def pa_addFloatingIP(args, cmd):
+    usage = "%s [options] <physical_dpid> <physical_port> <public_ips>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    parser.add_option("-d", "--dpid", dest="dpid", type="str", default="0",
+            help="Specify the DPID for this switch")
+    return parser.parse_args(args)
+
+def do_addFloatingIP(gopts, opts, args):
+    if len(args) != 3:
+        print ("addFloatingIP : must specify: " +
+        "physical dpid, physical port and a comma separated list of public ips " )
+        sys.exit()
+    ips = [ip for ip in args[2].split(',')]
+    req = { "dpid" : int(args[0].replace(":", ""), 16), "port" : int(args[1]), "networkAddress" : ips }
+    reply = connect(gopts, "tenant", "addFloatingIP", data=req, passwd=getPasswd(gopts))
+    networkAddress = reply.get('networkAddress')
+    if networkAddress:
+        print "Public IPs are added (%s)"  % (networkAddress)
+
 def pa_createSwitch(args, cmd):
     usage = "%s [options] <tenant_id> <physical_dpids>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
@@ -151,6 +171,23 @@ def do_setInternalRouting(gopts, opts, args):
     switchId = reply.get('vdpid')
     if tenantId and switchId:
         print "Routing has be set for big switch (tenant_id %s, switch_id %s)" % (switchId, tenantId)
+
+def pa_enableNAT(args, cmd):
+    usage = "%s <tenant_id> <vitual_dpid> <virtual_port> <gateway_mac>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_enableNAT(gopts, opts, args):
+    if len(args) != 4:
+        print "enableNAT : Must specify virtual tenant_id, virtual switch_id, virtual port_id and gateway MAC address"
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "vdpid" : int(args[1].replace(":", ""), 16), 
+           "vport" : int(args[2]), "mac" : args[3] } 
+    reply = connect(gopts, "tenant", "enableNAT", data=req, passwd=getPasswd(gopts))
+    hostId = reply.get('hostId')
+    if hostId:
+        print "NATGateway (host_id %s) has been connected to virtual port" % (hostId)
 
 def pa_connectHost(args, cmd):
     usage = "%s <tenant_id> <vitual_dpid> <virtual_port> <host_mac>" % USAGE.format(cmd)
@@ -638,6 +675,8 @@ CMDS = {
     'createSwitch': (pa_createSwitch, do_createSwitch),
     'createPort': (pa_createPort, do_createPort),
     'setInternalRouting': (pa_setInternalRouting, do_setInternalRouting),
+    'addFloatingIP': (pa_addFloatingIP, do_addFloatingIP),
+    'enableNAT': (pa_enableNAT, do_enableNAT),
     'connectHost': (pa_connectHost, do_connectHost),
     'connectLink': (pa_connectLink, do_connectLink),
     'setLinkPath': (pa_setLinkPath, do_setLinkPath),
@@ -689,6 +728,12 @@ DESCS = {
                       ("Set big-switch internal routing mechanism. Must specify a tenant_id, a virtual switch_id, the routing type (spf, manual) " 
                        "and the number (0-255) of the backup paths that have to be computed."
                         "\nExample: setInternalRouting 1 00:00:00:00:00:00:00:01 spf 128")),  
+    'addFloatingIP' : ("Add Floating IP for a physical port", 
+                      ("Add floating IP for a physical port. Must specify a physical dpis, a physical port and a list of floating IPs."
+                        "\nExample: addFloatingIP 00:00:00:00:00:00:00:01 1 152.94.0.1,152.94.0.2")), 
+    'enableNAT' : ("Enable NAT for a virtual network", 
+                      ("Enable NAT for a virtual network. Must specify a tenant_id, a virtual switch_id, a virtual port_id and the host MAC address."
+                        "\nExample: enableNAT 1 00:a4:23:05:00:00:00:01 1 00:00:00:00:00:AA")), 
     'connectHost' : ("Connect host to a virtual port", 
                       ("Connect host to a virtual port. Must specify a tenant_id, a virtual switch_id, a virtual port_id and the host MAC address."
                         "\nExample: connectHost 1 00:a4:23:05:00:00:00:01 1 00:00:00:00:00:01")),         

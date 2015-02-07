@@ -45,7 +45,8 @@ public class BitSetIndex {
                 24)), HOST_ID((int) Math.pow(2, 32)), FLOW_COUNTER(
                 getLinkMaxValue()), IP_ID((int) Math
                 .pow(2, (32 - OpenVirteXController.getInstance()
-                        .getNumberVirtualNets()))), DEFAULT(1000);
+                        .getNumberVirtualNets()))),
+                        TCP_NAT ((int) Math.pow(2,16)), DEFAULT(1000);
 
         protected Integer value;
 
