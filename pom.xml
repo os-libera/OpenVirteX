@@ -1,0 +1,462 @@
+<!--
+  ~ *******************************************************************************
+  ~  Copyright 2019 Korea University & Open Networking Foundation
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~  ******************************************************************************
+  ~  Developed by Libera team, Operating Systems Lab of Korea University
+  ~  ******************************************************************************
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.onrc.openvirtex</groupId>
+  <artifactId>OpenVirteX</artifactId>
+  <packaging>jar</packaging>
+  <version>0.0.3</version>
+  <name>OpenVirteX</name>
+  <url>http://ovx.onlab.us</url>
+  <properties>
+    <cobertura-maven-plugin.version>2.6</cobertura-maven-plugin.version>
+    <findbugs-plugin.version>2.5.3</findbugs-plugin.version>
+    <findbugs.effort>Max</findbugs.effort>
+    <findbugs.excludeFilterFile>config/findbugs/exclude.xml</findbugs.excludeFilterFile>
+    <checkstyle-plugin.version>2.12</checkstyle-plugin.version>
+    <!-- To publish javadoc to github,
+     uncomment com.github.github site-maven-plugin and
+     see https://github.com/OPENNETWORKINGLAB/ONOS/pull/425
+    <github.global.server>github</github.global.server>
+     -->
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <charset>UTF-8</charset>
+          <locale>en</locale>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- Note: the checkstyle configuration is also in the reporting section -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle-plugin.version}</version>
+        <configuration>
+          <configLocation>config/checkstyle/sun_checks.xml</configLocation>
+          <propertiesLocation>${basedir}/config/checkstyle/checkstyle_maven.properties</propertiesLocation>
+          <failsOnError>false</failsOnError>
+          <logViolationsToConsole>true</logViolationsToConsole>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate-checkstyle</id>
+            <phase>verify</phase>
+            <goals>
+                <goal>checkstyle</goal>
+            </goals>
+            <!-- Uncomment this once we have cleaned up the code
+            <goals>
+              <goal>check</goal>
+            </goals>
+            -->
+          </execution>
+        </executions>
+      </plugin>
+ 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
+        <executions>
+        </executions>
+  	</plugin>
+	<plugin>
+      	<groupId>org.apache.maven.plugins</groupId>
+      	<artifactId>maven-surefire-plugin</artifactId>
+      	<version>2.12</version>
+      	<configuration>
+        	<forkMode>always</forkMode>
+    	</configuration>
+ 	</plugin>
+    <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>${cobertura-maven-plugin.version}</version>
+        <configuration>
+          <instrumentation>
+            <ignores>
+              <ignore>org.slf4j.*</ignore>
+            </ignores>
+            <excludes>
+              <exclude>org/openflow/**/*.class</exclude>
+            </excludes>
+          </instrumentation>
+            <check/>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Note: the findbugs configuration is also in the reporting section -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${findbugs-plugin.version}</version>
+        <configuration>
+          <effort>${findbugs.effort}</effort>
+          <excludeFilterFile>${findbugs.excludeFilterFile}</excludeFilterFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate-findbugs</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>findbugs</goal>
+              <!--  Uncomment this goal to make the build fail on findbugs errors -->
+              <!--<goal>check</goal>-->
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <!--
+            Note: Exclusion definition exists in multiple places.
+            - In file ${findbugs.excludeFilterFile} defined at top of pom.xml
+            - maven-checkstyle-plugin configuration in pom.xml
+            - maven-pmd-plugin configuration in pom.xml
+              (under build and reporting)
+          -->
+          <excludes>
+            <exclude>**/org/openflow/**</exclude>
+          </excludes>
+          <rulesets>
+            <ruleset>${basedir}/config/pmd/ovx_ruleset.xml</ruleset>
+          </rulesets>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate-pmd</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>pmd</goal>
+              <goal>cpd</goal>
+              <!--  Uncomment this goal to make the build fail on pmd errors -->
+              <!--<goal>check</goal>-->
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+   <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <configuration>
+          <mainClass>net.onrc.openvirtex.core.OpenVirteX</mainClass>
+        </configuration>
+        <executions>
+        </executions>
+      </plugin>
+      <plugin>
+      <artifactId>maven-assembly-plugin</artifactId>
+      <configuration>
+        <archive>
+          <manifest>
+            <mainClass>net.onrc.openvirtex.core.OpenVirteX</mainClass>
+          </manifest>
+        </archive>
+        <descriptorRefs>
+          <descriptorRef>jar-with-dependencies</descriptorRef>
+        </descriptorRefs>
+        <finalName>OpenVirteX</finalName>
+        <appendAssemblyId>false</appendAssemblyId>
+      </configuration>
+      <executions>
+        <execution>
+          <id>make-assembly</id> <!-- this is used for inheritance merges -->
+          <phase>package</phase> <!-- bind to the packaging phase -->
+          <goals>
+            <goal>single</goal>
+          </goals>
+      </execution>
+  </executions>
+    </plugin>
+    </plugins>
+  </build>
+  <reporting>
+      <excludeDefaults>true</excludeDefaults>
+      <outputDirectory>${project.build.directory}/site</outputDirectory> 
+      <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <configuration>
+                <charset>UTF-8</charset>
+                <locale>en</locale>
+            </configuration>
+        </plugin>
+        <plugin>
+          <!-- Note: the checkstyle configuration is also in the build section -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${checkstyle-plugin.version}</version>
+          <configuration>
+            <configLocation>config/checkstyle/sun_checks.xml</configLocation>
+            <propertiesLocation>${basedir}/config/checkstyle/checkstyle_maven.properties</propertiesLocation>
+            <!--
+              Note: Exclusion definition exists in multiple places.
+              - In file ${findbugs.excludeFilterFile} defined at top of pom.xml
+              - maven-checkstyle-plugin configuration in pom.xml
+              - maven-pmd-plugin configuration in pom.xml
+                (under build and reporting)
+            -->
+          </configuration>
+        <reportSets>
+            <reportSet>
+              <reports>
+                <report>checkstyle</report>
+               </reports>
+            </reportSet>
+          </reportSets>
+        </plugin>
+              <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${findbugs-plugin.version}</version>
+        <configuration>
+          <effort>${findbugs.effort}</effort>
+          <excludeFilterFile>${findbugs.excludeFilterFile}</excludeFilterFile>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <!--
+            Note: Exclusion definition exists in multiple places.
+            - In file ${findbugs.excludeFilterFile} defined at top of pom.xml
+            - maven-checkstyle-plugin configuration in pom.xml
+            - maven-pmd-plugin configuration in pom.xml
+              (under build and reporting)
+          -->
+          <excludes>
+            <exclude>**/org/openflow/**</exclude>
+          </excludes>
+          <rulesets>
+            <ruleset>${basedir}/config/pmd/ovx_ruleset.xml</ruleset>
+          </rulesets>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>${cobertura-maven-plugin.version}</version>
+      </plugin>
+      </plugins>
+    
+  </reporting>
+  <repositories>
+    <repository>
+        <id>jsonrpc4j-webdav-maven-repo</id>
+        <name>jsonrpc4j maven repository</name>
+        <url>http://jsonrpc4j.googlecode.com/svn/maven/repo/</url>
+        <layout>default</layout>
+    </repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+    <groupId>com.thetransactioncompany</groupId>
+    <artifactId>jsonrpc2-base</artifactId>
+    <version>1.35</version>
+</dependency>
+<dependency>
+    <groupId>com.thetransactioncompany</groupId>
+    <artifactId>jsonrpc2-server</artifactId>
+    <version>1.10.1</version>
+</dependency>
+    <dependency>
+    <groupId>org.mongodb</groupId>
+    <artifactId>mongo-java-driver</artifactId>
+    <version>2.11.2</version>
+</dependency>
+    <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-server</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+     <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-security</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+      <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-http</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+      <dependency>
+    <groupId>org.eclipse.jetty</groupId>
+    <artifactId>jetty-util</artifactId>
+    <version>9.0.5.v20130815</version>
+</dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.0-rc1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.0-rc1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.0-rc1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+      <version>2.0.25</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.concurrent-trees</groupId>
+      <artifactId>concurrent-trees</artifactId>
+      <version>2.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>14.0.1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-core-asl</artifactId>
+      <version>1.9.13</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-mapper-asl</artifactId>
+      <version>1.9.13</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>3.2.9.Final</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.5</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+	  <artifactId>gson</artifactId>
+	  <version>2.2.4</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.jacoco</groupId>
+	  <artifactId>org.jacoco.agent</artifactId>
+	  <version>0.6.3.201306030806</version>
+    </dependency>
+    <dependency>
+	<groupId>org.apache.commons</groupId>
+	<artifactId>commons-math3</artifactId>
+	<version>3.0</version>
+    </dependency>
+    <dependency>
+	<groupId>commons-lang</groupId>
+	<artifactId>commons-lang</artifactId>
+	<version>2.3</version>
+    </dependency>
+
+             <dependency>
+             <groupId>org.onosproject</groupId>
+             <artifactId>openflowj</artifactId>
+             <version>0.9.2.onos</version>
+         </dependency>
+
+     </dependencies>
+     <profiles>
+       <!-- Jenkins by default defines a property BUILD_NUMBER which is used to
+         enable the profile. -->
+    <profile>
+      <id>jenkins</id>
+      <activation>
+        <property>
+          <name>env.BUILD_NUMBER</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+            <version>${cobertura-maven-plugin.version}</version>
+            <configuration>
+              <formats>
+                <format>xml</format>
+              </formats>
+            </configuration>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>cobertura</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
