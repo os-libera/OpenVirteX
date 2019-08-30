@@ -9,4 +9,5 @@ Our team has released OpenVirteX which supports OpenFlow 1.3, which can be found
 The initial OVX for OpenFlow 1.0 is in master branch.
 
 - Mailing list: https://groups.google.com/forum/#!forum/ovx-discuss
+- Team Leader: Prof. Chuck Yoo
 - Developer: Gyeongsik Yang, Bong-yeol Yu, Seong-Mun Kim, Heesang Jin, Young-keun Ko, Anumeha, Minkoo Kang
