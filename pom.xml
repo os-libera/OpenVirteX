@@ -286,7 +286,7 @@
     <repository>
         <id>jsonrpc4j-webdav-maven-repo</id>
         <name>jsonrpc4j maven repository</name>
-        <url>http://jsonrpc4j.googlecode.com/svn/maven/repo/</url>
+        <url>https://jsonrpc4j.googlecode.com/svn/maven/repo/</url>
         <layout>default</layout>
     </repository>
   </repositories>
